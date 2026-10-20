@@ -4,6 +4,7 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { isAppAdmin } from '../../services/cloudAuthService';
 import { defaultSeason } from '../../lib/utils';
+import { SyncStatusBadge } from '../ui/SyncStatusBadge';
 
 interface DashboardHeaderProps {
   state: AppState;
@@ -29,7 +30,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 }) => {
   const isAdmin = isAppAdmin(state.currentUser);
   const unreadNotifs = (state.notifications || []).filter((n) => !n.read).length;
-  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
   const syncInfo = state.syncInfo;
 
   return (
@@ -81,33 +81,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         {/* Action Controls & Sync Indicators */}
         <div className="flex items-center gap-2 z-10 self-end sm:self-center flex-wrap">
           {/* Cloud Sync Status Badge */}
-          <button
-            id="dashboard-sync-status-btn"
-            onClick={onOpenSync}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold flex items-center gap-2 transition-all shadow-sm ${
-              syncInfo?.status === 'syncing'
-                ? 'bg-amber-500/10 border-amber-500/40 text-amber-300 animate-pulse'
-                : syncInfo?.status === 'synced'
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
-                  : !isOnline
-                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                    : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-800'
-            }`}
-            title="Estado da Sincronização na Nuvem"
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                syncInfo?.status === 'synced' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
-              }`}
-            />
-            <span className="hidden xs:inline">
-              {syncInfo?.status === 'synced'
-                ? 'Nuvem OK'
-                : syncInfo?.status === 'syncing'
-                  ? 'A Sincronizar...'
-                  : 'Offline'}
-            </span>
-          </button>
+          <SyncStatusBadge onClick={onOpenSync} fallbackSyncInfo={syncInfo} />
 
           {/* Notifications Button */}
           {onOpenNotifications && (

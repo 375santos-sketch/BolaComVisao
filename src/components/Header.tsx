@@ -4,6 +4,7 @@ import logoImg from '../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { isAppAdmin } from '../services/cloudAuthService';
 import { TabType } from './Navbar';
 import { getActiveCategory } from './navCategory';
+import { SyncStatusBadge } from './ui/SyncStatusBadge';
 
 interface HeaderProps {
   title: string;
@@ -43,9 +44,6 @@ export const Header: React.FC<HeaderProps> = ({
   clubInfo,
   hasActiveMatch
 }) => {
-  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
-  const isSyncing = syncInfo?.status === 'syncing';
-  const pendingCount = syncInfo?.pendingChangesCount || 0;
   const isAdmin = isAppAdmin(currentUser);
   const activeCategory = getActiveCategory(currentTab);
 
@@ -152,36 +150,8 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Status Actions & Utilities */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* Sync status button */}
-          {onOpenSync && (
-            <button
-              type="button"
-              onClick={onOpenSync}
-              className={`flex items-center gap-1.5 px-2 py-1.5 min-h-[36px] sm:min-h-[32px] rounded-xl font-mono text-[10px] font-bold border transition-all active:scale-95 cursor-pointer touch-manipulation ${
-                !isOnline
-                  ? 'bg-amber-950/80 border-amber-500/60 text-amber-300 animate-pulse'
-                  : isSyncing
-                    ? 'bg-cyan-950/80 border-cyan-500/60 text-cyan-300'
-                    : pendingCount > 0
-                      ? 'bg-amber-950/60 border-amber-500/40 text-amber-200'
-                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
-              }`}
-              title={
-                !isOnline
-                  ? `Offline (${pendingCount} pendentes). Clique para detalhes.`
-                  : isSyncing
-                    ? 'A sincronizar com a nuvem...'
-                    : 'Sincronizado na nuvem'
-              }
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  !isOnline ? 'bg-amber-400 animate-ping' : isSyncing ? 'bg-cyan-400 animate-spin' : 'bg-emerald-400'
-                }`}
-              />
-              <span className="hidden sm:inline">{!isOnline ? 'Offline' : isSyncing ? 'A guardar' : 'Nuvem'}</span>
-            </button>
-          )}
+          {/* Sync status button: shows whether every change is confirmed in the cloud */}
+          {onOpenSync && <SyncStatusBadge onClick={onOpenSync} fallbackSyncInfo={syncInfo} />}
 
           {/* Admin Pending Coach Requests */}
           {isAdmin && onOpenAdminUsers && (
