@@ -2,16 +2,14 @@ import { describe, it, expect } from 'vitest';
 import {
   canAccessClub,
   canAccessTeam,
-  getEffectiveTeamRole,
   hasPermission,
-  canAccessBoardReports,
   getUserAccessibleTeams,
   isAdminAccount,
   resolveTeamContext,
   isActiveTeamRevoked
 } from '../lib/permissionsEngine';
 import { UserAccount, SquadProfile } from '../types';
-import { MASTER_ADMIN_EMAIL, MASTER_ADMIN_USERNAME } from '../lib/constants';
+import { MASTER_ADMIN_EMAIL } from '../lib/constants';
 
 describe('permissionsEngine & Multi-Tenant Security Scenarios', () => {
   const CLUB_A = 'club_a';
@@ -215,4 +213,3 @@ describe('permissionsEngine & Multi-Tenant Security Scenarios', () => {
     });
   });
 });
-

@@ -51,9 +51,6 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
     cb();
   };
 
-  const currentPlanName = state.subscription?.planName || 'Gratuito / Trial';
-  const isSubActive = state.subscription?.status === 'active';
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
@@ -186,7 +183,8 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
                 <div className="font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5 text-xs sm:text-sm">
                   <span>Biblioteca de Exercícios</span>
                   <Badge variant="cyan" size="xs">
-                    {(state.exerciseLibrary && state.exerciseLibrary.length > 0 ? state.exerciseLibrary.length : 10)} MODELOS
+                    {state.exerciseLibrary && state.exerciseLibrary.length > 0 ? state.exerciseLibrary.length : 10}{' '}
+                    MODELOS
                   </Badge>
                 </div>
                 <div className="text-[11px] text-cyan-200/90 font-sans">
@@ -420,11 +418,15 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
           <div className="p-3.5 rounded-2xl bg-gradient-to-br from-cyan-950/70 via-slate-900/90 to-slate-950 border border-cyan-500/40 space-y-2 mt-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="p-1.5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-base">📐</span>
+                <span className="p-1.5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-base">
+                  📐
+                </span>
                 <div>
                   <div className="font-bold text-white font-['Chakra_Petch'] uppercase text-xs flex items-center gap-1.5">
                     <span>Logo Vetorial BolaComVisão</span>
-                    <Badge variant="cyan" size="xs">SVG</Badge>
+                    <Badge variant="cyan" size="xs">
+                      SVG
+                    </Badge>
                   </div>
                   <div className="text-[11px] text-cyan-200/80">Guardar no computador para impressão ou design</div>
                 </div>

@@ -1,14 +1,5 @@
 import { useState } from 'react';
-import {
-  AppState,
-  Match,
-  GoalEvent,
-  CardEvent,
-  SubEvent,
-  GoalType,
-  MatchPeriod,
-  MatchGamePhase
-} from '../../../../types';
+import { AppState, Match, GoalEvent, CardEvent, SubEvent, GoalType, MatchPeriod } from '../../../../types';
 import { uid, formatMinute, sortPlayerObjs, getMatchElapsedMs } from '../../../../lib/utils';
 import { getLineupSize } from '../../../../lib/constants';
 import {
@@ -211,7 +202,8 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
 
     if (editingConcededGoal) {
       // Ao editar, mantém a parte/half que já tinha
-      const finalPeriod = (editingConcededGoal.period as MatchPeriod) || (editingConcededGoal.half === 2 ? '2.ª parte' : '1.ª parte');
+      const finalPeriod =
+        (editingConcededGoal.period as MatchPeriod) || (editingConcededGoal.half === 2 ? '2.ª parte' : '1.ª parte');
       const finalHalf: 1 | 2 = editingConcededGoal.half || (finalPeriod === '2.ª parte' ? 2 : 1);
       const minInHalf = computeMinuteInHalf(concededMinute.trim(), finalHalf, D);
 
@@ -499,7 +491,8 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
         half: finalHalf
       };
       updateMatchInState({ ...match, cards: [...(match.cards || []), newCard] });
-      if (onShowToast) onShowToast(cardColor === 'Vermelho' ? '🟥 Cartão Vermelho registado!' : '🟨 Cartão Amarelo registado!');
+      if (onShowToast)
+        onShowToast(cardColor === 'Vermelho' ? '🟥 Cartão Vermelho registado!' : '🟨 Cartão Amarelo registado!');
     }
 
     setShowCardModal(false);
@@ -539,7 +532,8 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     const lineupSize = getLineupSize(match);
     const finalLineup = starting7 || match.lineup || [];
     if (finalLineup.length !== lineupSize) {
-      if (onShowToast) onShowToast(`⚠️ É obrigatório selecionar exatamente ${lineupSize} titulares para iniciar a 1.ª parte.`);
+      if (onShowToast)
+        onShowToast(`⚠️ É obrigatório selecionar exatamente ${lineupSize} titulares para iniciar a 1.ª parte.`);
       return false;
     }
 

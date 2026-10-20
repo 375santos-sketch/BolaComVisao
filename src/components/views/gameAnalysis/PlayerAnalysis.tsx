@@ -102,10 +102,10 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                             idx === 0
                               ? 'bg-amber-400 text-slate-950 shadow-sm'
                               : idx === 1
-                              ? 'bg-slate-300 text-slate-950'
-                              : idx === 2
-                              ? 'bg-amber-700 text-white'
-                              : 'bg-slate-800 text-slate-400'
+                                ? 'bg-slate-300 text-slate-950'
+                                : idx === 2
+                                  ? 'bg-amber-700 text-white'
+                                  : 'bg-slate-800 text-slate-400'
                           }`}
                         >
                           {idx + 1}
@@ -128,9 +128,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                           <span className="text-base font-['Chakra_Petch'] font-black text-emerald-400 font-mono">
                             {sc.count} ⚽
                           </span>
-                          <div className="text-[10px] text-cyan-300 font-mono">
-                            {sc.assistsCount || 0} assist.
-                          </div>
+                          <div className="text-[10px] text-cyan-300 font-mono">{sc.assistsCount || 0} assist.</div>
                         </div>
                         <span className="text-slate-500 text-xs group-hover:text-emerald-400">›</span>
                       </div>
@@ -209,10 +207,10 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                             idx === 0
                               ? 'bg-cyan-400 text-slate-950 shadow-sm'
                               : idx === 1
-                              ? 'bg-slate-300 text-slate-950'
-                              : idx === 2
-                              ? 'bg-amber-700 text-white'
-                              : 'bg-slate-800 text-slate-400'
+                                ? 'bg-slate-300 text-slate-950'
+                                : idx === 2
+                                  ? 'bg-amber-700 text-white'
+                                  : 'bg-slate-800 text-slate-400'
                           }`}
                         >
                           {idx + 1}
@@ -302,9 +300,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                       </span>
                     )}
                     {cp.red > 0 && (
-                      <span className="bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-md font-bold">
-                        🟥 {cp.red}
-                      </span>
+                      <span className="bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-md font-bold">🟥 {cp.red}</span>
                     )}
                   </div>
                 </div>

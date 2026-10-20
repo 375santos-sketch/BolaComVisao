@@ -57,9 +57,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
     }
     const initialOut = subOutId || eligiblePlayers[0]?.id || '';
     const initialIn =
-      subInId && subInId !== initialOut
-        ? subInId
-        : eligiblePlayers.find((p) => p.id !== initialOut)?.id || '';
+      subInId && subInId !== initialOut ? subInId : eligiblePlayers.find((p) => p.id !== initialOut)?.id || '';
 
     return [
       {
@@ -71,7 +69,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
   });
 
   const [localMinute, setLocalMinute] = useState(subMinute);
-  const [localPeriod, setLocalPeriod] = useState<MatchPeriod>(subPeriod || '1.ª parte');
+  const [localPeriod] = useState<MatchPeriod>(subPeriod || '1.ª parte');
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const showSuggestedLabel =
@@ -87,9 +85,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
     const usedIn = new Set(currentPairs.map((p) => p.inId));
 
     const nextOut = eligiblePlayers.find((p) => !usedOut.has(p.id) && !usedIn.has(p.id))?.id || '';
-    const nextIn = eligiblePlayers.find(
-      (p) => !usedIn.has(p.id) && !usedOut.has(p.id) && p.id !== nextOut
-    )?.id || '';
+    const nextIn = eligiblePlayers.find((p) => !usedIn.has(p.id) && !usedOut.has(p.id) && p.id !== nextOut)?.id || '';
 
     return { outId: nextOut, inId: nextIn };
   };
@@ -120,9 +116,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
 
   const handleUpdatePair = (index: number, field: 'outId' | 'inId', value: string) => {
     setValidationError(null);
-    setPairs((prev) =>
-      prev.map((p, idx) => (idx === index ? { ...p, [field]: value } : p))
-    );
+    setPairs((prev) => prev.map((p, idx) => (idx === index ? { ...p, [field]: value } : p)));
 
     // Also keep parent single-selection in sync for first pair
     if (index === 0) {
@@ -294,14 +288,9 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
                           Selecione o jogador que sai...
                         </option>
                         {eligiblePlayers.map((p) => {
-                          const isUsedElsewhere =
-                            otherOutIds.includes(p.id) || otherInIds.includes(p.id);
+                          const isUsedElsewhere = otherOutIds.includes(p.id) || otherInIds.includes(p.id);
                           return (
-                            <option
-                              key={p.id}
-                              value={p.id}
-                              disabled={isUsedElsewhere}
-                            >
+                            <option key={p.id} value={p.id} disabled={isUsedElsewhere}>
                               {playerLabel(p, 'Sem nome')} {p.number ? `(#${p.number})` : ''}
                               {isUsedElsewhere ? ' (Já selecionado)' : ''}
                             </option>
@@ -325,21 +314,12 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
                         </option>
                         {eligiblePlayers.map((p) => {
                           const isSameAsOut = p.id === pair.outId;
-                          const isUsedElsewhere =
-                            otherInIds.includes(p.id) || otherOutIds.includes(p.id);
+                          const isUsedElsewhere = otherInIds.includes(p.id) || otherOutIds.includes(p.id);
                           const isDisabled = isSameAsOut || isUsedElsewhere;
                           return (
-                            <option
-                              key={p.id}
-                              value={p.id}
-                              disabled={isDisabled}
-                            >
+                            <option key={p.id} value={p.id} disabled={isDisabled}>
                               {playerLabel(p, 'Sem nome')} {p.number ? `(#${p.number})` : ''}
-                              {isSameAsOut
-                                ? ' (A sair nesta troca)'
-                                : isUsedElsewhere
-                                  ? ' (Já selecionado)'
-                                  : ''}
+                              {isSameAsOut ? ' (A sair nesta troca)' : isUsedElsewhere ? ' (Já selecionado)' : ''}
                             </option>
                           );
                         })}
@@ -361,9 +341,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
               >
                 <span className="text-base group-hover:scale-110 transition-transform">➕</span>
                 <span>Adicionar Outra Substituição em Simultâneo</span>
-                <span className="text-[10px] text-blue-200/70 font-mono font-normal">
-                  (Dupla / Tripla Troca)
-                </span>
+                <span className="text-[10px] text-blue-200/70 font-mono font-normal">(Dupla / Tripla Troca)</span>
               </button>
             </div>
           )}
@@ -442,9 +420,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
                   }}
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 font-mono"
                 />
-                {!localMinute.trim() && (
-                  <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>
-                )}
+                {!localMinute.trim() && <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>}
               </div>
             </div>
           </div>

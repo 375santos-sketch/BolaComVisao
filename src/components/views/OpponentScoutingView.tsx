@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppState, OpponentScouting, ScheduledMatch, KeyPlayerInfo, TacticalPitchPlayer } from '../../types';
-import { t } from '../../i18n/dict';
+import { AppState, OpponentScouting, ScheduledMatch } from '../../types';
 import { uid } from '../../lib/utils';
 import { Header } from '../Header';
+import { SEVEN_A_SIDE_PRESETS, formatMatchCompetition } from './opponentScoutingUtils';
 
 interface OpponentScoutingViewProps {
   state: AppState;
@@ -13,91 +13,6 @@ interface OpponentScoutingViewProps {
   onOpenSync?: () => void;
   onShowToast: (msg: string) => void;
   targetOpponentId?: string;
-}
-
-// Predefinições de Futebol de 7 para o Relvado Tático
-export const SEVEN_A_SIDE_PRESETS: Record<string, TacticalPitchPlayer[]> = {
-  '2-3-1': [
-    { id: 'p1', role: 'GR', name: 'GR', x: 50, y: 88 },
-    { id: 'p2', role: 'DE', name: 'Defesa Esq.', x: 24, y: 68 },
-    { id: 'p3', role: 'DD', name: 'Defesa Dir.', x: 76, y: 68 },
-    { id: 'p4', role: 'ME', name: 'Ala / Médio Esq.', x: 18, y: 44 },
-    { id: 'p5', role: 'MC', name: 'Médio Centro', x: 50, y: 46 },
-    { id: 'p6', role: 'MD', name: 'Ala / Médio Dir.', x: 82, y: 44 },
-    { id: 'p7', role: 'PL', name: 'Avançado', x: 50, y: 18 }
-  ],
-  '3-2-1': [
-    { id: 'p1', role: 'GR', name: 'GR', x: 50, y: 88 },
-    { id: 'p2', role: 'DE', name: 'Defesa Esq.', x: 20, y: 68 },
-    { id: 'p3', role: 'DC', name: 'Defesa Central', x: 50, y: 72 },
-    { id: 'p4', role: 'DD', name: 'Defesa Dir.', x: 80, y: 68 },
-    { id: 'p5', role: 'MC', name: 'Médio Esq.', x: 35, y: 44 },
-    { id: 'p6', role: 'MC', name: 'Médio Dir.', x: 65, y: 44 },
-    { id: 'p7', role: 'PL', name: 'Avançado', x: 50, y: 18 }
-  ],
-  '2-1-2-1': [
-    { id: 'p1', role: 'GR', name: 'GR', x: 50, y: 88 },
-    { id: 'p2', role: 'DE', name: 'Defesa Esq.', x: 26, y: 70 },
-    { id: 'p3', role: 'DD', name: 'Defesa Dir.', x: 74, y: 70 },
-    { id: 'p4', role: 'MDF', name: 'Médio Defensivo', x: 50, y: 56 },
-    { id: 'p5', role: 'ME', name: 'Ala Esq.', x: 20, y: 38 },
-    { id: 'p6', role: 'MD', name: 'Ala Dir.', x: 80, y: 38 },
-    { id: 'p7', role: 'PL', name: 'Avançado', x: 50, y: 18 }
-  ],
-  '3-1-2': [
-    { id: 'p1', role: 'GR', name: 'GR', x: 50, y: 88 },
-    { id: 'p2', role: 'DE', name: 'Defesa Esq.', x: 20, y: 68 },
-    { id: 'p3', role: 'DC', name: 'Defesa Central', x: 50, y: 72 },
-    { id: 'p4', role: 'DD', name: 'Defesa Dir.', x: 80, y: 68 },
-    { id: 'p5', role: 'MC', name: 'Médio Centro', x: 50, y: 46 },
-    { id: 'p6', role: 'AV', name: 'Avançado Esq.', x: 35, y: 18 },
-    { id: 'p7', role: 'AV', name: 'Avançado Dir.', x: 65, y: 18 }
-  ],
-  '2-2-2': [
-    { id: 'p1', role: 'GR', name: 'GR', x: 50, y: 88 },
-    { id: 'p2', role: 'DE', name: 'Defesa Esq.', x: 26, y: 70 },
-    { id: 'p3', role: 'DD', name: 'Defesa Dir.', x: 74, y: 70 },
-    { id: 'p4', role: 'ME', name: 'Médio Esq.', x: 30, y: 45 },
-    { id: 'p5', role: 'MD', name: 'Médio Dir.', x: 70, y: 45 },
-    { id: 'p6', role: 'AV', name: 'Avançado Esq.', x: 35, y: 18 },
-    { id: 'p7', role: 'AV', name: 'Avançado Dir.', x: 65, y: 18 }
-  ],
-  '1-3-2': [
-    { id: 'p1', role: 'GR', name: 'GR', x: 50, y: 88 },
-    { id: 'p2', role: 'DC', name: 'Defesa Central', x: 50, y: 70 },
-    { id: 'p3', role: 'ME', name: 'Ala Esq.', x: 18, y: 45 },
-    { id: 'p4', role: 'MC', name: 'Médio Centro', x: 50, y: 46 },
-    { id: 'p5', role: 'MD', name: 'Ala Dir.', x: 82, y: 45 },
-    { id: 'p6', role: 'AV', name: 'Avançado Esq.', x: 35, y: 18 },
-    { id: 'p7', role: 'AV', name: 'Avançado Dir.', x: 65, y: 18 }
-  ]
-};
-
-export const COMMON_ROLES = ['GR', 'DC', 'DE', 'DD', 'MDF', 'MC', 'MO', 'ME', 'MD', 'ALA', 'EXT', 'PL', 'AV'];
-
-export function formatMatchCompetition(match?: ScheduledMatch | null): string {
-  if (!match) return 'Campeonato';
-  const typeMap: Record<string, string> = {
-    campeonato: 'Campeonato',
-    torneio: match.tournamentName ? `Torneio: ${match.tournamentName}` : 'Torneio',
-    amigavel: 'Jogo Amigável'
-  };
-  const baseType = typeMap[match.type] || match.type || 'Campeonato';
-  if (match.phase && match.phase.trim()) {
-    if (match.phase.toLowerCase().includes(baseType.toLowerCase())) {
-      return match.phase;
-    }
-    return `${baseType} - ${match.phase}`;
-  }
-  return baseType;
-}
-
-export function getEffectiveTacticalPitch(scout?: OpponentScouting | null): TacticalPitchPlayer[] {
-  if (scout?.ourTacticalPitch && Array.isArray(scout.ourTacticalPitch) && scout.ourTacticalPitch.length === 7) {
-    return scout.ourTacticalPitch;
-  }
-  const formKey = scout?.ourFormation || '2-3-1';
-  return SEVEN_A_SIDE_PRESETS[formKey] || SEVEN_A_SIDE_PRESETS['2-3-1'];
 }
 
 function createDefaultScoutingReport(match?: ScheduledMatch, myClubStadium?: string): OpponentScouting {
@@ -111,7 +26,7 @@ function createDefaultScoutingReport(match?: ScheduledMatch, myClubStadium?: str
     location: match?.location || 'casa',
     matchType: match?.type || 'campeonato',
     phase: compFormatted,
-    stadium: match?.venue || (match?.location === 'casa' ? (myClubStadium || 'Campo Municipal') : 'Campo Adversário'),
+    stadium: match?.venue || (match?.location === 'casa' ? myClubStadium || 'Campo Municipal' : 'Campo Adversário'),
     ourFormation: '2-3-1',
     ourPlayingModel: 'Pressão Alta e Domínio Posicional',
     ourDefensiveBlock: 'medio',
@@ -139,8 +54,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
   onShowToast,
   targetOpponentId
 }) => {
-  const scoutingList: OpponentScouting[] = state.opponentScouting || [];
-  const scheduleList: ScheduledMatch[] = state.schedule || [];
+  const scoutingList: OpponentScouting[] = useMemo(() => state.opponentScouting || [], [state.opponentScouting]);
+  const scheduleList: ScheduledMatch[] = useMemo(() => state.schedule || [], [state.schedule]);
   const myClubName = state.myClubName || 'A Minha Equipa';
 
   // Jogos da Agenda que ainda não têm um relatório de scouting associado
@@ -179,14 +94,11 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
     return scheduleList.find(
       (m) =>
         m.id === currentScout.matchId ||
-        (m.opponent && currentScout.opponentName && m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
+        (m.opponent &&
+          currentScout.opponentName &&
+          m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
     );
   }, [scheduleList, currentScout]);
-
-  // Standalone reports (not linked to any current scheduled match)
-  const standaloneReports: OpponentScouting[] = useMemo(() => {
-    return scoutingList.filter((s) => !s.matchId || !scheduleList.some((m) => m.id === s.matchId));
-  }, [scoutingList, scheduleList]);
 
   const [newCustomStrength, setNewCustomStrength] = useState<string>('');
   const [newCustomWeakness, setNewCustomWeakness] = useState<string>('');
@@ -267,9 +179,7 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
   // Clean standalone reports created by user (excluding dummy 'Adversário 1')
   const customBlankReports: OpponentScouting[] = useMemo(() => {
     return scoutingList.filter(
-      (s) =>
-        s.opponentName !== 'Adversário 1' &&
-        (!s.matchId || !scheduleList.some((m) => m.id === s.matchId))
+      (s) => s.opponentName !== 'Adversário 1' && (!s.matchId || !scheduleList.some((m) => m.id === s.matchId))
     );
   }, [scoutingList, scheduleList]);
 
@@ -333,7 +243,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
       location: match.location || 'casa',
       matchType: match.type || 'campeonato',
       phase: compFormatted,
-      stadium: match.venue || (match.location === 'casa' ? (state.myClubStadium || 'Campo Municipal') : 'Campo Adversário'),
+      stadium:
+        match.venue || (match.location === 'casa' ? state.myClubStadium || 'Campo Municipal' : 'Campo Adversário'),
       ourFormation: '2-3-1',
       ourPlayingModel: 'Pressão Alta e Domínio Posicional',
       ourDefensiveBlock: 'medio',
@@ -363,7 +274,9 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
     const match = scheduleList.find(
       (m) =>
         m.id === targetMatchId ||
-        (m.opponent && currentScout.opponentName && m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
+        (m.opponent &&
+          currentScout.opponentName &&
+          m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
     );
     if (!match) {
       onShowToast('Nenhum jogo correspondente encontrado na Agenda.');
@@ -380,7 +293,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
       location: match.location || 'casa',
       matchType: match.type || 'campeonato',
       phase: compFormatted,
-      stadium: match.venue || (match.location === 'casa' ? (state.myClubStadium || 'Campo Municipal') : 'Campo Adversário')
+      stadium:
+        match.venue || (match.location === 'casa' ? state.myClubStadium || 'Campo Municipal' : 'Campo Adversário')
     });
 
     onShowToast(`Informação do jogo vs ${match.opponent} importada da Agenda com sucesso! 📅✓`);
@@ -572,9 +486,7 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
         {/* Opponent Selector Bar */}
         <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap flex-1">
-            <span className="text-xs font-mono text-amber-400 font-bold whitespace-nowrap">
-              ADVERSÁRIO EM ANÁLISE:
-            </span>
+            <span className="text-xs font-mono text-amber-400 font-bold whitespace-nowrap">ADVERSÁRIO EM ANÁLISE:</span>
             <select
               value={currentScout ? currentScout.id : ''}
               onChange={(e) => {
@@ -600,11 +512,9 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
                     );
                     const dateStr = m.date ? m.date.split('-').reverse().join('/') : '';
                     return (
-                      <option
-                        key={`sched-${m.id}`}
-                        value={linkedReport ? linkedReport.id : `create_match:${m.id}`}
-                      >
-                        vs {m.opponent}{dateStr ? ` (${dateStr})` : ''}
+                      <option key={`sched-${m.id}`} value={linkedReport ? linkedReport.id : `create_match:${m.id}`}>
+                        vs {m.opponent}
+                        {dateStr ? ` (${dateStr})` : ''}
                       </option>
                     );
                   })}
@@ -656,7 +566,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
                   </span>
                 </div>
                 <div className="text-[11px] text-emerald-400/80 font-mono mt-0.5">
-                  O relatório de scouting e pontos vulneráveis do adversário está concluído. Clica em "Editar" se precisares de efetuar alterações.
+                  O relatório de scouting e pontos vulneráveis do adversário está concluído. Clica em "Editar" se
+                  precisares de efetuar alterações.
                   {currentScout.scoutingFinalizedAt
                     ? ` • Finalizado a ${new Date(currentScout.scoutingFinalizedAt).toLocaleDateString('pt-PT')} às ${new Date(currentScout.scoutingFinalizedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
                     : ''}
@@ -685,7 +596,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
                   Modo de Edição Ativo (Adversário)
                 </span>
                 <div className="text-[11px] text-amber-400/80 font-mono mt-0.5">
-                  Podes ajustar sistema tático rival, pontos fortes, pontos fracos e marcações. Quando concluíres, clica em "Finalizar".
+                  Podes ajustar sistema tático rival, pontos fortes, pontos fracos e marcações. Quando concluíres, clica
+                  em "Finalizar".
                 </div>
               </div>
             </div>
@@ -737,7 +649,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
                     <span className="text-amber-400 font-bold">Ligado ao Jogo da Agenda:</span>{' '}
                     <span className="text-white font-bold">vs {linkedMatch.opponent}</span>{' '}
                     <span className="text-slate-400">
-                      • {linkedMatch.date.split('-').reverse().join('/')} às {linkedMatch.time || '10:30'}h ({linkedMatch.location === 'casa' ? 'Casa' : 'Fora'} - {formatMatchCompetition(linkedMatch)})
+                      • {linkedMatch.date.split('-').reverse().join('/')} às {linkedMatch.time || '10:30'}h (
+                      {linkedMatch.location === 'casa' ? 'Casa' : 'Fora'} - {formatMatchCompetition(linkedMatch)})
                     </span>
                   </div>
                 </div>

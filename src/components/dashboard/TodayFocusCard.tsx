@@ -1,7 +1,6 @@
 import React from 'react';
 import { UnifiedEvent } from './DashboardNextEvent';
 import { TabType } from '../Navbar';
-import { Badge } from '../ui/Badge';
 import { Match, ScheduledMatch } from '../../types';
 
 interface TodayFocusCardProps {
@@ -56,7 +55,8 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
               vs {activeMatch.opponent || 'Adversário'}
             </h3>
             <p className="text-xs text-slate-300 mt-0.5">
-              {activeMatch.location || 'Campo de Jogo'} • {activeMatch.originalSchedule?.callup?.length || activeMatch.lineup?.length || 0} jogadores convocados
+              {activeMatch.location || 'Campo de Jogo'} •{' '}
+              {activeMatch.originalSchedule?.callup?.length || activeMatch.lineup?.length || 0} jogadores convocados
             </p>
           </div>
         </div>
@@ -230,8 +230,10 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
           </h3>
           {nextUpcoming && (
             <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Próximo: <span className="text-cyan-400 font-bold">{nextUpcoming.kind === 'jogo' ? '⚽ Jogo' : '🏋️ Treino'}</span>{' '}
-              {nextUpcoming.isTomorrow ? 'amanhã' : `a ${new Date(nextUpcoming.date).toLocaleDateString('pt-PT')}`} às {nextUpcoming.time}h {nextUpcoming.opponent ? `(vs ${nextUpcoming.opponent})` : ''}
+              Próximo:{' '}
+              <span className="text-cyan-400 font-bold">{nextUpcoming.kind === 'jogo' ? '⚽ Jogo' : '🏋️ Treino'}</span>{' '}
+              {nextUpcoming.isTomorrow ? 'amanhã' : `a ${new Date(nextUpcoming.date).toLocaleDateString('pt-PT')}`} às{' '}
+              {nextUpcoming.time}h {nextUpcoming.opponent ? `(vs ${nextUpcoming.opponent})` : ''}
             </p>
           )}
         </div>

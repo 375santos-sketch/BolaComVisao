@@ -32,8 +32,6 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
     cornersForAvg,
     cornersForMatchesCount,
     foulsCommittedAvg,
-    foulsCommittedMatchesCount,
-    cardsPerMatchAvg,
     yellowCardsTotal,
     redCardsTotal
   } = analysis;
@@ -68,9 +66,7 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
 
             <div className="bg-slate-900/80 border border-cyan-500/20 rounded-2xl p-2.5">
               <span className="text-[10px] text-slate-400 font-bold block uppercase">📊 Média / Jogo</span>
-              <span className="text-xl font-['Chakra_Petch'] font-black text-white">
-                {filterMetrics.avgPerMatch}
-              </span>
+              <span className="text-xl font-['Chakra_Petch'] font-black text-white">{filterMetrics.avgPerMatch}</span>
             </div>
 
             <div className="bg-slate-900/80 border border-cyan-500/20 rounded-2xl p-2.5">
@@ -99,7 +95,8 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
           <div className="flex items-center gap-2">
             <span>ℹ️</span>
             <span>
-              Existem <strong className="text-white font-bold">{unclassifiedGoalsCount} golos</strong> sem tipo específico atribuído (classificados como "Outro / Não categorizado").
+              Existem <strong className="text-white font-bold">{unclassifiedGoalsCount} golos</strong> sem tipo
+              específico atribuído (classificados como "Outro / Não categorizado").
             </span>
           </div>
         </div>
@@ -156,13 +153,15 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
             <div className="flex justify-between">
               <span>Média / Jogo:</span>
               <span>
-                <strong className="text-emerald-300">{avgGoalsScored}</strong> vs <strong className="text-rose-300">{avgGoalsConceded}</strong>
+                <strong className="text-emerald-300">{avgGoalsScored}</strong> vs{' '}
+                <strong className="text-rose-300">{avgGoalsConceded}</strong>
               </span>
             </div>
             <div className="flex justify-between text-[11px] text-slate-400">
               <span>⏱️ Minuto Médio:</span>
               <span>
-                <strong className="text-emerald-400">{avgMinuteScored !== null ? `${avgMinuteScored}'` : '—'}</strong> vs{' '}
+                <strong className="text-emerald-400">{avgMinuteScored !== null ? `${avgMinuteScored}'` : '—'}</strong>{' '}
+                vs{' '}
                 <strong className="text-rose-400">{avgMinuteConceded !== null ? `${avgMinuteConceded}'` : '—'}</strong>
               </span>
             </div>
@@ -185,7 +184,9 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
             <div className="text-right">
               <span className="text-[10px] text-slate-400 block font-bold">Sofrido</span>
               <span className="text-2xl font-['Chakra_Petch'] font-black text-rose-400">
-                {firstGoalMetrics.firstGoalConcededAvgMin !== null ? `${firstGoalMetrics.firstGoalConcededAvgMin}'` : '—'}
+                {firstGoalMetrics.firstGoalConcededAvgMin !== null
+                  ? `${firstGoalMetrics.firstGoalConcededAvgMin}'`
+                  : '—'}
               </span>
             </div>
           </div>
@@ -193,7 +194,8 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
           <div className="mt-3 text-[11px] text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2">
             <span>Ao marcar 1.º:</span>
             <span className="text-cyan-300 font-bold">
-              {firstGoalMetrics.scoredFirstWinRate}% vitórias ({firstGoalMetrics.scoredFirstWinCount}/{firstGoalMetrics.scoredFirstCount})
+              {firstGoalMetrics.scoredFirstWinRate}% vitórias ({firstGoalMetrics.scoredFirstWinCount}/
+              {firstGoalMetrics.scoredFirstCount})
             </span>
           </div>
         </div>
@@ -251,7 +253,8 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
                   Janela de Maior Eficácia Ofensiva
                 </div>
                 <div className="text-sm font-bold text-white">
-                  Marcamos mais: <span className="text-emerald-300 font-black">{timingWindows.mostScoredPeriod.label}</span> —{' '}
+                  Marcamos mais:{' '}
+                  <span className="text-emerald-300 font-black">{timingWindows.mostScoredPeriod.label}</span> —{' '}
                   <strong className="text-emerald-400">{timingWindows.mostScoredPeriod.count} golos</strong>
                 </div>
               </div>
@@ -266,7 +269,8 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
                   Janela de Maior Risco Defensivo
                 </div>
                 <div className="text-sm font-bold text-white">
-                  Sofremos mais: <span className="text-rose-300 font-black">{timingWindows.mostConcededPeriod.label}</span> —{' '}
+                  Sofremos mais:{' '}
+                  <span className="text-rose-300 font-black">{timingWindows.mostConcededPeriod.label}</span> —{' '}
                   <strong className="text-rose-400">{timingWindows.mostConcededPeriod.count} golos</strong>
                 </div>
               </div>

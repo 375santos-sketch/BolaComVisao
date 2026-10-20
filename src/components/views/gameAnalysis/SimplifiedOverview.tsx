@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import {
-  AggregatedAnalysis,
-  StandardGoalType,
-  AnalysisFilters as IAnalysisFilters
-} from '../../../lib/gameAnalysis';
+import { AggregatedAnalysis, StandardGoalType, AnalysisFilters as IAnalysisFilters } from '../../../lib/gameAnalysis';
 import { InsightsSection } from './InsightsSection';
 import { Player } from '../../../types';
 
@@ -69,18 +65,19 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
   // Half time breakdown
   const firstHalfScored = timePeriodList.filter((p) => p.half === 1).reduce((acc, p) => acc + p.scored, 0);
   const firstHalfConceded = timePeriodList.filter((p) => p.half === 1).reduce((acc, p) => acc + p.conceded, 0);
-  const secondHalfScored = timePeriodList.filter((p) => p.half === 2 || p.half === 'extra').reduce((acc, p) => acc + p.scored, 0);
-  const secondHalfConceded = timePeriodList.filter((p) => p.half === 2 || p.half === 'extra').reduce((acc, p) => acc + p.conceded, 0);
+  const secondHalfScored = timePeriodList
+    .filter((p) => p.half === 2 || p.half === 'extra')
+    .reduce((acc, p) => acc + p.scored, 0);
+  const secondHalfConceded = timePeriodList
+    .filter((p) => p.half === 2 || p.half === 'extra')
+    .reduce((acc, p) => acc + p.conceded, 0);
 
   // Top scored and conceded types
   const topScoredTypes = [...goalTypes].filter((gt) => gt.count > 0).sort((a, b) => b.count - a.count);
   const topConcededTypes = [...concededGoalTypes].filter((gt) => gt.count > 0).sort((a, b) => b.count - a.count);
 
   // Max for period bars
-  const maxPeriodVal = Math.max(
-    ...timePeriodList.map((p) => Math.max(p.scored, p.conceded)),
-    1
-  );
+  const maxPeriodVal = Math.max(...timePeriodList.map((p) => Math.max(p.scored, p.conceded)), 1);
 
   return (
     <div className="space-y-5 animate-fadeIn max-w-4xl mx-auto" id="simplified-iphone-overview">
@@ -400,10 +397,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
             topConcededTypes.map((gt) => {
               const isSetPiece = gt.category === 'bola_parada';
               return (
-                <div
-                  key={gt.type}
-                  className="bg-slate-950/70 p-2.5 rounded-2xl border border-slate-800/70"
-                >
+                <div key={gt.type} className="bg-slate-950/70 p-2.5 rounded-2xl border border-slate-800/70">
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${isSetPiece ? 'bg-amber-400' : 'bg-rose-400'}`} />
@@ -521,9 +515,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                 key={p.key}
                 className="bg-slate-950/50 p-2 rounded-xl border border-slate-800/60 flex items-center gap-2.5 text-xs"
               >
-                <span className="w-16 shrink-0 font-mono font-bold text-slate-300 text-[11px]">
-                  {p.label}
-                </span>
+                <span className="w-16 shrink-0 font-mono font-bold text-slate-300 text-[11px]">{p.label}</span>
 
                 <div className="flex-1 space-y-1">
                   {/* Scored bar */}
@@ -534,9 +526,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                         style={{ width: `${scoredWidth}%` }}
                       />
                     </div>
-                    <span className="w-5 text-right font-mono font-bold text-emerald-400 text-[11px]">
-                      {p.scored}
-                    </span>
+                    <span className="w-5 text-right font-mono font-bold text-emerald-400 text-[11px]">{p.scored}</span>
                   </div>
 
                   {/* Conceded bar */}
@@ -547,9 +537,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                         style={{ width: `${concededWidth}%` }}
                       />
                     </div>
-                    <span className="w-5 text-right font-mono font-bold text-rose-400 text-[11px]">
-                      {p.conceded}
-                    </span>
+                    <span className="w-5 text-right font-mono font-bold text-rose-400 text-[11px]">{p.conceded}</span>
                   </div>
                 </div>
               </div>

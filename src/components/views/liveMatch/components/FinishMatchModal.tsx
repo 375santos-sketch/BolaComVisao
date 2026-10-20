@@ -37,9 +37,7 @@ export const FinishMatchModal: React.FC<FinishMatchModalProps> = ({
         </div>
 
         <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-center">
-          <div className="text-xs text-slate-400 mb-1 font-semibold uppercase tracking-wider">
-            Resultado Final
-          </div>
+          <div className="text-xs text-slate-400 mb-1 font-semibold uppercase tracking-wider">Resultado Final</div>
           <div className="flex items-center justify-center gap-3 text-2xl font-black text-white my-1">
             <span>{myClubName || 'A Nossa Equipa'}</span>
             <span className="text-emerald-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800 font-mono">

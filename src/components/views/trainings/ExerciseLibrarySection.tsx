@@ -95,10 +95,7 @@ const PDF_CATEGORIES: {
   }
 ];
 
-export const ExerciseLibrarySection: React.FC<ExerciseLibrarySectionProps> = ({
-  onShowToast,
-  onShowConfirm
-}) => {
+export const ExerciseLibrarySection: React.FC<ExerciseLibrarySectionProps> = ({ onShowToast, onShowConfirm }) => {
   const [documents, setDocuments] = useState<PDFDocumentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<PDFCategory | 'all'>('all');
@@ -154,22 +151,52 @@ export const ExerciseLibrarySection: React.FC<ExerciseLibrarySectionProps> = ({
   // Quick auto-categorize helper based on filename
   const autoDetectCategory = (filename: string): PDFCategory => {
     const fn = filename.toLowerCase();
-    if (fn.includes('tat') || fn.includes('press') || fn.includes('bloco') || fn.includes('estrategia') || fn.includes('linha')) {
+    if (
+      fn.includes('tat') ||
+      fn.includes('press') ||
+      fn.includes('bloco') ||
+      fn.includes('estrategia') ||
+      fn.includes('linha')
+    ) {
       return 'tatica';
     }
-    if (fn.includes('tecn') || fn.includes('passe') || fn.includes('controlo') || fn.includes('condu') || fn.includes('recep')) {
+    if (
+      fn.includes('tecn') ||
+      fn.includes('passe') ||
+      fn.includes('controlo') ||
+      fn.includes('condu') ||
+      fn.includes('recep')
+    ) {
       return 'tecnica';
     }
     if (fn.includes('aquec') || fn.includes('rondo') || fn.includes('warm') || fn.includes('ativacao')) {
       return 'aquecimento';
     }
-    if (fn.includes('jogo') || fn.includes('reduzid') || fn.includes('posse') || fn.includes('mini') || fn.includes('gkr')) {
+    if (
+      fn.includes('jogo') ||
+      fn.includes('reduzid') ||
+      fn.includes('posse') ||
+      fn.includes('mini') ||
+      fn.includes('gkr')
+    ) {
       return 'jogo';
     }
-    if (fn.includes('canto') || fn.includes('livre') || fn.includes('parada') || fn.includes('penalti') || fn.includes('barreira')) {
+    if (
+      fn.includes('canto') ||
+      fn.includes('livre') ||
+      fn.includes('parada') ||
+      fn.includes('penalti') ||
+      fn.includes('barreira')
+    ) {
       return 'bolas_paradas';
     }
-    if (fn.includes('fisic') || fn.includes('velocid') || fn.includes('forca') || fn.includes('resisten') || fn.includes('agil')) {
+    if (
+      fn.includes('fisic') ||
+      fn.includes('velocid') ||
+      fn.includes('forca') ||
+      fn.includes('resisten') ||
+      fn.includes('agil')
+    ) {
       return 'fisico';
     }
     return 'geral';
@@ -447,10 +474,13 @@ export const ExerciseLibrarySection: React.FC<ExerciseLibrarySectionProps> = ({
         </div>
         <div>
           <span className="text-xs sm:text-sm font-['Chakra_Petch'] font-bold text-white uppercase tracking-wider block">
-            {isDragging ? 'Larga os ficheiros PDF aqui para guardar!' : 'Arrasta e larga ficheiros PDF aqui ou clica para importar'}
+            {isDragging
+              ? 'Larga os ficheiros PDF aqui para guardar!'
+              : 'Arrasta e larga ficheiros PDF aqui ou clica para importar'}
           </span>
           <span className="text-[11px] font-mono text-slate-400 block mt-0.5">
-            Suporta múltiplos ficheiros simultâneos (.pdf). Os documentos ficam gravados de forma segura na tua base de dados.
+            Suporta múltiplos ficheiros simultâneos (.pdf). Os documentos ficam gravados de forma segura na tua base de
+            dados.
           </span>
         </div>
       </div>
@@ -546,9 +576,7 @@ export const ExerciseLibrarySection: React.FC<ExerciseLibrarySectionProps> = ({
 
       {/* 4. DOCUMENTS LIST / GRID */}
       {isLoading ? (
-        <div className="py-16 text-center text-slate-400 font-mono text-xs">
-          A carregar base de dados de PDFs... ⏳
-        </div>
+        <div className="py-16 text-center text-slate-400 font-mono text-xs">A carregar base de dados de PDFs... ⏳</div>
       ) : filteredDocuments.length === 0 ? (
         <div className="py-16 text-center bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl p-8 space-y-3">
           <div className="text-4xl">📚</div>
@@ -856,9 +884,7 @@ export const ExerciseLibrarySection: React.FC<ExerciseLibrarySectionProps> = ({
 
               {/* Tags */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono uppercase text-slate-400 block">
-                  🏷️ Tags para Pesquisa
-                </label>
+                <label className="text-[10px] font-mono uppercase text-slate-400 block">🏷️ Tags para Pesquisa</label>
                 <div className="flex gap-2">
                   <input
                     type="text"

@@ -9,12 +9,7 @@ interface CardEventsListProps {
   onDeleteCard: (id: string) => void;
 }
 
-export const CardEventsList: React.FC<CardEventsListProps> = ({
-  cards,
-  roster,
-  onEditCard,
-  onDeleteCard
-}) => {
+export const CardEventsList: React.FC<CardEventsListProps> = ({ cards, roster, onEditCard, onDeleteCard }) => {
   const getPlayerName = (id: string) => {
     const p = roster.find((x) => x.id === id);
     return p ? playerLabel(p, 'Sem nome') : '—';
@@ -52,7 +47,9 @@ export const CardEventsList: React.FC<CardEventsListProps> = ({
                   <span className="font-bold text-white text-sm">{getPlayerName(c.playerId)}</span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded font-semibold ${
-                      isRed ? 'bg-red-950 text-red-300 border border-red-800' : 'bg-amber-950 text-amber-300 border border-amber-800'
+                      isRed
+                        ? 'bg-red-950 text-red-300 border border-red-800'
+                        : 'bg-amber-950 text-amber-300 border border-amber-800'
                     }`}
                   >
                     Cartão {c.color}
@@ -63,9 +60,7 @@ export const CardEventsList: React.FC<CardEventsListProps> = ({
                     </span>
                   )}
                 </div>
-                {c.period && (
-                  <div className="text-[11px] text-slate-400 mt-0.5 font-medium">{c.period}</div>
-                )}
+                {c.period && <div className="text-[11px] text-slate-400 mt-0.5 font-medium">{c.period}</div>}
               </div>
             </div>
 

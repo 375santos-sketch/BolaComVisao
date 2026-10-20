@@ -14,4 +14,3 @@ export * from './OutcomeComparison';
 export * from './SetPieceDetailedSection';
 export * from './CoachReportModal';
 export * from './AskDataSection';
-

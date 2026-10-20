@@ -41,18 +41,22 @@ export const SubstitutionEventsList: React.FC<SubstitutionEventsListProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-red-400 font-medium">Sai: <strong>{getPlayerName(s.outId)}</strong></span>
+                <span className="text-xs text-red-400 font-medium">
+                  Sai: <strong>{getPlayerName(s.outId)}</strong>
+                </span>
                 <span className="text-slate-500">→</span>
-                <span className="text-xs text-emerald-400 font-medium">Entra: <strong>{getPlayerName(s.inId)}</strong></span>
+                <span className="text-xs text-emerald-400 font-medium">
+                  Entra: <strong>{getPlayerName(s.inId)}</strong>
+                </span>
                 {s.minute && (
                   <span className="text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono font-medium">
-                    {String(s.minute).endsWith("'") || String(s.minute).toUpperCase() === 'INT' ? s.minute : `${s.minute}'`}
+                    {String(s.minute).endsWith("'") || String(s.minute).toUpperCase() === 'INT'
+                      ? s.minute
+                      : `${s.minute}'`}
                   </span>
                 )}
               </div>
-              {s.period && (
-                <div className="text-[11px] text-slate-400 mt-0.5 font-medium">{s.period}</div>
-              )}
+              {s.period && <div className="text-[11px] text-slate-400 mt-0.5 font-medium">{s.period}</div>}
             </div>
           </div>
 

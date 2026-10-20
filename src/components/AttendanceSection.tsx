@@ -43,17 +43,12 @@ const CATEGORY_BADGES: Record<
   }
 };
 
-export const AttendanceSection: React.FC<AttendanceSectionProps> = ({
-  state,
-  onNavigate,
-  onShowToast,
-  onSelectPlayer
-}) => {
+export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onSelectPlayer }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<AttendancePeriod>('30d');
   const [categoryFilter, setCategoryFilter] = useState<'todas' | AttendanceCategory>('todas');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'taxa' | 'nome' | 'presencas'>('taxa');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortBy] = useState<'taxa' | 'nome' | 'presencas'>('taxa');
+  const [sortDirection] = useState<'asc' | 'desc'>('asc');
 
   const attendanceData = calculateAttendanceMetrics(state, selectedPeriod);
 

@@ -17,7 +17,10 @@ export const OutcomeComparison: React.FC<OutcomeComparisonProps> = ({
   if (totalMatches === 0) return null;
 
   return (
-    <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5" id="outcome-comparison-section">
+    <section
+      className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5"
+      id="outcome-comparison-section"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800">
         <div>
           <h3 className="text-base sm:text-lg font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -97,7 +100,8 @@ export const OutcomeComparison: React.FC<OutcomeComparisonProps> = ({
 
           {winsProfile.matchCount > 0 && (
             <div className="mt-4 pt-3 border-t border-emerald-500/20 text-[11px] text-slate-300 font-medium">
-              💡 Padrão de vitória: Volume ofensivo elevado ({winsProfile.avgGoalsScored} golos/jogo) e entrada autoritária a inaugurar o marcador em {winsProfile.scoredFirstRate}% dos jogos.
+              💡 Padrão de vitória: Volume ofensivo elevado ({winsProfile.avgGoalsScored} golos/jogo) e entrada
+              autoritária a inaugurar o marcador em {winsProfile.scoredFirstRate}% dos jogos.
             </div>
           )}
         </div>
@@ -164,7 +168,8 @@ export const OutcomeComparison: React.FC<OutcomeComparisonProps> = ({
 
           {drawsProfile.matchCount > 0 && (
             <div className="mt-4 pt-3 border-t border-amber-500/20 text-[11px] text-slate-300 font-medium">
-              💡 Padrão de empate: Partidas de alta disputa com equilíbrio de golos ({drawsProfile.avgGoalsScored} vs {drawsProfile.avgGoalsConceded}).
+              💡 Padrão de empate: Partidas de alta disputa com equilíbrio de golos ({drawsProfile.avgGoalsScored} vs{' '}
+              {drawsProfile.avgGoalsConceded}).
             </div>
           )}
         </div>
@@ -231,7 +236,9 @@ export const OutcomeComparison: React.FC<OutcomeComparisonProps> = ({
 
           {lossesProfile.matchCount > 0 && (
             <div className="mt-4 pt-3 border-t border-rose-500/20 text-[11px] text-slate-300 font-medium">
-              💡 Padrão de derrota identificado: Em {lossesProfile.concededFirstCount} das {lossesProfile.matchCount} derrotas a equipa sofreu primeiro, e em {lossesProfile.concededAfter60Count} sofreu golos na reta final da partida.
+              💡 Padrão de derrota identificado: Em {lossesProfile.concededFirstCount} das {lossesProfile.matchCount}{' '}
+              derrotas a equipa sofreu primeiro, e em {lossesProfile.concededAfter60Count} sofreu golos na reta final da
+              partida.
             </div>
           )}
         </div>

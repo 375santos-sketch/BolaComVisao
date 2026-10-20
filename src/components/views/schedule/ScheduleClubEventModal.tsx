@@ -196,9 +196,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
 
           {/* Status Switcher (Agendado vs Concluído) */}
           <div>
-            <label className="text-xs font-mono text-slate-300 block mb-1.5">
-              Estado do Compromisso
-            </label>
+            <label className="text-xs font-mono text-slate-300 block mb-1.5">Estado do Compromisso</label>
             <div className="inline-flex rounded-xl p-1 bg-slate-950 border border-slate-800 w-full sm:w-auto gap-1">
               <button
                 type="button"
@@ -254,13 +252,10 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                     : clubEventForm.type === 'estagio'
                       ? 'estágio'
                       : 'reunião';
-                onShowConfirm(
-                  `Tens a certeza que desejas eliminar esta ${typeStr} cancelada da agenda?`,
-                  () => {
-                    handleDeleteClubEvent(editingClubEventId);
-                    setShowClubEventModal(false);
-                  }
-                );
+                onShowConfirm(`Tens a certeza que desejas eliminar esta ${typeStr} cancelada da agenda?`, () => {
+                  handleDeleteClubEvent(editingClubEventId);
+                  setShowClubEventModal(false);
+                });
               }}
               className="px-4 py-2.5 min-h-[44px] rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/60 text-red-300 hover:text-white text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1.5 active:scale-95 shadow-sm"
               title="Eliminar evento cancelado da agenda"

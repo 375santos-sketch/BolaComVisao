@@ -6,7 +6,6 @@ import {
   computeAggregatedAnalysis,
   AnalysisFilters
 } from '../lib/gameAnalysisUtils';
-import { Match } from '../types';
 
 describe('gameAnalysisUtils', () => {
   describe('Minute parsing & formatting (incl. 45+2 and 90+3)', () => {
@@ -104,9 +103,7 @@ describe('gameAnalysisUtils', () => {
           { minute: 30, player: 'p3', type: 'yellow' },
           { minute: 70, player: 'p4', type: 'red' }
         ],
-        subs: [
-          { minute: 60, playerOut: 'p1', playerIn: 'p5' }
-        ],
+        subs: [{ minute: 60, playerOut: 'p1', playerIn: 'p5' }],
         cornersFor: 7,
         cornersAgainst: 3,
         foulsCommitted: 10,
@@ -120,12 +117,8 @@ describe('gameAnalysisUtils', () => {
         type: 'campeonato',
         location: 'fora',
         finished: true,
-        goals: [
-          { minute: 20, player: null, type: 'conceded', goalType: 'Penálti' }
-        ],
-        cards: [
-          { minute: 40, player: 'p5', type: 'yellow' }
-        ],
+        goals: [{ minute: 20, player: null, type: 'conceded', goalType: 'Penálti' }],
+        cards: [{ minute: 40, player: 'p5', type: 'yellow' }],
         subs: [],
         cornersFor: 4,
         cornersAgainst: 6,
@@ -140,9 +133,7 @@ describe('gameAnalysisUtils', () => {
         type: 'torneio',
         location: 'casa',
         finished: true,
-        goals: [
-          { minute: 10, player: 'p2', type: 'scored', goalType: 'Bola jogada' }
-        ],
+        goals: [{ minute: 10, player: 'p2', type: 'scored', goalType: 'Bola jogada' }],
         cards: [],
         subs: [],
         // Missing corners and fouls in this match to test graceful null distinction

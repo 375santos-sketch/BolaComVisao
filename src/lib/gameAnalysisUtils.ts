@@ -7,14 +7,7 @@ import { Match } from '../types';
 import {
   AnalysisFilters,
   AggregatedAnalysis,
-  TimePeriodKey,
-  TimePeriodStat,
-  GoalTypeStat,
-  StandardGoalType,
   computeGameAnalysis,
-  STANDARD_GOAL_TYPES,
-  EVENT_TYPE_OPTIONS,
-  normalizeGoalType,
   parseMinuteToNumber,
   formatDisplayMinute,
   resolveAbsoluteMinute
@@ -89,4 +82,3 @@ export function classifyTimePeriod(
   if (abs <= 60) return '56-60';
   return '60+';
 }
-

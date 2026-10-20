@@ -31,8 +31,6 @@ const ConcededGoalModalInner: React.FC<ConcededGoalModalProps> = ({
   concededMinute,
   setConcededMinute,
   suggestedMinute,
-  concededPeriod,
-  setConcededPeriod,
   concededGoalType,
   setConcededGoalType,
   concededNotes,
@@ -87,9 +85,7 @@ const ConcededGoalModalInner: React.FC<ConcededGoalModalProps> = ({
         {/* Minuto */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Minuto *
-            </label>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Minuto *</label>
             {showSuggestedLabel && (
               <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
                 <span>🕒</span>
@@ -107,9 +103,7 @@ const ConcededGoalModalInner: React.FC<ConcededGoalModalProps> = ({
             }}
             className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-red-500"
           />
-          {!concededMinute.trim() && (
-            <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>
-          )}
+          {!concededMinute.trim() && <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>}
         </div>
 
         {/* Observações / Notas do Lance */}

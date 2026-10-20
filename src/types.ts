@@ -23,6 +23,8 @@ export interface Player {
   active: boolean;
   notes?: string;
   coachNotes?: string;
+  nickname?: string;
+  captain?: boolean;
 }
 
 export type GoalType =
@@ -37,7 +39,8 @@ export type GoalType =
   | 'Boa jogada'
   | 'Bola jogada'
   | 'Outro';
-export type MatchPeriod = '1.ª parte' | '2.ª parte' | 'prolongamento' | 'intervalo';
+// 'Intervalo' (capitalised) is the value persisted on halftime events; keep both spellings.
+export type MatchPeriod = '1.ª parte' | '2.ª parte' | 'prolongamento' | 'intervalo' | 'Intervalo';
 
 export interface GoalEvent {
   id: string;
@@ -880,6 +883,9 @@ export interface AppState {
   clubEvents?: ClubEvent[];
   exerciseLibrary?: Exercise[];
   subscription?: ClubSubscription;
+  updatedAt?: number;
+  lastLocalMutationAt?: number;
+  version?: number;
 }
 
 export type SubscriptionTierId = 'free_trial' | 'coach_pro' | 'club_standard' | 'academy_elite';
@@ -957,5 +963,3 @@ export interface TeamDatabaseRow {
   updatedAt: number;
   updatedBy: string;
 }
-
-

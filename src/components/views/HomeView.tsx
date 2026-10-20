@@ -2,14 +2,10 @@ import React from 'react';
 import { AppState, ScheduledMatch, Training, UserAccount, ClubEvent } from '../../types';
 import { TabType } from '../Navbar';
 import { getAllBirthdays } from '../../lib/birthdayUtils';
-import {
-  detectDashboardContext,
-  generateSmartAlerts,
-  generateSmartRecommendations
-} from '../../lib/intelligenceEngine';
+import { generateSmartAlerts, generateSmartRecommendations } from '../../lib/intelligenceEngine';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { DashboardBirthdays } from '../dashboard/DashboardBirthdays';
-import { DashboardNextEvent, UnifiedEvent } from '../dashboard/DashboardNextEvent';
+import { UnifiedEvent } from '../dashboard/DashboardNextEvent';
 import { TodayFocusCard } from '../dashboard/TodayFocusCard';
 import { CoachExecutiveHub } from '../dashboard/CoachExecutiveHub';
 import { DashboardStatsGrid } from '../dashboard/DashboardStatsGrid';
@@ -161,7 +157,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   });
 
   unifiedEvents.sort((a, b) => a.rawDate.getTime() - b.rawDate.getTime());
-  const nextEvent = unifiedEvents.length > 0 ? unifiedEvents[0] : null;
 
   const nextMatch =
     scheduledMatches.length > 0 ? scheduledMatches.find((m) => m.date >= todayStr) || scheduledMatches[0] : null;
@@ -236,13 +231,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="font-bold text-white font-['Chakra_Petch'] uppercase text-xs sm:text-sm truncate flex items-center gap-1.5">
                 <span>Biblioteca</span>
                 <Badge variant="cyan" size="xs">
-                  {state.exerciseLibrary && state.exerciseLibrary.length > 0 ? state.exerciseLibrary.length : 10} Modelos
+                  {state.exerciseLibrary && state.exerciseLibrary.length > 0 ? state.exerciseLibrary.length : 10}{' '}
+                  Modelos
                 </Badge>
               </div>
               <div className="text-[11px] text-cyan-200/70 truncate">Dinâmicas, Rondos e Tática</div>
             </div>
           </div>
-          <span className="text-cyan-400 font-bold text-xs group-hover:translate-x-1 transition-transform shrink-0">➔</span>
+          <span className="text-cyan-400 font-bold text-xs group-hover:translate-x-1 transition-transform shrink-0">
+            ➔
+          </span>
         </div>
 
         <div
@@ -264,7 +262,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="text-[11px] text-amber-200/70 truncate">Planos e Assiduidade</div>
             </div>
           </div>
-          <span className="text-amber-400 font-bold text-xs group-hover:translate-x-1 transition-transform shrink-0">➔</span>
+          <span className="text-amber-400 font-bold text-xs group-hover:translate-x-1 transition-transform shrink-0">
+            ➔
+          </span>
         </div>
 
         <div
@@ -286,7 +286,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="text-[11px] text-purple-200/70 truncate">Logística e Lista de Jogo</div>
             </div>
           </div>
-          <span className="text-purple-400 font-bold text-xs group-hover:translate-x-1 transition-transform shrink-0">➔</span>
+          <span className="text-purple-400 font-bold text-xs group-hover:translate-x-1 transition-transform shrink-0">
+            ➔
+          </span>
         </div>
       </div>
 
@@ -314,7 +316,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
               unifiedEvents.slice(0, 4).map((evt) => (
                 <div
                   key={evt.id}
-                  onClick={() => onNavigate(evt.kind === 'jogo' ? 'convocatoria' : evt.kind === 'treino' ? 'treinos' : 'calendario')}
+                  onClick={() =>
+                    onNavigate(evt.kind === 'jogo' ? 'convocatoria' : evt.kind === 'treino' ? 'treinos' : 'calendario')
+                  }
                   className="py-3 px-2 hover:bg-slate-800/50 rounded-xl transition-colors cursor-pointer flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3 min-w-0">

@@ -13,7 +13,13 @@ interface UseSquadRosterProps {
   initialTab?: SquadTab;
 }
 
-export function useSquadRoster({ state, onUpdateState, onShowConfirm, onShowToast, initialTab = 'jogadores' }: UseSquadRosterProps) {
+export function useSquadRoster({
+  state,
+  onUpdateState,
+  onShowConfirm,
+  onShowToast,
+  initialTab = 'jogadores'
+}: UseSquadRosterProps) {
   // Submenu Tab
   const [activeSquadTab, setActiveSquadTab] = useState<SquadTab>(initialTab);
 

@@ -222,11 +222,7 @@ export async function generatePreMatchReportPDF(report: OpponentScouting, state:
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(255, 255, 255);
-  doc.text(
-    `RELVADO TÁTICO (FUT 7 — ${report.ourFormation || report.formation || '2-3-1'})`,
-    17,
-    dashY + 3.6
-  );
+  doc.text(`RELVADO TÁTICO (FUT 7 — ${report.ourFormation || report.formation || '2-3-1'})`, 17, dashY + 3.6);
 
   const fieldX = 15;
   const fieldY = dashY + 8;
@@ -896,5 +892,7 @@ export async function generateOpponentScoutingPDF(scout: OpponentScouting, state
   addBolaComVisaoPageFooters(doc);
 
   const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '_');
-  doc.save(`Scouting_${sanitize(myClub)}_vs_${sanitize(scout.opponentName)}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(
+    `Scouting_${sanitize(myClub)}_vs_${sanitize(scout.opponentName)}_${new Date().toISOString().slice(0, 10)}.pdf`
+  );
 }

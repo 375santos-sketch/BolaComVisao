@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppState, OpponentScouting, ScheduledMatch } from '../../types';
 import { TabType } from '../Navbar';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
+import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';

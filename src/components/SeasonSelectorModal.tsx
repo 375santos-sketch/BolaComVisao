@@ -19,8 +19,8 @@ export const SeasonSelectorModal: React.FC<SeasonSelectorModalProps> = ({
   onShowToast
 }) => {
   const [newSeasonName, setNewSeasonName] = useState<string>('');
-  const [newSeasonStart, setNewSeasonStart] = useState<string>('');
-  const [newSeasonEnd, setNewSeasonEnd] = useState<string>('');
+  const [newSeasonStart] = useState<string>('');
+  const [newSeasonEnd] = useState<string>('');
 
   const currentSeasonName = state.season || '2025/2026';
   const seasons: ClubSeason[] =

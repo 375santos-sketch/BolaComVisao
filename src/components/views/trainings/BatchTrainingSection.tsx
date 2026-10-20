@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Training } from '../../../types';
 import { uid } from '../../../lib/utils';
+import { WEEKDAY_CONFIG, QUICK_TIMES, calculateBatchTrainings } from './batchTrainingUtils';
 
 export interface BatchTrainingSettings {
   startDate: string;
@@ -26,78 +27,6 @@ export interface GeneratedTrainingPreview {
   location: string;
   type: string;
   durationMinutes: number;
-}
-
-export const WEEKDAY_CONFIG = [
-  { day: 1, short: 'Seg', name: 'Segunda-feira', icon: '1️⃣' },
-  { day: 2, short: 'Ter', name: 'Terça-feira', icon: '2️⃣' },
-  { day: 3, short: 'Qua', name: 'Quarta-feira', icon: '3️⃣' },
-  { day: 4, short: 'Qui', name: 'Quinta-feira', icon: '4️⃣' },
-  { day: 5, short: 'Sex', name: 'Sexta-feira', icon: '5️⃣' },
-  { day: 6, short: 'Sáb', name: 'Sábado', icon: '6️⃣' },
-  { day: 0, short: 'Dom', name: 'Domingo', icon: '7️⃣' }
-];
-
-export const QUICK_TIMES = ['17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'];
-
-export function calculateBatchTrainings(settings: {
-  startDate: string;
-  endDate: string;
-  selectedDays: number[];
-  defaultTime: string;
-  useCustomDayTimes: boolean;
-  dayTimes: Record<number, string>;
-  location?: string;
-  type?: string;
-  durationMinutes?: number;
-}): GeneratedTrainingPreview[] {
-  if (!settings.startDate || !settings.endDate || settings.selectedDays.length === 0) {
-    return [];
-  }
-
-  const [sY, sM, sD] = settings.startDate.split('-').map(Number);
-  const [eY, eM, eD] = settings.endDate.split('-').map(Number);
-  if (!sY || !sM || !sD || !eY || !eM || !eD) return [];
-
-  const start = new Date(sY, sM - 1, sD);
-  const end = new Date(eY, eM - 1, eD);
-
-  if (start > end) return [];
-
-  const DAY_NAMES = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-  const DAY_SHORTS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-  const results: GeneratedTrainingPreview[] = [];
-  const current = new Date(start);
-
-  while (current <= end) {
-    const dow = current.getDay();
-    if (settings.selectedDays.includes(dow)) {
-      const y = current.getFullYear();
-      const m = String(current.getMonth() + 1).padStart(2, '0');
-      const d = String(current.getDate()).padStart(2, '0');
-      const dateStr = `${y}-${m}-${d}`;
-      const time =
-        settings.useCustomDayTimes && settings.dayTimes[dow]
-          ? settings.dayTimes[dow]
-          : settings.defaultTime || '18:30';
-
-      results.push({
-        date: dateStr,
-        formattedDate: `${d}/${m}/${y}`,
-        dayOfWeek: dow,
-        dayName: DAY_NAMES[dow],
-        dayShort: DAY_SHORTS[dow],
-        time,
-        location: settings.location || 'Campo Sintético',
-        type: settings.type || '⚡ Tático',
-        durationMinutes: settings.durationMinutes || 90
-      });
-    }
-    current.setDate(current.getDate() + 1);
-  }
-
-  return results;
 }
 
 interface BatchTrainingSectionProps {
@@ -164,11 +93,13 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
       if (selectedDays.length === 1) return; // Keep at least one
       setSelectedDays(selectedDays.filter((d) => d !== day));
     } else {
-      setSelectedDays([...selectedDays, day].sort((a, b) => {
-        const orderA = a === 0 ? 7 : a;
-        const orderB = b === 0 ? 7 : b;
-        return orderA - orderB;
-      }));
+      setSelectedDays(
+        [...selectedDays, day].sort((a, b) => {
+          const orderA = a === 0 ? 7 : a;
+          const orderB = b === 0 ? 7 : b;
+          return orderA - orderB;
+        })
+      );
     }
   };
 
@@ -250,7 +181,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               Adicionar Múltiplos Treinos por Período
             </h3>
             <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
-              Define o intervalo de datas, escolhe os dias da semana e personaliza os horários para gerar toda a grelha de treinos automaticamente.
+              Define o intervalo de datas, escolhe os dias da semana e personaliza os horários para gerar toda a grelha
+              de treinos automaticamente.
             </p>
           </div>
         </div>
@@ -362,12 +294,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
                 }`}
               >
                 <span className="text-xs font-['Chakra_Petch'] uppercase tracking-wider">{d.short}</span>
-                <span className="text-[10px] font-mono opacity-90 truncate max-w-full">
-                  {d.name.split('-')[0]}
-                </span>
-                <span className="text-[11px] font-mono mt-0.5 font-bold">
-                  {isSelected ? '✓ Ativo' : '—'}
-                </span>
+                <span className="text-[10px] font-mono opacity-90 truncate max-w-full">{d.name.split('-')[0]}</span>
+                <span className="text-[11px] font-mono mt-0.5 font-bold">{isSelected ? '✓ Ativo' : '—'}</span>
               </button>
             );
           })}
@@ -387,9 +315,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               type="button"
               onClick={() => setUseCustomDayTimes(false)}
               className={`px-3 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
-                !useCustomDayTimes
-                  ? 'bg-cyan-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                !useCustomDayTimes ? 'bg-cyan-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Horário Único
@@ -398,9 +324,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               type="button"
               onClick={() => setUseCustomDayTimes(true)}
               className={`px-3 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
-                useCustomDayTimes
-                  ? 'bg-cyan-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                useCustomDayTimes ? 'bg-cyan-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Horários por Dia
@@ -451,10 +375,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
                 const config = WEEKDAY_CONFIG.find((x) => x.day === dow);
                 const currentTime = dayTimes[dow] || defaultTime;
                 return (
-                  <div
-                    key={dow}
-                    className="p-3 rounded-xl bg-slate-950 border border-cyan-500/30 flex flex-col gap-2"
-                  >
+                  <div key={dow} className="p-3 rounded-xl bg-slate-950 border border-cyan-500/30 flex flex-col gap-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-['Chakra_Petch'] font-bold text-cyan-300 uppercase">
                         {config?.name}
@@ -616,12 +537,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
           </div>
 
           <div className="text-right">
-            <span className="text-2xl font-black font-mono text-cyan-300">
-              {finalTrainingsToCreate.length}
-            </span>
-            <span className="text-xs font-['Chakra_Petch'] uppercase text-slate-400 block">
-              treinos calculados
-            </span>
+            <span className="text-2xl font-black font-mono text-cyan-300">{finalTrainingsToCreate.length}</span>
+            <span className="text-xs font-['Chakra_Petch'] uppercase text-slate-400 block">treinos calculados</span>
           </div>
         </div>
 
@@ -701,7 +618,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
         >
           <span>🚀</span>
           <span>
-            Adicionar {finalTrainingsToCreate.length} {finalTrainingsToCreate.length === 1 ? 'Treino' : 'Treinos'} de uma Vez
+            Adicionar {finalTrainingsToCreate.length} {finalTrainingsToCreate.length === 1 ? 'Treino' : 'Treinos'} de
+            uma Vez
           </span>
         </button>
       </div>

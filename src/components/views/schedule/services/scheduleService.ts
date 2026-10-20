@@ -1,4 +1,4 @@
-import { AppState, ScheduledMatch, Match, Training, StaffUnavailability, ClubEvent, Player } from '../../../../types';
+import { AppState, Player } from '../../../../types';
 import { CalendarEvent, EventFilterType } from '../types';
 
 export const MONTH_NAMES_PT = [

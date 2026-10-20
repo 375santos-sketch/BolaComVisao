@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { AppState, Match } from '../../types';
+import { AppState } from '../../types';
 import { TabType } from '../Navbar';
 import { calculateAttendanceMetrics } from '../../lib/intelligenceEngine';
 import { parseMinuteToNumber } from '../../lib/gameAnalysisUtils';
@@ -182,7 +182,8 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              {matches.length} Jogos • {metrics.wins}V {metrics.draws}E {metrics.losses}D • {attendanceMetrics.teamAverageRate}% Assiduidade
+              {matches.length} Jogos • {metrics.wins}V {metrics.draws}E {metrics.losses}D •{' '}
+              {attendanceMetrics.teamAverageRate}% Assiduidade
             </p>
           </div>
         </div>
@@ -288,9 +289,7 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
             <span>⚽</span>
             <span className="truncate">Golos / Jogo</span>
           </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-cyan-400 mt-1">
-            {metrics.avgScored}
-          </div>
+          <div className="text-xl sm:text-2xl font-black font-mono text-cyan-400 mt-1">{metrics.avgScored}</div>
           <div className="text-[10px] text-slate-500 font-mono mt-0.5">Marcados</div>
         </div>
 
@@ -299,9 +298,7 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
             <span>🛡️</span>
             <span className="truncate">Sofridos / Jogo</span>
           </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-rose-400 mt-1">
-            {metrics.avgConceded}
-          </div>
+          <div className="text-xl sm:text-2xl font-black font-mono text-rose-400 mt-1">{metrics.avgConceded}</div>
           <div className="text-[10px] text-slate-500 font-mono mt-0.5">Defesa</div>
         </div>
 
@@ -310,9 +307,7 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
             <span>🏆</span>
             <span className="truncate">% Vitórias</span>
           </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-emerald-400 mt-1">
-            {metrics.winRate}
-          </div>
+          <div className="text-xl sm:text-2xl font-black font-mono text-emerald-400 mt-1">{metrics.winRate}</div>
           <div className="text-[10px] text-slate-500 font-mono mt-0.5">Eficácia</div>
         </div>
 
@@ -321,9 +316,7 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
             <span>🚩</span>
             <span className="truncate">Cantos / Jogo</span>
           </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-amber-400 mt-1">
-            {metrics.avgCorners}
-          </div>
+          <div className="text-xl sm:text-2xl font-black font-mono text-amber-400 mt-1">{metrics.avgCorners}</div>
           <div className="text-[10px] text-slate-500 font-mono mt-0.5">A Favor</div>
         </div>
 
@@ -348,9 +341,7 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
             <span className="text-xs font-bold text-emerald-400 uppercase font-['Chakra_Petch'] tracking-wide block">
               Ponto Forte
             </span>
-            <p className="text-xs text-slate-200 font-medium mt-0.5 leading-snug">
-              {metrics.strongPoint}
-            </p>
+            <p className="text-xs text-slate-200 font-medium mt-0.5 leading-snug">{metrics.strongPoint}</p>
           </div>
         </div>
 
@@ -361,9 +352,7 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
             <span className="text-xs font-bold text-rose-400 uppercase font-['Chakra_Petch'] tracking-wide block">
               Atenção
             </span>
-            <p className="text-xs text-slate-200 font-medium mt-0.5 leading-snug">
-              {metrics.attentionPoint}
-            </p>
+            <p className="text-xs text-slate-200 font-medium mt-0.5 leading-snug">{metrics.attentionPoint}</p>
           </div>
         </div>
       </div>
@@ -387,9 +376,7 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
                   <span className="text-xs font-bold text-emerald-400 uppercase font-['Chakra_Petch'] tracking-wide block group-hover/hdr:text-emerald-300 transition-colors">
                     Melhores Marcadores
                   </span>
-                  <span className="text-[10px] text-slate-400">
-                    Os 3 melhores marcadores e a quantidade de golos
-                  </span>
+                  <span className="text-[10px] text-slate-400">Os 3 melhores marcadores e a quantidade de golos</span>
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -560,7 +547,10 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
             <span className="text-lg shrink-0">⚠️</span>
             <div className="text-xs text-amber-200/90 truncate">
               <strong>{lowAttendanceList.length} atleta(s) com assiduidade baixa (&lt;70%):</strong>{' '}
-              {lowAttendanceList.slice(0, 3).map((p) => `${p.playerName} (${p.rate}%)`).join(', ')}
+              {lowAttendanceList
+                .slice(0, 3)
+                .map((p) => `${p.playerName} (${p.rate}%)`)
+                .join(', ')}
             </div>
           </div>
           <button
@@ -587,4 +577,3 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
     </div>
   );
 };
-

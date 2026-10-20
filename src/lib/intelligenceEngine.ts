@@ -407,8 +407,11 @@ export function calculatePlayerEvolution(player: Player, state: AppState): Playe
   }
 
   // Cálculo da evolução de assiduidade mês a mês (Setembro, Outubro, Novembro, etc.)
-  const monthMap: Record<string, { monthKey: string; monthName: string; totalTrainings: number; presences: number; absences: number; rate: number }> = {};
-  
+  const monthMap: Record<
+    string,
+    { monthKey: string; monthName: string; totalTrainings: number; presences: number; absences: number; rate: number }
+  > = {};
+
   // Ordenar treinos por data cronológica para agrupamento
   const sortedTrainingsAsc = [...trainings].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -610,8 +613,7 @@ export function getPlayerQuickAttendance(
     }
   }
 
-  const category: AttendanceCategory =
-    rate >= 85 ? 'excelente' : rate >= 75 ? 'boa' : rate >= 60 ? 'atencao' : 'baixa';
+  const category: AttendanceCategory = rate >= 85 ? 'excelente' : rate >= 75 ? 'boa' : rate >= 60 ? 'atencao' : 'baixa';
 
   return {
     rate,

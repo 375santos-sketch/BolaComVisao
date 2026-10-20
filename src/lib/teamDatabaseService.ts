@@ -1,12 +1,5 @@
 import * as XLSX from 'xlsx';
-import {
-  collection,
-  doc,
-  getDocs,
-  setDoc,
-  deleteDoc,
-  writeBatch
-} from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
 import { TeamDataset, TeamDatabaseRow, UserAccount } from '../types';
 import { sanitizeExcelText } from './utils';
@@ -22,7 +15,7 @@ enum OperationType {
   DELETE = 'delete',
   LIST = 'list',
   GET = 'get',
-  WRITE = 'write',
+  WRITE = 'write'
 }
 
 interface FirestoreErrorInfo {
@@ -51,13 +44,14 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
       emailVerified: auth.currentUser?.emailVerified,
       isAnonymous: auth.currentUser?.isAnonymous,
       tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData?.map((provider) => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || [],
+      providerInfo:
+        auth.currentUser?.providerData?.map((provider) => ({
+          providerId: provider.providerId,
+          email: provider.email
+        })) || []
     },
     operationType,
-    path,
+    path
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
@@ -72,11 +66,7 @@ function getLocalCacheKey(teamId: string, datasetId: string): string {
   return `${LOCAL_CACHE_PREFIX}${teamId}_${datasetId}`;
 }
 
-export function saveToLocalCache(
-  teamId: string,
-  dataset: TeamDataset,
-  rows: TeamDatabaseRow[]
-): void {
+export function saveToLocalCache(teamId: string, dataset: TeamDataset, rows: TeamDatabaseRow[]): void {
   try {
     const key = getLocalCacheKey(teamId, dataset.id);
     const payload = JSON.stringify({ dataset, rows, cachedAt: Date.now() });
@@ -148,23 +138,16 @@ export function sanitizeAndDeduplicateHeaders(rawHeaders: unknown[]): string[] {
 /**
  * Parses an Excel or CSV file buffer and applies prompt sanitization rules
  */
-export function inspectExcelBuffer(
-  buffer: ArrayBuffer | Uint8Array,
-  _fileName?: string
-): ExcelWorkbookInspection {
+export function inspectExcelBuffer(buffer: ArrayBuffer | Uint8Array, _fileName?: string): ExcelWorkbookInspection {
   if (!buffer) {
     throw new Error('Buffer do ficheiro inválido ou vazio.');
   }
 
-  const byteLength =
-    buffer instanceof Uint8Array ? buffer.byteLength : (buffer as ArrayBuffer).byteLength;
+  const byteLength = buffer instanceof Uint8Array ? buffer.byteLength : (buffer as ArrayBuffer).byteLength;
 
   if (byteLength > MAX_FILE_SIZE_BYTES) {
     throw new Error(
-      `O ficheiro excede o limite máximo permitido de 2 MB (tamanho: ${(
-        byteLength /
-        (1024 * 1024)
-      ).toFixed(2)} MB).`
+      `O ficheiro excede o limite máximo permitido de 2 MB (tamanho: ${(byteLength / (1024 * 1024)).toFixed(2)} MB).`
     );
   }
 
@@ -173,7 +156,7 @@ export function inspectExcelBuffer(
   const workbook = XLSX.read(u8Array, {
     type: 'array',
     cellDates: true,
-    raw: false,
+    raw: false
   });
 
   if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
@@ -190,7 +173,7 @@ export function inspectExcelBuffer(
       header: 1,
       defval: '',
       raw: false,
-      blankrows: false,
+      blankrows: false
     });
 
     if (rawMatrix.length === 0) {
@@ -198,17 +181,14 @@ export function inspectExcelBuffer(
         sheetName,
         columns: [],
         rows: [],
-        totalRows: 0,
+        totalRows: 0
       };
       continue;
     }
 
     // First non-empty row is treated as header
     let headerRowIndex = 0;
-    while (
-      headerRowIndex < rawMatrix.length &&
-      rawMatrix[headerRowIndex].every((c) => !String(c).trim())
-    ) {
+    while (headerRowIndex < rawMatrix.length && rawMatrix[headerRowIndex].every((c) => !String(c).trim())) {
       headerRowIndex++;
     }
 
@@ -219,7 +199,9 @@ export function inspectExcelBuffer(
 
     const rawHeaders = rawMatrix[headerRowIndex];
     if (rawHeaders.length > MAX_COLUMNS_LIMIT) {
-      throw new Error(`A folha "${sheetName}" contém ${rawHeaders.length} colunas. O limite máximo permitido é de ${MAX_COLUMNS_LIMIT} colunas.`);
+      throw new Error(
+        `A folha "${sheetName}" contém ${rawHeaders.length} colunas. O limite máximo permitido é de ${MAX_COLUMNS_LIMIT} colunas.`
+      );
     }
 
     const columns = sanitizeAndDeduplicateHeaders(rawHeaders);
@@ -267,13 +249,13 @@ export function inspectExcelBuffer(
       sheetName,
       columns,
       rows,
-      totalRows: rows.length,
+      totalRows: rows.length
     };
   }
 
   return {
     sheetNames: workbook.SheetNames,
-    sheets,
+    sheets
   };
 }
 
@@ -365,7 +347,7 @@ export async function saveTeamDatasetWithRows(
         name: teamName || 'Equipa',
         createdBy: user.id,
         updatedAt: now,
-        updatedBy: userName,
+        updatedBy: userName
       },
       { merge: true }
     );
@@ -383,7 +365,7 @@ export async function saveTeamDatasetWithRows(
       rowCount: Math.min(rows.length, MAX_ROWS_LIMIT),
       version: (dataset.version || 0) + 1,
       updatedAt: now,
-      updatedBy: userName,
+      updatedBy: userName
     });
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, datasetPath);
@@ -412,20 +394,16 @@ export async function saveTeamDatasetWithRows(
 
       batch.set(rowRef, {
         data: cleanedData,
-        order: row.order ?? (i + idx),
+        order: row.order ?? i + idx,
         updatedAt: row.updatedAt || now,
-        updatedBy: row.updatedBy || userName,
+        updatedBy: row.updatedBy || userName
       });
     });
 
     try {
       await batch.commit();
     } catch (err) {
-      handleFirestoreError(
-        err,
-        OperationType.WRITE,
-        `team_databases/${teamId}/datasets/${dataset.id}/rows`
-      );
+      handleFirestoreError(err, OperationType.WRITE, `team_databases/${teamId}/datasets/${dataset.id}/rows`);
     }
   }
 }
@@ -433,11 +411,7 @@ export async function saveTeamDatasetWithRows(
 /**
  * Deletes a single row from a dataset
  */
-export async function deleteTeamDatabaseRow(
-  teamId: string,
-  datasetId: string,
-  rowId: string
-): Promise<void> {
+export async function deleteTeamDatabaseRow(teamId: string, datasetId: string, rowId: string): Promise<void> {
   const path = `team_databases/${teamId}/datasets/${datasetId}/rows/${rowId}`;
   try {
     await deleteDoc(doc(db, path));
@@ -467,11 +441,7 @@ export async function deleteTeamDataset(teamId: string, datasetId: string): Prom
 // ==============================================================================
 // EXPORT TO EXCEL (.xlsx)
 // ==============================================================================
-export function exportTeamDatabaseToExcel(
-  dataset: TeamDataset,
-  rows: TeamDatabaseRow[],
-  teamName: string
-): void {
+export function exportTeamDatabaseToExcel(dataset: TeamDataset, rows: TeamDatabaseRow[], teamName: string): void {
   const exportData = rows.map((r) => {
     const rowObj: Record<string, string | number | boolean | null> = {};
     dataset.columns.forEach((col) => {
@@ -485,7 +455,7 @@ export function exportTeamDatabaseToExcel(
 
   // Set column widths
   const colWidths = dataset.columns.map((col) => ({
-    wch: Math.max(col.length + 4, 14),
+    wch: Math.max(col.length + 4, 14)
   }));
   ws['!cols'] = colWidths;
 

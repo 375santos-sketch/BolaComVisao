@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { getMatchCompetitionDetails } from '../lib/utils';
 import { Match, ScheduledMatch, AppState } from '../types';
 
@@ -201,15 +201,21 @@ describe('Match Competition Details from Agenda (Schedule)', () => {
       const matchWithDetails: Match = {
         ...baseMatch,
         goals: [
-          { id: 'g1', type: 'scored', minute: 14, scorerId: 'p1', scorer: 'Ronaldo', goalType: 'Bola jogada' },
-          { id: 'g2', type: 'conceded', minute: '38\'', opponent: 'Sporting', goalType: 'Canto' }
+          {
+            id: 'g1',
+            type: 'scored',
+            minute: 14,
+            scorerId: 'p1',
+            assistId: null,
+            scorer: 'Ronaldo',
+            goalType: 'Bola jogada'
+          },
+          { id: 'g2', type: 'conceded', minute: "38'", scorerId: null, assistId: null, goalType: 'Canto' }
         ],
-        cards: [
-          { id: 'c1', color: 'Amarelo', half: 1, minute: 22, playerId: 'p1' }
-        ],
+        cards: [{ id: 'c1', color: 'Amarelo', half: 1, minute: 22, playerId: 'p1' }],
         subs: [
           { id: 's1', inId: 'p2', outId: 'p1', minute: 45, isHalftime: true },
-          { id: 's2', inId: 'p3', outId: 'p2', minute: '60\'' }
+          { id: 's2', inId: 'p3', outId: 'p2', minute: "60'" }
         ]
       };
 

@@ -5,3 +5,5 @@ coverage
 .aistudio
 firebase-applet-config.json
 *.min.js
+package-lock.json
+bun.lock

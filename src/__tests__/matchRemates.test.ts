@@ -34,8 +34,8 @@ describe('Match Mode Goal Minutes and Remates validation', () => {
       location: 'casa',
       finished: true,
       goals: [
-        { id: 'g1', type: 'scored', minute: "23'", scorerId: 'p1' },
-        { id: 'g2', type: 'conceded', minute: "60'" }
+        { id: 'g1', type: 'scored', minute: "23'", scorerId: 'p1', assistId: null },
+        { id: 'g2', type: 'conceded', minute: "60'", scorerId: null, assistId: null }
       ],
       subs: [],
       lineup: [],
@@ -67,12 +67,13 @@ describe('Match Mode Goal Minutes and Remates validation', () => {
       opponent: 'Sporting B',
       date: '2026-10-12',
       type: 'campeonato',
+      season: '2026/2027',
       location: 'fora',
       finished: true,
       goals: [
-        { id: 'g1', type: 'scored', minute: "15'", scorerId: 'p1', goalType: 'Canto' },
-        { id: 'g2', type: 'scored', minute: "40'", scorerId: 'p2', goalType: 'Bola jogada' },
-        { id: 'g3', type: 'conceded', minute: "75'", goalType: 'Penálti' }
+        { id: 'g1', type: 'scored', minute: "15'", scorerId: 'p1', assistId: null, goalType: 'Canto' },
+        { id: 'g2', type: 'scored', minute: "40'", scorerId: 'p2', assistId: null, goalType: 'Bola jogada' },
+        { id: 'g3', type: 'conceded', minute: "75'", scorerId: null, assistId: null, goalType: 'Penálti' }
       ],
       subs: [],
       lineup: [],

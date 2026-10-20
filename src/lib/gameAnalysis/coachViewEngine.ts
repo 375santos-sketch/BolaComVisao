@@ -1,7 +1,7 @@
 import { Match, Player } from '../../types';
 import { normalizeEventTiming } from '../gameAnalysisUtils';
 import { isSeasonMatching } from '../utils';
-import { AggregatedAnalysis, StandardGoalType } from './types';
+import { AggregatedAnalysis } from './types';
 import { computeGameAnalysis } from './index';
 
 export interface CoachViewPlayerStat {
@@ -28,14 +28,7 @@ export interface CoachViewPlayerFullStat {
   rankAssists: number;
 }
 
-export type CoachFilterMode =
-  | 'season'
-  | 'last5'
-  | 'last10'
-  | 'this_month'
-  | 'month'
-  | 'opponent'
-  | 'match';
+export type CoachFilterMode = 'season' | 'last5' | 'last10' | 'this_month' | 'month' | 'opponent' | 'match';
 
 export interface CoachViewFilter {
   mode: CoachFilterMode;
@@ -250,7 +243,9 @@ export function filterMatchesForCoachView(
   }
 
   if (filter.mode === 'opponent' && filter.opponent) {
-    const current = sorted.filter((m) => (m.opponent || '').trim().toLowerCase() === filter.opponent!.trim().toLowerCase());
+    const current = sorted.filter(
+      (m) => (m.opponent || '').trim().toLowerCase() === filter.opponent!.trim().toLowerCase()
+    );
     return {
       currentMatches: current,
       previousMatches: [],
@@ -313,7 +308,11 @@ function formatDeltaString(delta: number, prefix: string = '', suffix: string = 
 export function computeTopScorersAndAssisters(
   matches: Match[],
   roster: Player[] = []
-): { topScorers: CoachViewPlayerStat[]; topAssisters: CoachViewPlayerStat[] } {
+): {
+  topScorers: CoachViewPlayerStat[];
+  topAssisters: CoachViewPlayerStat[];
+  allSquadStats: CoachViewPlayerFullStat[];
+} {
   const scorerMap = new Map<string, number>();
   const assistMap = new Map<string, number>();
 
@@ -377,7 +376,7 @@ export function computeTopScorersAndAssisters(
   const getPlayerInfo = (id: string) => {
     const p = activeRoster.find((x) => x.id === id) || playerLookup.get(id);
     return {
-      playerName: p ? (p.nickname || p.name) : id,
+      playerName: p ? p.nickname || p.name : id,
       playerNumber: p?.number ?? null,
       position: p?.positions || 'Jogador'
     };
@@ -507,11 +506,7 @@ export function computeCoachViewData(
   currentSeason: string = '',
   roster: Player[] = []
 ): CoachViewData {
-  const { currentMatches, previousMatches, filterLabel } = filterMatchesForCoachView(
-    allMatches,
-    filter,
-    currentSeason
-  );
+  const { currentMatches, previousMatches, filterLabel } = filterMatchesForCoachView(allMatches, filter, currentSeason);
 
   const { topScorers, topAssisters, allSquadStats } = computeTopScorersAndAssisters(currentMatches, roster);
 
@@ -664,7 +659,9 @@ export function computeCoachViewData(
       prevAnalysis.cornersForAvg !== null
     ) {
       const prevCorners =
-        typeof prevAnalysis.cornersForAvg === 'number' ? prevAnalysis.cornersForAvg : parseFloat(prevAnalysis.cornersForAvg);
+        typeof prevAnalysis.cornersForAvg === 'number'
+          ? prevAnalysis.cornersForAvg
+          : parseFloat(prevAnalysis.cornersForAvg);
       const cornersDelta = parseFloat((cornersNum - prevCorners).toFixed(1));
       cornersDeltaText = formatDeltaString(cornersDelta);
       cornersDeltaStatus = cornersDelta > 0 ? 'positive' : cornersDelta < 0 ? 'negative' : 'neutral';
@@ -688,8 +685,7 @@ export function computeCoachViewData(
   const firstGoalMetric = analysis.firstGoalMetrics;
   let firstGoalMinStr = '—';
   let firstGoalSubtext = 'Sem golos registados';
-  const scoredFirstRate =
-    finishedCount > 0 ? Math.round((firstGoalMetric.scoredFirstCount / finishedCount) * 100) : 0;
+  const scoredFirstRate = finishedCount > 0 ? Math.round((firstGoalMetric.scoredFirstCount / finishedCount) * 100) : 0;
 
   if (firstGoalMetric.firstGoalScoredAvgMin !== null) {
     firstGoalMinStr = `${firstGoalMetric.firstGoalScoredAvgMin}'`;
@@ -1053,7 +1049,8 @@ export function computeCoachViewData(
     mostConcededPeriodData = {
       label: analysis.timingWindows.mostConcededPeriod.label,
       count: analysis.timingWindows.mostConcededPeriod.count,
-      percentage: goalsConceded > 0 ? Math.round((analysis.timingWindows.mostConcededPeriod.count / goalsConceded) * 100) : 0
+      percentage:
+        goalsConceded > 0 ? Math.round((analysis.timingWindows.mostConcededPeriod.count / goalsConceded) * 100) : 0
     };
   }
 

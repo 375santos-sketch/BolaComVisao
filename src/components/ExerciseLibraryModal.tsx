@@ -13,11 +13,21 @@ interface ExerciseLibraryModalProps {
 }
 
 const CATEGORIES: { key: ExerciseCategory; label: string; icon: string; color: string }[] = [
-  { key: 'aquecimento', label: 'Aquecimento', icon: '🔥', color: 'border-orange-500/50 bg-orange-950/30 text-orange-300' },
+  {
+    key: 'aquecimento',
+    label: 'Aquecimento',
+    icon: '🔥',
+    color: 'border-orange-500/50 bg-orange-950/30 text-orange-300'
+  },
   { key: 'tecnica', label: 'Técnica', icon: '⚽', color: 'border-cyan-500/50 bg-cyan-950/30 text-cyan-300' },
   { key: 'tatica', label: 'Tática', icon: '⚡', color: 'border-blue-500/50 bg-blue-950/30 text-blue-300' },
   { key: 'jogo', label: 'Jogo', icon: '🥅', color: 'border-purple-500/50 bg-purple-950/30 text-purple-300' },
-  { key: 'bolas_paradas', label: 'Bolas Paradas', icon: '🛡️', color: 'border-amber-500/50 bg-amber-950/30 text-amber-300' },
+  {
+    key: 'bolas_paradas',
+    label: 'Bolas Paradas',
+    icon: '🛡️',
+    color: 'border-amber-500/50 bg-amber-950/30 text-amber-300'
+  },
   { key: 'fisico', label: 'Físico', icon: '🏃', color: 'border-emerald-500/50 bg-emerald-950/30 text-emerald-300' }
 ];
 

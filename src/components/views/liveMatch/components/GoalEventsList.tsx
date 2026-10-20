@@ -9,12 +9,7 @@ interface GoalEventsListProps {
   onDeleteGoal: (id: string) => void;
 }
 
-export const GoalEventsList: React.FC<GoalEventsListProps> = ({
-  goals,
-  roster,
-  onEditGoal,
-  onDeleteGoal
-}) => {
+export const GoalEventsList: React.FC<GoalEventsListProps> = ({ goals, roster, onEditGoal, onDeleteGoal }) => {
   const scoredGoals = goals.filter((g) => g.type === 'scored');
 
   const getPlayerName = (id: string | null) => {
@@ -56,16 +51,16 @@ export const GoalEventsList: React.FC<GoalEventsListProps> = ({
                       {String(g.minute).endsWith("'") ? g.minute : `${g.minute}'`}
                     </span>
                   )}
-                  {g.period && (
-                    <span className="text-[11px] text-slate-400 font-medium">({g.period})</span>
-                  )}
+                  {g.period && <span className="text-[11px] text-slate-400 font-medium">({g.period})</span>}
                 </div>
                 <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
                   <span className="px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800/50 text-[10px]">
                     {g.goalType || 'Bola jogada'}
                   </span>
                   {assistName && assistName !== 'Sem assistência' && (
-                    <span>👟 Assistência: <strong className="text-slate-300">{assistName}</strong></span>
+                    <span>
+                      👟 Assistência: <strong className="text-slate-300">{assistName}</strong>
+                    </span>
                   )}
                 </div>
               </div>

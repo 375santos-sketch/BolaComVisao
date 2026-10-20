@@ -1,5 +1,6 @@
 import React from 'react';
 import { Language } from '../types';
+import { getActiveCategory } from './navCategory';
 
 export type TabType =
   | 'teams'
@@ -27,33 +28,6 @@ interface NavbarProps {
   onOpenMore: () => void;
   hasActiveMatch: boolean;
   pendingCount?: number;
-}
-
-export function getActiveCategory(tab: TabType): MainCategory {
-  switch (tab) {
-    case 'home':
-      return 'home';
-    case 'plantel':
-    case 'chat_staff':
-    case 'convocatoria':
-      return 'equipa';
-    case 'calendario':
-    case 'treinos':
-    case 'biblioteca':
-    case 'jogos':
-      return 'planeamento';
-    case 'jogo':
-    case 'stats':
-    case 'analise_jogos':
-    case 'prejogo':
-    case 'adversario':
-    case 'relatorios':
-      return 'performance';
-    case 'teams':
-      return 'mais';
-    default:
-      return 'home';
-  }
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -152,7 +126,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           🧠
         </span>
-        {hasActiveMatch && <span className="absolute top-1.5 right-3 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
+        {hasActiveMatch && (
+          <span className="absolute top-1.5 right-3 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+        )}
         <span className="text-[10px] font-['Chakra_Petch'] uppercase tracking-wider">Performance</span>
       </button>
 

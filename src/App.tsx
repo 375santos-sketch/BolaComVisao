@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { AppState, UserAccount, AppNotification } from './types';
 import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
 import { applyThemeCSS } from './lib/utils';
@@ -14,7 +14,6 @@ import {
   checkCurrentAuthUser,
   saveMasterClubState,
   isAppAdmin,
-  ADMIN_EMAIL,
   getFirestoreQuotaState
 } from './services/cloudAuthService';
 import { Navbar, TabType } from './components/Navbar';
@@ -34,9 +33,15 @@ const ConvocatoriaView = lazyWithRetry(() => import('./components/views/Convocat
 const TrainingsView = lazyWithRetry(() => import('./components/views/TrainingsView'), 'TrainingsView');
 const ResultsView = lazyWithRetry(() => import('./components/views/ResultsView'), 'ResultsView');
 const StatsView = lazyWithRetry(() => import('./components/views/StatsView'), 'StatsView');
-const GameAnalysisDashboard = lazyWithRetry(() => import('./components/views/GameAnalysisDashboard'), 'GameAnalysisDashboard');
+const GameAnalysisDashboard = lazyWithRetry(
+  () => import('./components/views/GameAnalysisDashboard'),
+  'GameAnalysisDashboard'
+);
 const SquadView = lazyWithRetry(() => import('./components/views/SquadView'), 'SquadView');
-const OpponentScoutingView = lazyWithRetry(() => import('./components/views/OpponentScoutingView'), 'OpponentScoutingView');
+const OpponentScoutingView = lazyWithRetry(
+  () => import('./components/views/OpponentScoutingView'),
+  'OpponentScoutingView'
+);
 const PreMatchPlanView = lazyWithRetry(() => import('./components/views/PreMatchPlanView'), 'PreMatchPlanView');
 const RelatoriosView = lazyWithRetry(() => import('./components/views/RelatoriosView'), 'RelatoriosView');
 
@@ -50,9 +55,12 @@ import { TeamInviteModal } from './components/TeamInviteModal';
 import { SeasonSelectorModal } from './components/SeasonSelectorModal';
 import { NotificationModal } from './components/NotificationModal';
 
-
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
+  const latestStateRef = useRef(state);
+  useEffect(() => {
+    latestStateRef.current = state;
+  }, [state]);
   const [currentTab, setCurrentTab] = useState<TabType>('teams');
   const [targetOpponentId, setTargetOpponentId] = useState<string | undefined>(undefined);
 
@@ -160,7 +168,8 @@ export default function App() {
                 season: updates.season !== undefined ? updates.season : t.season,
                 clubLogoUrl: updates.clubLogoUrl !== undefined ? updates.clubLogoUrl : t.clubLogoUrl,
                 clubEvents: updates.clubEvents !== undefined ? updates.clubEvents : t.clubEvents,
-                staffUnavailability: updates.staffUnavailability !== undefined ? updates.staffUnavailability : t.staffUnavailability,
+                staffUnavailability:
+                  updates.staffUnavailability !== undefined ? updates.staffUnavailability : t.staffUnavailability,
                 opponentScouting: updates.opponentScouting !== undefined ? updates.opponentScouting : t.opponentScouting
               };
             }
@@ -169,12 +178,11 @@ export default function App() {
         }
       }
 
-      const updated = {
+      const updated: AppState = {
         ...prev,
         ...updates,
         ...(syncedTeams !== prev.teams ? { teams: syncedTeams } : {})
       };
-      saveAppState(updated);
 
       // Check if substantive data changed that requires cloud persistence
       const hasSubstantiveChanges =
@@ -192,6 +200,14 @@ export default function App() {
         updates.staffUnavailability !== undefined ||
         updates.exerciseLibrary !== undefined;
 
+      // Stamp local edits so an older cloud snapshot can never overwrite them (see the cloud listener below).
+      if (hasSubstantiveChanges && !isRemoteSyncRef.current) {
+        const now = Date.now();
+        updated.updatedAt = now;
+        updated.lastLocalMutationAt = now;
+      }
+      saveAppState(updated);
+
       // If user is authenticated in cloud, automatically push changes to shared club database with gentle throttling
       if (
         updated.currentUser &&
@@ -204,17 +220,20 @@ export default function App() {
           clearTimeout(cloudSyncDebounceTimerRef.current);
         }
         const isWiping = !updated.teams || updated.teams.length === 0;
-        cloudSyncDebounceTimerRef.current = setTimeout(() => {
-          saveMasterClubState(
-            updated.currentUser?.clubId || 'main',
-            updated,
-            updated.currentUser?.id,
-            updated.currentUser?.name,
-            isWiping
-          ).catch((err) => {
-            console.warn('Background master cloud save error:', err);
-          });
-        }, isWiping ? 200 : 3500);
+        cloudSyncDebounceTimerRef.current = setTimeout(
+          () => {
+            saveMasterClubState(
+              updated.currentUser?.clubId || 'main',
+              updated,
+              updated.currentUser?.id,
+              updated.currentUser?.name,
+              isWiping
+            ).catch((err) => {
+              console.warn('Background master cloud save error:', err);
+            });
+          },
+          isWiping ? 200 : 3500
+        );
       }
 
       return updated;
@@ -238,6 +257,23 @@ export default function App() {
       state.currentUser.clubId || 'main',
       (cloudState) => {
         if (cloudState) {
+          // This device has edits the cloud does not have yet (e.g. a match recorded at an away ground without
+          // internet, or a save that failed). Never let the older cloud copy overwrite them: keep and re-send them.
+          const local = latestStateRef.current;
+          if ((local.lastLocalMutationAt || 0) > (cloudState.updatedAt || 0)) {
+            if (!getFirestoreQuotaState().isExhausted) {
+              saveMasterClubState(
+                local.currentUser?.clubId || 'main',
+                local,
+                local.currentUser?.id,
+                local.currentUser?.name
+              ).catch((err) => {
+                console.warn('Erro ao reenviar alterações locais para a nuvem:', err);
+              });
+            }
+            return;
+          }
+
           isRemoteSyncRef.current = true;
           setState((prev) => {
             const merged = {
@@ -268,6 +304,8 @@ export default function App() {
     return () => {
       unsubscribe();
     };
+    // Resubscribe only when the signed-in user changes, not on every currentUser object update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.currentUser?.id]);
 
   // Real-time listener for Coach Registrations requiring Admin Approval (Admin ONLY)
@@ -280,7 +318,7 @@ export default function App() {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       try {
         Notification.requestPermission().catch(() => {});
-      } catch (e) {
+      } catch {
         // Safe catch
       }
     }
@@ -376,6 +414,8 @@ export default function App() {
       setPendingUsersCount(0);
       setLatestPendingUser(null);
     };
+    // Resubscribe only when the user's identity/role changes, not on every currentUser object update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.currentUser?.id, state.currentUser?.role, state.currentUser?.email]);
 
   // Auto-sync listener for online / offline events
@@ -472,6 +512,8 @@ export default function App() {
     if (oldNotifStr !== newNotifStr) {
       updateState({ notifications: updatedNotifications });
     }
+    // Re-evaluate only when the underlying data changes; depending on `state` would loop on its own update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.trainings, state.matches, state.schedule, state.roster]);
 
   const handleNavigate = (tab: string, targetId?: string) => {
@@ -577,7 +619,11 @@ export default function App() {
                     const targetClubLower = (target.clubName || '').toLowerCase().trim();
                     if (
                       sTeamId === target.id ||
-                      (sTeamName && targetClubLower && (sTeamName === targetClubLower || targetClubLower.includes(sTeamName) || sTeamName.includes(targetClubLower))) ||
+                      (sTeamName &&
+                        targetClubLower &&
+                        (sTeamName === targetClubLower ||
+                          targetClubLower.includes(sTeamName) ||
+                          sTeamName.includes(targetClubLower))) ||
                       (targetClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
                     ) {
                       if (!targetScheduleMap.has(s.id)) {
@@ -599,7 +645,11 @@ export default function App() {
                     if (
                       mTeamId === target.id ||
                       !mTeamId ||
-                      (mTeamName && targetClubLower && (mTeamName === targetClubLower || targetClubLower.includes(mTeamName) || mTeamName.includes(targetClubLower))) ||
+                      (mTeamName &&
+                        targetClubLower &&
+                        (mTeamName === targetClubLower ||
+                          targetClubLower.includes(mTeamName) ||
+                          mTeamName.includes(targetClubLower))) ||
                       (targetClubLower.includes('drag') && (mTeamName?.includes('drag') || !mTeamId))
                     ) {
                       if (!targetMatchesMap.has(m.id)) {
@@ -616,9 +666,9 @@ export default function App() {
                     clubLogoUrl: target.clubLogoUrl,
                     category: target.category,
                     season: target.season,
-                    roster: target.roster && target.roster.length > 0 ? target.roster : (state.roster || []),
+                    roster: target.roster && target.roster.length > 0 ? target.roster : state.roster || [],
                     staffMembers: target.staffMembers || [],
-                    matches: resolvedTargetMatches.length > 0 ? resolvedTargetMatches : (state.matches || []),
+                    matches: resolvedTargetMatches.length > 0 ? resolvedTargetMatches : state.matches || [],
                     trainings: target.trainings || [],
                     schedule: resolvedTargetSchedule,
                     tactics: target.tactics || [],
@@ -886,9 +936,7 @@ export default function App() {
       )}
 
       {/* Audit Log Modal */}
-      {showAuditLogs && (
-        <AuditLogModal state={state} onClose={() => setShowAuditLogs(false)} onShowToast={showToast} />
-      )}
+      {showAuditLogs && <AuditLogModal state={state} onClose={() => setShowAuditLogs(false)} onShowToast={showToast} />}
 
       {/* Team Invite Modal */}
       {showInviteStaff && (

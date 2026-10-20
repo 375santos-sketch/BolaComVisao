@@ -54,7 +54,7 @@ export function sendBrowserNotification(title: string, body: string, icon?: stri
         badge: '/favicon.ico'
       });
     }
-  } catch (e) {
+  } catch {
     // Ignored in restricted environments
   }
 }
@@ -120,7 +120,10 @@ export function evaluateSystemNotifications(state: AppState): {
 
     activeUpcomingTrainings.forEach((tr) => {
       const isTomorrow = tr.date === tomorrowDateStr;
-      const formattedDate = tr.date.split('-').length === 3 ? `${tr.date.split('-')[2]}/${tr.date.split('-')[1]}/${tr.date.split('-')[0]}` : tr.date;
+      const formattedDate =
+        tr.date.split('-').length === 3
+          ? `${tr.date.split('-')[2]}/${tr.date.split('-')[1]}/${tr.date.split('-')[0]}`
+          : tr.date;
       const notifId = `notif-tr-entry-${tr.id}`;
       const existing = existingMap.get(notifId);
       if (!existing) {

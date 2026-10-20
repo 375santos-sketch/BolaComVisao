@@ -43,9 +43,7 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
               <span>📈</span>
               <span>Guia de Forma Recente (Últimos Jogos)</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Sequência de resultados e momento competitivo da equipa
-            </p>
+            <p className="text-xs text-slate-400 mt-0.5">Sequência de resultados e momento competitivo da equipa</p>
           </div>
         </div>
 
@@ -60,8 +58,8 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                 item.result === 'V'
                   ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                   : item.result === 'E'
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                  : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
 
               return (
                 <div
@@ -70,12 +68,8 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                   className="bg-slate-950/70 border border-slate-800/80 hover:border-cyan-500/50 rounded-2xl p-3.5 flex flex-col justify-between cursor-pointer transition-all shadow-sm group"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] text-slate-400 font-mono">
-                      {item.date || `Jogo #${idx + 1}`}
-                    </span>
-                    <span
-                      className={`text-xs font-black px-2 py-0.5 rounded-lg border font-mono ${bgBadge}`}
-                    >
+                    <span className="text-[10px] text-slate-400 font-mono">{item.date || `Jogo #${idx + 1}`}</span>
+                    <span className={`text-xs font-black px-2 py-0.5 rounded-lg border font-mono ${bgBadge}`}>
                       {item.result}
                     </span>
                   </div>
@@ -84,18 +78,12 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                     <div className="text-xs font-bold text-white truncate group-hover:text-cyan-300 transition-colors">
                       {item.opponent}
                     </div>
-                    <div className="text-[10px] text-slate-400">
-                      {item.location === 'casa' ? '🏠 Casa' : '✈️ Fora'}
-                    </div>
+                    <div className="text-[10px] text-slate-400">{item.location === 'casa' ? '🏠 Casa' : '✈️ Fora'}</div>
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 mt-2">
-                    <span className="text-sm font-['Chakra_Petch'] font-black text-white">
-                      {item.score}
-                    </span>
-                    <span className="text-[10px] text-cyan-400 font-bold group-hover:underline">
-                      Ver ›
-                    </span>
+                    <span className="text-sm font-['Chakra_Petch'] font-black text-white">{item.score}</span>
+                    <span className="text-[10px] text-cyan-400 font-bold group-hover:underline">Ver ›</span>
                   </div>
                 </div>
               );
@@ -135,17 +123,13 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
         </div>
 
         {opponentStats.length === 0 ? (
-          <div className="text-center py-6 text-xs text-slate-500">
-            Nenhum adversário encontrado no filtro atual.
-          </div>
+          <div className="text-center py-6 text-xs text-slate-500">Nenhum adversário encontrado no filtro atual.</div>
         ) : currentOpponentStat ? (
           <div className="space-y-4">
             {/* Summary Row for Selected Opponent */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3.5 text-center">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                  Confrontos
-                </span>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Confrontos</span>
                 <span className="text-2xl font-['Chakra_Petch'] font-black text-white">
                   {currentOpponentStat.matchesCount}
                 </span>
@@ -155,9 +139,7 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
               </div>
 
               <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3.5 text-center">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                  Aproveitamento
-                </span>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Aproveitamento</span>
                 <span className="text-2xl font-['Chakra_Petch'] font-black text-cyan-400">
                   {currentOpponentStat.winRate}%
                 </span>
@@ -174,14 +156,15 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                   <span className="text-rose-400">{currentOpponentStat.goalsConceded}</span>
                 </span>
                 <span className="text-[10px] text-slate-400 block mt-1">
-                  Saldo: {currentOpponentStat.goalDifference > 0 ? `+${currentOpponentStat.goalDifference}` : currentOpponentStat.goalDifference}
+                  Saldo:{' '}
+                  {currentOpponentStat.goalDifference > 0
+                    ? `+${currentOpponentStat.goalDifference}`
+                    : currentOpponentStat.goalDifference}
                 </span>
               </div>
 
               <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-3.5 text-center">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                  Jogos sem Sofrer
-                </span>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Jogos sem Sofrer</span>
                 <span className="text-2xl font-['Chakra_Petch'] font-black text-amber-400">
                   {(currentOpponentStat.last5Matches || []).filter((m) => m.conceded === 0).length}
                 </span>
@@ -200,8 +183,8 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                   m.result === 'V'
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                     : m.result === 'E'
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                    : 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                      : 'bg-rose-500/20 text-rose-300 border-rose-500/30';
 
                 return (
                   <div

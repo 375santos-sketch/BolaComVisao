@@ -74,7 +74,11 @@ export const COMMERCIAL_PLANS: CommercialPlan[] = [
 /**
  * Generates default Free Beta/Testing Subscription for new clubs
  */
-export function createDefaultTrialSubscription(clubName?: string, customerName?: string, customerEmail?: string): ClubSubscription {
+export function createDefaultTrialSubscription(
+  clubName?: string,
+  customerName?: string,
+  customerEmail?: string
+): ClubSubscription {
   const now = new Date();
   const validUntil = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 year free beta
 
@@ -118,7 +122,10 @@ export function isSubscriptionActive(_sub?: ClubSubscription | null): boolean {
 /**
  * Check if the club can add more teams under their current plan
  */
-export function canAddMoreTeams(currentTeamsCount: number, sub?: ClubSubscription | null): { allowed: boolean; max: number; planName: string } {
+export function canAddMoreTeams(
+  currentTeamsCount: number,
+  sub?: ClubSubscription | null
+): { allowed: boolean; max: number; planName: string } {
   const max = sub?.maxTeams || 99;
   return {
     allowed: currentTeamsCount < max,
@@ -146,7 +153,7 @@ export function generateOfflineLicenseKey(
 
   const tierPrefix = prefixMap[planId] || 'PRO';
   const randomChars = Math.random().toString(36).substring(2, 6).toUpperCase();
-  
+
   // Calculate deterministic checksum
   const seed = `${tierPrefix}-${customerName.trim().toUpperCase()}-${durationMonths}-${randomChars}`;
   let hash = 0;

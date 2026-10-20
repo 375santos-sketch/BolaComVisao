@@ -2,8 +2,8 @@ import React from 'react';
 import { Language, UserAccount, SyncState } from '../types';
 import logoImg from '../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { isAppAdmin } from '../services/cloudAuthService';
-import { TabType, getActiveCategory } from './Navbar';
-import { Badge } from './ui/Badge';
+import { TabType } from './Navbar';
+import { getActiveCategory } from './navCategory';
 
 interface HeaderProps {
   title: string;
@@ -40,7 +40,6 @@ export const Header: React.FC<HeaderProps> = ({
   unreadNotificationsCount = 0,
   syncInfo,
   currentUser,
-  onLogout,
   clubInfo,
   hasActiveMatch
 }) => {

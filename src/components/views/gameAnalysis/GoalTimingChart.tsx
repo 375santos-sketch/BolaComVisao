@@ -17,10 +17,7 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
   const half2Scored = half2Periods.reduce((acc, p) => acc + p.scored, 0);
   const half2Conceded = half2Periods.reduce((acc, p) => acc + p.conceded, 0);
 
-  const maxVal = Math.max(
-    ...timePeriodList.map((p) => Math.max(p.scored, p.conceded)),
-    1
-  );
+  const maxVal = Math.max(...timePeriodList.map((p) => Math.max(p.scored, p.conceded)), 1);
 
   return (
     <div className="space-y-6">
@@ -32,9 +29,7 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
               <span>⏱️</span>
               <span>Distribuição por Partes ({configuredHalfDuration * 2}' Jogo)</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Comparação direta de rendimento entre a 1.ª e a 2.ª parte
-            </p>
+            <p className="text-xs text-slate-400 mt-0.5">Comparação direta de rendimento entre a 1.ª e a 2.ª parte</p>
           </div>
 
           <div className="flex items-center gap-3 text-xs font-bold">
@@ -53,7 +48,8 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-slate-300">1.ª Parte (0–{configuredHalfDuration}')</span>
               <span className="text-xs font-bold text-slate-400">
-                Saldo: <strong className={half1Scored - half1Conceded >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                Saldo:{' '}
+                <strong className={half1Scored - half1Conceded >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
                   {half1Scored - half1Conceded >= 0 ? `+${half1Scored - half1Conceded}` : half1Scored - half1Conceded}
                 </strong>
               </span>
@@ -79,9 +75,12 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
           {/* 2.ª Parte */}
           <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-300">2.ª Parte ({configuredHalfDuration + 1}–{configuredHalfDuration * 2}'+)</span>
+              <span className="text-xs font-bold text-slate-300">
+                2.ª Parte ({configuredHalfDuration + 1}–{configuredHalfDuration * 2}'+)
+              </span>
               <span className="text-xs font-bold text-slate-400">
-                Saldo: <strong className={half2Scored - half2Conceded >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                Saldo:{' '}
+                <strong className={half2Scored - half2Conceded >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
                   {half2Scored - half2Conceded >= 0 ? `+${half2Scored - half2Conceded}` : half2Scored - half2Conceded}
                 </strong>
               </span>
@@ -114,9 +113,7 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
               <span>📊</span>
               <span>Golos por Período de Jogo</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Clique em qualquer período para consultar todos os lances
-            </p>
+            <p className="text-xs text-slate-400 mt-0.5">Clique em qualquer período para consultar todos os lances</p>
           </div>
 
           <div className="text-xs text-slate-400 font-bold bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800">
@@ -129,7 +126,6 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
           {timePeriodList.map((p) => {
             const isBestScored = timingWindows.mostScoredPeriod?.periodKey === p.key;
             const isWorstConceded = timingWindows.mostConcededPeriod?.periodKey === p.key;
-            const totalInPeriod = p.scored + p.conceded;
 
             return (
               <div
@@ -139,8 +135,8 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
                   isBestScored
                     ? 'bg-emerald-950/20 border-emerald-500/40 hover:border-emerald-400'
                     : isWorstConceded
-                    ? 'bg-rose-950/20 border-rose-500/40 hover:border-rose-400'
-                    : 'bg-slate-950/60 border-slate-800 hover:border-cyan-500/50'
+                      ? 'bg-rose-950/20 border-rose-500/40 hover:border-rose-400'
+                      : 'bg-slate-950/60 border-slate-800 hover:border-cyan-500/50'
                 }`}
               >
                 <div className="flex items-center justify-between text-xs mb-2">

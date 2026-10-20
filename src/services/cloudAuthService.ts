@@ -17,7 +17,18 @@ import {
   isQuotaExceededError,
   markQuotaExhausted
 } from './firebase';
-import { doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, query, where, getDocs, Unsubscribe } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  collection,
+  onSnapshot,
+  query,
+  where,
+  getDocs,
+  Unsubscribe
+} from 'firebase/firestore';
 import { AppState, UserAccount, UserStatus, SquadProfile, TeamInvitation } from '../types';
 import { MASTER_ADMIN_EMAIL, MASTER_ADMIN_USERNAME } from '../lib/constants';
 import { createDefaultTrialSubscription, validateAndActivateLicense } from '../lib/licensingEngine';
@@ -30,7 +41,17 @@ export interface AuditLogEntry {
   id?: string;
   userId: string;
   userName: string;
-  action: 'login' | 'logout' | 'permission_change' | 'data_export' | 'data_import' | 'team_switch' | 'user_approval' | 'user_rejection' | 'user_deletion' | string;
+  action:
+    | 'login'
+    | 'logout'
+    | 'permission_change'
+    | 'data_export'
+    | 'data_import'
+    | 'team_switch'
+    | 'user_approval'
+    | 'user_rejection'
+    | 'user_deletion'
+    | string;
   target?: string;
   details: string;
   timestamp?: number | string;
@@ -65,9 +86,7 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
 export function cleanFirestoreData<T>(obj: T): T {
   if (obj === null || obj === undefined) return obj;
   try {
-    return JSON.parse(
-      JSON.stringify(obj, (_key, value) => (value === undefined ? undefined : value))
-    );
+    return JSON.parse(JSON.stringify(obj, (_key, value) => (value === undefined ? undefined : value)));
   } catch (err) {
     console.warn('cleanFirestoreData fallback:', err);
     return obj;
@@ -100,7 +119,11 @@ export function formatFirebaseAuthError(err: any): string {
     return `Domínio não autorizado pelo Firebase Authentication ("${currentHostname || 'atual'}"). Para autenticar com a Conta Google neste endereço, adicione "${currentHostname || 'este domínio'}" na Consola Firebase (Authentication > Definições > Domínios Autorizados). Em alternativa, pode entrar diretamente através de Utilizador/Email e Palavra-passe do clube ou em Modo Convidado.`;
   }
 
-  if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request' || rawMsg.includes('popup-closed-by-user')) {
+  if (
+    code === 'auth/popup-closed-by-user' ||
+    code === 'auth/cancelled-popup-request' ||
+    rawMsg.includes('popup-closed-by-user')
+  ) {
     return 'A janela de autenticação Google foi fechada antes de concluir o início de sessão.';
   }
 
@@ -256,7 +279,9 @@ export async function loginWithGoogle(): Promise<{
           account.approvedAt = Date.now();
         }
       }
-      await setDoc(userDocRef, cleanFirestoreData({ account, createdAt: Date.now(), updatedAt: Date.now() }), { merge: true });
+      await setDoc(userDocRef, cleanFirestoreData({ account, createdAt: Date.now(), updatedAt: Date.now() }), {
+        merge: true
+      });
     }
 
     if (account.status === 'pending') {
@@ -378,11 +403,13 @@ export async function checkCurrentAuthUser(): Promise<{
                 createdAt: new Date().toISOString()
               };
               if (!getFirestoreQuotaState().isExhausted) {
-                await setDoc(userDocRef, { account, createdAt: Date.now(), updatedAt: Date.now() }, { merge: true }).catch(
-                  (e) => {
-                    if (isQuotaExceededError(e)) markQuotaExhausted(30);
-                  }
-                );
+                await setDoc(
+                  userDocRef,
+                  { account, createdAt: Date.now(), updatedAt: Date.now() },
+                  { merge: true }
+                ).catch((e) => {
+                  if (isQuotaExceededError(e)) markQuotaExhausted(30);
+                });
               }
               try {
                 localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(account));
@@ -561,7 +588,6 @@ export async function registerNewClubAndAdmin(
   }
 }
 
-
 /**
  * Creates a coach registration in Firebase Auth as a self-service signup.
  * Sets status: 'pending' in Firestore and immediately signs out until approved by Admin.
@@ -619,11 +645,7 @@ export async function registerCoachUser(
       role: assignedRole,
       status: initialStatus,
       clubId: resolvedInvite?.clubId || (isAdmin ? 'main' : undefined),
-      assignedTeams: isAdmin
-        ? ['all']
-        : resolvedInvite?.teamId
-          ? [resolvedInvite.teamId]
-          : [],
+      assignedTeams: isAdmin ? ['all'] : resolvedInvite?.teamId ? [resolvedInvite.teamId] : [],
       teamRoles: resolvedInvite?.teamId
         ? [
             {
@@ -754,7 +776,10 @@ export async function createCoachUserAsAdmin(
           if (resp.ok && data && data.success && data.uid) {
             uid = data.uid;
             noticeMsg = data.message;
-          } else if (data?.error && (data.error.includes('EMAIL_EXISTS') || data.error.includes('já se encontra registado'))) {
+          } else if (
+            data?.error &&
+            (data.error.includes('EMAIL_EXISTS') || data.error.includes('já se encontra registado'))
+          ) {
             return {
               success: false,
               error: 'Este endereço de email já se encontra registado no sistema.'
@@ -898,7 +923,9 @@ export async function loginCoachUser(
         account.approvedBy = 'Sistema (Administrador Principal)';
         account.approvedAt = Date.now();
       }
-      await setDoc(userDocRef, cleanFirestoreData({ account, createdAt: Date.now(), updatedAt: Date.now() }), { merge: true });
+      await setDoc(userDocRef, cleanFirestoreData({ account, createdAt: Date.now(), updatedAt: Date.now() }), {
+        merge: true
+      });
     }
 
     if (isAdmin) {
@@ -939,7 +966,9 @@ export async function loginCoachUser(
     }
 
     try {
-      await setDoc(userDocRef, cleanFirestoreData({ lastActiveAt: Date.now(), updatedAt: Date.now() }), { merge: true });
+      await setDoc(userDocRef, cleanFirestoreData({ lastActiveAt: Date.now(), updatedAt: Date.now() }), {
+        merge: true
+      });
       localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(account));
     } catch (storageErr) {
       console.warn('Aviso de persistência local ao iniciar sessão:', storageErr);
@@ -981,7 +1010,8 @@ export function subscribeToAllClubUsers(
     onError = typeof onUpdateOrOnError === 'function' ? (onUpdateOrOnError as (err: Error) => void) : undefined;
   } else {
     targetClubId = clubIdOrOnUpdate;
-    onUpdate = typeof onUpdateOrOnError === 'function' ? (onUpdateOrOnError as (users: UserAccount[]) => void) : () => {};
+    onUpdate =
+      typeof onUpdateOrOnError === 'function' ? (onUpdateOrOnError as (users: UserAccount[]) => void) : () => {};
     onError = onErrorCallback;
   }
 
@@ -1081,7 +1111,7 @@ export async function approveCoachUser(
       role: safeRole,
       approvedBy: adminName,
       approvedAt: Date.now(),
-      assignedTeams: assignedTeams !== undefined ? assignedTeams : (currentAccount.assignedTeams || [])
+      assignedTeams: assignedTeams !== undefined ? assignedTeams : currentAccount.assignedTeams || []
     };
 
     await setDoc(
@@ -1235,12 +1265,15 @@ export async function promoteUserToAdmin(userId: string): Promise<{ success: boo
       { merge: true }
     );
 
-    await setDoc(doc(db, 'admins', userId), cleanFirestoreData({
-      uid: userId,
-      email: currentAccount.email || '',
-      role: 'Administrador',
-      grantedAt: Date.now()
-    }));
+    await setDoc(
+      doc(db, 'admins', userId),
+      cleanFirestoreData({
+        uid: userId,
+        email: currentAccount.email || '',
+        role: 'Administrador',
+        grantedAt: Date.now()
+      })
+    );
 
     return { success: true, message: `${currentAccount.name} promovido a Administrador! 👑` };
   } catch (error: any) {
@@ -1249,7 +1282,10 @@ export async function promoteUserToAdmin(userId: string): Promise<{ success: boo
   }
 }
 
-export async function demoteAdmin(userId: string, fallbackRole = 'Treinador Principal'): Promise<{ success: boolean; message: string }> {
+export async function demoteAdmin(
+  userId: string,
+  fallbackRole = 'Treinador Principal'
+): Promise<{ success: boolean; message: string }> {
   try {
     const userDocRef = doc(db, 'users', userId);
     const snap = await getDoc(userDocRef);
@@ -1331,7 +1367,9 @@ export async function revokeTeamInvitation(inviteCode: string): Promise<{ succes
 /**
  * Looks up an invitation by invite code
  */
-export async function lookupInvitationByCode(inviteCode: string): Promise<{ success: boolean; invitation?: TeamInvitation; message: string }> {
+export async function lookupInvitationByCode(
+  inviteCode: string
+): Promise<{ success: boolean; invitation?: TeamInvitation; message: string }> {
   try {
     const cleanCode = inviteCode.trim().toUpperCase();
     const docRef = doc(db, 'invitations', cleanCode);

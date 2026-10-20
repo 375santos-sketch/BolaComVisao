@@ -117,14 +117,11 @@ export const TrainingList: React.FC<TrainingListProps> = ({
               : 'Nenhum treino encontrado com os filtros selecionados.'}
           </p>
           <p className="text-xs font-mono text-slate-500 mt-1 mb-4">
-            Podes inserir cada treino individualmente ou usar o gerador de época para agendar todos os treinos de uma vez.
+            Podes inserir cada treino individualmente ou usar o gerador de época para agendar todos os treinos de uma
+            vez.
           </p>
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            <button
-              type="button"
-              onClick={() => onOpenCreateForm('single')}
-              className="btn btn-gold text-xs px-4 py-2"
-            >
+            <button type="button" onClick={() => onOpenCreateForm('single')} className="btn btn-gold text-xs px-4 py-2">
               + Inserir Treino Único
             </button>
             <button

@@ -13,13 +13,11 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
     cornersAgainstTotal,
     cornersAgainstMatchesCount,
     cornersAgainstAvg,
-    goalTypes,
-    goalsScored
+    goalTypes
   } = analysis;
 
   const cornerGoalsScored = goalTypes.find((gt) => gt.type === 'Canto')?.count || 0;
-  const cornerConversionRate =
-    cornersForTotal > 0 ? ((cornerGoalsScored / cornersForTotal) * 100).toFixed(1) : '0';
+  const cornerConversionRate = cornersForTotal > 0 ? ((cornerGoalsScored / cornersForTotal) * 100).toFixed(1) : '0';
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
@@ -39,7 +37,8 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
           <span className="text-xs font-bold text-cyan-400 block mb-1">🚩 Cantos a Favor</span>
           <span className="text-3xl font-['Chakra_Petch'] font-black text-white">{cornersForTotal}</span>
           <span className="text-xs text-slate-400 block mt-1">
-            Média: <strong className="text-cyan-300">{cornersForAvg || '—'}</strong> / jogo ({cornersForMatchesCount} jogos registados)
+            Média: <strong className="text-cyan-300">{cornersForAvg || '—'}</strong> / jogo ({cornersForMatchesCount}{' '}
+            jogos registados)
           </span>
         </div>
 
@@ -48,7 +47,8 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
           <span className="text-xs font-bold text-rose-400 block mb-1">🚩 Cantos Sofridos (Contra)</span>
           <span className="text-3xl font-['Chakra_Petch'] font-black text-white">{cornersAgainstTotal}</span>
           <span className="text-xs text-slate-400 block mt-1">
-            Média: <strong className="text-rose-300">{cornersAgainstAvg || '—'}</strong> / jogo ({cornersAgainstMatchesCount} jogos registados)
+            Média: <strong className="text-rose-300">{cornersAgainstAvg || '—'}</strong> / jogo (
+            {cornersAgainstMatchesCount} jogos registados)
           </span>
         </div>
 
@@ -72,12 +72,9 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
     foulsCommittedAvg,
     foulsSufferedTotal,
     foulsSufferedMatchesCount,
-    foulsSufferedAvg,
-    yellowCardsTotal,
-    redCardsTotal
+    foulsSufferedAvg
   } = analysis;
 
-  const totalFouls = foulsCommittedTotal + foulsSufferedTotal;
   const balance = foulsSufferedTotal - foulsCommittedTotal;
 
   return (
@@ -98,7 +95,8 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
           <span className="text-xs font-bold text-amber-400 block mb-1">⚠️ Faltas Cometidas</span>
           <span className="text-3xl font-['Chakra_Petch'] font-black text-white">{foulsCommittedTotal}</span>
           <span className="text-xs text-slate-400 block mt-1">
-            Média: <strong className="text-amber-300">{foulsCommittedAvg || '—'}</strong> / jogo ({foulsCommittedMatchesCount} jogos)
+            Média: <strong className="text-amber-300">{foulsCommittedAvg || '—'}</strong> / jogo (
+            {foulsCommittedMatchesCount} jogos)
           </span>
         </div>
 
@@ -107,7 +105,8 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
           <span className="text-xs font-bold text-emerald-400 block mb-1">🩹 Faltas Sofridas</span>
           <span className="text-3xl font-['Chakra_Petch'] font-black text-white">{foulsSufferedTotal}</span>
           <span className="text-xs text-slate-400 block mt-1">
-            Média: <strong className="text-emerald-300">{foulsSufferedAvg || '—'}</strong> / jogo ({foulsSufferedMatchesCount} jogos)
+            Média: <strong className="text-emerald-300">{foulsSufferedAvg || '—'}</strong> / jogo (
+            {foulsSufferedMatchesCount} jogos)
           </span>
         </div>
 

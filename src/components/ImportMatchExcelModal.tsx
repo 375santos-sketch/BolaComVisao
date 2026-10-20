@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Match, AppState } from '../types';
+import { AppState } from '../types';
 import {
   readMatchExcelFile,
   parseMatchRows,
@@ -12,6 +12,7 @@ import {
   MatchDuplicateAction
 } from '../lib/matchExcelImporter';
 import { defaultSeason } from '../lib/utils';
+import { isMatchSheetWorkbook, readMatchSheetFile, MatchSheetImportResult } from '../lib/matchSheetImporter';
 
 interface ImportMatchExcelModalProps {
   isOpen: boolean;
@@ -28,12 +29,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
   onUpdateState,
   onShowToast
 }) => {
-  const [step, setStep] = useState<'upload' | 'mapping' | 'preview'>('upload');
+  const [step, setStep] = useState<'upload' | 'mapping' | 'preview' | 'ficha'>('upload');
+  const [sheetImport, setSheetImport] = useState<MatchSheetImportResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [processingProgress, setProcessingProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // File & Raw ArrayBuffer
   const [rawFileBuffer, setRawFileBuffer] = useState<ArrayBuffer | null>(null);
@@ -77,10 +78,23 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
     setProcessingProgress(20);
     setProcessingStage('A ler ficheiro Excel de Jogos...');
     setErrorMessage(null);
-    setSuccessMessage(null);
 
     try {
       const buffer = await file.arrayBuffer();
+
+      // A "Ficha de Jogo" exported by the app holds one complete match: rebuild it directly.
+      const XLSX = await import('xlsx');
+      if (isMatchSheetWorkbook(XLSX.read(buffer, { type: 'array', bookSheets: true }).SheetNames)) {
+        const result = await readMatchSheetFile(file, {
+          roster: state.roster || [],
+          fallbackSeason: state.season || defaultSeason(),
+          schedule: state.schedule || []
+        });
+        setSheetImport(result);
+        setStep('ficha');
+        return;
+      }
+
       setRawFileBuffer(buffer);
 
       setProcessingProgress(50);
@@ -167,27 +181,19 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
   // Toggle selection
   const handleToggleSelectRow = (id: string) => {
-    setParsedRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, selected: !r.selected } : r))
-    );
+    setParsedRows((prev) => prev.map((r) => (r.id === id ? { ...r, selected: !r.selected } : r)));
   };
 
   const handleToggleSelectAll = (select: boolean) => {
-    setParsedRows((prev) =>
-      prev.map((r) => (r.isValid ? { ...r, selected: select } : r))
-    );
+    setParsedRows((prev) => prev.map((r) => (r.isValid ? { ...r, selected: select } : r)));
   };
 
   const handleSetDuplicateAction = (id: string, action: MatchDuplicateAction) => {
-    setParsedRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, duplicateAction: action } : r))
-    );
+    setParsedRows((prev) => prev.map((r) => (r.id === id ? { ...r, duplicateAction: action } : r)));
   };
 
   const handleSetAllDuplicateActions = (action: MatchDuplicateAction) => {
-    setParsedRows((prev) =>
-      prev.map((r) => (r.isDuplicate ? { ...r, duplicateAction: action } : r))
-    );
+    setParsedRows((prev) => prev.map((r) => (r.isDuplicate ? { ...r, duplicateAction: action } : r)));
   };
 
   // Final Import Confirmation
@@ -231,7 +237,33 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
     existingMatches.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     onUpdateState({ matches: existingMatches });
-    onShowToast(`🎉 ${addedCount} novos jogos importados, ${replacedCount} atualizados!`);
+    onShowToast(
+      `🎉 ${addedCount} novos jogos importados, ${replacedCount} atualizados` +
+        (skippedCount > 0 ? `, ${skippedCount} ignorados!` : '!')
+    );
+    onClose();
+  };
+
+  const formatDate = (iso: string) => iso.split('-').reverse().join('/');
+  const sameText = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+  const sheetDuplicate = sheetImport
+    ? (state.matches || []).find(
+        (m) => m.date === sheetImport.match.date && sameText(m.opponent, sheetImport.match.opponent)
+      )
+    : undefined;
+
+  const handleConfirmSheetImport = (replaceExisting: boolean) => {
+    if (!sheetImport) return;
+    const existing = state.matches || [];
+    const matches =
+      replaceExisting && sheetDuplicate
+        ? existing.map((m) => (m.id === sheetDuplicate.id ? { ...sheetImport.match, id: sheetDuplicate.id } : m))
+        : [...existing, sheetImport.match];
+    matches.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    onUpdateState({ matches });
+    onShowToast(`🎉 Jogo vs ${sheetImport.match.opponent} recuperado da Ficha de Jogo!`);
+    setSheetImport(null);
+    setStep('upload');
     onClose();
   };
 
@@ -274,7 +306,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
-                Importa resultados, jornadas, adversários, golos e estatísticas em massa
+                Importa resultados em massa ou recupera um jogo a partir da Ficha de Jogo exportada
               </p>
             </div>
           </div>
@@ -328,9 +360,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
             <span>3.</span>
             <span>Pré-visualização & Importação</span>
             {parsedRows.length > 0 && (
-              <span className="text-[10px] bg-slate-950/40 px-1.5 py-0.2 rounded-full">
-                {parsedRows.length}
-              </span>
+              <span className="text-[10px] bg-slate-950/40 px-1.5 py-0.2 rounded-full">{parsedRows.length}</span>
             )}
           </button>
         </div>
@@ -345,9 +375,88 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
           </div>
         )}
 
+        {/* FICHA DE JOGO: single match recovered from an exported match sheet */}
+        {step === 'ficha' && sheetImport && (
+          <div className="space-y-4 py-2">
+            <div className="p-4 rounded-2xl bg-slate-900/70 border border-cyan-500/30 space-y-2">
+              <div className="text-[11px] font-mono text-cyan-300 uppercase">Ficha de Jogo detetada</div>
+              <div className="text-lg font-bold text-white">
+                vs {sheetImport.match.opponent}{' '}
+                <span className="text-cyan-300 font-mono">
+                  {sheetImport.match.finalScore?.scored} - {sheetImport.match.finalScore?.conceded}
+                </span>
+              </div>
+              <div className="text-xs text-slate-400">
+                {formatDate(sheetImport.match.date)} · {sheetImport.match.location === 'fora' ? 'Fora' : 'Casa'}
+                {sheetImport.match.phase ? ` · ${sheetImport.match.phase}` : ''} · Época {sheetImport.match.season}
+              </div>
+              <div className="text-xs text-slate-300 font-mono">
+                {sheetImport.match.goals.length} golos · {(sheetImport.match.cards || []).length} cartões ·{' '}
+                {sheetImport.match.subs.length} substituições · {sheetImport.match.lineup.length} titulares
+              </div>
+            </div>
+
+            {sheetImport.warnings.length > 0 && (
+              <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/30 text-xs text-amber-200 space-y-1">
+                <div className="font-bold">Alguns atletas não foram associados ao plantel:</div>
+                {sheetImport.warnings.map((w) => (
+                  <div key={w}>• {w}</div>
+                ))}
+              </div>
+            )}
+
+            {sheetDuplicate && (
+              <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/30 text-xs text-amber-200">
+                Já existe um jogo com {sheetDuplicate.opponent} em {formatDate(sheetDuplicate.date)}. Podes substituí-lo
+                pelos dados da ficha ou importar como um jogo novo.
+              </div>
+            )}
+
+            <div className="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSheetImport(null);
+                  setStep('upload');
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 bg-slate-900 border border-slate-700"
+              >
+                Cancelar
+              </button>
+              {sheetDuplicate && (
+                <button
+                  type="button"
+                  onClick={() => handleConfirmSheetImport(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-amber-400"
+                >
+                  Substituir jogo existente
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleConfirmSheetImport(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-cyan-400"
+              >
+                {sheetDuplicate ? 'Importar como novo' : 'Importar jogo'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* STEP 1: UPLOAD */}
         {step === 'upload' && (
           <div className="space-y-4 flex-1 flex flex-col justify-center py-4">
+            {loading && (
+              <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-200 space-y-2">
+                <div className="flex items-center justify-between font-mono">
+                  <span>{processingStage}</span>
+                  <span>{processingProgress}%</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-cyan-400 transition-all" style={{ width: `${processingProgress}%` }} />
+                </div>
+              </div>
+            )}
             <div
               onDragOver={(e) => {
                 e.preventDefault();
@@ -450,9 +559,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {/* Opponent */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">
-                  Adversário *
-                </label>
+                <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">Adversário *</label>
                 <select
                   value={columnMapping.opponent}
                   onChange={(e) => setColumnMapping({ ...columnMapping, opponent: e.target.value })}
@@ -469,9 +576,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Date */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">
-                  Data do Jogo *
-                </label>
+                <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">Data do Jogo *</label>
                 <select
                   value={columnMapping.date}
                   onChange={(e) => setColumnMapping({ ...columnMapping, date: e.target.value })}
@@ -488,9 +593,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Time */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                  Hora de Início
-                </label>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Hora de Início</label>
                 <select
                   value={columnMapping.time}
                   onChange={(e) => setColumnMapping({ ...columnMapping, time: e.target.value })}
@@ -526,9 +629,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Location */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                  Local (Casa / Fora)
-                </label>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Local (Casa / Fora)</label>
                 <select
                   value={columnMapping.location}
                   onChange={(e) => setColumnMapping({ ...columnMapping, location: e.target.value })}
@@ -564,9 +665,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Goals Conceded */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-rose-400 uppercase mb-1">
-                  Golos Sofridos
-                </label>
+                <label className="block text-[11px] font-bold text-rose-400 uppercase mb-1">Golos Sofridos</label>
                 <select
                   value={columnMapping.goalsConceded}
                   onChange={(e) => setColumnMapping({ ...columnMapping, goalsConceded: e.target.value })}
@@ -583,9 +682,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Phase / Round */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                  Jornada / Fase
-                </label>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Jornada / Fase</label>
                 <select
                   value={columnMapping.phase}
                   onChange={(e) => setColumnMapping({ ...columnMapping, phase: e.target.value })}
@@ -602,9 +699,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Corners For */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                  Cantos a Favor
-                </label>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Cantos a Favor</label>
                 <select
                   value={columnMapping.cornersFor}
                   onChange={(e) => setColumnMapping({ ...columnMapping, cornersFor: e.target.value })}
@@ -676,6 +771,20 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                   <div>
                     <div className="font-bold text-amber-300 font-mono">{duplicateCount} duplicados</div>
                     <div className="text-[10px] text-amber-400/80">Com regras de mesclagem</div>
+                    {duplicateCount > 0 && (
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) handleSetAllDuplicateActions(e.target.value as MatchDuplicateAction);
+                        }}
+                        className="mt-1 bg-slate-900 border border-amber-500/40 text-amber-300 text-[10px] rounded px-1.5 py-0.5"
+                      >
+                        <option value="">Aplicar a todos…</option>
+                        <option value="replace">Substituir Existentes</option>
+                        <option value="skip">Ignorar (Manter Atuais)</option>
+                        <option value="create_new">Criar como Novos</option>
+                      </select>
+                    )}
                   </div>
                 </div>
 
@@ -806,9 +915,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                           )}
                         </div>
                         {row.validationErrors.length > 0 && (
-                          <div className="text-[10px] text-rose-400 mt-0.5">
-                            {row.validationErrors.join(' • ')}
-                          </div>
+                          <div className="text-[10px] text-rose-400 mt-0.5">{row.validationErrors.join(' • ')}</div>
                         )}
                       </td>
                       <td className="p-2.5 font-mono text-slate-300">
@@ -830,16 +937,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                         <span className="text-slate-500 mx-1">-</span>
                         <span className="text-rose-400">{row.goalsConceded}</span>
                       </td>
-                      <td className="p-2.5 text-slate-400">
-                        {row.phase || row.tournamentName || row.type}
-                      </td>
+                      <td className="p-2.5 text-slate-400">{row.phase || row.tournamentName || row.type}</td>
                       <td className="p-2.5">
                         {row.isDuplicate ? (
                           <select
                             value={row.duplicateAction}
-                            onChange={(e) =>
-                              handleSetDuplicateAction(row.id, e.target.value as MatchDuplicateAction)
-                            }
+                            onChange={(e) => handleSetDuplicateAction(row.id, e.target.value as MatchDuplicateAction)}
                             className="bg-slate-900 border border-amber-500/40 text-amber-300 text-[11px] rounded px-2 py-1"
                           >
                             <option value="replace">Substituir Existente</option>

@@ -10,11 +10,11 @@ interface AuditLogModalProps {
   onShowToast?: (msg: string) => void;
 }
 
-export const AuditLogModal: React.FC<AuditLogModalProps> = ({ state, onClose, onShowToast }) => {
+export const AuditLogModal: React.FC<AuditLogModalProps> = ({ state, onClose }) => {
   const [cloudLogs, setCloudLogs] = useState<AuditLogEntry[]>([]);
   const [search, setSearch] = useState<string>('');
-  const [selectedUser, setSelectedUser] = useState<string>('all');
-  const [selectedTeam, setSelectedTeam] = useState<string>('all');
+  const [selectedUser] = useState<string>('all');
+  const [selectedTeam] = useState<string>('all');
   const [selectedAction, setSelectedAction] = useState<string>('all');
   const [selectedEntityType, setSelectedEntityType] = useState<string>('all');
   const [periodDays, setPeriodDays] = useState<number>(30);

@@ -352,11 +352,7 @@ export async function generateClubBoardReportPDF(state: AppState) {
 /**
  * 3. Relatório Oficial de Análise Estatística dos Jogos (Dashboard de Análise)
  */
-export async function generateGameAnalysisPDF(
-  analysis: AggregatedAnalysis,
-  filters: AnalysisFilters,
-  state: AppState
-) {
+export async function generateGameAnalysisPDF(analysis: AggregatedAnalysis, filters: AnalysisFilters, state: AppState) {
   const jsPDF = await getJsPDF();
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -373,12 +369,7 @@ export async function generateGameAnalysisPDF(
   const redText = [200, 40, 40];
 
   // Header with Left Club Crest & Right BolaComVisao Logo
-  drawDocumentHeader(
-    doc,
-    state,
-    'RELATÓRIO DE ANÁLISE DOS JOGOS',
-    `DASHBOARD ESTATÍSTICO • ${myClub.toUpperCase()}`
-  );
+  drawDocumentHeader(doc, state, 'RELATÓRIO DE ANÁLISE DOS JOGOS', `DASHBOARD ESTATÍSTICO • ${myClub.toUpperCase()}`);
 
   let curY = 46;
 
@@ -411,7 +402,16 @@ export async function generateGameAnalysisPDF(
   curY += 18;
 
   // 2. Indicadores Principais (KPIs em Caixas)
-  const drawKpiCard = (x: number, y: number, w: number, h: number, title: string, mainVal: string, subVal: string, color: number[]) => {
+  const drawKpiCard = (
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    title: string,
+    mainVal: string,
+    subVal: string,
+    color: number[]
+  ) => {
     doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
     doc.roundedRect(x, y, w, h, 2, 2, 'F');
     doc.setDrawColor(210, 225, 240);
@@ -437,10 +437,46 @@ export async function generateGameAnalysisPDF(
   const kpiH = 17;
   const kpiY = curY;
 
-  drawKpiCard(15, kpiY, kpiW, kpiH, 'Jogos Analisados', `${analysis.totalMatches} jogos`, `${analysis.finishedMatchesCount} concluídos`, brandDark);
-  drawKpiCard(61, kpiY, kpiW, kpiH, 'Vitórias / Aproveitamento', `${analysis.wins}V (${analysis.winPercentage}%)`, `${analysis.draws}E • ${analysis.losses}D`, greenText);
-  drawKpiCard(107, kpiY, kpiW, kpiH, 'Golos Marcados / Sofridos', `${analysis.goalsScored} - ${analysis.goalsConceded}`, `Saldo: ${analysis.goalDifference > 0 ? '+' : ''}${analysis.goalDifference}`, [0, 140, 220]);
-  drawKpiCard(153, kpiY, kpiW, kpiH, 'Clean Sheets & Defesa', `${analysis.cleanSheets} jogos`, `Média sofr.: ${analysis.avgGoalsConceded}/j`, redText);
+  drawKpiCard(
+    15,
+    kpiY,
+    kpiW,
+    kpiH,
+    'Jogos Analisados',
+    `${analysis.totalMatches} jogos`,
+    `${analysis.finishedMatchesCount} concluídos`,
+    brandDark
+  );
+  drawKpiCard(
+    61,
+    kpiY,
+    kpiW,
+    kpiH,
+    'Vitórias / Aproveitamento',
+    `${analysis.wins}V (${analysis.winPercentage}%)`,
+    `${analysis.draws}E • ${analysis.losses}D`,
+    greenText
+  );
+  drawKpiCard(
+    107,
+    kpiY,
+    kpiW,
+    kpiH,
+    'Golos Marcados / Sofridos',
+    `${analysis.goalsScored} - ${analysis.goalsConceded}`,
+    `Saldo: ${analysis.goalDifference > 0 ? '+' : ''}${analysis.goalDifference}`,
+    [0, 140, 220]
+  );
+  drawKpiCard(
+    153,
+    kpiY,
+    kpiW,
+    kpiH,
+    'Clean Sheets & Defesa',
+    `${analysis.cleanSheets} jogos`,
+    `Média sofr.: ${analysis.avgGoalsConceded}/j`,
+    redText
+  );
 
   curY += 21;
 
@@ -623,8 +659,14 @@ export async function generateGameAnalysisPDF(
 
   let discY = colY + 9;
   const discRows = [
-    { label: 'Faltas Cometidas (Média)', val: analysis.foulsCommittedAvg !== null ? `${analysis.foulsCommittedAvg} / jogo` : 'Não registado' },
-    { label: 'Faltas Sofridas (Média)', val: analysis.foulsSufferedAvg !== null ? `${analysis.foulsSufferedAvg} / jogo` : 'Não registado' },
+    {
+      label: 'Faltas Cometidas (Média)',
+      val: analysis.foulsCommittedAvg !== null ? `${analysis.foulsCommittedAvg} / jogo` : 'Não registado'
+    },
+    {
+      label: 'Faltas Sofridas (Média)',
+      val: analysis.foulsSufferedAvg !== null ? `${analysis.foulsSufferedAvg} / jogo` : 'Não registado'
+    },
     { label: 'Cartões Amarelos Totais', val: `${analysis.yellowCardsTotal}` },
     { label: 'Cartões Vermelhos Totais', val: `${analysis.redCardsTotal}` },
     { label: 'Média de Cartões / Jogo', val: `${analysis.cardsPerMatchAvg}` },

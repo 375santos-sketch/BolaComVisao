@@ -71,8 +71,7 @@ export function canAccessTeam(user: UserAccount | null | undefined, teamId?: str
   // 2. If no specific team is queried, check if user has access to at least one team
   if (!teamId) {
     return Boolean(
-      (user.assignedTeams && user.assignedTeams.length > 0) ||
-      (user.teamRoles && user.teamRoles.length > 0)
+      (user.assignedTeams && user.assignedTeams.length > 0) || (user.teamRoles && user.teamRoles.length > 0)
     );
   }
 
@@ -353,4 +352,3 @@ export function isActiveTeamRevoked(
   const accessible = getUserAccessibleTeams(user, teams);
   return !accessible.some((t) => t.id === activeTeamId);
 }
-

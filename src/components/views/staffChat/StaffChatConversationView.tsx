@@ -104,7 +104,8 @@ export const StaffChatConversationView: React.FC<StaffChatConversationViewProps>
           Ainda não há mensagens na conversa
         </h3>
         <p className="text-xs font-mono text-slate-400 mt-1 max-w-md mx-auto">
-          Usa a barra rápida em baixo para escrever a primeira mensagem, trocar ideias com os treinadores ou marcar uma reunião técnica.
+          Usa a barra rápida em baixo para escrever a primeira mensagem, trocar ideias com os treinadores ou marcar uma
+          reunião técnica.
         </p>
       </div>
     );
@@ -125,7 +126,9 @@ export const StaffChatConversationView: React.FC<StaffChatConversationViewProps>
           {group.items.map((msg) => {
             const isMe =
               msg.senderId === currentSenderId ||
-              (msg.senderName && currentSenderName && msg.senderName.trim().toLowerCase() === currentSenderName.trim().toLowerCase());
+              (msg.senderName &&
+                currentSenderName &&
+                msg.senderName.trim().toLowerCase() === currentSenderName.trim().toLowerCase());
             const isMeeting = msg.type === 'reuniao' || Boolean(msg.meetingDetails);
             const isUrgent = msg.priority === 'urgente' || msg.type === 'urgente';
             const typeConf = MESSAGE_TYPE_CONFIG[msg.type] || MESSAGE_TYPE_CONFIG.geral;
@@ -177,10 +180,10 @@ export const StaffChatConversationView: React.FC<StaffChatConversationViewProps>
                     isUrgent
                       ? 'bg-rose-950/70 border-rose-500/80 text-white shadow-[0_0_15px_rgba(244,63,94,0.2)]'
                       : isMe
-                      ? 'bg-gradient-to-br from-slate-900 to-cyan-950/80 border-cyan-500/50 text-slate-100'
-                      : isMeeting
-                      ? 'bg-slate-900/95 border-cyan-500/40 text-slate-100'
-                      : 'bg-slate-900/90 border-slate-800 text-slate-200 hover:border-slate-700'
+                        ? 'bg-gradient-to-br from-slate-900 to-cyan-950/80 border-cyan-500/50 text-slate-100'
+                        : isMeeting
+                          ? 'bg-slate-900/95 border-cyan-500/40 text-slate-100'
+                          : 'bg-slate-900/90 border-slate-800 text-slate-200 hover:border-slate-700'
                   }`}
                 >
                   {/* PINNED BADGE */}
@@ -414,7 +417,9 @@ export const StaffChatConversationView: React.FC<StaffChatConversationViewProps>
                       onClick={() => toggleThread(msg.id)}
                       className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-bold mb-1"
                     >
-                      <span>💬 {replies.length} {replies.length === 1 ? 'Resposta na conversa' : 'Respostas na conversa'}</span>
+                      <span>
+                        💬 {replies.length} {replies.length === 1 ? 'Resposta na conversa' : 'Respostas na conversa'}
+                      </span>
                       <span className="text-[10px]">{isThreadExpanded ? '▲ recolher' : '▼ expandir'}</span>
                     </button>
 
@@ -442,9 +447,7 @@ export const StaffChatConversationView: React.FC<StaffChatConversationViewProps>
                             >
                               <div className="flex items-center justify-between gap-2 mb-1">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="font-bold text-white font-['Chakra_Petch']">
-                                    {reply.senderName}
-                                  </span>
+                                  <span className="font-bold text-white font-['Chakra_Petch']">{reply.senderName}</span>
                                   <span className="text-[9px] font-mono text-slate-400 bg-slate-950 px-1 py-0.5 rounded">
                                     {reply.senderRole || 'Staff'}
                                   </span>

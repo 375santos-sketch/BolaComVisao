@@ -1,4 +1,4 @@
-import { PlayerStatus, DominantFoot } from '../../../types';
+import { PlayerStatus } from '../../../types';
 
 export interface PositionGroup {
   id: string;

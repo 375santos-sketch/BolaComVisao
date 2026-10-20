@@ -6,7 +6,7 @@ import {
   FirstGoalMetrics,
   BestTimingWindows
 } from './types';
-import { Match, GoalEvent } from '../../types';
+import { Match } from '../../types';
 import { normalizeEventTiming } from '../gameAnalysisUtils';
 
 interface InsightEngineInput {
@@ -86,9 +86,7 @@ export function generateGameAnalysisInsights(input: InsightEngineInput): GameAna
   const insights: GameAnalysisInsight[] = [];
 
   // Sort matches chronologically (oldest to newest) to calculate recent form trends
-  const sortedMatches = [...filteredMatches].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const sortedMatches = [...filteredMatches].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   // Recent 10 matches sample (or all if less)
   const recent10 = sortedMatches.slice(-10);
@@ -219,7 +217,11 @@ export function generateGameAnalysisInsights(input: InsightEngineInput): GameAna
     }
   }
 
-  if (goalsConceded >= 2 && concededOriginBreakdown.setPiecePercentage >= 35 && concededOriginBreakdown.setPieceCount >= 2) {
+  if (
+    goalsConceded >= 2 &&
+    concededOriginBreakdown.setPiecePercentage >= 35 &&
+    concededOriginBreakdown.setPieceCount >= 2
+  ) {
     insights.push({
       id: 'warning-conceded-set-pieces',
       type: 'warning',
@@ -322,7 +324,12 @@ export function generateGameAnalysisInsights(input: InsightEngineInput): GameAna
   // ---------------------------------------------------------------------------
   // 6. 🚩 DOMÍNIO DE CANTOS
   // ---------------------------------------------------------------------------
-  if (cornersForTotal > 0 && cornersAgainstTotal > 0 && typeof cornersForAvg === 'number' && typeof cornersAgainstAvg === 'number') {
+  if (
+    cornersForTotal > 0 &&
+    cornersAgainstTotal > 0 &&
+    typeof cornersForAvg === 'number' &&
+    typeof cornersAgainstAvg === 'number'
+  ) {
     if (cornersForAvg > cornersAgainstAvg && cornersForAvg >= 4) {
       insights.push({
         id: 'dominance-corners',

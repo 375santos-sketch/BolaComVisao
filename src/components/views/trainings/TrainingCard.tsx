@@ -114,11 +114,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
                 ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.35)]'
                 : 'bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-300'
             }`}
-            title={
-              !isCompleted
-                ? 'Concluir treino e contabilizar na assiduidade'
-                : 'Reabrir treino como planeado'
-            }
+            title={!isCompleted ? 'Concluir treino e contabilizar na assiduidade' : 'Reabrir treino como planeado'}
           >
             <span>{!isCompleted ? '✓ Concluir Treino' : '↩ Reabrir (Agendado)'}</span>
           </button>
@@ -218,58 +214,59 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
           </div>
 
           {/* Session Plan Blocks Drawer Section */}
-          {tr.sessionPlan && (tr.sessionPlan.objective || (tr.sessionPlan.blocks && tr.sessionPlan.blocks.length > 0)) && (
-            <div className="p-3 rounded-xl bg-slate-950/90 border border-cyan-500/30 space-y-2 font-mono">
-              <div className="flex items-center justify-between pb-1 border-b border-slate-800">
-                <span className="text-cyan-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs flex items-center gap-1.5">
-                  <span>📋</span>
-                  <span>Plano da Sessão ({tr.sessionPlan.blocks?.length || 0} blocos):</span>
-                </span>
-                {tr.sessionPlan.blocks && (
-                  <span className="text-[10px] text-slate-400">
-                    {tr.sessionPlan.blocks.reduce((sum, b) => sum + (b.durationMinutes || 0), 0)} min planeados
+          {tr.sessionPlan &&
+            (tr.sessionPlan.objective || (tr.sessionPlan.blocks && tr.sessionPlan.blocks.length > 0)) && (
+              <div className="p-3 rounded-xl bg-slate-950/90 border border-cyan-500/30 space-y-2 font-mono">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                  <span className="text-cyan-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs flex items-center gap-1.5">
+                    <span>📋</span>
+                    <span>Plano da Sessão ({tr.sessionPlan.blocks?.length || 0} blocos):</span>
                   </span>
-                )}
-              </div>
-
-              {tr.sessionPlan.objective && (
-                <div className="text-xs text-amber-200/90 italic pb-1">
-                  🎯 <b>Objetivo:</b> {tr.sessionPlan.objective}
+                  {tr.sessionPlan.blocks && (
+                    <span className="text-[10px] text-slate-400">
+                      {tr.sessionPlan.blocks.reduce((sum, b) => sum + (b.durationMinutes || 0), 0)} min planeados
+                    </span>
+                  )}
                 </div>
-              )}
 
-              {tr.sessionPlan.blocks && tr.sessionPlan.blocks.length > 0 && (
-                <div className="space-y-1.5 pt-1">
-                  {tr.sessionPlan.blocks.map((block, bIdx) => (
-                    <div
-                      key={block.id || bIdx}
-                      className="p-2 rounded-lg bg-slate-900 border border-slate-800 flex items-start justify-between gap-2 text-xs"
-                    >
-                      <div className="space-y-0.5 min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="w-4 h-4 rounded bg-cyan-950 text-cyan-300 font-bold text-[10px] flex items-center justify-center">
-                            {bIdx + 1}
-                          </span>
-                          <span className="font-bold text-white font-['Chakra_Petch']">{block.title}</span>
-                          {block.category && (
-                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-800 uppercase">
-                              {block.category}
+                {tr.sessionPlan.objective && (
+                  <div className="text-xs text-amber-200/90 italic pb-1">
+                    🎯 <b>Objetivo:</b> {tr.sessionPlan.objective}
+                  </div>
+                )}
+
+                {tr.sessionPlan.blocks && tr.sessionPlan.blocks.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    {tr.sessionPlan.blocks.map((block, bIdx) => (
+                      <div
+                        key={block.id || bIdx}
+                        className="p-2 rounded-lg bg-slate-900 border border-slate-800 flex items-start justify-between gap-2 text-xs"
+                      >
+                        <div className="space-y-0.5 min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="w-4 h-4 rounded bg-cyan-950 text-cyan-300 font-bold text-[10px] flex items-center justify-center">
+                              {bIdx + 1}
                             </span>
+                            <span className="font-bold text-white font-['Chakra_Petch']">{block.title}</span>
+                            {block.category && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-800 uppercase">
+                                {block.category}
+                              </span>
+                            )}
+                          </div>
+                          {block.notes && (
+                            <p className="text-[11px] text-slate-400 pl-5.5 leading-snug">{block.notes}</p>
                           )}
                         </div>
-                        {block.notes && (
-                          <p className="text-[11px] text-slate-400 pl-5.5 leading-snug">{block.notes}</p>
-                        )}
+                        <span className="text-cyan-400 font-bold shrink-0 text-[11px]">
+                          ⏱️ {block.durationMinutes} min
+                        </span>
                       </div>
-                      <span className="text-cyan-400 font-bold shrink-0 text-[11px]">
-                        ⏱️ {block.durationMinutes} min
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
           {tr.notes ? (
             <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 leading-relaxed font-mono">

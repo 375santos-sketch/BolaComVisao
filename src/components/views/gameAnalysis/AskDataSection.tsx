@@ -57,9 +57,7 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
 
       {/* Quick Suggestion Pills */}
       <div className="space-y-1.5">
-        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-          Perguntas Rápidas:
-        </span>
+        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Perguntas Rápidas:</span>
         <div className="flex flex-wrap gap-2">
           {quickQuestions.map((q, idx) => (
             <button
@@ -95,15 +93,11 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
       {currentResponse && (
         <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/90 border border-cyan-500/30 space-y-4 animate-fadeIn shadow-inner">
           <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
-            <span className="text-xs font-mono text-cyan-400 font-bold">
-              🔍 "{currentResponse.query}"
-            </span>
+            <span className="text-xs font-mono text-cyan-400 font-bold">🔍 "{currentResponse.query}"</span>
             <span className="text-[10px] text-slate-400 font-mono">Dados Verificados ✓</span>
           </div>
 
-          <p className="text-sm sm:text-base font-semibold text-white leading-relaxed">
-            {currentResponse.summary}
-          </p>
+          <p className="text-sm sm:text-base font-semibold text-white leading-relaxed">{currentResponse.summary}</p>
 
           {/* Metrics Grid */}
           {currentResponse.metrics && currentResponse.metrics.length > 0 && (
@@ -129,9 +123,7 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
 
           {/* Key Bullet Points */}
           <div className="space-y-1.5 pt-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Pontos-Chave:
-            </span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pontos-Chave:</span>
             <ul className="space-y-1 text-xs text-slate-300">
               {currentResponse.keyPoints.map((point, idx) => (
                 <li key={idx} className="flex items-start gap-2">
@@ -150,9 +142,7 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
                 <span className="text-xs font-bold text-cyan-300 uppercase tracking-wide block">
                   Recomendação Técnica:
                 </span>
-                <span className="text-xs text-cyan-100/90 leading-snug">
-                  {currentResponse.recommendation}
-                </span>
+                <span className="text-xs text-cyan-100/90 leading-snug">{currentResponse.recommendation}</span>
               </div>
             </div>
           )}

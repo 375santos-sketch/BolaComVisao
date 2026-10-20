@@ -1,4 +1,4 @@
-import { Match, GoalEvent } from '../../types';
+import { Match } from '../../types';
 import { AggregatedAnalysis, StandardGoalType } from './types';
 import { normalizeEventTiming } from '../gameAnalysisUtils';
 import {
@@ -74,7 +74,10 @@ export function computeDetailedFirstGoalImpact(
       if (isWin) scoredFirstWins++;
       else if (isDraw) scoredFirstDraws++;
       else if (isLoss) scoredFirstLosses++;
-    } else if (earliestConcededMin !== null && (earliestScoredMin === null || earliestConcededMin < earliestScoredMin)) {
+    } else if (
+      earliestConcededMin !== null &&
+      (earliestScoredMin === null || earliestConcededMin < earliestScoredMin)
+    ) {
       // Conceded first
       concededFirstMatches++;
       concededFirstMins.push(earliestConcededMin);
@@ -96,9 +99,12 @@ export function computeDetailedFirstGoalImpact(
   const scoredFirstDrawRate = scoredFirstMatches > 0 ? Math.round((scoredFirstDraws / scoredFirstMatches) * 100) : 0;
   const scoredFirstLossRate = scoredFirstMatches > 0 ? Math.round((scoredFirstLosses / scoredFirstMatches) * 100) : 0;
 
-  const concededFirstWinRate = concededFirstMatches > 0 ? Math.round((concededFirstComebackWins / concededFirstMatches) * 100) : 0;
-  const concededFirstDrawRate = concededFirstMatches > 0 ? Math.round((concededFirstComebackDraws / concededFirstMatches) * 100) : 0;
-  const concededFirstLossRate = concededFirstMatches > 0 ? Math.round((concededFirstLosses / concededFirstMatches) * 100) : 0;
+  const concededFirstWinRate =
+    concededFirstMatches > 0 ? Math.round((concededFirstComebackWins / concededFirstMatches) * 100) : 0;
+  const concededFirstDrawRate =
+    concededFirstMatches > 0 ? Math.round((concededFirstComebackDraws / concededFirstMatches) * 100) : 0;
+  const concededFirstLossRate =
+    concededFirstMatches > 0 ? Math.round((concededFirstLosses / concededFirstMatches) * 100) : 0;
   const concededFirstComebackRate =
     concededFirstMatches > 0
       ? Math.round(((concededFirstComebackWins + concededFirstComebackDraws) / concededFirstMatches) * 100)
@@ -193,7 +199,7 @@ export function computeOutcomeGroupProfile(
 
   matchesSubset.forEach((m) => {
     const halfDur = m.halfDurationMinutes || m.firstHalfDurationMinutes || defaultHalfDuration;
-    const lateCutoffMinute = Math.round(((halfDur * 2) * 2) / 3 / 5) * 5; // e.g. 60 min for 90m
+    const lateCutoffMinute = Math.round((halfDur * 2 * 2) / 3 / 5) * 5; // e.g. 60 min for 90m
 
     const scGoals = (m.goals || []).filter((g) => g.type === 'scored');
     const coGoals = (m.goals || []).filter((g) => g.type === 'conceded');
@@ -287,8 +293,7 @@ export function computeOutcomeGroupProfile(
     percentage,
     avgGoalsScored: parseFloat((totalGoalsScored / matchCount).toFixed(1)),
     avgGoalsConceded: parseFloat((totalGoalsConceded / matchCount).toFixed(1)),
-    avgCornersFor:
-      cornersForMatches > 0 ? parseFloat((totalCornersFor / cornersForMatches).toFixed(1)) : null,
+    avgCornersFor: cornersForMatches > 0 ? parseFloat((totalCornersFor / cornersForMatches).toFixed(1)) : null,
     avgCornersAgainst:
       cornersAgainstMatches > 0 ? parseFloat((totalCornersAgainst / cornersAgainstMatches).toFixed(1)) : null,
     avgFoulsCommitted:
@@ -422,12 +427,7 @@ export function buildCoachReport(
   const drawsProfile = computeOutcomeGroupProfile(drawMatches, finishedMatchesCount, configuredHalfDuration);
   const lossesProfile = computeOutcomeGroupProfile(lossMatches, finishedMatchesCount, configuredHalfDuration);
 
-  const setPieces = computeSetPieceDetailedBreakdown(
-    goalTypes,
-    concededGoalTypes,
-    goalsScored,
-    goalsConceded
-  );
+  const setPieces = computeSetPieceDetailedBreakdown(goalTypes, concededGoalTypes, goalsScored, goalsConceded);
 
   // Peak timing windows with percentage
   let peakScoringPeriod: { label: string; count: number; percentage: number } | null = null;
@@ -488,9 +488,7 @@ export function buildCoachReport(
     }
 
     if (parts.length > 0) {
-      keyConclusions.push(
-        `🔍 Padrão nas Derrotas: Nas ${lossCount} derrotas registadas, em ${parts.join(', em ')}.`
-      );
+      keyConclusions.push(`🔍 Padrão nas Derrotas: Nas ${lossCount} derrotas registadas, em ${parts.join(', em ')}.`);
     }
   }
 
@@ -541,8 +539,14 @@ export function buildCoachReport(
     setPieceScoredRate: setPieces.scoredRate,
     setPieceConcededRate: setPieces.concededRate,
     setPieces,
-    avgYellowCards: analysis.yellowCardsTotal > 0 && finishedMatchesCount > 0 ? parseFloat((analysis.yellowCardsTotal / finishedMatchesCount).toFixed(1)) : 0,
-    avgRedCards: analysis.redCardsTotal > 0 && finishedMatchesCount > 0 ? parseFloat((analysis.redCardsTotal / finishedMatchesCount).toFixed(1)) : 0,
+    avgYellowCards:
+      analysis.yellowCardsTotal > 0 && finishedMatchesCount > 0
+        ? parseFloat((analysis.yellowCardsTotal / finishedMatchesCount).toFixed(1))
+        : 0,
+    avgRedCards:
+      analysis.redCardsTotal > 0 && finishedMatchesCount > 0
+        ? parseFloat((analysis.redCardsTotal / finishedMatchesCount).toFixed(1))
+        : 0,
     avgCardsTotal: cardsPerMatchAvg,
     firstGoalImpact,
     winsProfile,

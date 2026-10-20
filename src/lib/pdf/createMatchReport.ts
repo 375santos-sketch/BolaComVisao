@@ -291,9 +291,7 @@ export async function generateMatchSheetPDF(
   const greenText = [16, 140, 70];
   const redText = [200, 40, 40];
 
-  const dateFormatted = match.date.includes('-')
-    ? match.date.split('-').reverse().join('/')
-    : match.date;
+  const dateFormatted = match.date.includes('-') ? match.date.split('-').reverse().join('/') : match.date;
 
   const compDetails = getMatchCompetitionDetails(match, state);
   const typeLabel = compDetails.typeLabel;
@@ -383,9 +381,7 @@ export async function generateMatchSheetPDF(
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.8);
   doc.setTextColor(95, 115, 140);
-  const agendaStatusText = compDetails.scheduledMatch
-    ? '📅 Sincronizado com a Agenda'
-    : '📋 Ficha Oficial de Jogo';
+  const agendaStatusText = compDetails.scheduledMatch ? '📅 Sincronizado com a Agenda' : '📋 Ficha Oficial de Jogo';
   doc.text(agendaStatusText, 191, curY + 5.8, { align: 'right' });
 
   curY += 12.5;
@@ -462,7 +458,8 @@ export async function generateMatchSheetPDF(
       doc.setTextColor(darkText[0], darkText[1], darkText[2]);
       const scorerText = assist ? `${scorer} (ast. ${assist})` : scorer;
       const maxScorerLen = 40;
-      const displayScorer = scorerText.length > maxScorerLen ? scorerText.substring(0, maxScorerLen - 1) + '…' : scorerText;
+      const displayScorer =
+        scorerText.length > maxScorerLen ? scorerText.substring(0, maxScorerLen - 1) + '…' : scorerText;
       doc.text(displayScorer, 34, curY + 2.2);
 
       // Badge Origem / Tipo de Golo em Destaque
@@ -848,11 +845,7 @@ export async function generateMatchSheetPDF(
       doc.setFontSize(7.5);
       doc.setTextColor(darkText[0], darkText[1], darkText[2]);
       const minStr = c.minute ? `${formatMinute(c.minute)} ` : '';
-      doc.text(
-        `${c.color === 'Amarelo' ? '🟨' : '🟥'} ${minStr}Cartão ${c.color}: ${getPName(c.playerId)}`,
-        20,
-        curY
-      );
+      doc.text(`${c.color === 'Amarelo' ? '🟨' : '🟥'} ${minStr}Cartão ${c.color}: ${getPName(c.playerId)}`, 20, curY);
       curY += 5;
     });
     curY += 2;
@@ -874,7 +867,11 @@ export async function generateMatchSheetPDF(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.8);
   doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-  doc.text(`• Resultado Final: ${sc} - ${co} (${sc > co ? 'Vitória' : sc === co ? 'Empate' : 'Derrota'})`, 20, curY + 5.5);
+  doc.text(
+    `• Resultado Final: ${sc} - ${co} (${sc > co ? 'Vitória' : sc === co ? 'Empate' : 'Derrota'})`,
+    20,
+    curY + 5.5
+  );
   doc.text(`• Total de Golos Marcados: ${sc}`, 20, curY + 11);
   doc.text(`• Total de Golos Sofridos: ${co}`, 20, curY + 16.5);
   doc.text(

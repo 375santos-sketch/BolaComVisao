@@ -105,7 +105,8 @@ export const InstallPwaBanner: React.FC = () => {
 
       {showGuide && (
         <div className="bg-slate-950 border-b border-cyan-500/50 p-2.5 text-center text-xs font-mono text-cyan-300 animate-fadeIn z-30">
-          💡 Para instalar no telemóvel: toque no menu do navegador (<strong>Partilhar 📤</strong> no iPhone ou <strong>⋮</strong> no Android) e selecione <strong>&quot;Adicionar ao ecrã principal&quot;</strong>.
+          💡 Para instalar no telemóvel: toque no menu do navegador (<strong>Partilhar 📤</strong> no iPhone ou{' '}
+          <strong>⋮</strong> no Android) e selecione <strong>&quot;Adicionar ao ecrã principal&quot;</strong>.
         </div>
       )}
     </>

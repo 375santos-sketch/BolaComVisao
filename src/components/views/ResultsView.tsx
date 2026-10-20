@@ -291,9 +291,13 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                           <div className="p-2 bg-slate-950/80 rounded-xl border border-cyan-500/30 flex items-center justify-between text-xs font-mono">
                             <span className="text-[10px] text-cyan-300 font-bold uppercase">🎯 Remates à Baliza</span>
                             <div className="flex items-center gap-3">
-                              <span className="text-cyan-400 font-bold">Nós: {totFor} ({inFor}d/{outFor}f)</span>
+                              <span className="text-cyan-400 font-bold">
+                                Nós: {totFor} ({inFor}d/{outFor}f)
+                              </span>
                               <span className="text-slate-600">vs</span>
-                              <span className="text-rose-400 font-bold">Adv: {totAdv} ({inAdv}d/{outAdv}f)</span>
+                              <span className="text-rose-400 font-bold">
+                                Adv: {totAdv} ({inAdv}d/{outAdv}f)
+                              </span>
                             </div>
                           </div>
                         )}
@@ -301,19 +305,27 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         <div className="grid grid-cols-4 gap-2 p-2 bg-slate-950/60 rounded-xl border border-slate-800 text-center">
                           <div>
                             <div className="text-[9px] text-slate-400 uppercase font-bold">Cantos</div>
-                            <div className="text-xs sm:text-sm font-black font-mono text-cyan-400">{cFor} - {cAdv}</div>
+                            <div className="text-xs sm:text-sm font-black font-mono text-cyan-400">
+                              {cFor} - {cAdv}
+                            </div>
                           </div>
                           <div>
                             <div className="text-[9px] text-slate-400 uppercase font-bold">Faltas Com.</div>
-                            <div className="text-xs sm:text-sm font-black font-mono text-amber-400">{m.foulsCommitted ?? m.faltas ?? 0}</div>
+                            <div className="text-xs sm:text-sm font-black font-mono text-amber-400">
+                              {m.foulsCommitted ?? m.faltas ?? 0}
+                            </div>
                           </div>
                           <div>
                             <div className="text-[9px] text-slate-400 uppercase font-bold">Faltas Sofr.</div>
-                            <div className="text-xs sm:text-sm font-black font-mono text-emerald-400">{m.foulsSuffered ?? m.faltasAdv ?? 0}</div>
+                            <div className="text-xs sm:text-sm font-black font-mono text-emerald-400">
+                              {m.foulsSuffered ?? m.faltasAdv ?? 0}
+                            </div>
                           </div>
                           <div>
                             <div className="text-[9px] text-slate-400 uppercase font-bold">Substituições</div>
-                            <div className="text-xs sm:text-sm font-black font-mono text-purple-400">{(m.subs || []).length}</div>
+                            <div className="text-xs sm:text-sm font-black font-mono text-purple-400">
+                              {(m.subs || []).length}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -425,7 +437,12 @@ const MatchTimelineView: React.FC<{ m: Match; lang: any; getPlayerName: (id: str
       .filter((c) => c.half === half || (!c.half && (half === 1 ? c.period !== '2.ª parte' : c.period === '2.ª parte')))
       .map((c) => ({ type: 'card', minute: c.minute, period: c.period, data: c, isHalftime: false }));
     const sbs: TimelineEventItem[] = (m.subs || [])
-      .filter((s) => s.half === half || (half === 1 && s.isHalftime) || (!s.half && (half === 1 ? s.period === '1.ª parte' || s.isHalftime : s.period === '2.ª parte')))
+      .filter(
+        (s) =>
+          s.half === half ||
+          (half === 1 && s.isHalftime) ||
+          (!s.half && (half === 1 ? s.period === '1.ª parte' || s.isHalftime : s.period === '2.ª parte'))
+      )
       .map((s) => ({
         type: 'sub',
         minute: s.isHalftime ? 'INT' : s.minute,

@@ -30,7 +30,10 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
   }
 
   return (
-    <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden" id="first-goal-section">
+    <section
+      className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden"
+      id="first-goal-section"
+    >
       <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-800">
@@ -66,7 +69,9 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
             </div>
 
             {scoredFirstMatches === 0 ? (
-              <p className="text-xs text-slate-500 italic py-4">Sem jogos em que a equipa tenha inaugurado o marcador.</p>
+              <p className="text-xs text-slate-500 italic py-4">
+                Sem jogos em que a equipa tenha inaugurado o marcador.
+              </p>
             ) : (
               <>
                 <div className="flex items-baseline justify-between mb-4 bg-slate-900/80 p-3.5 rounded-2xl border border-emerald-500/20">
@@ -79,9 +84,7 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
                   {avgScoredFirstMinute !== null && (
                     <div className="text-right">
                       <span className="text-[11px] font-bold text-slate-400 block uppercase">Minuto Médio</span>
-                      <span className="text-lg font-mono font-bold text-emerald-300">
-                        {avgScoredFirstMinute}'
-                      </span>
+                      <span className="text-lg font-mono font-bold text-emerald-300">{avgScoredFirstMinute}'</span>
                     </div>
                   )}
                 </div>
@@ -129,11 +132,12 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
 
           {scoredFirstMatches > 0 && (
             <div className="mt-4 pt-3 border-t border-slate-800/80 text-xs text-slate-300 font-medium">
-              💡 {scoredFirstWinRate >= 75
+              💡{' '}
+              {scoredFirstWinRate >= 75
                 ? 'Excelente capacidade de controlo e gestão de vantagem no marcador.'
                 : scoredFirstLosses > 0 || scoredFirstDraws > 0
-                ? 'Oportunidade para reforçar a maturidade defensiva após inaugurar o marcador.'
-                : 'A equipa converteu todas as vantagens inauguradas.'}
+                  ? 'Oportunidade para reforçar a maturidade defensiva após inaugurar o marcador.'
+                  : 'A equipa converteu todas as vantagens inauguradas.'}
             </div>
           )}
         </div>
@@ -154,7 +158,9 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
             </div>
 
             {concededFirstMatches === 0 ? (
-              <p className="text-xs text-slate-500 italic py-4">Sem jogos em que o adversário tenha inaugurado o marcador.</p>
+              <p className="text-xs text-slate-500 italic py-4">
+                Sem jogos em que o adversário tenha inaugurado o marcador.
+              </p>
             ) : (
               <>
                 <div className="flex items-baseline justify-between mb-4 bg-slate-900/80 p-3.5 rounded-2xl border border-rose-500/20">
@@ -167,9 +173,7 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
                   {avgConcededFirstMinute !== null && (
                     <div className="text-right">
                       <span className="text-[11px] font-bold text-slate-400 block uppercase">Minuto Médio</span>
-                      <span className="text-lg font-mono font-bold text-rose-300">
-                        {avgConcededFirstMinute}'
-                      </span>
+                      <span className="text-lg font-mono font-bold text-rose-300">{avgConcededFirstMinute}'</span>
                     </div>
                   )}
                 </div>
@@ -185,9 +189,7 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
                       <span className="text-xl font-['Chakra_Petch'] font-black text-emerald-400">
                         {concededFirstComebackWins}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-mono block">
-                        ({concededFirstWinRate}%)
-                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono block">({concededFirstWinRate}%)</span>
                     </div>
 
                     <div className="bg-slate-900/90 border border-amber-500/30 p-2.5 rounded-xl">
@@ -196,7 +198,11 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
                         {concededFirstComebackDraws}
                       </span>
                       <span className="text-[10px] text-slate-500 font-mono block">
-                        ({concededFirstMatches > 0 ? Math.round((concededFirstComebackDraws / concededFirstMatches) * 100) : 0}%)
+                        (
+                        {concededFirstMatches > 0
+                          ? Math.round((concededFirstComebackDraws / concededFirstMatches) * 100)
+                          : 0}
+                        %)
                       </span>
                     </div>
 
@@ -206,7 +212,8 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
                         {concededFirstLosses}
                       </span>
                       <span className="text-[10px] text-slate-500 font-mono block">
-                        ({concededFirstMatches > 0 ? Math.round((concededFirstLosses / concededFirstMatches) * 100) : 0}%)
+                        ({concededFirstMatches > 0 ? Math.round((concededFirstLosses / concededFirstMatches) * 100) : 0}
+                        %)
                       </span>
                     </div>
                   </div>
@@ -217,7 +224,8 @@ export const FirstGoalSection: React.FC<FirstGoalSectionProps> = ({ firstGoalImp
 
           {concededFirstMatches > 0 && (
             <div className="mt-4 pt-3 border-t border-slate-800/80 text-xs text-slate-300 font-medium">
-              💡 {concededFirstComebackRate >= 50
+              💡{' '}
+              {concededFirstComebackRate >= 50
                 ? 'Elevado poder de superação mental e resiliência tática para pontuar após desvantagem.'
                 : 'A equipa sente dificuldades quando começa a perder, sendo crucial entrar com foco máximo.'}
             </div>

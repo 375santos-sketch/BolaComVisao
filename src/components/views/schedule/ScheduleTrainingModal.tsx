@@ -44,15 +44,15 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                 {editingTrainingId
                   ? 'Editar Treino'
                   : modalMode === 'batch'
-                  ? 'Adicionar Vários Treinos (Período)'
-                  : 'Agendar Novo Treino'}
+                    ? 'Adicionar Vários Treinos (Período)'
+                    : 'Agendar Novo Treino'}
               </h3>
               <p className="text-[11px] font-mono text-slate-400">
                 {editingTrainingId
                   ? 'Alterar dados da sessão'
                   : modalMode === 'batch'
-                  ? 'Gerar grelha por período, dias da semana e horários'
-                  : 'Criar uma sessão individual de treino'}
+                    ? 'Gerar grelha por período, dias da semana e horários'
+                    : 'Criar uma sessão individual de treino'}
               </p>
             </div>
           </div>
@@ -73,9 +73,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                 type="button"
                 onClick={() => setModalMode('single')}
                 className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
-                  modalMode === 'single'
-                    ? 'bg-amber-500 text-slate-950 shadow-md'
-                    : 'text-slate-400 hover:text-white'
+                  modalMode === 'single' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <span>⚡</span>
@@ -86,9 +84,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                 type="button"
                 onClick={() => setModalMode('batch')}
                 className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
-                  modalMode === 'batch'
-                    ? 'bg-cyan-500 text-slate-950 shadow-md'
-                    : 'text-slate-400 hover:text-white'
+                  modalMode === 'batch' ? 'bg-cyan-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <span>📅</span>
@@ -210,13 +206,10 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    onShowConfirm(
-                      'Tens a certeza que desejas eliminar este treino cancelado da agenda?',
-                      () => {
-                        handleDeleteTraining(editingTrainingId);
-                        setShowTrainingModal(false);
-                      }
-                    );
+                    onShowConfirm('Tens a certeza que desejas eliminar este treino cancelado da agenda?', () => {
+                      handleDeleteTraining(editingTrainingId);
+                      setShowTrainingModal(false);
+                    });
                   }}
                   className="px-4 py-2.5 min-h-[44px] rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/60 text-red-300 hover:text-white text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
                   title="Eliminar este treino cancelado da agenda"

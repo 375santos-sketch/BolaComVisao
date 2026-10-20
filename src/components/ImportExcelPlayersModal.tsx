@@ -214,7 +214,9 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
       dataRowCount: reParsedData.rawRows.length
     });
 
-    onShowToast(`Linha de cabeçalho alterada para Linha ${newRowIndex + 1} (${reParsedData.rawHeaders.length} colunas encontradas)`);
+    onShowToast(
+      `Linha de cabeçalho alterada para Linha ${newRowIndex + 1} (${reParsedData.rawHeaders.length} colunas encontradas)`
+    );
   };
 
   // Mapping Change Handler
@@ -294,7 +296,8 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
             ...existing,
             name: row.name ? row.name.trim() : existing.name,
             number: row.number !== null && row.number !== undefined ? row.number : existing.number,
-            positions: row.positions && row.positions !== 'Jogador' ? row.positions : (existing.positions || row.positions),
+            positions:
+              row.positions && row.positions !== 'Jogador' ? row.positions : existing.positions || row.positions,
             birthDate: row.birthDate || existing.birthDate,
             dominantFoot: row.dominantFoot || existing.dominantFoot,
             height: row.height || existing.height,
@@ -386,7 +389,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
         const fullNextState: AppState = {
           ...state,
           roster: finalRoster,
-          teams: updatedTeams.length > 0 ? updatedTeams : (state.teams || [])
+          teams: updatedTeams.length > 0 ? updatedTeams : state.teams || []
         };
         await saveMasterClubState(
           state.currentUser.clubId || 'main',
@@ -454,12 +457,13 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                 </span>
                 {activeTeam && (
                   <span className="px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono">
-                    Equipa: {activeTeam.name || 'Ativa'}
+                    Equipa: {[activeTeam.clubName, activeTeam.category].filter(Boolean).join(' · ') || 'Ativa'}
                   </span>
                 )}
               </div>
               <p className="text-xs text-slate-400 font-mono mt-0.5">
-                Deteção automática inteligente com validação linha a linha, resolução de duplicados e diagnóstico em tempo real.
+                Deteção automática inteligente com validação linha a linha, resolução de duplicados e diagnóstico em
+                tempo real.
               </p>
             </div>
           </div>
@@ -593,7 +597,8 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   <span>Diagnóstico Técnico do Excel</span>
                 </div>
                 <div className="text-[11px] text-slate-400">
-                  Total Linhas: <strong className="text-white">{workbookData.totalRawRows}</strong> | Linhas de Dados: <strong className="text-emerald-400">{workbookData.dataRowCount}</strong>
+                  Total Linhas: <strong className="text-white">{workbookData.totalRawRows}</strong> | Linhas de Dados:{' '}
+                  <strong className="text-emerald-400">{workbookData.dataRowCount}</strong>
                 </div>
               </div>
 
@@ -680,7 +685,8 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
               {!columnMapping.name && (
                 <div className="pt-2 flex items-center justify-between bg-amber-950/40 p-2.5 rounded-xl border border-amber-500/30">
                   <span className="text-amber-200 text-xs">
-                    💡 Selecione a coluna onde estão os nomes dos jogadores na aba <strong>"2. Mapeamento de Colunas"</strong>.
+                    💡 Selecione a coluna onde estão os nomes dos jogadores na aba{' '}
+                    <strong>"2. Mapeamento de Colunas"</strong>.
                   </span>
                   <button
                     type="button"
@@ -836,7 +842,9 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 font-mono text-xs pt-2">
                   {/* Nome Completo */}
-                  <div className={`p-3 rounded-xl border space-y-1 ${!columnMapping.name ? 'bg-red-950/30 border-red-500/50' : 'bg-slate-900 border-slate-800'}`}>
+                  <div
+                    className={`p-3 rounded-xl border space-y-1 ${!columnMapping.name ? 'bg-red-950/30 border-red-500/50' : 'bg-slate-900 border-slate-800'}`}
+                  >
                     <label className="block text-cyan-300 font-bold">
                       👤 Nome Completo <span className="text-red-400">* (Obrigatório)</span>:
                     </label>
@@ -1162,7 +1170,8 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                     <div className="flex items-center gap-2 text-amber-300">
                       <span className="text-base">⚠️</span>
                       <span>
-                        Foram detetados <strong>{duplicateCount} atletas</strong> com nomes coincidentes no plantel. Ação:
+                        Foram detetados <strong>{duplicateCount} atletas</strong> com nomes coincidentes no plantel.
+                        Ação:
                       </span>
                     </div>
 
@@ -1253,7 +1262,8 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                               <div className="space-y-2">
                                 <p className="text-amber-400 font-bold">Nenhum atleta válido detetado.</p>
                                 <p className="text-xs text-slate-400">
-                                  Verifique se a coluna do Nome Completo está selecionada no Mapeamento ou se a linha do cabeçalho está correta.
+                                  Verifique se a coluna do Nome Completo está selecionada no Mapeamento ou se a linha do
+                                  cabeçalho está correta.
                                 </p>
                                 <button
                                   type="button"

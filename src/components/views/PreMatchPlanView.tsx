@@ -1,17 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  AppState,
-  OpponentScouting,
-  ScheduledMatch,
-  SetPieceTakers,
-  MatchScheduleTimes,
-  TeamKitInfo,
-  TacticalPitchPlayer
-} from '../../types';
-import { t } from '../../i18n/dict';
+import { AppState, OpponentScouting, ScheduledMatch, TacticalPitchPlayer } from '../../types';
 import { uid } from '../../lib/utils';
 import { Header } from '../Header';
-import { SEVEN_A_SIDE_PRESETS, COMMON_ROLES, getEffectiveTacticalPitch, formatMatchCompetition } from './OpponentScoutingView';
+import {
+  SEVEN_A_SIDE_PRESETS,
+  COMMON_ROLES,
+  getEffectiveTacticalPitch,
+  formatMatchCompetition
+} from './opponentScoutingUtils';
 
 interface PreMatchPlanViewProps {
   state: AppState;
@@ -24,7 +20,11 @@ interface PreMatchPlanViewProps {
   targetOpponentId?: string;
 }
 
-function createDefaultPreMatchReport(match?: ScheduledMatch, myClubStadium?: string, rosterNames?: string[]): OpponentScouting {
+function createDefaultPreMatchReport(
+  match?: ScheduledMatch,
+  myClubStadium?: string,
+  rosterNames?: string[]
+): OpponentScouting {
   const compFormatted = match ? formatMatchCompetition(match) : 'Jornada';
   return {
     id: match ? `report-${match.id}` : 'temp-report-default',
@@ -35,7 +35,7 @@ function createDefaultPreMatchReport(match?: ScheduledMatch, myClubStadium?: str
     location: match?.location || 'casa',
     matchType: match?.type || 'campeonato',
     phase: compFormatted,
-    stadium: match?.venue || (match?.location === 'casa' ? (myClubStadium || 'Campo Municipal') : 'Campo Adversário'),
+    stadium: match?.venue || (match?.location === 'casa' ? myClubStadium || 'Campo Municipal' : 'Campo Adversário'),
     ourFormation: '2-3-1',
     ourPlayingModel: 'Pressão Alta, Domínio Posicional e Reação Agressiva na Perda',
     ourDefensiveBlock: 'medio',
@@ -74,7 +74,8 @@ function createDefaultPreMatchReport(match?: ScheduledMatch, myClubStadium?: str
       'Comunicação constante e entreajuda ativa em todas as fases do jogo',
       'Zero golos sofridos de bola parada e eficácia na finalização'
     ],
-    lockerRoomTalk: 'Entrar com coragem, impor o nosso ritmo desde o apito inicial e confiar no nosso trabalho de treino.',
+    lockerRoomTalk:
+      'Entrar com coragem, impor o nosso ritmo desde o apito inicial e confiar no nosso trabalho de treino.',
     scheduleTimes: {
       meetingTime: match?.meetingTime || '09:15',
       talkTime: '09:45',
@@ -110,9 +111,9 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
   onShowToast,
   targetOpponentId
 }) => {
-  const scoutingList: OpponentScouting[] = state.opponentScouting || [];
-  const scheduleList: ScheduledMatch[] = state.schedule || [];
-  const roster = state.roster || [];
+  const scoutingList: OpponentScouting[] = useMemo(() => state.opponentScouting || [], [state.opponentScouting]);
+  const scheduleList: ScheduledMatch[] = useMemo(() => state.schedule || [], [state.schedule]);
+  const roster = useMemo(() => state.roster || [], [state.roster]);
   const myClubName = state.myClubName || 'A Minha Equipa';
 
   // Determine active report
@@ -142,9 +143,7 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
   // Standalone reports created by user (excluding dummy 'Adversário 1')
   const customBlankReports: OpponentScouting[] = useMemo(() => {
     return scoutingList.filter(
-      (s) =>
-        s.opponentName !== 'Adversário 1' &&
-        (!s.matchId || !scheduleList.some((m) => m.id === s.matchId))
+      (s) => s.opponentName !== 'Adversário 1' && (!s.matchId || !scheduleList.some((m) => m.id === s.matchId))
     );
   }, [scoutingList, scheduleList]);
 
@@ -258,7 +257,9 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
     return scheduleList.find(
       (m) =>
         m.id === currentScout.matchId ||
-        (m.opponent && currentScout.opponentName && m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
+        (m.opponent &&
+          currentScout.opponentName &&
+          m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
     );
   }, [scheduleList, currentScout]);
 
@@ -278,7 +279,8 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
       location: match.location || 'casa',
       matchType: match.type || 'campeonato',
       phase: compFormatted,
-      stadium: match.venue || (match.location === 'casa' ? (state.myClubStadium || 'Campo Municipal') : 'Campo Adversário'),
+      stadium:
+        match.venue || (match.location === 'casa' ? state.myClubStadium || 'Campo Municipal' : 'Campo Adversário'),
       ourFormation: '2-3-1',
       ourPlayingModel: 'Pressão Alta, Domínio Posicional e Reação Agressiva na Perda',
       ourDefensiveBlock: 'medio',
@@ -317,7 +319,8 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
         'Comunicação constante e entreajuda ativa em todas as fases do jogo',
         'Zero golos sofridos de bola parada e eficácia na finalização'
       ],
-      lockerRoomTalk: 'Entrar com coragem, impor o nosso ritmo desde o apito inicial e confiar no nosso trabalho de treino.',
+      lockerRoomTalk:
+        'Entrar com coragem, impor o nosso ritmo desde o apito inicial e confiar no nosso trabalho de treino.',
       scheduleTimes: {
         meetingTime: match.meetingTime || '09:15',
         talkTime: '09:45',
@@ -551,9 +554,7 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
         {/* Match Selector Bar */}
         <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap flex-1">
-            <span className="text-xs font-mono text-cyan-400 font-bold whitespace-nowrap">
-              JOGO A PREPARAR:
-            </span>
+            <span className="text-xs font-mono text-cyan-400 font-bold whitespace-nowrap">JOGO A PREPARAR:</span>
             <select
               value={currentScout ? currentScout.id : ''}
               onChange={(e) => {
@@ -579,11 +580,9 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
                     );
                     const dateStr = m.date ? m.date.split('-').reverse().join('/') : '';
                     return (
-                      <option
-                        key={`sched-${m.id}`}
-                        value={linkedReport ? linkedReport.id : `create_match:${m.id}`}
-                      >
-                        vs {m.opponent}{dateStr ? ` (${dateStr})` : ''}
+                      <option key={`sched-${m.id}`} value={linkedReport ? linkedReport.id : `create_match:${m.id}`}>
+                        vs {m.opponent}
+                        {dateStr ? ` (${dateStr})` : ''}
                       </option>
                     );
                   })}
@@ -644,7 +643,8 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
                   </span>
                 </div>
                 <div className="text-[11px] text-emerald-400/80 font-mono mt-0.5">
-                  O plano estratégico e preleção técnica estão concluídos. Clica em "Editar" se precisares de efetuar alterações.
+                  O plano estratégico e preleção técnica estão concluídos. Clica em "Editar" se precisares de efetuar
+                  alterações.
                   {currentScout.preMatchFinalizedAt
                     ? ` • Finalizado a ${new Date(currentScout.preMatchFinalizedAt).toLocaleDateString('pt-PT')} às ${new Date(currentScout.preMatchFinalizedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
                     : ''}
@@ -673,7 +673,8 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
                   Modo de Edição Ativo (Pré-Jogo)
                 </span>
                 <div className="text-[11px] text-amber-400/80 font-mono mt-0.5">
-                  Podes ajustar a formação, modelo, bolas paradas e preleção técnica. Quando concluíres, clica em "Finalizar".
+                  Podes ajustar a formação, modelo, bolas paradas e preleção técnica. Quando concluíres, clica em
+                  "Finalizar".
                 </div>
               </div>
             </div>

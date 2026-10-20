@@ -8,7 +8,6 @@ import {
   defaultNotificationSettings
 } from '../lib/notificationEngine';
 import { defaultSyncState, syncStateWithCloud } from '../lib/syncEngine';
-import { isAppAdmin } from '../services/cloudAuthService';
 import { MASTER_ADMIN_EMAIL } from '../lib/constants';
 
 interface SettingsModalProps {
@@ -32,10 +31,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenCommercialPlans,
   pendingUsersCount = 0
 }) => {
-  const isAdmin = isAppAdmin(state.currentUser);
   const sub = state.subscription;
   const currentPlanName = sub?.planName || 'Gratuito / Trial';
-  const isSubActive = sub?.status === 'active';
   const notifSettings: NotificationSettings = {
     ...defaultNotificationSettings,
     ...(state.notificationSettings || {})
@@ -157,7 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         } else {
           doImport();
         }
-      } catch (err) {
+      } catch {
         if (onShowToast) onShowToast(t(state.lang, 'msg_inv_file'));
       }
     };
@@ -207,7 +204,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             )}
           </div>
           <p className="text-[11px] text-emerald-200/90 font-mono">
-            Base de dados na Nuvem ativa para {state.myClubName || 'o seu clube'}. Equipas e equipas técnicas sincronizadas sem limites.
+            Base de dados na Nuvem ativa para {state.myClubName || 'o seu clube'}. Equipas e equipas técnicas
+            sincronizadas sem limites.
           </p>
         </div>
 
@@ -271,7 +269,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-slate-300 mt-1">
-                Descarregue o logótipo em formato vetorial SVG para guardar no computador ou utilizar em equipamentos, documentos e materiais gráficos.
+                Descarregue o logótipo em formato vetorial SVG para guardar no computador ou utilizar em equipamentos,
+                documentos e materiais gráficos.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-1">

@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AppState, UserAccount, TeamInvitation } from '../../types';
 import logoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
-import { registerCoachUser, loginCoachUser, loginWithGoogle, lookupInvitationByCode } from '../../services/cloudAuthService';
+import {
+  registerCoachUser,
+  loginCoachUser,
+  loginWithGoogle,
+  lookupInvitationByCode
+} from '../../services/cloudAuthService';
 import { loadMasterClubState } from '../../services/firebase';
 import {
   openWhatsAppRegistrationRequest,
@@ -70,7 +75,10 @@ const AuthErrorBanner: React.FC<{
               className="py-1.5 px-3 rounded-xl bg-cyan-950 border border-cyan-500/60 hover:bg-cyan-900 text-cyan-300 text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
               <span>📋</span>
-              <span>Copiar Domínio ({currentHostname.length > 22 ? currentHostname.substring(0, 20) + '...' : currentHostname})</span>
+              <span>
+                Copiar Domínio (
+                {currentHostname.length > 22 ? currentHostname.substring(0, 20) + '...' : currentHostname})
+              </span>
             </button>
           )}
 
@@ -88,7 +96,9 @@ const AuthErrorBanner: React.FC<{
 
         <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-[10px] text-slate-400 leading-normal">
           💡 <span className="text-slate-300">Como resolver no Firebase:</span> Aceda a{' '}
-          <strong className="text-slate-200">Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains</strong>{' '}
+          <strong className="text-slate-200">
+            Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains
+          </strong>{' '}
           e adicione o domínio copiado. Em alternativa, use as credenciais de clube abaixo.
         </div>
       </div>
@@ -833,9 +843,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
                 <form onSubmit={handleRegister} className="space-y-2.5">
                   <div className="p-2.5 rounded-xl bg-slate-900/60 border border-dashed border-cyan-500/30 space-y-1.5">
-                    <label className="block text-xs text-cyan-300 font-mono">
-                      🎟️ Código de Convite (opcional)
-                    </label>
+                    <label className="block text-xs text-cyan-300 font-mono">🎟️ Código de Convite (opcional)</label>
                     <div className="flex gap-1.5">
                       <input
                         type="text"

@@ -438,12 +438,8 @@ export async function generateExercisePDF(exercise: Exercise, state: AppState) {
   doc.setTextColor(0, 210, 255);
 
   const durStr = `${exercise.durationMinutes || 15} Minutos`;
-  const intensityStr = exercise.intensity
-    ? ` • Intensidade: ${exercise.intensity.toUpperCase()}`
-    : '';
-  const dateStr = exercise.createdAt
-    ? ` • Criado a ${new Date(exercise.createdAt).toLocaleDateString('pt-PT')}`
-    : '';
+  const intensityStr = exercise.intensity ? ` • Intensidade: ${exercise.intensity.toUpperCase()}` : '';
+  const dateStr = exercise.createdAt ? ` • Criado a ${new Date(exercise.createdAt).toLocaleDateString('pt-PT')}` : '';
   doc.text(`${durStr}${intensityStr}${dateStr}`, 20, curY + 18.5);
 
   curY += 29;

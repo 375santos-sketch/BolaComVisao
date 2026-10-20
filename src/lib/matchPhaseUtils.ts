@@ -102,7 +102,7 @@ export function getSuggestedMinute(match: Match | null | undefined, category?: s
   }
 
   if (phase === 'parte2') {
-    const half1DurationMs = match.timer?.half1DurationMs ?? (D * 60000);
+    const half1DurationMs = match.timer?.half1DurationMs ?? D * 60000;
     const elapsedSecondHalfMs = Math.max(0, elapsedMs - half1DurationMs);
     const m2 = Math.floor(elapsedSecondHalfMs / 60000) + 1;
     const gameMin = D + m2;
@@ -156,9 +156,7 @@ export function computeMinuteInHalf(
  */
 export function getPlayersAtEndOfFirstHalf(match: Match): string[] {
   const pitch = new Set<string>(match.lineup || []);
-  const subsFirstHalf = (match.subs || []).filter(
-    (s) => s.half === 1 || s.period === '1.ª parte'
-  );
+  const subsFirstHalf = (match.subs || []).filter((s) => s.half === 1 || s.period === '1.ª parte');
 
   for (const s of subsFirstHalf) {
     pitch.delete(s.outId);
@@ -197,9 +195,7 @@ export function getCurrentPlayersOnPitch(match: Match): string[] {
 
   if (phase === 'intervalo') {
     const pitch = new Set<string>(getPlayersAtEndOfFirstHalf(match));
-    const intSubs = (match.subs || []).filter(
-      (s) => s.period === 'Intervalo' || s.minute === 'INT'
-    );
+    const intSubs = (match.subs || []).filter((s) => s.period === 'Intervalo' || s.minute === 'INT');
     for (const s of intSubs) {
       pitch.delete(s.outId);
       pitch.add(s.inId);
@@ -214,9 +210,7 @@ export function getCurrentPlayersOnPitch(match: Match): string[] {
       : getPlayersAtEndOfFirstHalf(match);
 
   const pitch = new Set<string>(baseLineup);
-  const subs2 = (match.subs || []).filter(
-    (s) => s.half === 2 || s.period === '2.ª parte'
-  );
+  const subs2 = (match.subs || []).filter((s) => s.half === 2 || s.period === '2.ª parte');
   for (const s of subs2) {
     pitch.delete(s.outId);
     pitch.add(s.inId);

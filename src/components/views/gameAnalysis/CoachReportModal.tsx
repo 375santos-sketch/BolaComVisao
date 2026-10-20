@@ -55,7 +55,8 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
               </h2>
               <div className="text-xs text-slate-400 font-mono">
                 Período: <strong className="text-slate-200">{seasonLabel}</strong> • Jogos Analisados:{' '}
-                <strong className="text-cyan-300">{totalMatches}</strong> ({wins}V - {draws}E - {losses}D • {winRate}% apr.)
+                <strong className="text-cyan-300">{totalMatches}</strong> ({wins}V - {draws}E - {losses}D • {winRate}%
+                apr.)
               </div>
             </div>
           </div>
@@ -88,12 +89,8 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
             <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 mb-1">
               <span>⚽</span> Ataque
             </div>
-            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-white">
-              {avgGoalsScored}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
-              golos marcados / jogo
-            </div>
+            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-white">{avgGoalsScored}</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">golos marcados / jogo</div>
           </div>
 
           {/* 2. Defesa */}
@@ -101,12 +98,8 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
             <div className="flex items-center gap-1.5 text-xs font-bold text-rose-400 mb-1">
               <span>🛡️</span> Defesa
             </div>
-            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-white">
-              {avgGoalsConceded}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
-              golos sofridos / jogo
-            </div>
+            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-white">{avgGoalsConceded}</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">golos sofridos / jogo</div>
           </div>
 
           {/* 3. Bola Parada */}
@@ -117,9 +110,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
             <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-white">
               {setPieces.scoredRate}%
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
-              dos golos marcados ({setPieces.scoredTotal} golos)
-            </div>
+            <div className="text-[11px] text-slate-400 mt-0.5">dos golos marcados ({setPieces.scoredTotal} golos)</div>
           </div>
 
           {/* 4. Maior Produção */}
@@ -128,10 +119,12 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
               <span>⏱️</span> Maior Produção
             </div>
             <div className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-white">
-              {peakScoringPeriod ? peakScoringPeriod.label : '0–30\''}
+              {peakScoringPeriod ? peakScoringPeriod.label : "0–30'"}
             </div>
             <div className="text-[11px] text-slate-400 mt-0.5">
-              {peakScoringPeriod ? `${peakScoringPeriod.count} golos (${peakScoringPeriod.percentage}%)` : 'Equilibrado'}
+              {peakScoringPeriod
+                ? `${peakScoringPeriod.count} golos (${peakScoringPeriod.percentage}%)`
+                : 'Equilibrado'}
             </div>
           </div>
 
@@ -144,7 +137,9 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
               {peakVulnerabilityPeriod ? peakVulnerabilityPeriod.label : 'Sem alerta'}
             </div>
             <div className="text-[11px] text-slate-400 mt-0.5">
-              {peakVulnerabilityPeriod ? `${peakVulnerabilityPeriod.count} sofridos (${peakVulnerabilityPeriod.percentage}%)` : 'Solidez total'}
+              {peakVulnerabilityPeriod
+                ? `${peakVulnerabilityPeriod.count} sofridos (${peakVulnerabilityPeriod.percentage}%)`
+                : 'Solidez total'}
             </div>
           </div>
 
@@ -153,12 +148,8 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300 mb-1">
               <span>🟨</span> Disciplina
             </div>
-            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-white">
-              {avgCardsTotal}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
-              cartões / jogo
-            </div>
+            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-white">{avgCardsTotal}</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">cartões / jogo</div>
           </div>
         </div>
 
@@ -168,9 +159,12 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
             <div className="flex items-center gap-2.5">
               <span className="text-xl">🎯</span>
               <div>
-                <strong className="text-white">Quando marcámos primeiro ({firstGoalImpact.scoredFirstMatches} jogos):</strong>
+                <strong className="text-white">
+                  Quando marcámos primeiro ({firstGoalImpact.scoredFirstMatches} jogos):
+                </strong>
                 <span className="text-slate-400 block sm:inline sm:ml-1.5">
-                  {firstGoalImpact.scoredFirstWins} Vitórias • {firstGoalImpact.scoredFirstDraws} Empates • {firstGoalImpact.scoredFirstLosses} Derrotas
+                  {firstGoalImpact.scoredFirstWins} Vitórias • {firstGoalImpact.scoredFirstDraws} Empates •{' '}
+                  {firstGoalImpact.scoredFirstLosses} Derrotas
                 </span>
               </div>
             </div>
@@ -191,9 +185,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                   <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 font-['Chakra_Petch']">
                     Melhores Marcadores
                   </h4>
-                  <p className="text-[10px] text-slate-400">
-                    Os 3 melhores marcadores e a quantidade de golos
-                  </p>
+                  <p className="text-[10px] text-slate-400">Os 3 melhores marcadores e a quantidade de golos</p>
                 </div>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-bold">
@@ -230,9 +222,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                           #{s.playerNumber}
                         </span>
                       )}
-                      <span className="text-white font-medium truncate">
-                        {s.playerName}
-                      </span>
+                      <span className="text-white font-medium truncate">{s.playerName}</span>
                     </div>
                     <span className="font-mono font-bold text-emerald-400 shrink-0">
                       {s.count} {s.count === 1 ? 'golo' : 'golos'}
@@ -252,9 +242,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                   <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-400 font-['Chakra_Petch']">
                     Melhores Assistentes
                   </h4>
-                  <p className="text-[10px] text-slate-400">
-                    Os 3 melhores assistentes e a quantidade de assistência
-                  </p>
+                  <p className="text-[10px] text-slate-400">Os 3 melhores assistentes e a quantidade de assistência</p>
                 </div>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-bold">
@@ -291,9 +279,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                           #{a.playerNumber}
                         </span>
                       )}
-                      <span className="text-white font-medium truncate">
-                        {a.playerName}
-                      </span>
+                      <span className="text-white font-medium truncate">{a.playerName}</span>
                     </div>
                     <span className="font-mono font-bold text-cyan-400 shrink-0">
                       {a.count} {a.count === 1 ? 'assistência' : 'assistências'}
@@ -331,9 +317,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
 
         {/* FOOTER DO MODAL */}
         <div className="flex items-center justify-between pt-2">
-          <span className="text-[11px] text-slate-500 font-mono">
-            BolaComVisão • Inteligência de Treino e Jogo
-          </span>
+          <span className="text-[11px] text-slate-500 font-mono">BolaComVisão • Inteligência de Treino e Jogo</span>
           <button
             type="button"
             onClick={onClose}

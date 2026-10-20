@@ -11,7 +11,7 @@ import { StaffHighlightSection } from '../StaffHighlightSection';
 import { StaffModal } from '../StaffModal';
 import { ImportExcelPlayersModal } from '../ImportExcelPlayersModal';
 
-import { SquadTab, SquadViewMode, SquadSortBy, SquadSortDirection } from './squad/types';
+import { SquadTab } from './squad/types';
 import { useSquadRoster } from './squad/hooks/useSquadRoster';
 import { SquadTabsNav } from './squad/SquadTabsNav';
 import { SquadHeaderBanner } from './squad/SquadHeaderBanner';

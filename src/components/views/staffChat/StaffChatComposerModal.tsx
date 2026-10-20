@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-  StaffMessageType,
-  StaffMeetingDetails,
-  StaffMember,
-  AppState
-} from '../../../types';
+import { StaffMessageType, StaffMeetingDetails, StaffMember, AppState } from '../../../types';
 import { MESSAGE_TYPE_CONFIG } from './types';
 
 interface StaffChatComposerModalProps {
@@ -58,9 +53,7 @@ export const StaffChatComposerModal: React.FC<StaffChatComposerModalProps> = ({
   const staffList: StaffMember[] = state.staffMembers || [];
 
   const handleToggleStaff = (id: string) => {
-    setSelectedStaffIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    setSelectedStaffIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
   const handleSelectAllStaff = () => {
@@ -100,9 +93,7 @@ export const StaffChatComposerModal: React.FC<StaffChatComposerModalProps> = ({
 
     let targetLabel = 'Toda a Equipa Técnica';
     if (selectedStaffIds.length > 0 && selectedStaffIds.length < staffList.length) {
-      const names = staffList
-        .filter((s) => selectedStaffIds.includes(s.id))
-        .map((s) => s.name.split(' ')[0]);
+      const names = staffList.filter((s) => selectedStaffIds.includes(s.id)).map((s) => s.name.split(' ')[0]);
       targetLabel = names.join(', ');
     }
 
@@ -186,9 +177,7 @@ export const StaffChatComposerModal: React.FC<StaffChatComposerModalProps> = ({
 
           {/* TITLE INPUT */}
           <div>
-            <label className="block text-xs font-mono text-slate-300 uppercase font-bold mb-1">
-              Assunto / Título:
-            </label>
+            <label className="block text-xs font-mono text-slate-300 uppercase font-bold mb-1">Assunto / Título:</label>
             <input
               type="text"
               required={msgType === 'reuniao'}
@@ -213,9 +202,7 @@ export const StaffChatComposerModal: React.FC<StaffChatComposerModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-400 uppercase mb-1">
-                    Data:
-                  </label>
+                  <label className="block text-[11px] font-mono text-slate-400 uppercase mb-1">Data:</label>
                   <input
                     type="date"
                     required
@@ -226,9 +213,7 @@ export const StaffChatComposerModal: React.FC<StaffChatComposerModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-400 uppercase mb-1">
-                    Hora de Início:
-                  </label>
+                  <label className="block text-[11px] font-mono text-slate-400 uppercase mb-1">Hora de Início:</label>
                   <input
                     type="time"
                     required
@@ -252,9 +237,7 @@ export const StaffChatComposerModal: React.FC<StaffChatComposerModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-400 uppercase mb-1">
-                  Localização / Sala:
-                </label>
+                <label className="block text-[11px] font-mono text-slate-400 uppercase mb-1">Localização / Sala:</label>
                 <input
                   type="text"
                   value={meetLocation}

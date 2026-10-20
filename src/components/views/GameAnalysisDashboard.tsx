@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { AppState, Match } from '../../types';
+import { AppState } from '../../types';
 import { t } from '../../i18n/dict';
 import { Header } from '../Header';
 import {
@@ -26,9 +26,6 @@ import {
   PlayerAnalysis,
   EventDrilldown,
   AnalysisExport,
-  FirstGoalSection,
-  OutcomeComparison,
-  SetPieceDetailedSection,
   CoachReportModal,
   AskDataSection
 } from './gameAnalysis';
@@ -46,14 +43,7 @@ interface GameAnalysisDashboardProps {
 }
 
 export type AnalysisTab =
-  | 'perguntas'
-  | 'dashboard'
-  | 'periodos'
-  | 'origem'
-  | 'bolas_paradas'
-  | 'confronto'
-  | 'acontecimentos'
-  | 'individual';
+  'perguntas' | 'dashboard' | 'periodos' | 'origem' | 'bolas_paradas' | 'confronto' | 'acontecimentos' | 'individual';
 
 export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
   state,
@@ -384,9 +374,17 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             {[
               { id: 'perguntas', label: '💬 Perguntar aos Dados', count: 'Novo' },
               { id: 'periodos', label: '⏱️ Períodos Minuto a Minuto', count: null },
-              { id: 'origem', label: '⚽ Origem dos Golos', count: `${analysis.goalsScored} / ${analysis.goalsConceded}` },
+              {
+                id: 'origem',
+                label: '⚽ Origem dos Golos',
+                count: `${analysis.goalsScored} / ${analysis.goalsConceded}`
+              },
               { id: 'bolas_paradas', label: '🚩 Bolas Paradas & Faltas', count: null },
-              { id: 'confronto', label: '⚔️ Adversários & Confronto Direto', count: `${analysis.opponentStats.length}` },
+              {
+                id: 'confronto',
+                label: '⚔️ Adversários & Confronto Direto',
+                count: `${analysis.opponentStats.length}`
+              },
               { id: 'acontecimentos', label: '📋 Registo Integral de Lances', count: `${analysis.allEvents.length}` },
               { id: 'individual', label: '👤 Estatísticas Individuais', count: null },
               { id: 'dashboard', label: '📈 Indicadores de Performance', count: null }
@@ -418,29 +416,21 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
           {/* TAB 0: PERGUNTAR AOS DADOS (AI / STATISTICAL NATURAL LANGUAGE ENGINE) */}
           {activeTab === 'perguntas' && (
             <div className="space-y-6">
-              <AskDataSection
-                state={state}
-              />
+              <AskDataSection state={state} />
             </div>
           )}
 
           {/* TAB 1: PERÍODOS DE JOGO */}
           {activeTab === 'periodos' && (
             <div className="space-y-6">
-              <GoalTimingChart
-                analysis={analysis}
-                onSelectPeriod={(p) => setSelectedPeriodModal(p)}
-              />
+              <GoalTimingChart analysis={analysis} onSelectPeriod={(p) => setSelectedPeriodModal(p)} />
             </div>
           )}
 
           {/* TAB 2: ORIGEM DOS GOLOS */}
           {activeTab === 'origem' && (
             <div className="space-y-6">
-              <GoalTypesChart
-                analysis={analysis}
-                onSelectGoalType={handleSelectGoalType}
-              />
+              <GoalTypesChart analysis={analysis} onSelectGoalType={handleSelectGoalType} />
             </div>
           )}
 
@@ -456,21 +446,14 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
           {/* TAB 4: CONFRONTO DIRETO & GUIA DE FORMA */}
           {activeTab === 'confronto' && (
             <div className="space-y-6">
-              <MatchComparison
-                analysis={analysis}
-                onOpenMatch={handleOpenMatch}
-              />
+              <MatchComparison analysis={analysis} onOpenMatch={handleOpenMatch} />
             </div>
           )}
 
           {/* TAB 5: REGISTO CRONOLÓGICO DE ACONTECIMENTOS */}
           {activeTab === 'acontecimentos' && (
             <div className="space-y-6">
-              <EventDrilldown
-                analysis={analysis}
-                players={state.roster}
-                onOpenMatch={handleOpenMatch}
-              />
+              <EventDrilldown analysis={analysis} players={state.roster} onOpenMatch={handleOpenMatch} />
             </div>
           )}
 
@@ -545,9 +528,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             </div>
 
             {selectedPeriodModal.scoredEvents.length === 0 && selectedPeriodModal.concededEvents.length === 0 ? (
-              <div className="text-center py-6 text-xs text-slate-500">
-                Nenhum golo registado neste período.
-              </div>
+              <div className="text-center py-6 text-xs text-slate-500">Nenhum golo registado neste período.</div>
             ) : (
               <div className="space-y-2">
                 {selectedPeriodModal.scoredEvents.map((ev, i) => (

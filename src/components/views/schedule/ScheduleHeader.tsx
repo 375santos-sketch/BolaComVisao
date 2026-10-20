@@ -13,7 +13,6 @@ interface ScheduleHeaderProps {
 
 export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   stats,
-  allEventsCount,
   onOpenScheduleMatch,
   onOpenScheduleTraining,
   onOpenClubEventModal,

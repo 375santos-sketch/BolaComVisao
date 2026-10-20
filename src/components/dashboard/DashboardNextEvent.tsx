@@ -1,7 +1,6 @@
 import React from 'react';
-import { ScheduledMatch, Training } from '../../types';
 import { TabType } from '../Navbar';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
+import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 
@@ -117,9 +116,7 @@ export const DashboardNextEvent: React.FC<DashboardNextEventProps> = ({
                 className={`w-14 h-14 rounded-2xl border flex flex-col items-center justify-center shrink-0 shadow-lg ${visuals.boxStyle}`}
               >
                 <span className="text-xl">{visuals.icon}</span>
-                <span className="text-[9px] font-mono font-bold uppercase tracking-wider mt-0.5">
-                  {visuals.label}
-                </span>
+                <span className="text-[9px] font-mono font-bold uppercase tracking-wider mt-0.5">{visuals.label}</span>
               </div>
 
               <div>
@@ -129,7 +126,13 @@ export const DashboardNextEvent: React.FC<DashboardNextEventProps> = ({
                   <span className="text-cyan-300 font-semibold">🕒 {nextEvent.time}</span>
                   <span>•</span>
                   <span>
-                    📍 {nextEvent.venue || (nextEvent.kind === 'jogo' ? (nextEvent.location === 'casa' ? 'Campo Principal (Casa)' : 'Campo Fora') : 'Sede / Instalações do Clube')}
+                    📍{' '}
+                    {nextEvent.venue ||
+                      (nextEvent.kind === 'jogo'
+                        ? nextEvent.location === 'casa'
+                          ? 'Campo Principal (Casa)'
+                          : 'Campo Fora'
+                        : 'Sede / Instalações do Clube')}
                   </span>
                   {nextEvent.meetingTime && (
                     <>
