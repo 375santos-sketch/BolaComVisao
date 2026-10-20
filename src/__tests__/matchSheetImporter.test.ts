@@ -131,3 +131,27 @@ describe('Importar Ficha de Jogo (Excel exportado)', () => {
     );
   });
 });
+
+describe('Importar jogos em lista (Excel)', () => {
+  it('only keeps the score: no invented scorers, minutes, origins, lineup or captain', async () => {
+    const { buildMatchFromParsedRow } = await import('../lib/matchExcelImporter');
+    const m = buildMatchFromParsedRow({
+      id: 'x',
+      opponent: 'Esparteiros',
+      date: '2026-10-10',
+      type: 'campeonato',
+      location: 'casa',
+      season: '2026/2027',
+      goalsScored: 2,
+      goalsConceded: 1
+    } as any);
+    expect(m.finalScore).toEqual({ scored: 2, conceded: 1 });
+    expect(m.goals.map((g) => [g.type, g.scorerId, g.assistId, g.minute, g.goalType])).toEqual([
+      ['scored', null, null, null, undefined],
+      ['scored', null, null, null, undefined],
+      ['conceded', null, null, null, undefined]
+    ]);
+    expect(m.lineup).toEqual([]);
+    expect(m.capitao).toBeNull();
+  });
+});

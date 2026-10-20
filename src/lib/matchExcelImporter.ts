@@ -1,4 +1,4 @@
-import { Match, MatchType, MatchLocation, GoalEvent, Player } from '../types';
+import { Match, MatchType, MatchLocation, GoalEvent } from '../types';
 import { uid, defaultSeason, seasonFromDate, sanitizeExcelText, sanitizeExcelRawCell } from './utils';
 
 async function getXLSX() {
@@ -697,32 +697,15 @@ export async function downloadMatchExcelTemplate(): Promise<void> {
 /**
  * Builds full Match entity from parsed row
  */
-export function buildMatchFromParsedRow(parsed: ParsedMatchRow, roster: Player[] = []): Match {
-  const goals: GoalEvent[] = [];
-
-  // Generate scored goal events
-  for (let i = 0; i < parsed.goalsScored; i++) {
-    goals.push({
-      id: uid(),
-      type: 'scored',
-      minute: 20 + i * 25,
-      scorerId: roster.length > 0 ? roster[i % roster.length].id : null,
-      assistId: null,
-      goalType: 'Bola jogada'
-    });
-  }
-
-  // Generate conceded goal events
-  for (let i = 0; i < parsed.goalsConceded; i++) {
-    goals.push({
-      id: uid(),
-      type: 'conceded',
-      minute: 35 + i * 30,
-      scorerId: null,
-      assistId: null,
-      goalType: 'Bola jogada'
-    });
-  }
+/**
+ * A list-style Excel only gives the score: goals are created without scorer, minute or origin ("não atribuído"),
+ * and no lineup/captain is assumed, so imported games never add made-up data to the statistics.
+ */
+export function buildMatchFromParsedRow(parsed: ParsedMatchRow): Match {
+  const goals: GoalEvent[] = [
+    ...Array.from({ length: parsed.goalsScored }, () => 'scored' as const),
+    ...Array.from({ length: parsed.goalsConceded }, () => 'conceded' as const)
+  ].map((type) => ({ id: uid(), type, minute: null, scorerId: null, assistId: null }));
 
   return {
     id: parsed.id || uid(),
@@ -736,8 +719,8 @@ export function buildMatchFromParsedRow(parsed: ParsedMatchRow, roster: Player[]
     finished: true,
     goals,
     subs: [],
-    lineup: roster.slice(0, 11).map((p) => p.id),
-    capitao: roster.length > 0 ? roster[0].id : null,
+    lineup: [],
+    capitao: null,
     cornersFor: parsed.cornersFor,
     cornersAgainst: parsed.cornersAgainst,
     foulsCommitted: parsed.foulsCommitted,

@@ -427,8 +427,9 @@ describe('CoachViewEngine - Visão do Treinador', () => {
     it('never injects the placeholder Tramagal match and removes it from saved data', () => {
       const normalized = normalizeClubState({});
       expect(normalized.matches.some((m) => m.opponent.toLowerCase().includes('tramagal'))).toBe(false);
-      expect(normalized.roster).toHaveLength(12);
-      expect(normalized.myClubName).toBe('Dragões de Alferrarede');
+      expect(normalized.roster).toHaveLength(0);
+      expect(normalized.matches).toHaveLength(0);
+      expect(normalized.myClubName).toBe('O Meu Clube');
       expect(normalized.category).toBe('Sub-11');
 
       // A previously persisted placeholder is purged from top-level and team match lists
@@ -440,6 +441,28 @@ describe('CoachViewEngine - Visão do Treinador', () => {
       });
       expect(cleaned.matches.some((m) => m.id === placeholder.id)).toBe(false);
       cleaned.teams.forEach((t) => expect(t.matches.some((m) => m.id === placeholder.id)).toBe(false));
+    });
+
+    it('removes the demo Ouriense match and untouched demo players, keeps edited ones', () => {
+      const demo = (n: number, name = `Atleta Dragão ${n}`) => ({
+        id: `dragao_${n}`,
+        name,
+        number: n,
+        positions: 'Defesa',
+        birthDate: `2016-0${n}-${['15', '18', '22'][n - 1]}`,
+        active: true
+      });
+      const roster = [demo(1), demo(2, 'Rui Silva'), demo(3), { id: 'p9', name: 'Tomás', number: 9 } as any];
+      const ouriense = { id: 'match_ouriense_20261010', opponent: 'Ouriense', goals: [] } as any;
+      const state = normalizeClubState({
+        activeTeamId: 'a',
+        roster,
+        matches: [ouriense],
+        teams: [{ id: 'a', roster, matches: [ouriense] } as any, { id: 'b', roster } as any]
+      });
+      expect(state.roster.map((p) => p.name)).toEqual(['Rui Silva', 'Tomás']);
+      expect(state.teams.find((t) => t.id === 'b')!.roster.map((p) => p.name)).toEqual(['Rui Silva', 'Tomás']);
+      expect(state.matches).toEqual([]);
     });
 
     it('keeps a real Tramagal match even if teams array was empty', () => {

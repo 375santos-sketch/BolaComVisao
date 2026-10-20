@@ -221,7 +221,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
         if (row.duplicateAction === 'replace') {
           const matchIndex = existingMatches.findIndex((m) => m.id === row.duplicateWithMatchId);
           if (matchIndex >= 0) {
-            const updatedMatch = { ...buildMatchFromParsedRow(row, state.roster || []), ...teamTag };
+            const updatedMatch = { ...buildMatchFromParsedRow(row), ...teamTag };
             updatedMatch.id = row.duplicateWithMatchId;
             existingMatches[matchIndex] = updatedMatch;
             replacedCount++;
@@ -231,7 +231,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
       }
 
       // Create new
-      const newMatch = { ...buildMatchFromParsedRow(row, state.roster || []), ...teamTag };
+      const newMatch = { ...buildMatchFromParsedRow(row), ...teamTag };
       existingMatches.push(newMatch);
       addedCount++;
     });

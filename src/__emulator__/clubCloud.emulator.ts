@@ -13,7 +13,6 @@ vi.mock('../../firebase-applet-config.json', async (importOriginal) => {
 });
 void realConfig;
 import { readFileSync } from 'node:fs';
-import { execSync } from 'node:child_process';
 
 // ---------- localStorage for node (synced hashes are kept there) ----------
 const storage = new Map<string, string>();
@@ -40,13 +39,11 @@ async function setRules(content: string) {
   if (!res.ok) throw new Error(`rules upload failed: ${res.status} ${await res.text()}`);
 }
 
-/** Rules as they are on the main branch (no records sub-collection) = "rules not published yet". */
+/** Current rules without the records sub-collection = "new rules not published yet". */
 function previousRules(): string {
-  try {
-    return execSync('git show origin/main:firestore.rules', { encoding: 'utf8' });
-  } catch {
-    return RULES_NOW.replace(/\n\s*match \/records\/\{recordId\} \{[\s\S]*?\n {6}\}\n/, '\n');
-  }
+  const stripped = RULES_NOW.replace(/\n\s*match \/records\/\{recordId\} \{[\s\S]*?\n {6}\}\n/, '\n');
+  if (stripped.includes('match /records/')) throw new Error('could not strip the records rules');
+  return stripped;
 }
 
 // ---------- App modules connected to the emulators ----------
@@ -346,6 +343,28 @@ describe('Migração e utilização', () => {
     expect(m1?.deleted).toBe(true);
     const reloaded = await fb.loadMasterClubState(CLUB);
     expect(reloaded?.matches.map((m) => m.id)).toEqual(['m2']);
+  });
+
+  it('a deleted match keeps its last version and can be recovered', async () => {
+    const deleted = cloud.getDeletedRecords<any>(CLUB, 'match', 'sub11');
+    const m1 = deleted.find((d) => d.data.id === 'm1');
+    expect(m1?.data.opponent).toBe('Esparteiros');
+    expect(m1?.deletedBy).toBe(uid);
+
+    const current = await fb.loadMasterClubState(CLUB);
+    const restored = withMatches(current, [...current!.matches, m1!.data]);
+    expect((await fb.saveMasterClubState(CLUB, restored as any, uid, 'Treinador')).success).toBe(true);
+    const doc = (await fs.getDoc(fs.doc(recordsCol(), recordDocId('match', 'sub11', 'm1')))).data();
+    expect(doc?.deleted).toBe(false);
+    expect((await fb.loadMasterClubState(CLUB))?.matches.map((m) => m.id).sort()).toEqual(['m1', 'm2']);
+    expect(cloud.getDeletedRecords<any>(CLUB, 'match', 'sub11').some((d) => d.data.id === 'm1')).toBe(false);
+
+    // Delete it again so the following scenarios start from the same state
+    const again = withMatches(
+      restored,
+      restored.matches.filter((m: any) => m.id !== 'm1')
+    );
+    expect((await fb.saveMasterClubState(CLUB, again as any, uid, 'Treinador')).success).toBe(true);
   });
 
   it('a broken load with an empty squad does not wipe the cloud', async () => {

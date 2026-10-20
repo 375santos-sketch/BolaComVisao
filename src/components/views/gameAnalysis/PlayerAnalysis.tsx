@@ -17,7 +17,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
   analysis,
   players = [],
   matches = [],
-  clubName = 'Dragões de Alferrarede',
+  clubName = 'O Meu Clube',
   category = 'Sub-11',
   season = '',
   onOpenPlayer

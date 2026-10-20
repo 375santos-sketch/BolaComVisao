@@ -3,6 +3,7 @@ import { Match, AppState } from '../../../types';
 import { MatchTimeline } from './MatchTimeline';
 import { parseMinuteToNumber } from '../../../lib/gameAnalysisUtils';
 import { getMatchCompetitionDetails } from '../../../lib/utils';
+import { playerName } from '../../../lib/parentsShare';
 
 interface PostMatchSummaryModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
   if (!isOpen) return null;
 
   const compDetails = getMatchCompetitionDetails(match, state);
+  const roster = state?.roster || [];
 
   const scoredGoals = (match.goals || []).filter((g) => g.type === 'scored');
   const concededGoals = (match.goals || []).filter((g) => g.type === 'conceded');
@@ -81,9 +83,10 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
 
   // Lista formatada de marcadores da nossa equipa
   const scorersList = scoredGoals.map((g) => {
-    const name = g.scorer || 'Jogador';
+    const name = playerName(roster, g.scorerId) || g.scorer || 'Não atribuído';
     const min = g.minute ? `${g.minute}'` : '';
-    const assist = g.assist ? ` (assist. ${g.assist})` : '';
+    const assistName = playerName(roster, g.assistId) || g.assist;
+    const assist = assistName ? ` (assist. ${assistName})` : '';
     const gt = g.goalType ? ` [${g.goalType}]` : '';
     return `${min ? `${min} ` : ''}${name}${assist}${gt}`;
   });
