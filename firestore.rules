@@ -265,18 +265,16 @@ service cloud.firestore {
 
     // User accounts collection
     match /users/{userId} {
-      // Individual user profile reading
+      // Individual user profile reading: own profile, the Administrator, or an approved member of the SAME club
       allow get: if isAuthenticated() && (
-        isMasterAdmin() || 
-        isOwner(userId) || 
-        isApprovedUser()
+        isMasterAdmin() ||
+        isOwner(userId) ||
+        (isApprovedUser() && resource.data.account.get('clubId', null) == getUserClubId())
       );
 
-      // Listing user profiles (for admin approval dashboard or club staff directory)
-      allow list: if isAuthenticated() && (
-        isMasterAdmin() || 
-        isApprovedUser()
-      );
+      // Listing user profiles (approval dashboard) is reserved to the Administrator: it would expose the
+      // names, emails and phones of every club.
+      allow list: if isMasterAdmin();
 
       // Self registration (pending status, non-admin role, empty teams) or Master Admin creation
       allow create: if isAuthenticated() && 
@@ -297,10 +295,11 @@ service cloud.firestore {
           isMasterAdmin() || 
           (isOwner(userId) && 
            isApprovedUser() && 
-           incoming().account.role == existing().account.role && 
+           incoming().account.role == existing().account.role &&
            incoming().account.status == existing().account.status &&
-           (!existing().account.keys().hasAny(['assignedTeams']) || incoming().account.assignedTeams == existing().account.assignedTeams) &&
-           (!existing().account.keys().hasAny(['clubId']) || incoming().account.clubId == existing().account.clubId))
+           incoming().account.get('assignedTeams', []) == existing().account.get('assignedTeams', []) &&
+           incoming().account.get('teamRoles', []) == existing().account.get('teamRoles', []) &&
+           incoming().account.get('clubId', null) == existing().account.get('clubId', null))
         );
 
       // Only Master Admin can delete accounts
@@ -374,7 +373,8 @@ service cloud.firestore {
 
     // Immutable Audit Logs (Append-only security guarantee)
     match /audit_logs/{logId} {
-      allow read: if isApprovedUser();
+      allow get: if isMasterAdmin() || (isAuthenticated() && resource.data.get('userId', null) == request.auth.uid);
+      allow list: if isMasterAdmin();
       allow create: if isAuthenticated() && 
         isValidId(logId) && 
         (isMasterAdmin() || (incoming().keys().hasAny(['userId']) && incoming().userId == request.auth.uid));
@@ -384,7 +384,8 @@ service cloud.firestore {
 
     // Staff and Team Invitations
     match /invitations/{invitationId} {
-      allow read: if isAuthenticated();
+      allow get: if isAuthenticated();
+      allow list: if isMasterAdmin();
       allow create, update: if isApprovedUser() && isValidId(invitationId);
       allow delete: if isMasterAdmin();
     }

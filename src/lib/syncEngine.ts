@@ -94,6 +94,35 @@ export async function loadFromIndexedDB(key: string): Promise<any | null> {
   }
 }
 
+/**
+ * Removes every copy of club data kept on this device (IndexedDB backups, offline queue, conflicts, audit
+ * cache, sync markers). Called on logout so the next person using the device (or "Modo Convidado") cannot
+ * reach the previous club's data.
+ */
+export async function clearDeviceClubData(): Promise<void> {
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('bolacomvisao_') || key.startsWith('bcv-'))) keys.push(key);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // Storage unavailable: nothing stored there either.
+  }
+  try {
+    const db = await openDB();
+    await new Promise<void>((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    });
+  } catch (err) {
+    console.warn('IndexedDB clear fallback:', err);
+  }
+}
+
 // Offline Mutations Queue Operations
 export function getOfflineQueue(): OfflineMutation[] {
   try {

@@ -74,9 +74,9 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // Body parsers with large limit for team data & images
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  // The API only receives small JSON payloads (user creation, audit entries); a large limit only helps abuse.
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
   // API Healthcheck
   app.get('/api/health', (req, res) => {

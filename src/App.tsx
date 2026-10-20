@@ -6,7 +6,7 @@ import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSa
 import { applyThemeCSS } from './lib/utils';
 import { exportJSONBackup } from './lib/exportUtils';
 import { evaluateSystemNotifications } from './lib/notificationEngine';
-import { syncStateWithCloud, processOfflineMutationsQueue } from './lib/syncEngine';
+import { syncStateWithCloud, processOfflineMutationsQueue, clearDeviceClubData } from './lib/syncEngine';
 import { recordAuditLog } from './lib/auditEngine';
 import { subscribeToLegacyClubDocument } from './services/firebase';
 import {
@@ -635,6 +635,7 @@ export default function App() {
 
     // Limpa também os dados do clube em cache local (plantel, jogos, treinos, etc.) — sem isto,
     // os dados do clube anterior ficavam visíveis a quem iniciasse sessão a seguir no mesmo dispositivo.
+    await clearDeviceClubData();
     const cleanState = clearAllAppState(null);
     setState(cleanState);
     showToast(`Sessão terminada. Até breve, ${userName}! 👋`);
