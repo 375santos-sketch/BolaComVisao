@@ -622,8 +622,7 @@ export async function registerCoachUser(
           : `${cleanUsername}@bolacomvisao.app`;
 
     const isAdmin = isStrictAdminEmail(email);
-    const hasValidInvite = Boolean(resolvedInvite && resolvedInvite.status === 'pending');
-    const initialStatus: UserStatus = isAdmin || hasValidInvite ? 'approved' : 'pending';
+    let hasValidInvite = Boolean(resolvedInvite && resolvedInvite.status === 'pending');
     const assignedRole = isAdmin
       ? 'Administrador'
       : resolvedInvite?.role
@@ -636,51 +635,69 @@ export async function registerCoachUser(
     const userCred = await createUserWithEmailAndPassword(auth, email, cleanPass);
     const uid = userCred.user.uid;
 
-    // Build UserAccount document without any undefined fields
-    const account: UserAccount = {
-      id: uid,
-      username: cleanUsername,
-      email: isAdmin ? ADMIN_EMAIL : email,
-      name: cleanName,
-      role: assignedRole,
-      status: initialStatus,
-      clubId: resolvedInvite?.clubId || (isAdmin ? 'main' : undefined),
-      assignedTeams: isAdmin ? ['all'] : resolvedInvite?.teamId ? [resolvedInvite.teamId] : [],
-      teamRoles: resolvedInvite?.teamId
-        ? [
-            {
-              teamId: resolvedInvite.teamId,
-              teamName: resolvedInvite.teamName,
-              role: resolvedInvite.role,
-              assignedAt: Date.now()
-            }
-          ]
-        : undefined,
-      createdAt: new Date().toISOString()
-    };
-    if (isAdmin) {
-      account.approvedBy = 'Sistema (Administrador Principal)';
-      account.approvedAt = Date.now();
-    } else if (hasValidInvite) {
-      account.approvedBy = `Convite (${resolvedInvite?.invitedByName || 'Administrador'})`;
-      account.approvedAt = Date.now();
+    // Re-check the invitation now that the user is signed in (it may have been used, revoked or expired meanwhile).
+    if (resolvedInvite && !isAdmin) {
+      const fresh = await lookupInvitationByCode(resolvedInvite.inviteCode);
+      if (fresh.success && fresh.invitation) resolvedInvite = fresh.invitation;
+      else hasValidInvite = false;
     }
 
-    // Save profile in Firestore
-    const userDocRef = doc(db, 'users', uid);
-    await setDoc(
-      userDocRef,
-      cleanFirestoreData({
-        account,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      }),
-      { merge: true }
-    );
+    // Build UserAccount document without any undefined fields. Only a still-valid invitation grants a club, a team
+    // and immediate approval; the security rules verify it against the invitation itself.
+    const invite = hasValidInvite && !isAdmin ? resolvedInvite : undefined;
+    const buildAccount = (withInvite: TeamInvitation | undefined): UserAccount => {
+      const acc: UserAccount = {
+        id: uid,
+        username: cleanUsername,
+        email: isAdmin ? ADMIN_EMAIL : email,
+        name: cleanName,
+        role: withInvite ? withInvite.role : assignedRole,
+        status: isAdmin || withInvite ? 'approved' : 'pending',
+        clubId: withInvite?.clubId || (isAdmin ? 'main' : undefined),
+        assignedTeams: isAdmin ? ['all'] : withInvite ? [withInvite.teamId] : [],
+        teamRoles: withInvite
+          ? [
+              {
+                teamId: withInvite.teamId,
+                teamName: withInvite.teamName,
+                role: withInvite.role,
+                assignedAt: Date.now()
+              }
+            ]
+          : undefined,
+        inviteCode: withInvite ? withInvite.inviteCode.toUpperCase() : undefined,
+        createdAt: new Date().toISOString()
+      };
+      if (isAdmin) {
+        acc.approvedBy = 'Sistema (Administrador Principal)';
+        acc.approvedAt = Date.now();
+      } else if (withInvite) {
+        acc.approvedBy = `Convite (${withInvite.invitedByName || 'Administrador'})`;
+        acc.approvedAt = Date.now();
+      }
+      return acc;
+    };
 
-    if (resolvedInvite) {
+    // Save profile in Firestore (if the invitation is refused by the rules, register as pending instead)
+    const userDocRef = doc(db, 'users', uid);
+    const saveAccount = (acc: UserAccount) =>
+      setDoc(userDocRef, cleanFirestoreData({ account: acc, createdAt: Date.now(), updatedAt: Date.now() }), {
+        merge: true
+      });
+    let account = buildAccount(invite);
+    try {
+      await saveAccount(account);
+    } catch (err: any) {
+      if (!invite || err?.code !== 'permission-denied') throw err;
+      console.warn('Convite recusado pelas regras; conta registada como pendente.', err);
+      account = buildAccount(undefined);
+      await saveAccount(account);
+    }
+    const initialStatus: UserStatus = account.status;
+
+    if (account.inviteCode) {
       try {
-        const invDocRef = doc(db, 'invitations', resolvedInvite.inviteCode.toUpperCase());
+        const invDocRef = doc(db, 'invitations', account.inviteCode);
         await setDoc(invDocRef, { status: 'accepted', usedBy: uid, acceptedAt: Date.now() }, { merge: true });
       } catch (e) {
         console.warn('Erro ao marcar convite como aceite:', e);

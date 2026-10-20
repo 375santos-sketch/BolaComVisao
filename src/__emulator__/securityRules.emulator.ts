@@ -91,7 +91,9 @@ beforeAll(async () => {
   await fs.setDoc(fs.doc(fb.db, 'invitations', 'BCV-AAAAA'), {
     inviteCode: 'BCV-AAAAA',
     email: 'pai@x.pt',
-    clubId: 'clubB'
+    clubId: 'clubB',
+    status: 'pending',
+    expiresAt: Date.now() + 86_400_000
   });
   await fs.setDoc(fs.doc(fb.db, 'audit_logs', 'log1'), { userId: uids.coachB, action: 'login', timestamp: 1 });
 });

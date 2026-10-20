@@ -188,6 +188,38 @@ service cloud.firestore {
       );
     }
 
+    // ---- Invitations ----
+    function invitationDoc(code) {
+      return /databases/$(database)/documents/invitations/$(code);
+    }
+
+    // An invitation that can still be used: exists, pending and not expired.
+    function isUsableInvitation(code) {
+      return code is string && code.size() > 0 && code.size() <= 64 &&
+        exists(invitationDoc(code)) &&
+        get(invitationDoc(code)).data.status == 'pending' &&
+        get(invitationDoc(code)).data.expiresAt > request.time.toMillis();
+    }
+
+    // A new account may start "approved" only through a usable invitation, and exactly with what the invitation
+    // grants: same club, the invited team only, the invited role (never Administrador) and the invited email.
+    function isInvitedRegistration(acc) {
+      let code = acc.get('inviteCode', '');
+      let inv = get(invitationDoc(code)).data;
+      return isUsableInvitation(code) &&
+        acc.role == inv.role && acc.role != 'Administrador' &&
+        acc.get('clubId', null) == inv.clubId &&
+        acc.get('assignedTeams', []) == [inv.teamId] &&
+        (acc.get('teamRoles', []).size() == 0 ||
+          (acc.teamRoles.size() == 1 && acc.teamRoles[0].teamId == inv.teamId && acc.teamRoles[0].role == inv.role)) &&
+        (inv.get('email', '') == '' || request.auth.token.email == inv.email);
+    }
+
+    // Who invites must belong to the club the invitation is for (the Administrator can invite to any club).
+    function isOwnClub(clubId) {
+      return clubId == getUserClubId() || (getUserClubId() == null && clubId == 'main');
+    }
+
     function isValidUserDoc(data) {
       return data is map && 
         data.keys().hasAll(['account']) && 
@@ -280,11 +312,14 @@ service cloud.firestore {
       allow create: if isAuthenticated() && 
         isValidId(userId) && 
         isValidUserDoc(incoming()) && (
-          isMasterAdmin() || 
-          (isOwner(userId) && 
-           incoming().account.status == 'pending' && 
+          isMasterAdmin() ||
+          (isOwner(userId) &&
+           incoming().account.status == 'pending' &&
            incoming().account.role != 'Administrador' &&
-           (!incoming().account.keys().hasAny(['assignedTeams']) || incoming().account.assignedTeams.size() == 0))
+           (!incoming().account.keys().hasAny(['assignedTeams']) || incoming().account.assignedTeams.size() == 0)) ||
+          (isOwner(userId) &&
+           incoming().account.status == 'approved' &&
+           isInvitedRegistration(incoming().account))
         );
 
       // Updates: Master Admin can update anything; regular approved owner can update non-critical profile fields only
@@ -384,9 +419,30 @@ service cloud.firestore {
 
     // Staff and Team Invitations
     match /invitations/{invitationId} {
-      allow get: if isAuthenticated();
+      // Opened by its code, also before having an account (registration form); only while usable.
+      allow get: if isMasterAdmin() ||
+        (resource.data.status == 'pending' && resource.data.expiresAt > request.time.toMillis()) ||
+        (isApprovedUser() && isOwnClub(resource.data.clubId));
       allow list: if isMasterAdmin();
-      allow create, update: if isApprovedUser() && isValidId(invitationId);
+
+      // Created by an approved member, for their own club, as themselves, never for the Administrador role.
+      allow create: if isApprovedUser() && isValidId(invitationId) &&
+        incoming().status == 'pending' &&
+        incoming().role != 'Administrador' &&
+        incoming().invitedBy == request.auth.uid &&
+        (isMasterAdmin() || isOwnClub(incoming().clubId));
+
+      // Revoked by the Administrador or a member of the same club; accepted once by the invited new account.
+      allow update: if isMasterAdmin() ||
+        (isApprovedUser() && isOwnClub(existing().clubId) &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+          incoming().status == 'revoked') ||
+        (isAuthenticated() &&
+          existing().status == 'pending' &&
+          incoming().status == 'accepted' &&
+          incoming().usedBy == request.auth.uid &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'usedBy', 'acceptedAt']) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.account.get('inviteCode', '') == invitationId);
       allow delete: if isMasterAdmin();
     }
 

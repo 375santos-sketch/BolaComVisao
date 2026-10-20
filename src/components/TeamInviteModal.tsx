@@ -31,7 +31,10 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
       return;
     }
 
-    const inviteCode = 'BCV-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+    // 8 characters from an unambiguous alphabet, from a cryptographic random source (32^8 ≈ 10^12 codes)
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const random = crypto.getRandomValues(new Uint32Array(8));
+    const inviteCode = 'BCV-' + Array.from(random, (n) => alphabet[n % alphabet.length]).join('');
     const newInvite: TeamInvitation = {
       id: 'inv_' + uid(),
       email: email.trim().toLowerCase(),

@@ -696,6 +696,8 @@ export interface UserAccount {
   teamRoles?: TeamRoleAssignment[]; // Granular role per team
   clubId?: string;
   phoneNumber?: string;
+  /** Invitation used to register (lets the security rules verify an invited, pre-approved account). */
+  inviteCode?: string;
   createdAt: string;
 }
 
