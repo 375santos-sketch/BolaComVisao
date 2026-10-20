@@ -237,6 +237,24 @@ service cloud.firestore {
         (!data.state.keys().hasAny(['season']) || (data.state.season is string && data.state.season.size() <= 50));
     }
 
+    // Per-record club storage (one document per player, match, training, scheduled game, staff message,
+    // scouting report, plus the "club" document with settings and the team list).
+    function isValidClubRecord(data) {
+      return data is map &&
+        data.size() <= 10 &&
+        data.keys().hasAll(['kind', 'teamId', 'entityId', 'updatedAt', 'deleted']) &&
+        data.keys().hasOnly(['kind', 'teamId', 'entityId', 'updatedAt', 'updatedBy', 'deleted', 'data']) &&
+        data.kind in ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting'] &&
+        data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
+        data.entityId is string && data.entityId.size() > 0 && data.entityId.size() <= 256 &&
+        data.updatedAt is number &&
+        data.updatedAt >= 0 &&
+        data.updatedAt <= (request.time.toMillis() + 600000) &&
+        data.deleted is bool &&
+        (!data.keys().hasAny(['updatedBy']) || (data.updatedBy is string && data.updatedBy.size() <= 128)) &&
+        (data.deleted == true || data.data is map);
+    }
+
     // --- Collection Security Rules ---
 
     // Dedicated Admins Collection
@@ -298,6 +316,15 @@ service cloud.firestore {
         isValidClubWorkspace(incoming());
       
       allow delete: if isMasterAdmin();
+
+      match /records/{recordId} {
+        allow get, list: if canAccessClubWorkspace(workspaceId);
+        allow create, update: if canAccessClubWorkspace(workspaceId) &&
+          isValidId(recordId) &&
+          isValidClubRecord(incoming());
+        // Records are deleted with tombstones (deleted: true); hard deletes only by the Administrator.
+        allow delete: if isMasterAdmin();
+      }
     }
 
     // Team-isolated workspaces (Enforced per-team access control)

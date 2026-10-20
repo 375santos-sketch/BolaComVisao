@@ -9,6 +9,7 @@
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:emulator": "npx -y firebase-tools@13.35.1 emulators:exec --only firestore,auth --project glowing-orbit-vk8sk \"vitest run --config vitest.emulator.config.ts\"",
     "clean": "rm -rf dist server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
