@@ -574,7 +574,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
         onClose={() => setShowGoalsAssistsModal(false)}
         matches={state.matches || []}
         roster={state.roster || []}
-        clubName={state.myClubName || 'Dragões de Alferrarede'}
+        clubName={state.myClubName || 'O Meu Clube'}
         category={state.category || 'Sub-11'}
         season={state.season}
         initialTab={goalsAssistsTab}

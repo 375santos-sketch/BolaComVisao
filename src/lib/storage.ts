@@ -6,11 +6,18 @@ import { buildDefaultSeasons, defaultSeason, seasonFromDate, normalizeSeasonStri
 const STORAGE_KEY = 'coach-app-data-v1';
 
 // Placeholder matches injected by older versions that must never be shown or synced again.
-const REMOVED_PLACEHOLDER_MATCH_IDS = ['match_tramagal_20261017'];
+const REMOVED_PLACEHOLDER_MATCH_IDS = ['match_tramagal_20261017', 'match_ouriense_20261010'];
 
 export const defaultClubSeasons = buildDefaultSeasons();
 
-export const defaultDragonsSub11Roster: Player[] = [
+/** Shown when a club has no name yet. */
+export const DEFAULT_CLUB_NAME = 'O Meu Clube';
+
+/**
+ * Demo squad that older versions injected into every club ("Atleta Dragão 1..12"). Kept only to recognise
+ * demo players nobody edited, which are removed; real clubs start with an empty squad.
+ */
+const LEGACY_DEMO_PLAYERS: Player[] = [
   {
     id: 'dragao_1',
     name: 'Atleta Dragão 1',
@@ -53,67 +60,24 @@ export const defaultDragonsSub11Roster: Player[] = [
   }
 ];
 
-export const defaultOurienseMatch: Match = {
-  id: 'match_ouriense_20261010',
-  teamId: 'team_dragons_sub11',
-  teamName: 'Dragões de Alferrarede',
-  opponent: 'Ouriense',
-  date: '2026-10-10',
-  season: '2025/2026',
-  type: 'campeonato',
-  phase: 'Jornada 1',
-  location: 'casa',
-  finished: true,
-  finalScore: { scored: 2, conceded: 0 },
-  goals: [
-    {
-      id: 'g_ouriense_1',
-      type: 'scored',
-      scorerId: 'dragao_11',
-      assistId: 'dragao_10',
-      minute: "12'",
-      minuteBase: 'game',
-      half: 1,
-      period: '1.ª parte',
-      goalType: 'Bola jogada'
-    },
-    {
-      id: 'g_ouriense_2',
-      type: 'scored',
-      scorerId: 'dragao_11',
-      assistId: 'dragao_7',
-      minute: "28'",
-      minuteBase: 'game',
-      half: 2,
-      period: '2.ª parte',
-      goalType: 'Bola jogada'
-    }
-  ],
-  cards: [],
-  subs: [],
-  lineup: ['dragao_1', 'dragao_2', 'dragao_3', 'dragao_4', 'dragao_7', 'dragao_10', 'dragao_11'],
-  capitao: 'dragao_1',
-  rematesDentroArea: 5,
-  rematesForaArea: 3,
-  rematesDentroAreaAdv: 2,
-  rematesForaAreaAdv: 0,
-  cantos: 4,
-  cantosAdv: 2,
-  faltas: 3,
-  faltasAdv: 4
+const isUntouchedDemoPlayer = (p: Player | null | undefined) => {
+  if (!p) return false;
+  const demo = LEGACY_DEMO_PLAYERS.find((d) => d.id === p.id);
+  return Boolean(demo && demo.name === p.name && demo.number === p.number && demo.birthDate === p.birthDate);
 };
+const withoutDemoPlayers = (roster: Player[] | undefined) => (roster || []).filter((p) => !isUntouchedDemoPlayer(p));
 
 export const initialDefaultState: AppState = {
   activeTeamId: 'team_dragons_sub11',
   teams: [
     {
       id: 'team_dragons_sub11',
-      clubName: 'Dragões de Alferrarede',
+      clubName: DEFAULT_CLUB_NAME,
       category: 'Sub-11',
       season: defaultSeason(),
       createdAt: new Date(0).toISOString(),
-      roster: defaultDragonsSub11Roster,
-      matches: [defaultOurienseMatch],
+      roster: [],
+      matches: [],
       trainings: [],
       schedule: [],
       staffMembers: [],
@@ -126,10 +90,10 @@ export const initialDefaultState: AppState = {
       staffUnavailability: []
     }
   ],
-  roster: defaultDragonsSub11Roster,
+  roster: [],
   staffMembers: [],
   staffMessages: [],
-  matches: [defaultOurienseMatch],
+  matches: [],
   trainings: [],
   schedule: [],
   tactics: [],
@@ -138,7 +102,7 @@ export const initialDefaultState: AppState = {
   trackSubs: true,
   theme: 'original',
   lang: 'pt',
-  myClubName: 'Dragões de Alferrarede',
+  myClubName: DEFAULT_CLUB_NAME,
   category: 'Sub-11',
   season: defaultSeason(),
   seasons: defaultClubSeasons,
@@ -174,12 +138,12 @@ function normalizeClubStateFields(raw: Partial<AppState>): AppState {
       : [
           {
             id: raw.activeTeamId || 'team_dragons_sub11',
-            clubName: raw.myClubName || 'Dragões de Alferrarede',
+            clubName: raw.myClubName || DEFAULT_CLUB_NAME,
             category: raw.category || 'Sub-11',
             season: raw.season || defaultSeason(),
             createdAt: new Date().toISOString(),
-            roster: Array.isArray(raw.roster) && raw.roster.length > 0 ? raw.roster : defaultDragonsSub11Roster,
-            matches: Array.isArray(raw.matches) && raw.matches.length > 0 ? raw.matches : [defaultOurienseMatch],
+            roster: Array.isArray(raw.roster) ? raw.roster : [],
+            matches: Array.isArray(raw.matches) ? raw.matches : [],
             trainings: Array.isArray(raw.trainings) ? raw.trainings : [],
             schedule: Array.isArray(raw.schedule) ? raw.schedule : [],
             staffMembers: Array.isArray(raw.staffMembers) ? raw.staffMembers : [],
@@ -200,12 +164,9 @@ function normalizeClubStateFields(raw: Partial<AppState>): AppState {
   activeTeamId = activeTeam?.id || '';
 
   // Synchronize roster and collections between activeTeam and top-level raw fields
-  const finalRoster =
-    raw.roster !== undefined && raw.roster !== null && raw.roster.length > 0
-      ? raw.roster
-      : activeTeam?.roster && activeTeam.roster.length > 0
-        ? activeTeam.roster
-        : defaultDragonsSub11Roster;
+  const finalRoster = withoutDemoPlayers(
+    raw.roster !== undefined && raw.roster !== null && raw.roster.length > 0 ? raw.roster : activeTeam?.roster
+  );
 
   // Each match belongs to exactly one team. Older versions pooled every team's matches into the active team
   // (and copied them into teams without matches), mixing squads' results and statistics. Rebuild per-team
@@ -293,7 +254,7 @@ function normalizeClubStateFields(raw: Partial<AppState>): AppState {
         exerciseLibrary: finalExerciseLibrary,
         clubEvents: finalClubEvents,
         staffUnavailability: finalStaffUnavailability,
-        clubName: t.clubName || raw.myClubName || 'Dragões de Alferrarede',
+        clubName: t.clubName || raw.myClubName || DEFAULT_CLUB_NAME,
         clubLogoUrl: t.clubLogoUrl || raw.clubLogoUrl,
         category: t.category || raw.category || 'Sub-11',
         season: t.season || raw.season || defaultSeason()
@@ -321,6 +282,7 @@ function normalizeClubStateFields(raw: Partial<AppState>): AppState {
 
     return {
       ...t,
+      roster: withoutDemoPlayers(t.roster),
       matches: teamMatches(t.id),
       schedule: Array.from(teamScheduleMap.values()),
       trainings: migratedTeamTrainings,
@@ -367,7 +329,7 @@ function normalizeClubStateFields(raw: Partial<AppState>): AppState {
     exerciseLibrary: finalExerciseLibrary,
     clubEvents: finalClubEvents,
     staffUnavailability: finalStaffUnavailability,
-    myClubName: activeTeam?.clubName || raw.myClubName || 'Dragões de Alferrarede',
+    myClubName: activeTeam?.clubName || raw.myClubName || DEFAULT_CLUB_NAME,
     clubLogoUrl: activeTeam?.clubLogoUrl || raw.clubLogoUrl,
     category: activeTeam?.category || raw.category || 'Sub-11',
     season: activeTeam?.season || raw.season || defaultSeason(),

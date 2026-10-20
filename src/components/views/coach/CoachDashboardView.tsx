@@ -20,7 +20,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
   const [goalsAssistsModalTab, setGoalsAssistsModalTab] = useState<GoalsAssistsTab>('marcadores');
   const currentSeason = state.season || '2026/27';
   const category = state.category || 'Sub-11';
-  const clubName = state.myClubName || 'Dragões de Alferrarede';
+  const clubName = state.myClubName || 'O Meu Clube';
 
   // Filter State
   const [filter, setFilter] = useState<CoachViewFilter>({

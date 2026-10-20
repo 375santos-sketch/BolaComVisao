@@ -568,7 +568,7 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
         onClose={() => setShowGoalsAssistsModal(false)}
         matches={matches}
         roster={state.roster || []}
-        clubName={state.myClubName || 'Dragões de Alferrarede'}
+        clubName={state.myClubName || 'O Meu Clube'}
         category={state.category || 'Sub-11'}
         season={state.season}
         initialTab={goalsAssistsTab}

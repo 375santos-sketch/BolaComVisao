@@ -21,7 +21,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
   onClose,
   matches,
   roster,
-  clubName = 'Dragões de Alferrarede',
+  clubName = 'O Meu Clube',
   category = 'Sub-11',
   initialTab = 'marcadores',
   onSelectPlayer
