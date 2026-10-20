@@ -206,26 +206,30 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
         ? activeTeam.roster
         : defaultDragonsSub11Roster;
 
-  // Master match pool: collect matches from raw.matches and all teams
-  const allMatchesMap = new Map<string, Match>();
-  if (Array.isArray(raw.matches)) {
-    raw.matches.forEach((m) => {
-      if (m && m.id) allMatchesMap.set(m.id, m);
+  // Each match belongs to exactly one team. Older versions pooled every team's matches into the active team
+  // (and copied them into teams without matches), mixing squads' results and statistics. Rebuild per-team
+  // lists: a match tagged with an existing team's id goes back to that team; untagged matches stay where they are.
+  // The active team is processed first (top-level raw.matches mirrors it) so its latest edits win.
+  const teamIds = new Set(teams.map((t) => t.id));
+  const matchesByTeam = new Map<string, Map<string, Match>>(teams.map((t) => [t.id, new Map<string, Match>()]));
+  const assignMatches = (listOwnerId: string, list: Match[] | undefined) => {
+    (list || []).forEach((m) => {
+      if (!m || !m.id || REMOVED_PLACEHOLDER_MATCH_IDS.includes(m.id)) return;
+      const ownerId = m.teamId && teamIds.has(m.teamId) ? m.teamId : listOwnerId;
+      const ownerMatches = matchesByTeam.get(ownerId);
+      if (ownerMatches && !ownerMatches.has(m.id)) ownerMatches.set(m.id, m);
     });
+  };
+  if (activeTeam) {
+    assignMatches(activeTeam.id, Array.isArray(raw.matches) ? raw.matches : []);
+    assignMatches(activeTeam.id, activeTeam.matches);
   }
   teams.forEach((t) => {
-    (t.matches || []).forEach((m) => {
-      if (m && m.id && !allMatchesMap.has(m.id)) {
-        allMatchesMap.set(m.id, m);
-      }
-    });
+    if (t !== activeTeam) assignMatches(t.id, t.matches);
   });
+  const teamMatches = (teamId: string): Match[] => Array.from(matchesByTeam.get(teamId)?.values() || []);
 
-  // Remove the placeholder demo matches that older versions injected automatically
-  // (fictional players; they kept coming back even after being deleted).
-  REMOVED_PLACEHOLDER_MATCH_IDS.forEach((id) => allMatchesMap.delete(id));
-
-  const finalMatches = Array.from(allMatchesMap.values());
+  const finalMatches = activeTeam ? teamMatches(activeTeam.id) : [];
 
   const finalStaff =
     raw.staffMembers !== undefined && raw.staffMembers !== null ? raw.staffMembers : activeTeam?.staffMembers || [];
@@ -316,10 +320,7 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
 
     return {
       ...t,
-      matches:
-        t.matches && t.matches.length > 0
-          ? t.matches.filter((m) => !m || !REMOVED_PLACEHOLDER_MATCH_IDS.includes(m.id))
-          : finalMatches,
+      matches: teamMatches(t.id),
       schedule: Array.from(teamScheduleMap.values()),
       trainings: migratedTeamTrainings,
       lastTrainingNumber: Math.max(t.lastTrainingNumber || 0, teamMaxNumber)
