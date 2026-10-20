@@ -4,6 +4,7 @@ import { t } from '../../i18n/dict';
 import { playerLabel, isSeasonMatching } from '../../lib/utils';
 import { Header } from '../Header';
 import { SquadGoalsAndAssistsModal, GoalsAssistsTab } from '../SquadGoalsAndAssistsModal';
+import { PlayingTimeSection } from './stats/PlayingTimeSection';
 
 interface StatsViewProps {
   state: AppState;
@@ -555,6 +556,17 @@ export const StatsView: React.FC<StatsViewProps> = ({
           <div className="text-[9px] text-muted text-center mt-2">{t(state.lang, 'st_tap')}</div>
         </div>
       )}
+
+      {/* Minutos de jogo por atleta (mesmos filtros de tipo e época) */}
+      <PlayingTimeSection
+        matches={state.matches.filter(
+          (m) =>
+            (statsFilter === 'todos' || m.type === statsFilter) &&
+            (seasonFilter === 'todas' || isSeasonMatching(m.season, seasonFilter))
+        )}
+        roster={state.roster || []}
+        category={state.category}
+      />
 
       {/* Modal de Lista Completa de Marcadores e Assistências */}
       <SquadGoalsAndAssistsModal
