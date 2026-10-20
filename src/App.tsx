@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { AppState, UserAccount, AppNotification } from './types';
 import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
+import { subscribeToClubCloud, migrateClubToRecords, getCloudMode } from './services/clubCloud';
 import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
 import { exportJSONBackup } from './lib/exportUtils';
 import { evaluateSystemNotifications } from './lib/notificationEngine';
 import { syncStateWithCloud, processOfflineMutationsQueue } from './lib/syncEngine';
 import { recordAuditLog } from './lib/auditEngine';
+import { subscribeToLegacyClubDocument } from './services/firebase';
 import {
-  subscribeToCloudState,
   logoutCoachUser,
   subscribeToAllClubUsers,
   checkCurrentAuthUser,
@@ -76,8 +77,17 @@ export default function App() {
     });
   };
 
-  const pushStateToCloud = async (s: AppState, forceOverwrite = false) => {
+  const pushInFlightRef = useRef(false);
+  const pushAgainRef = useRef(false);
+
+  const pushStateToCloud = async (s: AppState, forceOverwrite = false): Promise<void> => {
     if (!s.currentUser?.id) return;
+    // One save at a time: a save computed from an older state could undo a newer one.
+    if (pushInFlightRef.current) {
+      pushAgainRef.current = true;
+      return;
+    }
+    pushInFlightRef.current = true;
     setCloudSaving(true);
     try {
       const res = await saveMasterClubState(
@@ -97,7 +107,12 @@ export default function App() {
       console.warn('Erro ao guardar na nuvem:', err);
       setCloudSaveError(err?.message || 'Não foi possível guardar na nuvem.');
     } finally {
+      pushInFlightRef.current = false;
       setCloudSaving(false);
+      if (pushAgainRef.current) {
+        pushAgainRef.current = false;
+        pushStateToCloud(latestStateRef.current);
+      }
     }
   };
   const [currentTab, setCurrentTab] = useState<TabType>('teams');
@@ -327,60 +342,67 @@ export default function App() {
     }, 3000);
   };
 
-  // Real-time Cloud Synchronization Listener for Multi-Device
+  // Real-time cloud sync for multi-device use: the legacy single document or per-record storage (see clubCloud.ts)
   useEffect(() => {
     if (!state.currentUser || !state.currentUser.id) return;
+    const workspaceId = state.currentUser.clubId || 'main';
 
-    // Listen to changes made on other devices in real-time
-    const unsubscribe = subscribeToCloudState(
-      state.currentUser.id,
-      state.currentUser.clubId || 'main',
-      (cloudState) => {
-        if (cloudState) {
-          // This device has edits the cloud does not have yet (e.g. a match recorded at an away ground without
-          // internet, or a save that failed). Never let the older cloud copy overwrite them: keep and re-send them.
-          const local = latestStateRef.current;
-          if ((local.lastLocalMutationAt || 0) > (cloudState.updatedAt || 0)) {
-            if (!getFirestoreQuotaState().isExhausted) {
-              pushStateToCloud(local);
-            }
-            return;
-          }
-          markCloudSaved(cloudState.updatedAt || 0);
-
-          isRemoteSyncRef.current = true;
-          setState((prev) => {
-            const merged = {
-              ...cloudState,
-              currentUser: prev.currentUser,
-              syncInfo: {
-                ...prev.syncInfo,
-                isOnline: true,
-                status: 'synced' as const,
-                lastSyncedAt: Date.now(),
-                pendingChangesCount: 0,
-                lastSyncMessage: 'Atualizado em tempo real a partir de outro dispositivo ☁️'
-              }
-            };
-            saveAppState(merged);
-            return merged;
-          });
-          setTimeout(() => {
-            isRemoteSyncRef.current = false;
-          }, 500);
+    const applyRemote = (incoming: AppState) => {
+      isRemoteSyncRef.current = true;
+      const merged: AppState = {
+        ...incoming,
+        currentUser: latestStateRef.current.currentUser,
+        syncInfo: {
+          ...latestStateRef.current.syncInfo!,
+          isOnline: true,
+          status: 'synced' as const,
+          lastSyncedAt: Date.now(),
+          pendingChangesCount: 0,
+          lastSyncMessage: 'Atualizado em tempo real a partir de outro dispositivo ☁️'
         }
-      },
-      (error) => {
-        console.warn('Aviso na sincronização em tempo real:', error.message);
+      };
+      latestStateRef.current = merged;
+      setState(merged);
+      saveAppState(merged);
+      markCloudSaved(merged.lastLocalMutationAt || 0);
+      setTimeout(() => {
+        isRemoteSyncRef.current = false;
+      }, 500);
+    };
+
+    const unsubscribe = subscribeToClubCloud(
+      workspaceId,
+      (onSnap, onErr) => subscribeToLegacyClubDocument(workspaceId, onSnap, onErr),
+      {
+        getLocal: () => latestStateRef.current,
+        applyRemote,
+        requestPush: () => {
+          if (!getFirestoreQuotaState().isExhausted) pushStateToCloud(latestStateRef.current);
+        },
+        onInSync: () => markCloudSaved(latestStateRef.current.lastLocalMutationAt || 0),
+        requestMigration: () => {
+          // Give the legacy snapshot time to be applied, then move the club to per-record storage once.
+          setTimeout(async () => {
+            const current = latestStateRef.current;
+            if (!current.currentUser?.id || getCloudMode(workspaceId) !== 'legacy') return;
+            const res = await migrateClubToRecords(workspaceId, current, current.currentUser.id);
+            if (res.success) {
+              console.info('Base de dados do clube migrada para registos separados.', res.message);
+            } else {
+              console.warn('Migração para registos separados adiada:', res.message);
+            }
+          }, 3000);
+        },
+        onError: (error) => console.warn('Aviso na sincronização em tempo real:', error.message)
       }
     );
 
     return () => {
       unsubscribe();
     };
-    // Resubscribe only when the signed-in user changes, not on every currentUser object update.
+    // Resubscribe only when the signed-in user/club changes, not on every currentUser object update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentUser?.id]);
+  }, [state.currentUser?.id, state.currentUser?.clubId]);
 
   // Real-time listener for Coach Registrations requiring Admin Approval (Admin ONLY)
   useEffect(() => {

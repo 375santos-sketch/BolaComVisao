@@ -9,7 +9,8 @@ import {
   collection,
   getDocs,
   onSnapshot,
-  Unsubscribe
+  Unsubscribe,
+  connectFirestoreEmulator
 } from 'firebase/firestore';
 import {
   getAuth,
@@ -26,10 +27,12 @@ import {
   User,
   updatePassword,
   EmailAuthProvider,
-  reauthenticateWithCredential
+  reauthenticateWithCredential,
+  connectAuthEmulator
 } from 'firebase/auth';
 import config from '../../firebase-applet-config.json';
 import { AppState } from '../types';
+import { resolveCloudMode, pushClubRecords, loadClubStateFromRecords } from './clubCloud';
 
 let app: FirebaseApp;
 if (!getApps().length) {
@@ -50,6 +53,12 @@ try {
 }
 
 export const db: Firestore = getFirestore(app, config.firestoreDatabaseId);
+
+// Local development against the Firebase emulators (npm run dev with VITE_FIREBASE_EMULATORS=true).
+if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_EMULATORS === 'true') {
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+}
 
 export const FIRESTORE_UPGRADE_CONSOLE_URL = `https://console.firebase.google.com/project/${config.projectId}/firestore/databases/${config.firestoreDatabaseId || '(default)'}/data?openUpgradeDialog=true`;
 
@@ -223,6 +232,11 @@ export async function saveMasterClubState(
 
   const cleanWorkspaceId = workspaceId && workspaceId.trim() ? workspaceId.trim() : 'main';
 
+  // Clubs migrated to per-record storage are saved record by record (the legacy document stays as a backup).
+  if ((await resolveCloudMode(cleanWorkspaceId)) === 'records') {
+    return pushClubRecords(cleanWorkspaceId, state, { authorId, allowMassDelete: forceOverwrite });
+  }
+
   // If quota was already hit and cooldown is active, avoid hitting Firestore backend with failing requests
   if (isFirestoreQuotaExhausted && Date.now() < quotaExhaustedCooldownUntil) {
     return {
@@ -335,6 +349,12 @@ export async function loadMasterClubState(workspaceId: string = 'main'): Promise
 
   const cleanWorkspaceId = workspaceId && workspaceId.trim() ? workspaceId.trim() : 'main';
   const path = `club_workspace/${cleanWorkspaceId}`;
+
+  // Clubs migrated to per-record storage are read from their records, never from the (frozen) legacy document.
+  if ((await resolveCloudMode(cleanWorkspaceId)) === 'records') {
+    return loadClubStateFromRecords(cleanWorkspaceId);
+  }
+
   try {
     const clubDocRef = doc(db, 'club_workspace', cleanWorkspaceId);
     const snap = await getDoc(clubDocRef);
@@ -349,6 +369,34 @@ export async function loadMasterClubState(workspaceId: string = 'main'): Promise
     handleFirestoreError(error, OperationType.GET, path);
     return null;
   }
+}
+
+/**
+ * Real-time listener on the legacy club document that also reports when it does not exist (state = null).
+ */
+export function subscribeToLegacyClubDocument(
+  workspaceId: string,
+  onUpdate: (state: AppState | null, updatedAt: number) => void,
+  onError: (err: Error) => void
+): Unsubscribe {
+  if (!auth.currentUser) return () => {};
+  const cleanWorkspaceId = workspaceId && workspaceId.trim() ? workspaceId.trim() : 'main';
+  return onSnapshot(
+    doc(db, 'club_workspace', cleanWorkspaceId),
+    (snapshot) => {
+      const data = snapshot.exists() ? snapshot.data() : null;
+      if (!data || !data.state) {
+        onUpdate(null, 0);
+        return;
+      }
+      const updatedAt = data.updatedAt || (data.state as any)?.updatedAt || 0;
+      onUpdate(normalizeClubState({ ...(data.state as AppState), updatedAt }), updatedAt);
+    },
+    (error) => {
+      if (isQuotaExceededError(error)) markQuotaExhausted(30);
+      onError(error);
+    }
+  );
 }
 
 /**
