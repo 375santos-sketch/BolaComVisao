@@ -1,6 +1,14 @@
 import { AppNotification, AppState, NotificationSettings, Player, WeeklyTrainingSlot, UserAccount } from '../types';
 import { uid } from './utils';
 import { MASTER_ADMIN_EMAIL } from './constants';
+import {
+  ABSENCE_STREAK_ALERT,
+  RECENT_WINDOW_DAYS,
+  absenceStreak,
+  isExpectedToMiss,
+  pastTrainings,
+  recentAttendance
+} from './attendanceAlerts';
 
 export const defaultWeeklyTrainings: WeeklyTrainingSlot[] = [
   { day: 2, time: '18:15', label: 'Terça-feira' },
@@ -233,6 +241,67 @@ export function evaluateSystemNotifications(state: AppState): {
         }
       }
     });
+  }
+
+  // =========================================================================
+  // REGRA 3B: FALTAS SEGUIDAS E QUEBRA DE ASSIDUIDADE NOS ÚLTIMOS 30 DIAS
+  // (ignora atletas lesionados, suspensos ou inativos, que é normal faltarem)
+  // =========================================================================
+  if (settings.notifyLowAttendance && hasTeam && roster.length > 0) {
+    const recentFirst = pastTrainings(trainings);
+    const lastTraining = recentFirst[0];
+    const threshold = settings.attendanceThreshold || 50;
+
+    if (lastTraining) {
+      roster
+        .filter((p) => p.active !== false && !isExpectedToMiss(p))
+        .forEach((player) => {
+          const label = `${player.name}${player.number !== null ? ` (#${player.number})` : ''}`;
+
+          const streak = absenceStreak(player.id, recentFirst);
+          if (streak >= ABSENCE_STREAK_ALERT) {
+            const notifId = `notif-att-streak-${player.id}-${lastTraining.id}`;
+            const existing = existingMap.get(notifId);
+            const notif: AppNotification = existing || {
+              id: notifId,
+              type: 'assiduidade_baixa',
+              title: `⚠️ ${streak} faltas seguidas: ${player.name}`,
+              message: `O atleta ${label} faltou aos últimos ${streak} treinos. Pode valer a pena falar com o atleta ou com a família.`,
+              timestamp: Date.now(),
+              read: false,
+              priority: 'alta',
+              targetTab: 'plantel',
+              targetId: player.id,
+              category: 'Assiduidade',
+              details: `Faltas seguidas: ${streak} (último treino: ${lastTraining.date.slice(0, 10)})`
+            };
+            generatedNotifications.push(notif);
+            if (!existing) newlyCreated.push(notif);
+            return;
+          }
+
+          const recent = recentAttendance(player.id, recentFirst);
+          if (recent.total >= 3 && recent.pct < threshold) {
+            const notifId = `notif-att-recent-${player.id}-${lastTraining.id}`;
+            const existing = existingMap.get(notifId);
+            const notif: AppNotification = existing || {
+              id: notifId,
+              type: 'assiduidade_baixa',
+              title: `📉 Assiduidade a baixar: ${player.name} (${recent.pct}% em ${RECENT_WINDOW_DAYS} dias)`,
+              message: `Nos últimos ${RECENT_WINDOW_DAYS} dias, ${label} esteve em ${recent.presences} de ${recent.total} treinos (${recent.pct}%).`,
+              timestamp: Date.now(),
+              read: false,
+              priority: 'media',
+              targetTab: 'plantel',
+              targetId: player.id,
+              category: 'Assiduidade',
+              details: `Últimos ${RECENT_WINDOW_DAYS} dias: ${recent.presences}/${recent.total} (${recent.pct}%)`
+            };
+            generatedNotifications.push(notif);
+            if (!existing) newlyCreated.push(notif);
+          }
+        });
+    }
   }
 
   // =========================================================================
