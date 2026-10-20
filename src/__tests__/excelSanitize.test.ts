@@ -12,7 +12,7 @@ import {
   parseMatchRows,
   normalizeHeader as normalizeMatchHeader
 } from '../lib/matchExcelImporter';
-import { Player, Match } from '../types';
+import { Player } from '../types';
 
 describe('Excel Text Sanitization & Structured Fields', () => {
   // Test 1: "João d'Almeida-Silva" → "JOAO DALMEIDASILVA"

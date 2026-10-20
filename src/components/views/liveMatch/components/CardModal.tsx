@@ -35,8 +35,6 @@ const CardModalInner: React.FC<CardModalProps> = ({
   cardMinute,
   setCardMinute,
   suggestedMinute,
-  cardPeriod,
-  setCardPeriod,
   onSave
 }) => {
   const [isModified, setIsModified] = React.useState(false);

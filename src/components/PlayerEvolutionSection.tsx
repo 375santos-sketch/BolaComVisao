@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppState, Player, PlayerEvolutionMetrics } from '../types';
+import { AppState, PlayerEvolutionMetrics } from '../types';
 import { calculatePlayerEvolution } from '../lib/intelligenceEngine';
 
 interface PlayerEvolutionSectionProps {
@@ -14,8 +14,6 @@ export const PlayerEvolutionSection: React.FC<PlayerEvolutionSectionProps> = ({
   state,
   selectedPlayerId,
   onSelectPlayer,
-  onNavigate,
-  onShowToast
 }) => {
   const activePlayers = (state.roster || []).filter((p) => p.active !== false);
   const [currentSelectedId, setCurrentSelectedId] = useState<string>(selectedPlayerId || activePlayers[0]?.id || '');

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Match, AppState } from '../types';
+import { AppState } from '../types';
 import {
   readMatchExcelFile,
   parseMatchRows,
@@ -33,7 +33,6 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
   const [processingProgress, setProcessingProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // File & Raw ArrayBuffer
   const [rawFileBuffer, setRawFileBuffer] = useState<ArrayBuffer | null>(null);
@@ -77,7 +76,6 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
     setProcessingProgress(20);
     setProcessingStage('A ler ficheiro Excel de Jogos...');
     setErrorMessage(null);
-    setSuccessMessage(null);
 
     try {
       const buffer = await file.arrayBuffer();
@@ -231,7 +229,10 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
     existingMatches.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     onUpdateState({ matches: existingMatches });
-    onShowToast(`🎉 ${addedCount} novos jogos importados, ${replacedCount} atualizados!`);
+    onShowToast(
+      `🎉 ${addedCount} novos jogos importados, ${replacedCount} atualizados` +
+        (skippedCount > 0 ? `, ${skippedCount} ignorados!` : '!')
+    );
     onClose();
   };
 
@@ -348,6 +349,17 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
         {/* STEP 1: UPLOAD */}
         {step === 'upload' && (
           <div className="space-y-4 flex-1 flex flex-col justify-center py-4">
+            {loading && (
+              <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs text-cyan-200 space-y-2">
+                <div className="flex items-center justify-between font-mono">
+                  <span>{processingStage}</span>
+                  <span>{processingProgress}%</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-cyan-400 transition-all" style={{ width: `${processingProgress}%` }} />
+                </div>
+              </div>
+            )}
             <div
               onDragOver={(e) => {
                 e.preventDefault();
@@ -676,6 +688,20 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                   <div>
                     <div className="font-bold text-amber-300 font-mono">{duplicateCount} duplicados</div>
                     <div className="text-[10px] text-amber-400/80">Com regras de mesclagem</div>
+                    {duplicateCount > 0 && (
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) handleSetAllDuplicateActions(e.target.value as MatchDuplicateAction);
+                        }}
+                        className="mt-1 bg-slate-900 border border-amber-500/40 text-amber-300 text-[10px] rounded px-1.5 py-0.5"
+                      >
+                        <option value="">Aplicar a todos…</option>
+                        <option value="replace">Substituir Existentes</option>
+                        <option value="skip">Ignorar (Manter Atuais)</option>
+                        <option value="create_new">Criar como Novos</option>
+                      </select>
+                    )}
                   </div>
                 </div>
 

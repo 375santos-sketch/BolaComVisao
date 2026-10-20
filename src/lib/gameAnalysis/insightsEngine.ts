@@ -6,7 +6,7 @@ import {
   FirstGoalMetrics,
   BestTimingWindows
 } from './types';
-import { Match, GoalEvent } from '../../types';
+import { Match } from '../../types';
 import { normalizeEventTiming } from '../gameAnalysisUtils';
 
 interface InsightEngineInput {

@@ -1,7 +1,6 @@
 import React from 'react';
-import { ScheduledMatch, Training } from '../../types';
 import { TabType } from '../Navbar';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
+import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 

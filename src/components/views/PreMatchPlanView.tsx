@@ -3,15 +3,11 @@ import {
   AppState,
   OpponentScouting,
   ScheduledMatch,
-  SetPieceTakers,
-  MatchScheduleTimes,
-  TeamKitInfo,
   TacticalPitchPlayer
 } from '../../types';
-import { t } from '../../i18n/dict';
 import { uid } from '../../lib/utils';
 import { Header } from '../Header';
-import { SEVEN_A_SIDE_PRESETS, COMMON_ROLES, getEffectiveTacticalPitch, formatMatchCompetition } from './OpponentScoutingView';
+import { SEVEN_A_SIDE_PRESETS, COMMON_ROLES, getEffectiveTacticalPitch, formatMatchCompetition } from './opponentScoutingUtils';
 
 interface PreMatchPlanViewProps {
   state: AppState;
@@ -110,9 +106,9 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
   onShowToast,
   targetOpponentId
 }) => {
-  const scoutingList: OpponentScouting[] = state.opponentScouting || [];
-  const scheduleList: ScheduledMatch[] = state.schedule || [];
-  const roster = state.roster || [];
+  const scoutingList: OpponentScouting[] = useMemo(() => state.opponentScouting || [], [state.opponentScouting]);
+  const scheduleList: ScheduledMatch[] = useMemo(() => state.schedule || [], [state.schedule]);
+  const roster = useMemo(() => state.roster || [], [state.roster]);
   const myClubName = state.myClubName || 'A Minha Equipa';
 
   // Determine active report

@@ -18,8 +18,7 @@ import {
 } from '../services/cloudAuthService';
 import {
   openWhatsAppRegistrationRequest,
-  openEmailRegistrationRequest,
-  buildRegistrationNotificationMessage
+  openEmailRegistrationRequest
 } from '../lib/notificationEngine';
 import { MASTER_ADMIN_USERNAME } from '../lib/constants';
 
@@ -51,7 +50,6 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
   onClose,
   currentUser: explicitCurrentUser,
   state,
-  onUpdateState,
   onShowToast,
   appState
 }) => {
@@ -122,8 +120,6 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
   const adminIds = new Set(adminUsers.map((u) => u.id));
 
   const otherUsers = users.filter((u) => !adminIds.has(u.id));
-
-  const fullUsersList = [...adminUsers, ...otherUsers];
 
   const pendingUsers = otherUsers.filter((u) => u.status === 'pending');
   const rejectedUsers = otherUsers.filter((u) => u.status === 'rejected');

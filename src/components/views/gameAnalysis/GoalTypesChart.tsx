@@ -1,5 +1,5 @@
 import React from 'react';
-import { AggregatedAnalysis, GoalTypeStat, StandardGoalType } from '../../../lib/gameAnalysis';
+import { AggregatedAnalysis, StandardGoalType } from '../../../lib/gameAnalysis';
 
 interface GoalTypesChartProps {
   analysis: AggregatedAnalysis;

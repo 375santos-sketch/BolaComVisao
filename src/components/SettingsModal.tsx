@@ -8,7 +8,6 @@ import {
   defaultNotificationSettings
 } from '../lib/notificationEngine';
 import { defaultSyncState, syncStateWithCloud } from '../lib/syncEngine';
-import { isAppAdmin } from '../services/cloudAuthService';
 import { MASTER_ADMIN_EMAIL } from '../lib/constants';
 
 interface SettingsModalProps {
@@ -32,10 +31,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenCommercialPlans,
   pendingUsersCount = 0
 }) => {
-  const isAdmin = isAppAdmin(state.currentUser);
   const sub = state.subscription;
   const currentPlanName = sub?.planName || 'Gratuito / Trial';
-  const isSubActive = sub?.status === 'active';
   const notifSettings: NotificationSettings = {
     ...defaultNotificationSettings,
     ...(state.notificationSettings || {})
@@ -157,7 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         } else {
           doImport();
         }
-      } catch (err) {
+      } catch {
         if (onShowToast) onShowToast(t(state.lang, 'msg_inv_file'));
       }
     };

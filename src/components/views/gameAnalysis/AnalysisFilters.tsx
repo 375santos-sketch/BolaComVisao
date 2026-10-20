@@ -1,6 +1,5 @@
 import React from 'react';
 import { AnalysisFilters as IAnalysisFilters, EventTypeFilter } from '../../../lib/gameAnalysis';
-import { EVENT_TYPE_OPTIONS } from '../../../lib/gameAnalysis/constants';
 import { MatchType, MatchLocation } from '../../../types';
 
 interface AnalysisFiltersProps {

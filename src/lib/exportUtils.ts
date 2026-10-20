@@ -844,11 +844,11 @@ export function exportJSONBackup(state: AppState) {
   URL.revokeObjectURL(url);
 }
 
-export function exportCSVStats(state: AppState, lang: Language) {
+export function exportCSVStats(state: AppState, _lang: Language) {
   exportSeasonStatsExcel(state);
 }
 
-export function exportTXTReport(state: AppState, lang: Language) {
+export function exportTXTReport(state: AppState, _lang: Language) {
   const lines: string[] = [];
   lines.push('⚽ BolaComVisao - Relatório Geral de Futebol');
   lines.push(`Emitido em: ${new Date().toLocaleDateString('pt-PT')}`);

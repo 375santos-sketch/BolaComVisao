@@ -6,7 +6,6 @@ import {
   computeAggregatedAnalysis,
   AnalysisFilters
 } from '../lib/gameAnalysisUtils';
-import { Match } from '../types';
 
 describe('gameAnalysisUtils', () => {
   describe('Minute parsing & formatting (incl. 45+2 and 90+3)', () => {

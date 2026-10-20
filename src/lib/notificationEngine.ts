@@ -54,7 +54,7 @@ export function sendBrowserNotification(title: string, body: string, icon?: stri
         badge: '/favicon.ico'
       });
     }
-  } catch (e) {
+  } catch {
     // Ignored in restricted environments
   }
 }

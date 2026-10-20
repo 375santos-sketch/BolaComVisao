@@ -1,6 +1,5 @@
 import { AppState, SyncState, OfflineMutation, UserAccount, SyncConflict } from '../types';
 import { uid } from './utils';
-import { recordAuditLog } from './auditEngine';
 import {
   saveMasterClubState,
   loadMasterClubState,
@@ -216,7 +215,7 @@ export async function getStorageDiagnostics(): Promise<{
 // Perform sync directly against official Firestore cloud database & process queue
 export async function syncStateWithCloud(
   state: AppState,
-  syncId: string
+  _syncId: string
 ): Promise<{ success: boolean; message: string; remoteState?: Partial<AppState> }> {
   // If currently offline according to browser, store in IndexedDB and queue
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
@@ -257,7 +256,7 @@ export async function syncStateWithCloud(
         message: result.message || 'Falha ao sincronizar com Firestore. Guardado localmente.'
       };
     }
-  } catch (err: any) {
+  } catch {
     await saveToIndexedDB('offline_state_backup', state);
     return {
       success: true,
@@ -267,7 +266,7 @@ export async function syncStateWithCloud(
 }
 
 // Pull latest state directly from official Firestore cloud database
-export async function pullStateFromCloud(syncId: string): Promise<{ success: boolean; data?: any; message: string }> {
+export async function pullStateFromCloud(_syncId: string): Promise<{ success: boolean; data?: any; message: string }> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     const local = await loadFromIndexedDB('latest_cloud_synced_state');
     if (local) {

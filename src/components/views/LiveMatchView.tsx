@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppState, Match, GoalEvent, CardEvent, SubEvent } from '../../types';
+import { AppState, Match } from '../../types';
 import { t } from '../../i18n/dict';
 import { calculateMatchScore, getMatchElapsedMs } from '../../lib/utils';
 import { getLineupSize } from '../../lib/constants';
@@ -17,7 +17,6 @@ import { ConcededGoalModal } from './liveMatch/components/ConcededGoalModal';
 import { SubstitutionModal } from './liveMatch/components/SubstitutionModal';
 import { CardModal } from './liveMatch/components/CardModal';
 import { CaptainModal } from './liveMatch/components/CaptainModal';
-import { FinishMatchModal } from './liveMatch/components/FinishMatchModal';
 import { QuickBenchMode } from './liveMatch/components/QuickBenchMode';
 import { LineupModal } from './liveMatch/components/LineupModal';
 import { MatchClock } from './liveMatch/components/MatchClock';
@@ -44,7 +43,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   onOpenSettings,
   onOpenNotifications,
   onOpenSync,
-  onShowConfirm,
   onShowToast
 }) => {
   const [matchMode, setMatchMode] = useState<'quick' | 'detailed' | 'timeline'>('quick');
@@ -59,7 +57,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     match,
     matchPhase,
     suggestedMinute,
-    playersOnPitch,
     playersAtEndOfFirstHalf,
     eligiblePlayers,
     updateMatchInState,
@@ -69,7 +66,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     handleGoToHalftime,
     handleStartSecondHalf,
     handleUpdateLineup,
-    handleUpdateSecondHalfLineup,
 
     // Goals
     showGoalModal,
@@ -145,9 +141,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     // Captain & Finish
     showCaptainModal,
     setShowCaptainModal,
-    showFinishModal,
     setShowFinishModal,
-    isFinishing,
     setIsFinishing
   } = useLiveMatch({ state, onUpdateState, onShowToast });
 

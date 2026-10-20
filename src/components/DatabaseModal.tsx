@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { AppState, SquadProfile, Player } from '../types';
-import { t } from '../i18n/dict';
 import { uid, defaultSeason } from '../lib/utils';
 import { ImportExcelPlayersModal } from './ImportExcelPlayersModal';
 import { ImportMatchExcelModal } from './ImportMatchExcelModal';

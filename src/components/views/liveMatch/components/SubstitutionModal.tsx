@@ -71,7 +71,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
   });
 
   const [localMinute, setLocalMinute] = useState(subMinute);
-  const [localPeriod, setLocalPeriod] = useState<MatchPeriod>(subPeriod || '1.ª parte');
+  const [localPeriod] = useState<MatchPeriod>(subPeriod || '1.ª parte');
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const showSuggestedLabel =

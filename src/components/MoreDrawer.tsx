@@ -51,9 +51,6 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
     cb();
   };
 
-  const currentPlanName = state.subscription?.planName || 'Gratuito / Trial';
-  const isSubActive = state.subscription?.status === 'active';
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"

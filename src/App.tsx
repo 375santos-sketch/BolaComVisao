@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { AppState, UserAccount, AppNotification } from './types';
 import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
 import { applyThemeCSS } from './lib/utils';
@@ -14,7 +14,6 @@ import {
   checkCurrentAuthUser,
   saveMasterClubState,
   isAppAdmin,
-  ADMIN_EMAIL,
   getFirestoreQuotaState
 } from './services/cloudAuthService';
 import { Navbar, TabType } from './components/Navbar';
@@ -268,6 +267,8 @@ export default function App() {
     return () => {
       unsubscribe();
     };
+    // Resubscribe only when the signed-in user changes, not on every currentUser object update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.currentUser?.id]);
 
   // Real-time listener for Coach Registrations requiring Admin Approval (Admin ONLY)
@@ -280,7 +281,7 @@ export default function App() {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       try {
         Notification.requestPermission().catch(() => {});
-      } catch (e) {
+      } catch {
         // Safe catch
       }
     }
@@ -376,6 +377,8 @@ export default function App() {
       setPendingUsersCount(0);
       setLatestPendingUser(null);
     };
+    // Resubscribe only when the user's identity/role changes, not on every currentUser object update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.currentUser?.id, state.currentUser?.role, state.currentUser?.email]);
 
   // Auto-sync listener for online / offline events
@@ -472,6 +475,8 @@ export default function App() {
     if (oldNotifStr !== newNotifStr) {
       updateState({ notifications: updatedNotifications });
     }
+    // Re-evaluate only when the underlying data changes; depending on `state` would loop on its own update.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.trainings, state.matches, state.schedule, state.roster]);
 
   const handleNavigate = (tab: string, targetId?: string) => {

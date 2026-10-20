@@ -2,7 +2,7 @@ import React from 'react';
 import { AppState, Player } from '../../../types';
 import { SquadSortBy, SquadSortDirection, POSITION_GROUPS, STATUS_CONFIG } from './types';
 import { SquadPositionBadge } from './SquadPositionBadge';
-import { computeAge, getPositionRank } from '../../../lib/utils';
+import { getPositionRank } from '../../../lib/utils';
 
 interface SquadGridViewProps {
   state: AppState;
@@ -15,7 +15,6 @@ interface SquadGridViewProps {
 }
 
 export const SquadGridView: React.FC<SquadGridViewProps> = ({
-  state,
   sortedRoster,
   sortBy,
   sortDirection,
@@ -23,16 +22,9 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
   onEditPlayer,
   onRemovePlayer
 }) => {
-  const completedTrainings = (state.trainings || []).filter((tr) => tr.completed !== false);
-  const totalTrainingsCount = completedTrainings.length;
-  const attendanceThreshold = state.notificationSettings?.attendanceThreshold || 50;
 
   const renderPlayerCard = (player: Player) => {
     const st = STATUS_CONFIG[player.status || 'disponivel'];
-    const playerAbsences = completedTrainings.filter((tr) => (tr.absences || []).includes(player.id)).length;
-    const playerPresences = Math.max(0, totalTrainingsCount - playerAbsences);
-    const attendancePct = totalTrainingsCount > 0 ? Math.round((playerPresences / totalTrainingsCount) * 100) : 0;
-    const hasLowAttendance = totalTrainingsCount >= 1 && attendancePct < attendanceThreshold;
 
     return (
       <div

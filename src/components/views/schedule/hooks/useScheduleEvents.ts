@@ -26,6 +26,8 @@ export function useScheduleEvents(state: AppState) {
   // Unified Events Computation
   const allEvents: CalendarEvent[] = useMemo(() => {
     return computeUnifiedEvents(state, todayStr, eligiblePlayers);
+    // computeUnifiedEvents only reads the state fields listed below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     state.schedule,
     state.matches,

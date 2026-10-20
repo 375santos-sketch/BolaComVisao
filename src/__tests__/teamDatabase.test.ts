@@ -4,13 +4,11 @@ import {
   sanitizeAndDeduplicateHeaders,
   inspectExcelBuffer,
   MAX_COLUMNS_LIMIT,
-  MAX_ROWS_LIMIT,
   MAX_FILE_SIZE_BYTES
 } from '../lib/teamDatabaseService';
 import {
   canViewTeamDatabase,
   canManageTeamDatabase,
-  canAccessTeam,
   hasPermission
 } from '../lib/permissionsEngine';
 import { UserAccount } from '../types';
@@ -152,17 +150,6 @@ describe('Team Database - Permissions & ABAC Multi-Tenant Scenarios', () => {
     status: 'approved',
     clubId: 'club_1',
     assignedTeams: ['team_a'],
-    createdAt: ''
-  };
-
-  const coachTeamB: UserAccount = {
-    id: 'user_coach_b',
-    username: 'coach_b',
-    name: 'Treinador Equipa B',
-    role: 'Treinador Principal',
-    status: 'approved',
-    clubId: 'club_1',
-    assignedTeams: ['team_b'],
     createdAt: ''
   };
 

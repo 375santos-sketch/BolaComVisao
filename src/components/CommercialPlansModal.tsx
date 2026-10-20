@@ -40,7 +40,6 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
   state,
   onUpdateSubscription
 }) => {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [activeTab, setActiveTab] = useState<'plans' | 'activate' | 'my_plan' | 'admin_generator'>('plans');
 
   // License activation state

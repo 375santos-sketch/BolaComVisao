@@ -31,8 +31,6 @@ const ConcededGoalModalInner: React.FC<ConcededGoalModalProps> = ({
   concededMinute,
   setConcededMinute,
   suggestedMinute,
-  concededPeriod,
-  setConcededPeriod,
   concededGoalType,
   setConcededGoalType,
   concededNotes,

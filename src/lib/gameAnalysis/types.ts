@@ -1,4 +1,4 @@
-import { Match, GoalEvent, CardEvent, SubEvent, MatchType, MatchLocation } from '../../types';
+import { Match, GoalEvent, MatchType, MatchLocation } from '../../types';
 
 export type StandardGoalType =
   | 'Bola jogada'

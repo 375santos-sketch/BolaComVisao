@@ -6,8 +6,7 @@ import {
   CardEvent,
   SubEvent,
   GoalType,
-  MatchPeriod,
-  MatchGamePhase
+  MatchPeriod
 } from '../../../../types';
 import { uid, formatMinute, sortPlayerObjs, getMatchElapsedMs } from '../../../../lib/utils';
 import { getLineupSize } from '../../../../lib/constants';

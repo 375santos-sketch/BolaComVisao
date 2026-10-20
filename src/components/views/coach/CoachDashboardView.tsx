@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { AppState, Match } from '../../../types';
+import { AppState } from '../../../types';
 import {
   CoachViewFilter,
-  CoachFilterMode,
   computeCoachViewData
 } from '../../../lib/gameAnalysis';
 import { SquadGoalsAndAssistsModal, GoalsAssistsTab } from '../../SquadGoalsAndAssistsModal';

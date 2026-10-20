@@ -14,7 +14,6 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
     cornersAgainstMatchesCount,
     cornersAgainstAvg,
     goalTypes,
-    goalsScored
   } = analysis;
 
   const cornerGoalsScored = goalTypes.find((gt) => gt.type === 'Canto')?.count || 0;
@@ -73,11 +72,8 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
     foulsSufferedTotal,
     foulsSufferedMatchesCount,
     foulsSufferedAvg,
-    yellowCardsTotal,
-    redCardsTotal
   } = analysis;
 
-  const totalFouls = foulsCommittedTotal + foulsSufferedTotal;
   const balance = foulsSufferedTotal - foulsCommittedTotal;
 
   return (

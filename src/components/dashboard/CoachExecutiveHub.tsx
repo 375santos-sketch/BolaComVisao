@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { AppState, Match } from '../../types';
+import { AppState } from '../../types';
 import { TabType } from '../Navbar';
 import { calculateAttendanceMetrics } from '../../lib/intelligenceEngine';
 import { parseMinuteToNumber } from '../../lib/gameAnalysisUtils';

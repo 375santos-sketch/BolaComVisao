@@ -1,7 +1,7 @@
 import { Match, Player } from '../../types';
 import { normalizeEventTiming } from '../gameAnalysisUtils';
 import { isSeasonMatching } from '../utils';
-import { AggregatedAnalysis, StandardGoalType } from './types';
+import { AggregatedAnalysis } from './types';
 import { computeGameAnalysis } from './index';
 
 export interface CoachViewPlayerStat {

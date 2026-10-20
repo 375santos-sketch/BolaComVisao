@@ -1,4 +1,4 @@
-import { Match, GoalEvent } from '../../types';
+import { Match } from '../../types';
 import { AggregatedAnalysis, StandardGoalType } from './types';
 import { normalizeEventTiming } from '../gameAnalysisUtils';
 import {

@@ -1,6 +1,5 @@
 import React from 'react';
 import { AppState, UserAccount } from '../../types';
-import logoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { isAppAdmin } from '../../services/cloudAuthService';
@@ -20,7 +19,6 @@ interface DashboardHeaderProps {
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   state,
   onOpenSettings,
-  onOpenDatabase,
   onOpenNotifications,
   onOpenSync,
   onOpenAdminUsers,

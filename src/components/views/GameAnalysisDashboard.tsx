@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { AppState, Match } from '../../types';
+import { AppState } from '../../types';
 import { t } from '../../i18n/dict';
 import { Header } from '../Header';
 import {
@@ -26,9 +26,6 @@ import {
   PlayerAnalysis,
   EventDrilldown,
   AnalysisExport,
-  FirstGoalSection,
-  OutcomeComparison,
-  SetPieceDetailedSection,
   CoachReportModal,
   AskDataSection
 } from './gameAnalysis';

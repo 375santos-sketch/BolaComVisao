@@ -1,6 +1,4 @@
 import { Match } from '../../types';
-import { StandardGoalType } from './types';
-import { normalizeEventTiming } from '../gameAnalysisUtils';
 
 export interface OutcomeGroupStats {
   matchCount: number;

@@ -3,13 +3,12 @@ import { AppState, ScheduledMatch, Training, UserAccount, ClubEvent } from '../.
 import { TabType } from '../Navbar';
 import { getAllBirthdays } from '../../lib/birthdayUtils';
 import {
-  detectDashboardContext,
   generateSmartAlerts,
   generateSmartRecommendations
 } from '../../lib/intelligenceEngine';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { DashboardBirthdays } from '../dashboard/DashboardBirthdays';
-import { DashboardNextEvent, UnifiedEvent } from '../dashboard/DashboardNextEvent';
+import { UnifiedEvent } from '../dashboard/DashboardNextEvent';
 import { TodayFocusCard } from '../dashboard/TodayFocusCard';
 import { CoachExecutiveHub } from '../dashboard/CoachExecutiveHub';
 import { DashboardStatsGrid } from '../dashboard/DashboardStatsGrid';
@@ -161,7 +160,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   });
 
   unifiedEvents.sort((a, b) => a.rawDate.getTime() - b.rawDate.getTime());
-  const nextEvent = unifiedEvents.length > 0 ? unifiedEvents[0] : null;
 
   const nextMatch =
     scheduledMatches.length > 0 ? scheduledMatches.find((m) => m.date >= todayStr) || scheduledMatches[0] : null;

@@ -31,7 +31,7 @@ export interface ValidationResult<T> {
  * Validates and sanitizes a single GoalEvent.
  * Guarantees standard goalType normalization and prevents null/undefined corruption.
  */
-export function validateAndSanitizeGoalEvent(raw: any, index = 0): GoalEvent | null {
+export function validateAndSanitizeGoalEvent(raw: any, _index = 0): GoalEvent | null {
   if (!raw || typeof raw !== 'object') return null;
 
   const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : uid();

@@ -21,11 +21,8 @@ interface BirthdaySectionProps {
 
 export const BirthdaySection: React.FC<BirthdaySectionProps> = ({
   state,
-  onUpdateState,
   onEditPlayer,
   onEditStaff,
-  onNavigateToPlayers,
-  onNavigateToStaff,
   onShowToast
 }) => {
   const [typeFilter, setTypeFilter] = useState<BirthdayTypeFilter>('todos');

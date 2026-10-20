@@ -1,5 +1,4 @@
 import { AppState, SquadProfile, UserAccount, Player, Match } from '../types';
-import { defaultSeason } from './utils';
 import { saveToIndexedDB, defaultSyncState } from './syncEngine';
 import { normalizeAndMigrateTrainings } from './trainingNumbering';
 

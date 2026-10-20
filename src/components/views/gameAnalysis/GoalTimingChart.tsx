@@ -129,7 +129,6 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
           {timePeriodList.map((p) => {
             const isBestScored = timingWindows.mostScoredPeriod?.periodKey === p.key;
             const isWorstConceded = timingWindows.mostConcededPeriod?.periodKey === p.key;
-            const totalInPeriod = p.scored + p.conceded;
 
             return (
               <div

@@ -250,6 +250,5 @@ export function filterBirthdays(
  */
 export function getBirthdayGreetingMessage(person: BirthdayPerson, clubName?: string): string {
   const club = clubName || 'o nosso Clube';
-  const roleLabel = person.type === 'jogador' ? 'atleta' : person.roleOrPosition;
   return `🎂🎉 *PARABÉNS, ${person.name.toUpperCase()}!*\n\nEm nome de toda a equipa e de ${club}, desejamos-te um fantástico dia de aniversário pelos teus *${person.nextAge} anos*!\n\nMuitas felicidades, saúde, sucesso desportivo e muitas conquistas connosco dentro e fora de campo! ⚽🏆✨`;
 }

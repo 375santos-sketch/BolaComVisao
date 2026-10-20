@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AppState, UserAccount, TeamInvitation } from '../../types';
 import logoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { registerCoachUser, loginCoachUser, loginWithGoogle, lookupInvitationByCode } from '../../services/cloudAuthService';

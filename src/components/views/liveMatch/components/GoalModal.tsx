@@ -34,8 +34,6 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
   goalMinute,
   setGoalMinute,
   suggestedMinute,
-  goalPeriod,
-  setGoalPeriod,
   goalScorerId,
   setGoalScorerId,
   goalAssistId,

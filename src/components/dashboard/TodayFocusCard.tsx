@@ -1,7 +1,6 @@
 import React from 'react';
 import { UnifiedEvent } from './DashboardNextEvent';
 import { TabType } from '../Navbar';
-import { Badge } from '../ui/Badge';
 import { Match, ScheduledMatch } from '../../types';
 
 interface TodayFocusCardProps {

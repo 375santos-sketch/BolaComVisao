@@ -1,5 +1,4 @@
-import { AppState, Match } from '../../types';
-import { calculateMatchScore } from '../utils';
+import { AppState } from '../../types';
 import { parseMinuteToNumber } from './timingUtils';
 
 export interface AskDataResponse {

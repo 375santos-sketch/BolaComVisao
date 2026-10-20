@@ -60,7 +60,6 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
 
   const {
     eligiblePlayers,
-    completedTrainings,
     totalTrainings,
     completedCount,
     scheduledCount,

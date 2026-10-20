@@ -32,8 +32,6 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
     cornersForAvg,
     cornersForMatchesCount,
     foulsCommittedAvg,
-    foulsCommittedMatchesCount,
-    cardsPerMatchAvg,
     yellowCardsTotal,
     redCardsTotal
   } = analysis;

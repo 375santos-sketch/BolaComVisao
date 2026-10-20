@@ -5,8 +5,7 @@ import {
   syncStateWithCloud,
   pullStateFromCloud,
   getStorageDiagnostics,
-  getFirestoreQuotaState,
-  FIRESTORE_UPGRADE_CONSOLE_URL
+  getFirestoreQuotaState
 } from '../lib/syncEngine';
 
 interface SyncModalProps {

@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Match, Player } from '../types';
 import {
-  computeTopScorersAndAssisters,
-  CoachViewPlayerFullStat
+  computeTopScorersAndAssisters
 } from '../lib/gameAnalysis';
 
 export type GoalsAssistsTab = 'marcadores' | 'assistentes' | 'participacoes' | 'todos';
@@ -26,7 +25,6 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
   roster,
   clubName = 'Dragões de Alferrarede',
   category = 'Sub-11',
-  season = '',
   initialTab = 'marcadores',
   onSelectPlayer
 }) => {
@@ -57,7 +55,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
   }, [isOpen, onClose]);
 
   // Compute stats for all squad members
-  const { topScorers, topAssisters, allSquadStats } = useMemo(() => {
+  const { allSquadStats } = useMemo(() => {
     return computeTopScorersAndAssisters(matches || [], roster || []);
   }, [matches, roster]);
 
@@ -68,9 +66,6 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
   }, [allSquadStats]);
   const totalAssists = useMemo(() => {
     return allSquadStats.reduce((sum, p) => sum + p.assists, 0);
-  }, [allSquadStats]);
-  const playersWithContributions = useMemo(() => {
-    return allSquadStats.filter((p) => p.goals > 0 || p.assists > 0).length;
   }, [allSquadStats]);
 
   // Filter & sort players

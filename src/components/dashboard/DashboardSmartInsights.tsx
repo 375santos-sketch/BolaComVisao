@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppState, SmartAlert, SmartRecommendation } from '../../types';
+import { SmartAlert, SmartRecommendation } from '../../types';
 import { TabType } from '../Navbar';
 import { SmartAlertCard } from '../ui/SmartAlertCard';
 import { RecommendationCard } from '../ui/RecommendationCard';
