@@ -4,6 +4,7 @@ import { t } from '../../i18n/dict';
 import { playerLabel, formatMinute, parseMinuteOrder, isSeasonMatching } from '../../lib/utils';
 import { Header } from '../Header';
 import { DeletedMatchesSection } from './results/DeletedMatchesSection';
+import { ParentsShareModal } from './results/ParentsShareModal';
 
 interface ResultsViewProps {
   state: AppState;
@@ -28,6 +29,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [seasonFilter, setSeasonFilter] = useState<string>('todas');
+  const [shareMatch, setShareMatch] = useState<Match | null>(null);
   const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
   const [isGeneratingPdfId, setIsGeneratingPdfId] = useState<string | null>(null);
 
@@ -199,6 +201,15 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             </div>
           ))}
         </div>
+      )}
+
+      {shareMatch && (
+        <ParentsShareModal
+          match={shareMatch}
+          state={state}
+          onClose={() => setShareMatch(null)}
+          onShowToast={onShowToast}
+        />
       )}
 
       <DeletedMatchesSection
@@ -402,6 +413,20 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                       <span>Excel Ficha de Jogo</span>
                     </button>
                   </div>
+
+                  {m.finished && (
+                    <div className="btn-row mt-2.5">
+                      <button
+                        className="btn btn-outline w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShareMatch(m);
+                        }}
+                      >
+                        📲 Partilhar com os pais
+                      </button>
+                    </div>
+                  )}
 
                   {m.finished && (
                     <div className="btn-row mt-2.5">
