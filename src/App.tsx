@@ -34,6 +34,8 @@ const ConvocatoriaView = lazyWithRetry(() => import('./components/views/Convocat
 const TrainingsView = lazyWithRetry(() => import('./components/views/TrainingsView'), 'TrainingsView');
 const ResultsView = lazyWithRetry(() => import('./components/views/ResultsView'), 'ResultsView');
 const StatsView = lazyWithRetry(() => import('./components/views/StatsView'), 'StatsView');
+// Loaded when opened: it bundles the Excel library used by the team spreadsheets.
+const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 'DatabaseModal');
 const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
   'GameAnalysisDashboard'
@@ -49,7 +51,6 @@ const RelatoriosView = lazyWithRetry(() => import('./components/views/Relatorios
 // Modals
 import { AdminUsersModal } from './components/AdminUsersModal';
 import { AuditLogModal } from './components/AuditLogModal';
-import { DatabaseModal } from './components/DatabaseModal';
 import { SettingsModal } from './components/SettingsModal';
 import { SyncModal } from './components/SyncModal';
 import { TeamInviteModal } from './components/TeamInviteModal';
@@ -1003,13 +1004,15 @@ export default function App() {
         {/* Modals */}
         {/* Database Modal */}
         {showDatabase && (
-          <DatabaseModal
-            state={state}
-            onUpdateState={updateState}
-            onClose={() => setShowDatabase(false)}
-            onShowToast={showToast}
-            onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-          />
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <DatabaseModal
+              state={state}
+              onUpdateState={updateState}
+              onClose={() => setShowDatabase(false)}
+              onShowToast={showToast}
+              onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+            />
+          </Suspense>
         )}
 
         {/* Settings Modal */}
