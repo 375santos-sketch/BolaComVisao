@@ -226,6 +226,31 @@ export async function migrateClubToRecords(workspaceId: string | null | undefine
   return pushClubRecords(workspaceId, state, { authorId, migrating: true, allowMassDelete: true });
 }
 
+// ---------- Deleted records (recovery) ----------
+
+export interface DeletedRecord<T = Record<string, unknown>> {
+  data: T;
+  deletedAt: number;
+  deletedBy?: string;
+}
+
+/**
+ * Records of a team deleted in the cloud that still carry their last version (newest first). Only available
+ * once the club uses per-record storage.
+ */
+export function getDeletedRecords<T = Record<string, unknown>>(
+  workspaceId: string | null | undefined,
+  kind: RecordKind,
+  teamId: string
+): DeletedRecord<T>[] {
+  const remote = remoteByWorkspace.get(cleanWorkspaceId(workspaceId));
+  if (!remote) return [];
+  return [...remote.values()]
+    .filter((r) => r.deleted && r.kind === kind && r.teamId === teamId && r.data && Object.keys(r.data).length > 0)
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .map((r) => ({ data: r.data as T, deletedAt: r.updatedAt, deletedBy: r.updatedBy }));
+}
+
 // ---------- Real-time ----------
 
 export interface ClubCloudHandlers {

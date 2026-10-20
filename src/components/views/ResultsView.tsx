@@ -3,6 +3,7 @@ import { AppState, Match, GoalEvent, CardEvent, SubEvent } from '../../types';
 import { t } from '../../i18n/dict';
 import { playerLabel, formatMinute, parseMinuteOrder, isSeasonMatching } from '../../lib/utils';
 import { Header } from '../Header';
+import { DeletedMatchesSection } from './results/DeletedMatchesSection';
 
 interface ResultsViewProps {
   state: AppState;
@@ -199,6 +200,14 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           ))}
         </div>
       )}
+
+      <DeletedMatchesSection
+        state={state}
+        onRestore={(match) => {
+          onUpdateState({ matches: [...state.matches.filter((m) => m.id !== match.id), match] });
+          onShowToast?.(`Jogo vs ${match.opponent} recuperado ✓`);
+        }}
+      />
 
       {filteredMatches.length > 0 ? (
         filteredMatches.map((m) => {

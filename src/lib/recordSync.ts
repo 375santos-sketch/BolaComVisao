@@ -270,18 +270,29 @@ export function pendingRecordIds(local: Map<string, LocalRecord>, synced: Synced
   });
 }
 
-/** The Firestore document to write for a pending record: the local version, or a tombstone if it was deleted. */
+/**
+ * The Firestore document to write for a pending record: the local version, or a tombstone if it was deleted.
+ * Tombstones keep the last known version of the record so it can be recovered ("Jogos apagados").
+ */
 export function buildCloudWrite(
   id: string,
   local: Map<string, LocalRecord>,
-  known: { kind: RecordKind; teamId: string; entityId: string } | undefined,
+  known: { kind: RecordKind; teamId: string; entityId: string; data?: Record<string, unknown> } | undefined,
   now: number,
   updatedBy?: string
 ): CloudRecord | null {
   const L = local.get(id);
   if (L) return { ...L, updatedAt: now, deleted: false, ...(updatedBy ? { updatedBy } : {}) };
   if (!known || id === CLUB_DOC_ID) return null; // never delete the club document
-  return { ...known, data: {}, updatedAt: now, deleted: true, ...(updatedBy ? { updatedBy } : {}) };
+  return {
+    kind: known.kind,
+    teamId: known.teamId,
+    entityId: known.entityId,
+    data: known.data || {},
+    updatedAt: now,
+    deleted: true,
+    ...(updatedBy ? { updatedBy } : {})
+  };
 }
 
 export const recordHash = (r: LocalRecord | undefined): string => (r ? hashData(r.data) : ABSENT);
