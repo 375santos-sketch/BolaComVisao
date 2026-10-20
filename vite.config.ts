@@ -29,12 +29,8 @@ export default defineConfig(() => {
               if (id.includes('lucide-react')) {
                 return 'vendor-icons';
               }
-              if (id.includes('xlsx')) {
-                return 'vendor-excel';
-              }
-              if (id.includes('jspdf') || id.includes('html2canvas')) {
-                return 'vendor-pdf';
-              }
+              // Excel (xlsx) and PDF (jspdf) are not grouped here on purpose: they are only loaded when a file is
+              // imported/exported, and a manual chunk would also capture shared helpers the entry needs at start-up.
               if (id.includes('firebase')) {
                 return 'vendor-firebase';
               }
