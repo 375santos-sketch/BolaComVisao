@@ -5,7 +5,12 @@ export interface AskDataResponse {
   query: string;
   summary: string;
   keyPoints: string[];
-  metrics?: { label: string; value: string | number; change?: string; variant?: 'cyan' | 'emerald' | 'amber' | 'rose' }[];
+  metrics?: {
+    label: string;
+    value: string | number;
+    change?: string;
+    variant?: 'cyan' | 'emerald' | 'amber' | 'rose';
+  }[];
   recommendation?: string;
 }
 
@@ -31,10 +36,20 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
   }
 
   // 1. "Últimos jogos" / "forma" / "momento"
-  if (cleanQ.includes('último') || cleanQ.includes('ultimos') || cleanQ.includes('forma') || cleanQ.includes('momento') || cleanQ.includes('recent')) {
+  if (
+    cleanQ.includes('último') ||
+    cleanQ.includes('ultimos') ||
+    cleanQ.includes('forma') ||
+    cleanQ.includes('momento') ||
+    cleanQ.includes('recent')
+  ) {
     const n = cleanQ.includes('3') ? 3 : cleanQ.includes('10') ? 10 : 5;
     const recent = matches.slice(-n);
-    let wins = 0, draws = 0, losses = 0, scored = 0, conceded = 0;
+    let wins = 0,
+      draws = 0,
+      losses = 0,
+      scored = 0,
+      conceded = 0;
 
     recent.forEach((m) => {
       const s = (m.goals || []).filter((g) => g.type === 'scored').length;
@@ -55,8 +70,12 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
       summary: `Nos últimos ${recent.length} jogos: ${wins} Vitórias, ${draws} Empates e ${losses} Derrotas (${winPct}% de aproveitamento).`,
       keyPoints: [
         `Média de ${avgScored} golos marcados e ${avgConceded} sofridos por jogo.`,
-        wins >= recent.length / 2 ? 'Equipa com momento competitivo positivo e boa eficácia ofensiva.' : 'Fase com necessidade de consolidação defensiva.',
-        scored > conceded ? `Saldo positivo de golos (+${scored - conceded}).` : `Saldo de golos neutro ou desfavorável (${scored - conceded}).`
+        wins >= recent.length / 2
+          ? 'Equipa com momento competitivo positivo e boa eficácia ofensiva.'
+          : 'Fase com necessidade de consolidação defensiva.',
+        scored > conceded
+          ? `Saldo positivo de golos (+${scored - conceded}).`
+          : `Saldo de golos neutro ou desfavorável (${scored - conceded}).`
       ],
       metrics: [
         { label: 'Vitórias', value: `${wins}/${recent.length}`, variant: 'emerald' },
@@ -64,14 +83,21 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
         { label: 'Golos Sofridos', value: conceded, variant: 'rose' },
         { label: 'Média Marcados', value: avgScored }
       ],
-      recommendation: conceded > scored
-        ? 'Reforçar exercícios de transição defensiva e organização de bola parada nos treinos da semana.'
-        : 'Manter a dinâmica de posse e circulação no terço ofensivo.'
+      recommendation:
+        conceded > scored
+          ? 'Reforçar exercícios de transição defensiva e organização de bola parada nos treinos da semana.'
+          : 'Manter a dinâmica de posse e circulação no terço ofensivo.'
     };
   }
 
   // 2. "Bolas paradas" / "cantos" / "livres" / "penalti"
-  if (cleanQ.includes('canto') || cleanQ.includes('bola parada') || cleanQ.includes('livre') || cleanQ.includes('penalti') || cleanQ.includes('penálti')) {
+  if (
+    cleanQ.includes('canto') ||
+    cleanQ.includes('bola parada') ||
+    cleanQ.includes('livre') ||
+    cleanQ.includes('penalti') ||
+    cleanQ.includes('penálti')
+  ) {
     let setPieceScored = 0;
     let setPieceConceded = 0;
     let totalScored = 0;
@@ -110,16 +136,25 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
         { label: 'Golos Sofridos (BP)', value: `${setPieceConceded} (${setPieceConcededPct}%)`, variant: 'rose' },
         { label: 'Média Cantos', value: avgCorners, variant: 'amber' }
       ],
-      recommendation: setPieceConcededPct >= 30
-        ? 'Atenção aos esquemas táticos defensivos em cantos e livres laterais. Considerar marcação mista.'
-        : 'Excelente controlo defensivo nos lances de bola parada.'
+      recommendation:
+        setPieceConcededPct >= 30
+          ? 'Atenção aos esquemas táticos defensivos em cantos e livres laterais. Considerar marcação mista.'
+          : 'Excelente controlo defensivo nos lances de bola parada.'
     };
   }
 
   // 3. "Períodos" / "minutos" / "quando" / "sofrer" / "marcar"
-  if (cleanQ.includes('período') || cleanQ.includes('periodo') || cleanQ.includes('minuto') || cleanQ.includes('quando') || cleanQ.includes('tempo')) {
-    let firstHalfScored = 0, firstHalfConceded = 0;
-    let secondHalfScored = 0, secondHalfConceded = 0;
+  if (
+    cleanQ.includes('período') ||
+    cleanQ.includes('periodo') ||
+    cleanQ.includes('minuto') ||
+    cleanQ.includes('quando') ||
+    cleanQ.includes('tempo')
+  ) {
+    let firstHalfScored = 0,
+      firstHalfConceded = 0;
+    let secondHalfScored = 0,
+      secondHalfConceded = 0;
     let lateConceded = 0; // > 60' or 2nd half end
 
     matches.forEach((m) => {
@@ -153,9 +188,10 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
         { label: '2ª Parte Marcados', value: secondHalfScored, variant: 'emerald' },
         { label: 'Golos Sofridos Finais', value: `${latePct}%`, variant: 'rose' }
       ],
-      recommendation: latePct >= 40
-        ? 'Gerir as substituições a partir do meio da 2ª parte para manter a intensidade física e concentração defensiva.'
-        : 'Boa consistência de ritmo e intensidade ao longo de todos os períodos do jogo.'
+      recommendation:
+        latePct >= 40
+          ? 'Gerir as substituições a partir do meio da 2ª parte para manter a intensidade física e concentração defensiva.'
+          : 'Boa consistência de ritmo e intensidade ao longo de todos os períodos do jogo.'
     };
   }
 
@@ -164,7 +200,11 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
   if (opponentMatch) {
     const oppName = opponentMatch.opponent;
     const oppGames = matches.filter((m) => m.opponent.toLowerCase() === oppName.toLowerCase());
-    let oppWins = 0, oppDraws = 0, oppLosses = 0, oppScored = 0, oppConceded = 0;
+    let oppWins = 0,
+      oppDraws = 0,
+      oppLosses = 0,
+      oppScored = 0,
+      oppConceded = 0;
 
     oppGames.forEach((m) => {
       const s = (m.goals || []).filter((g) => g.type === 'scored').length;
@@ -187,14 +227,23 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
       metrics: [
         { label: 'Jogos Disputados', value: oppGames.length },
         { label: 'Vitórias', value: oppWins, variant: 'emerald' },
-        { label: 'Saldo Golos', value: oppScored - oppConceded >= 0 ? `+${oppScored - oppConceded}` : `${oppScored - oppConceded}` }
+        {
+          label: 'Saldo Golos',
+          value: oppScored - oppConceded >= 0 ? `+${oppScored - oppConceded}` : `${oppScored - oppConceded}`
+        }
       ],
       recommendation: `Manter plano estratégico focado nas transições rápidas explorando as alas contra ${oppName}.`
     };
   }
 
   // 5. "Jogadores" / "marcadores" / "assistências"
-  if (cleanQ.includes('marcador') || cleanQ.includes('golos') || cleanQ.includes('assist') || cleanQ.includes('jogador') || cleanQ.includes('destaque')) {
+  if (
+    cleanQ.includes('marcador') ||
+    cleanQ.includes('golos') ||
+    cleanQ.includes('assist') ||
+    cleanQ.includes('jogador') ||
+    cleanQ.includes('destaque')
+  ) {
     const playerGoals: Record<string, number> = {};
     const playerAssists: Record<string, number> = {};
 
@@ -238,7 +287,11 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
   }
 
   // 6. Resposta Global Padrão (Visão Geral da Época)
-  let totalWins = 0, totalDraws = 0, totalLosses = 0, totalScored = 0, totalConceded = 0;
+  let totalWins = 0,
+    totalDraws = 0,
+    totalLosses = 0,
+    totalScored = 0,
+    totalConceded = 0;
   matches.forEach((m) => {
     const s = (m.goals || []).filter((g) => g.type === 'scored').length;
     const c = (m.goals || []).filter((g) => g.type === 'conceded').length;
@@ -267,6 +320,7 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
       { label: 'Golos Marcados', value: totalScored, variant: 'cyan' },
       { label: 'Golos Sofridos', value: totalConceded, variant: 'rose' }
     ],
-    recommendation: 'Pode perguntar sobre momentos de jogo, cantos, confrontos contra um adversário específico ou últimos jogos.'
+    recommendation:
+      'Pode perguntar sobre momentos de jogo, cantos, confrontos contra um adversário específico ou últimos jogos.'
   };
 }

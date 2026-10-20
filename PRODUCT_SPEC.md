@@ -6,8 +6,9 @@
 
 ## 1. O Princípio da Invisibilidade ("1 a 3 Toques")
 
-O software nunca deve fazer o treinador parar para pensar: *"Onde está esta funcionalidade?"*.
+O software nunca deve fazer o treinador parar para pensar: _"Onde está esta funcionalidade?"_.
 Deve ser intuitivo e direto:
+
 1. **Regra de Decisão:** Uma página = uma decisão principal.
 2. **Tempo de Resposta:** Todas as ações frequentes (abrir jogo, registar golo, consultar presença) em 1 a 3 toques.
 3. **Contexto Automático:** A aplicação sabe que dia é hoje, se há jogo ou treino, e prepara o ecrã com o que é relevante para o momento.
@@ -51,6 +52,7 @@ Deve ser intuitivo e direto:
 ## 3. Especificação dos Módulos Principais
 
 ### A. Ecrã Principal ("Início / Assistente")
+
 - **Saudação & Escalão:** Bom dia / Boa tarde com o escalão ativo (ex: Sub-13).
 - **Próximo Jogo / Hoje:**
   - Se há jogo hoje: Botão direto `[ ABRIR MODO JOGO ]`.
@@ -68,6 +70,7 @@ Deve ser intuitivo e direto:
 ---
 
 ### B. Modo Banco Rápido (Interface Simplificada de Jogo)
+
 - **Visual:** Alto contraste, botões grandes (mínimo 48px).
 - **Golo da Nossa Equipa:** 1 toque em `⚽ GOLO` $\rightarrow$ Minuto automático $\rightarrow$ Marcador $\rightarrow$ Assistência $\rightarrow$ Tipo (Canto, Livre, Transição, Jogada) $\rightarrow$ `[ Registar ]`.
 - **Golo Sofrido:** 1 toque em `🔴 SOFRIDO` $\rightarrow$ Minuto $\rightarrow$ Origem (Canto, Bola Parada, Ataque Posicional, Perda).
@@ -77,29 +80,33 @@ Deve ser intuitivo e direto:
 ---
 
 ### C. Pós-Jogo e "O Que Devemos Trabalhar?"
+
 Ao terminar a partida:
+
 1. Resumo instantâneo do resultado e estatísticas vitais.
 2. Alerta tático fundamentado:
-   - *Exemplo:* "A equipa sofreu 4 dos últimos 6 golos entre os 60' e 90'."
-   - *Recomendação:* "Trabalhar organização defensiva em bloco baixo e concentração no último terço."
+   - _Exemplo:_ "A equipa sofreu 4 dos últimos 6 golos entre os 60' e 90'."
+   - _Recomendação:_ "Trabalhar organização defensiva em bloco baixo e concentração no último terço."
 3. Botão: **[ ➕ Adicionar ao Próximo Treino ]** $\rightarrow$ Preenche automaticamente uma nova sessão com:
-   - Tema: *Organização Defensiva / Bola Parada Defensiva*
-   - Duração sugerida: *20-25 min*
-   - Pontos-chave: *Posicionamento, Primeira bola, Segunda bola, Reação à perda.*
+   - Tema: _Organização Defensiva / Bola Parada Defensiva_
+   - Duração sugerida: _20-25 min_
+   - Pontos-chave: _Posicionamento, Primeira bola, Segunda bola, Reação à perda._
 
 ---
 
 ### D. Perfil de Evolução Individual dos Atletas
+
 - Em formação, eliminar notas arbitrárias estilo "FIFA".
 - Acompanhamento objetivo:
   - **Participação:** Jogos, Minutos jogados, Titularidades.
   - **Presenças:** Assiduidade a treinos (%).
   - **Produção:** Golos, Assistências, Desarmes, Recuperações.
-  - **Objetivos Formativos:** Ex: *Melhorar finalização com pé esquerdo* $\rightarrow$ Progresso (🟢 Em evolução).
+  - **Objetivos Formativos:** Ex: _Melhorar finalização com pé esquerdo_ $\rightarrow$ Progresso (🟢 Em evolução).
 
 ---
 
 ### E. Visão do Clube & Coordenação
+
 - **Painel Multi-Escalão:** Visão global Sub-9 a Seniores com indicadores de saúde desportiva.
 - **Relatório Executivo Mensal:** Conclusões e tendências prontas para a Direção sem PDFs com tabelas excessivas.
 
@@ -107,17 +114,19 @@ Ao terminar a partida:
 
 ## 4. Metas de Desempenho & Fiabilidade
 
-| Ação | Meta de Tempo |
-| :--- | :---: |
-| Carregar Início | $< 1.5\text{ s}$ |
-| Abrir Modo Jogo | $< 0.8\text{ s}$ |
-| Registar Evento (Golo/Falta) | $< 0.5\text{ s}$ |
-| Abrir Plantel / Treinos | $< 1.0\text{ s}$ |
-| Operação sem Internet | $100\%\text{ funcional}$ |
+| Ação                         |      Meta de Tempo       |
+| :--------------------------- | :----------------------: |
+| Carregar Início              |     $< 1.5\text{ s}$     |
+| Abrir Modo Jogo              |     $< 0.8\text{ s}$     |
+| Registar Evento (Golo/Falta) |     $< 0.5\text{ s}$     |
+| Abrir Plantel / Treinos      |     $< 1.0\text{ s}$     |
+| Operação sem Internet        | $100\%\text{ funcional}$ |
 
 ---
 
 ## 5. Regra de Ouro do Desenvolvimento
+
 Qualquer nova funcionalidade deve obrigatoriamente responder a:
+
 > **"Isto ajuda o treinador a tomar uma decisão melhor em menos tempo?"**
-Se a resposta for não, ou se adicionar cliques e ruído visual desnecessário, a funcionalidade é rejeitada.
+> Se a resposta for não, ou se adicionar cliques e ruído visual desnecessário, a funcionalidade é rejeitada.

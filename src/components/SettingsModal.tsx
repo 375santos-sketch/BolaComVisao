@@ -204,7 +204,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             )}
           </div>
           <p className="text-[11px] text-emerald-200/90 font-mono">
-            Base de dados na Nuvem ativa para {state.myClubName || 'o seu clube'}. Equipas e equipas técnicas sincronizadas sem limites.
+            Base de dados na Nuvem ativa para {state.myClubName || 'o seu clube'}. Equipas e equipas técnicas
+            sincronizadas sem limites.
           </p>
         </div>
 
@@ -268,7 +269,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-slate-300 mt-1">
-                Descarregue o logótipo em formato vetorial SVG para guardar no computador ou utilizar em equipamentos, documentos e materiais gráficos.
+                Descarregue o logótipo em formato vetorial SVG para guardar no computador ou utilizar em equipamentos,
+                documentos e materiais gráficos.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-1">

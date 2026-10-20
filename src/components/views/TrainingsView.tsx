@@ -55,7 +55,9 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   const [pdfLibraryCount, setPdfLibraryCount] = useState<number>(0);
 
   useEffect(() => {
-    getAllPDFDocuments().then((docs) => setPdfLibraryCount(docs.length)).catch(() => {});
+    getAllPDFDocuments()
+      .then((docs) => setPdfLibraryCount(docs.length))
+      .catch(() => {});
   }, [activeTab]);
 
   const {
@@ -73,13 +75,9 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
     handleBatchGenerated
   } = useTrainings(state, onUpdateState, onShowToast);
 
-  const {
-    listFilter,
-    setListFilter,
-    listSearch,
-    setListSearch,
-    filteredTrainingsList
-  } = useTrainingFilters(state.trainings || []);
+  const { listFilter, setListFilter, listSearch, setListSearch, filteredTrainingsList } = useTrainingFilters(
+    state.trainings || []
+  );
 
   const getPlayerName = (id: string) => {
     const p = (state.roster || []).find((x) => x.id === id);
@@ -184,7 +182,10 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
     } else {
       // Existing training: keep its permanent number
       const existing = (state.trainings || []).find((t) => t.id === trainingForm.id);
-      finalTrainingNumber = existing?.trainingNumber || trainingForm.trainingNumber || getNextTrainingNumber(state.trainings || [], state.lastTrainingNumber);
+      finalTrainingNumber =
+        existing?.trainingNumber ||
+        trainingForm.trainingNumber ||
+        getNextTrainingNumber(state.trainings || [], state.lastTrainingNumber);
       newMaxNumber = Math.max(newMaxNumber, finalTrainingNumber);
     }
 
@@ -349,13 +350,10 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
             onShowConfirm('Tens a certeza que queres eliminar este treino?', () => handleDeleteTraining(id));
           }}
           onClearAllTrainings={() => {
-            onShowConfirm(
-              `Tens a certeza que queres eliminar os ${totalTrainings} treinos desta equipa?`,
-              () => {
-                onUpdateState({ trainings: [] });
-                onShowToast('Todos os treinos foram eliminados.');
-              }
-            );
+            onShowConfirm(`Tens a certeza que queres eliminar os ${totalTrainings} treinos desta equipa?`, () => {
+              onUpdateState({ trainings: [] });
+              onShowToast('Todos os treinos foram eliminados.');
+            });
           }}
           onShowToast={onShowToast}
         />

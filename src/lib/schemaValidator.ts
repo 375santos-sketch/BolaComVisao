@@ -1,14 +1,4 @@
-import {
-  Player,
-  Match,
-  GoalEvent,
-  CardEvent,
-  SubEvent,
-  Training,
-  ScheduledMatch,
-  AppState,
-  GoalType
-} from '../types';
+import { Player, Match, GoalEvent, CardEvent, SubEvent, Training, ScheduledMatch, AppState, GoalType } from '../types';
 import { normalizeGoalType } from './gameAnalysis/constants';
 import { uid } from './utils';
 
@@ -37,8 +27,9 @@ export function validateAndSanitizeGoalEvent(raw: any, _index = 0): GoalEvent | 
   const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : uid();
   const type: 'scored' | 'conceded' = raw.type === 'conceded' ? 'conceded' : 'scored';
   const scorerId = raw.scorerId && typeof raw.scorerId === 'string' ? raw.scorerId.trim() : null;
-  const assistId = raw.assistId && typeof raw.assistId === 'string' && raw.assistId !== 'none' ? raw.assistId.trim() : null;
-  
+  const assistId =
+    raw.assistId && typeof raw.assistId === 'string' && raw.assistId !== 'none' ? raw.assistId.trim() : null;
+
   let minute: number | string | null = null;
   if (typeof raw.minute === 'number' && !isNaN(raw.minute) && raw.minute >= 0) {
     minute = raw.minute;
@@ -47,7 +38,7 @@ export function validateAndSanitizeGoalEvent(raw: any, _index = 0): GoalEvent | 
   }
 
   const half: 1 | 2 = raw.half === 2 ? 2 : 1;
-  const period = typeof raw.period === 'string' ? raw.period : (half === 2 ? '2.ª parte' : '1.ª parte');
+  const period = typeof raw.period === 'string' ? raw.period : half === 2 ? '2.ª parte' : '1.ª parte';
   const goalType: GoalType = normalizeGoalType(raw.goalType);
   const notes = typeof raw.notes === 'string' ? raw.notes.slice(0, 500) : undefined;
 
@@ -75,7 +66,7 @@ export function validateAndSanitizeSubEvent(raw: any): SubEvent | null {
   if (!outId && !inId) return null;
 
   const half: 1 | 2 = raw.half === 2 ? 2 : 1;
-  const period = typeof raw.period === 'string' ? raw.period : (half === 2 ? '2.ª parte' : '1.ª parte');
+  const period = typeof raw.period === 'string' ? raw.period : half === 2 ? '2.ª parte' : '1.ª parte';
   const isHalftime = Boolean(raw.isHalftime);
   const minute = typeof raw.minute === 'number' || typeof raw.minute === 'string' ? raw.minute : null;
   const notes = typeof raw.notes === 'string' ? raw.notes.slice(0, 300) : undefined;
@@ -94,7 +85,7 @@ export function validateAndSanitizeCardEvent(raw: any): CardEvent | null {
 
   const color: 'Amarelo' | 'Vermelho' = raw.color === 'Vermelho' ? 'Vermelho' : 'Amarelo';
   const half: 1 | 2 = raw.half === 2 ? 2 : 1;
-  const period = typeof raw.period === 'string' ? raw.period : (half === 2 ? '2.ª parte' : '1.ª parte');
+  const period = typeof raw.period === 'string' ? raw.period : half === 2 ? '2.ª parte' : '1.ª parte';
   const minute = typeof raw.minute === 'number' || typeof raw.minute === 'string' ? raw.minute : null;
 
   return { id, playerId, color, half, period, minute };
@@ -212,7 +203,8 @@ export function validateAndSanitizeMatch(raw: any): ValidationResult<Match> {
     issues.push({ field: 'opponent', message: 'Adversário vazio', severity: 'warning', entityId: id });
   }
 
-  const date = typeof raw.date === 'string' && raw.date.trim() ? raw.date.trim() : new Date().toISOString().split('T')[0];
+  const date =
+    typeof raw.date === 'string' && raw.date.trim() ? raw.date.trim() : new Date().toISOString().split('T')[0];
   const type = ['amigavel', 'campeonato', 'torneio'].includes(raw.type) ? raw.type : 'campeonato';
   const location = raw.location === 'fora' ? 'fora' : 'casa';
   const season = typeof raw.season === 'string' && raw.season.trim() ? raw.season.trim() : '2025/2026';
@@ -220,7 +212,9 @@ export function validateAndSanitizeMatch(raw: any): ValidationResult<Match> {
 
   // Validate goals
   const goals: GoalEvent[] = Array.isArray(raw.goals)
-    ? raw.goals.map((g: any, idx: number) => validateAndSanitizeGoalEvent(g, idx)).filter((g: any): g is GoalEvent => g !== null)
+    ? raw.goals
+        .map((g: any, idx: number) => validateAndSanitizeGoalEvent(g, idx))
+        .filter((g: any): g is GoalEvent => g !== null)
     : [];
 
   // Validate subs
@@ -299,14 +293,18 @@ export function validateAndSanitizeTraining(raw: any): ValidationResult<Training
   }
 
   const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : uid();
-  const date = typeof raw.date === 'string' && raw.date.trim() ? raw.date.trim() : new Date().toISOString().split('T')[0];
+  const date =
+    typeof raw.date === 'string' && raw.date.trim() ? raw.date.trim() : new Date().toISOString().split('T')[0];
   const notes = typeof raw.notes === 'string' ? raw.notes.slice(0, 2000) : '';
-  const absences = Array.isArray(raw.absences) ? raw.absences.filter((pid: any) => typeof pid === 'string' && pid.trim().length > 0) : [];
+  const absences = Array.isArray(raw.absences)
+    ? raw.absences.filter((pid: any) => typeof pid === 'string' && pid.trim().length > 0)
+    : [];
   const completed = raw.completed !== false;
   const durationMinutes = typeof raw.durationMinutes === 'number' && raw.durationMinutes > 0 ? raw.durationMinutes : 90;
-  const trainingNumber = typeof raw.trainingNumber === 'number' && !isNaN(raw.trainingNumber) && raw.trainingNumber > 0
-    ? Math.floor(raw.trainingNumber)
-    : undefined;
+  const trainingNumber =
+    typeof raw.trainingNumber === 'number' && !isNaN(raw.trainingNumber) && raw.trainingNumber > 0
+      ? Math.floor(raw.trainingNumber)
+      : undefined;
 
   const sanitized: Training = {
     id,

@@ -29,8 +29,8 @@ export function formatStaffAlertForWhatsApp(
   const defaultTitle = isMeeting
     ? 'Reunião da Equipa Técnica'
     : message.type === 'urgente' || message.priority === 'urgente'
-    ? 'Alerta Urgente da Equipa Técnica'
-    : 'Recado da Equipa Técnica';
+      ? 'Alerta Urgente da Equipa Técnica'
+      : 'Recado da Equipa Técnica';
 
   const title = message.title && message.title.trim() ? message.title.trim() : defaultTitle;
 
@@ -55,11 +55,7 @@ export function formatStaffAlertForWhatsApp(
 
   const assunto = assuntoParts.length > 0 ? assuntoParts.join('\n\n') : 'Sem descrição adicional.';
 
-  const lines: string[] = [
-    'Alerta BolaComVisao',
-    `Título: ${title}`,
-    `Assunto:\n${assunto}`
-  ];
+  const lines: string[] = ['Alerta BolaComVisao', `Título: ${title}`, `Assunto:\n${assunto}`];
 
   return lines.join('\n');
 }
@@ -67,11 +63,7 @@ export function formatStaffAlertForWhatsApp(
 /**
  * Open WhatsApp with a pre-filled alert message
  */
-export function openWhatsAppAlert(
-  message: StaffChatMessage,
-  state: AppState,
-  phoneNumber?: string
-): void {
+export function openWhatsAppAlert(message: StaffChatMessage, state: AppState, phoneNumber?: string): void {
   const formattedText = formatStaffAlertForWhatsApp(message, state);
   const encodedText = encodeURIComponent(formattedText);
 
@@ -93,10 +85,7 @@ export function openWhatsAppAlert(
 /**
  * Trigger native mobile sharing dialog (iOS / Android Web Share API)
  */
-export async function shareNativeMobileAlert(
-  message: StaffChatMessage,
-  state: AppState
-): Promise<boolean> {
+export async function shareNativeMobileAlert(message: StaffChatMessage, state: AppState): Promise<boolean> {
   const formattedText = formatStaffAlertForWhatsApp(message, state);
   const title = message.title || (message.type === 'reuniao' ? 'Reunião Equipa Técnica' : 'Recado Equipa Técnica');
 
@@ -130,10 +119,7 @@ export function openSmsAlert(message: StaffChatMessage, state: AppState, phoneNu
 /**
  * Dispatch a Browser/PWA Web Push Notification to mobile or desktop
  */
-export async function sendStaffPushNotification(
-  message: StaffChatMessage,
-  state: AppState
-): Promise<boolean> {
+export async function sendStaffPushNotification(message: StaffChatMessage, state: AppState): Promise<boolean> {
   try {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       navigator.vibrate([100, 50, 100]);
@@ -145,10 +131,10 @@ export async function sendStaffPushNotification(
           message.type === 'reuniao'
             ? `📅 Reunião Marcada: ${message.title || 'Equipa Técnica'}`
             : message.priority === 'urgente'
-            ? `🚨 Alerta Urgente: ${message.title || 'Equipa Técnica'}`
-            : `💬 Recado: ${message.senderName} (${message.senderRole})`;
+              ? `🚨 Alerta Urgente: ${message.title || 'Equipa Técnica'}`
+              : `💬 Recado: ${message.senderName} (${message.senderRole})`;
 
-        const body = message.content ? message.content.slice(0, 140) : (message.meetingDetails?.location || '');
+        const body = message.content ? message.content.slice(0, 140) : message.meetingDetails?.location || '';
 
         new Notification(title, {
           body,

@@ -23,9 +23,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insights, comp
             </h2>
           </div>
         </div>
-        <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
-          Apoio à Decisão Técnica
-        </span>
+        <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">Apoio à Decisão Técnica</span>
       </div>
 
       <div className={`grid grid-cols-1 ${compact ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-2'} gap-3`}>
@@ -36,27 +34,33 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insights, comp
           let statColor = 'text-slate-200';
 
           if (insight.type === 'strength') {
-            borderClass = 'border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/20 shadow-emerald-950/20';
+            borderClass =
+              'border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/20 shadow-emerald-950/20';
             badgeBg = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
             statColor = 'text-emerald-400';
           } else if (insight.type === 'warning') {
-            borderClass = 'border-rose-500/35 bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/25 shadow-rose-950/20';
+            borderClass =
+              'border-rose-500/35 bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/25 shadow-rose-950/20';
             badgeBg = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
             statColor = 'text-rose-400';
           } else if (insight.type === 'trend') {
-            borderClass = 'border-cyan-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/20 shadow-cyan-950/20';
+            borderClass =
+              'border-cyan-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/20 shadow-cyan-950/20';
             badgeBg = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
             statColor = 'text-cyan-300';
           } else if (insight.type === 'efficiency') {
-            borderClass = 'border-teal-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950/20 shadow-teal-950/20';
+            borderClass =
+              'border-teal-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950/20 shadow-teal-950/20';
             badgeBg = 'bg-teal-500/15 text-teal-300 border-teal-500/30';
             statColor = 'text-teal-300';
           } else if (insight.type === 'set_piece') {
-            borderClass = 'border-amber-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 shadow-amber-950/20';
+            borderClass =
+              'border-amber-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 shadow-amber-950/20';
             badgeBg = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
             statColor = 'text-amber-300';
           } else if (insight.type === 'milestone') {
-            borderClass = 'border-blue-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/20 shadow-blue-950/20';
+            borderClass =
+              'border-blue-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/20 shadow-blue-950/20';
             badgeBg = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
             statColor = 'text-blue-300';
           } else if (insight.type === 'opportunity') {
@@ -84,7 +88,9 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insights, comp
                     </span>
                   </div>
                   {insight.stat && (
-                    <span className={`text-xs font-black font-mono px-2 py-0.5 rounded-md bg-slate-950/60 ${statColor}`}>
+                    <span
+                      className={`text-xs font-black font-mono px-2 py-0.5 rounded-md bg-slate-950/60 ${statColor}`}
+                    >
                       {insight.stat}
                     </span>
                   )}

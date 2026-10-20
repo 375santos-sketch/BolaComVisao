@@ -21,12 +21,7 @@ const CATEGORY_TABS: { key: string; label: string; icon: string }[] = [
   { key: 'geral', label: 'Geral', icon: '📁' }
 ];
 
-export const PDFPickerModal: React.FC<PDFPickerModalProps> = ({
-  isOpen,
-  onClose,
-  onSelectPDF,
-  onShowToast
-}) => {
+export const PDFPickerModal: React.FC<PDFPickerModalProps> = ({ isOpen, onClose, onSelectPDF, onShowToast }) => {
   const [documents, setDocuments] = useState<PDFDocumentItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -214,9 +209,7 @@ export const PDFPickerModal: React.FC<PDFPickerModalProps> = ({
               <div className="p-8 rounded-2xl bg-slate-900/40 border border-slate-800 text-center space-y-3">
                 <div className="text-3xl">📭</div>
                 <div className="text-sm font-bold text-white font-['Chakra_Petch'] uppercase">
-                  {documents.length === 0
-                    ? 'Nenhum Documento PDF Encontrado'
-                    : 'Nenhum PDF corresponde à pesquisa'}
+                  {documents.length === 0 ? 'Nenhum Documento PDF Encontrado' : 'Nenhum PDF corresponde à pesquisa'}
                 </div>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
                   {documents.length === 0
@@ -225,12 +218,7 @@ export const PDFPickerModal: React.FC<PDFPickerModalProps> = ({
                 </p>
                 <label className="inline-flex cursor-pointer px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs uppercase font-['Chakra_Petch'] shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:bg-cyan-400 transition-colors">
                   <span>➕ Carregar Primeiro PDF</span>
-                  <input
-                    type="file"
-                    accept="application/pdf,.pdf"
-                    onChange={handleQuickUpload}
-                    className="hidden"
-                  />
+                  <input type="file" accept="application/pdf,.pdf" onChange={handleQuickUpload} className="hidden" />
                 </label>
               </div>
             ) : (
@@ -254,9 +242,7 @@ export const PDFPickerModal: React.FC<PDFPickerModalProps> = ({
                       </div>
 
                       {doc.description && (
-                        <p className="text-[11px] text-slate-400 line-clamp-2 mb-2">
-                          {doc.description}
-                        </p>
+                        <p className="text-[11px] text-slate-400 line-clamp-2 mb-2">{doc.description}</p>
                       )}
 
                       <div className="flex flex-wrap gap-1 mb-3">
@@ -314,12 +300,7 @@ export const PDFPickerModal: React.FC<PDFPickerModalProps> = ({
       </div>
 
       {/* PDF Viewer preview modal if clicked */}
-      {previewDoc && (
-        <PDFViewerModal
-          document={previewDoc}
-          onClose={() => setPreviewDoc(null)}
-        />
-      )}
+      {previewDoc && <PDFViewerModal document={previewDoc} onClose={() => setPreviewDoc(null)} />}
     </>
   );
 };

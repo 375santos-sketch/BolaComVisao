@@ -106,7 +106,13 @@ export const Modal: React.FC<ModalProps> = ({
                   {cancelLabel}
                 </Button>
                 {confirmLabel && onConfirm && (
-                  <Button variant={confirmVariant} size="sm" loading={isConfirmLoading} onClick={onConfirm} className="flex-1 sm:flex-initial">
+                  <Button
+                    variant={confirmVariant}
+                    size="sm"
+                    loading={isConfirmLoading}
+                    onClick={onConfirm}
+                    className="flex-1 sm:flex-initial"
+                  >
                     {confirmLabel}
                   </Button>
                 )}

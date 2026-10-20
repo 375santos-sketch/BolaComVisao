@@ -330,13 +330,10 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
             <button
               type="button"
               onClick={() => {
-                onShowConfirm(
-                  'Tens a certeza que desejas eliminar este jogo cancelado da agenda?',
-                  () => {
-                    handleDeleteMatch(editingMatchId);
-                    setShowMatchModal(false);
-                  }
-                );
+                onShowConfirm('Tens a certeza que desejas eliminar este jogo cancelado da agenda?', () => {
+                  handleDeleteMatch(editingMatchId);
+                  setShowMatchModal(false);
+                });
               }}
               className="px-4 py-2.5 min-h-[44px] rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/60 text-red-300 hover:text-white text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1.5 active:scale-95 shadow-sm"
               title="Eliminar este jogo cancelado da agenda"

@@ -11,7 +11,14 @@ export const defaultClubSeasons = [
 ];
 
 export const defaultDragonsSub11Roster: Player[] = [
-  { id: 'dragao_1', name: 'Atleta Dragão 1', number: 1, positions: 'Guarda-Redes', birthDate: '2016-01-15', active: true },
+  {
+    id: 'dragao_1',
+    name: 'Atleta Dragão 1',
+    number: 1,
+    positions: 'Guarda-Redes',
+    birthDate: '2016-01-15',
+    active: true
+  },
   { id: 'dragao_2', name: 'Atleta Dragão 2', number: 2, positions: 'Defesa', birthDate: '2016-02-18', active: true },
   { id: 'dragao_3', name: 'Atleta Dragão 3', number: 3, positions: 'Defesa', birthDate: '2016-03-22', active: true },
   { id: 'dragao_4', name: 'Atleta Dragão 4', number: 4, positions: 'Defesa', birthDate: '2016-04-10', active: true },
@@ -20,9 +27,30 @@ export const defaultDragonsSub11Roster: Player[] = [
   { id: 'dragao_7', name: 'Atleta Dragão 7', number: 7, positions: 'Médio', birthDate: '2016-07-25', active: true },
   { id: 'dragao_8', name: 'Atleta Dragão 8', number: 8, positions: 'Médio', birthDate: '2016-08-30', active: true },
   { id: 'dragao_9', name: 'Atleta Dragão 9', number: 9, positions: 'Médio', birthDate: '2016-09-12', active: true },
-  { id: 'dragao_10', name: 'Atleta Dragão 10', number: 10, positions: 'Avançado', birthDate: '2016-10-05', active: true },
-  { id: 'dragao_11', name: 'Atleta Dragão 11', number: 11, positions: 'Avançado', birthDate: '2016-11-17', active: true },
-  { id: 'dragao_12', name: 'Atleta Dragão 12', number: 12, positions: 'Avançado', birthDate: '2016-12-08', active: true }
+  {
+    id: 'dragao_10',
+    name: 'Atleta Dragão 10',
+    number: 10,
+    positions: 'Avançado',
+    birthDate: '2016-10-05',
+    active: true
+  },
+  {
+    id: 'dragao_11',
+    name: 'Atleta Dragão 11',
+    number: 11,
+    positions: 'Avançado',
+    birthDate: '2016-11-17',
+    active: true
+  },
+  {
+    id: 'dragao_12',
+    name: 'Atleta Dragão 12',
+    number: 12,
+    positions: 'Avançado',
+    birthDate: '2016-12-08',
+    active: true
+  }
 ];
 
 export const defaultTramagalMatch: Match = {
@@ -175,29 +203,33 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
     return { ...initialDefaultState };
   }
 
-  const teams: SquadProfile[] = Array.isArray(raw.teams) && raw.teams.length > 0
-    ? [...raw.teams]
-    : [
-        {
-          id: raw.activeTeamId || 'team_dragons_sub11',
-          clubName: raw.myClubName || 'Dragões de Alferrarede',
-          category: raw.category || 'Sub-11',
-          season: raw.season || defaultClubSeasons[0].name,
-          createdAt: new Date().toISOString(),
-          roster: Array.isArray(raw.roster) && raw.roster.length > 0 ? raw.roster : defaultDragonsSub11Roster,
-          matches: Array.isArray(raw.matches) && raw.matches.length > 0 ? raw.matches : [defaultOurienseMatch, defaultTramagalMatch],
-          trainings: Array.isArray(raw.trainings) ? raw.trainings : [],
-          schedule: Array.isArray(raw.schedule) ? raw.schedule : [],
-          staffMembers: Array.isArray(raw.staffMembers) ? raw.staffMembers : [],
-          staffMessages: Array.isArray(raw.staffMessages) ? raw.staffMessages : [],
-          tactics: Array.isArray(raw.tactics) ? raw.tactics : [],
-          tacticFormat: raw.tacticFormat || 11,
-          opponentScouting: Array.isArray(raw.opponentScouting) ? raw.opponentScouting : [],
-          exerciseLibrary: Array.isArray(raw.exerciseLibrary) ? raw.exerciseLibrary : [],
-          clubEvents: Array.isArray(raw.clubEvents) ? raw.clubEvents : [],
-          staffUnavailability: Array.isArray(raw.staffUnavailability) ? raw.staffUnavailability : []
-        }
-      ];
+  const teams: SquadProfile[] =
+    Array.isArray(raw.teams) && raw.teams.length > 0
+      ? [...raw.teams]
+      : [
+          {
+            id: raw.activeTeamId || 'team_dragons_sub11',
+            clubName: raw.myClubName || 'Dragões de Alferrarede',
+            category: raw.category || 'Sub-11',
+            season: raw.season || defaultClubSeasons[0].name,
+            createdAt: new Date().toISOString(),
+            roster: Array.isArray(raw.roster) && raw.roster.length > 0 ? raw.roster : defaultDragonsSub11Roster,
+            matches:
+              Array.isArray(raw.matches) && raw.matches.length > 0
+                ? raw.matches
+                : [defaultOurienseMatch, defaultTramagalMatch],
+            trainings: Array.isArray(raw.trainings) ? raw.trainings : [],
+            schedule: Array.isArray(raw.schedule) ? raw.schedule : [],
+            staffMembers: Array.isArray(raw.staffMembers) ? raw.staffMembers : [],
+            staffMessages: Array.isArray(raw.staffMessages) ? raw.staffMessages : [],
+            tactics: Array.isArray(raw.tactics) ? raw.tactics : [],
+            tacticFormat: raw.tacticFormat || 11,
+            opponentScouting: Array.isArray(raw.opponentScouting) ? raw.opponentScouting : [],
+            exerciseLibrary: Array.isArray(raw.exerciseLibrary) ? raw.exerciseLibrary : [],
+            clubEvents: Array.isArray(raw.clubEvents) ? raw.clubEvents : [],
+            staffUnavailability: Array.isArray(raw.staffUnavailability) ? raw.staffUnavailability : []
+          }
+        ];
 
   let activeTeamId = raw.activeTeamId || teams[0]?.id || 'team_dragons_sub11';
 
@@ -206,9 +238,12 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
   activeTeamId = activeTeam?.id || '';
 
   // Synchronize roster and collections between activeTeam and top-level raw fields
-  const finalRoster = raw.roster !== undefined && raw.roster !== null && raw.roster.length > 0
-    ? raw.roster
-    : (activeTeam?.roster && activeTeam.roster.length > 0 ? activeTeam.roster : defaultDragonsSub11Roster);
+  const finalRoster =
+    raw.roster !== undefined && raw.roster !== null && raw.roster.length > 0
+      ? raw.roster
+      : activeTeam?.roster && activeTeam.roster.length > 0
+        ? activeTeam.roster
+        : defaultDragonsSub11Roster;
 
   // Master match pool: collect matches from raw.matches and all teams
   const allMatchesMap = new Map<string, Match>();
@@ -226,36 +261,52 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
   });
 
   // Guarantee that Tramagal completed match is never lost
-  if (!allMatchesMap.has('match_tramagal_20261017') && !Array.from(allMatchesMap.values()).some((m) => m.opponent?.toLowerCase().includes('tramagal'))) {
+  if (
+    !allMatchesMap.has('match_tramagal_20261017') &&
+    !Array.from(allMatchesMap.values()).some((m) => m.opponent?.toLowerCase().includes('tramagal'))
+  ) {
     allMatchesMap.set(defaultTramagalMatch.id, defaultTramagalMatch);
   }
   // Guarantee Ouriense match is also available if matches pool is small
-  if (!allMatchesMap.has('match_ouriense_20261010') && !Array.from(allMatchesMap.values()).some((m) => m.opponent?.toLowerCase().includes('ouriense'))) {
+  if (
+    !allMatchesMap.has('match_ouriense_20261010') &&
+    !Array.from(allMatchesMap.values()).some((m) => m.opponent?.toLowerCase().includes('ouriense'))
+  ) {
     allMatchesMap.set(defaultOurienseMatch.id, defaultOurienseMatch);
   }
 
   const finalMatches = Array.from(allMatchesMap.values());
 
-  const finalStaff = raw.staffMembers !== undefined && raw.staffMembers !== null ? raw.staffMembers : (activeTeam?.staffMembers || []);
-  const finalStaffMessages = raw.staffMessages !== undefined && raw.staffMessages !== null ? raw.staffMessages : (activeTeam?.staffMessages || []);
-  const finalTrainings = raw.trainings !== undefined && raw.trainings !== null ? raw.trainings : (activeTeam?.trainings || []);
-  const finalSchedule = raw.schedule !== undefined && raw.schedule !== null ? raw.schedule : (activeTeam?.schedule || []);
-  const finalTactics = raw.tactics !== undefined && raw.tactics !== null ? raw.tactics : (activeTeam?.tactics || []);
-  const finalTacticFormat = raw.tacticFormat !== undefined && raw.tacticFormat !== null ? raw.tacticFormat : (activeTeam?.tacticFormat || 11);
-  const finalOpponentScouting = raw.opponentScouting !== undefined && raw.opponentScouting !== null
-    ? raw.opponentScouting.filter((s) => s.opponentName !== 'Adversário 1')
-    : (activeTeam?.opponentScouting || []).filter((s) => s.opponentName !== 'Adversário 1');
-  const finalExerciseLibrary = raw.exerciseLibrary !== undefined && raw.exerciseLibrary !== null
-    ? raw.exerciseLibrary.filter((e) => !e.id.startsWith('ex-'))
-    : (activeTeam?.exerciseLibrary || []).filter((e) => !e.id.startsWith('ex-'));
-  const finalClubEvents = raw.clubEvents !== undefined && raw.clubEvents !== null ? raw.clubEvents : (activeTeam?.clubEvents || []);
-  const finalStaffUnavailability = raw.staffUnavailability !== undefined && raw.staffUnavailability !== null ? raw.staffUnavailability : (activeTeam?.staffUnavailability || []);
+  const finalStaff =
+    raw.staffMembers !== undefined && raw.staffMembers !== null ? raw.staffMembers : activeTeam?.staffMembers || [];
+  const finalStaffMessages =
+    raw.staffMessages !== undefined && raw.staffMessages !== null ? raw.staffMessages : activeTeam?.staffMessages || [];
+  const finalTrainings =
+    raw.trainings !== undefined && raw.trainings !== null ? raw.trainings : activeTeam?.trainings || [];
+  const finalSchedule = raw.schedule !== undefined && raw.schedule !== null ? raw.schedule : activeTeam?.schedule || [];
+  const finalTactics = raw.tactics !== undefined && raw.tactics !== null ? raw.tactics : activeTeam?.tactics || [];
+  const finalTacticFormat =
+    raw.tacticFormat !== undefined && raw.tacticFormat !== null ? raw.tacticFormat : activeTeam?.tacticFormat || 11;
+  const finalOpponentScouting =
+    raw.opponentScouting !== undefined && raw.opponentScouting !== null
+      ? raw.opponentScouting.filter((s) => s.opponentName !== 'Adversário 1')
+      : (activeTeam?.opponentScouting || []).filter((s) => s.opponentName !== 'Adversário 1');
+  const finalExerciseLibrary =
+    raw.exerciseLibrary !== undefined && raw.exerciseLibrary !== null
+      ? raw.exerciseLibrary.filter((e) => !e.id.startsWith('ex-'))
+      : (activeTeam?.exerciseLibrary || []).filter((e) => !e.id.startsWith('ex-'));
+  const finalClubEvents =
+    raw.clubEvents !== undefined && raw.clubEvents !== null ? raw.clubEvents : activeTeam?.clubEvents || [];
+  const finalStaffUnavailability =
+    raw.staffUnavailability !== undefined && raw.staffUnavailability !== null
+      ? raw.staffUnavailability
+      : activeTeam?.staffUnavailability || [];
 
   // Normalize each team's trainings, schedule, and trainingNumber
   const rawScheduleList = Array.isArray(raw.schedule) ? raw.schedule : [];
 
   const normalizedTeams = teams.map((t) => {
-    const rawTeamTrainings = activeTeam && t.id === activeTeam.id ? finalTrainings : (t.trainings || []);
+    const rawTeamTrainings = activeTeam && t.id === activeTeam.id ? finalTrainings : t.trainings || [];
     const { trainings: migratedTeamTrainings, maxNumber: teamMaxNumber } = normalizeAndMigrateTrainings(
       rawTeamTrainings,
       t.lastTrainingNumber
@@ -302,7 +353,9 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
       const tClubLower = (t.clubName || '').toLowerCase().trim();
       if (
         sTeamId === t.id ||
-        (sTeamName && tClubLower && (sTeamName === tClubLower || tClubLower.includes(sTeamName) || sTeamName.includes(tClubLower))) ||
+        (sTeamName &&
+          tClubLower &&
+          (sTeamName === tClubLower || tClubLower.includes(sTeamName) || sTeamName.includes(tClubLower))) ||
         (tClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
       ) {
         if (!teamScheduleMap.has(s.id)) {
@@ -344,7 +397,7 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
   return {
     ...initialDefaultState,
     ...raw,
-    activeTeamId: activeTeamId || (normalizedTeams[0]?.id || ''),
+    activeTeamId: activeTeamId || normalizedTeams[0]?.id || '',
     teams: normalizedTeams,
     roster: finalRoster,
     staffMembers: finalStaff,

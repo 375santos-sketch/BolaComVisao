@@ -1,25 +1,18 @@
 import { Match, GoalEvent, MatchType, MatchLocation } from '../../types';
 
 export type StandardGoalType =
-  | 'Bola jogada'
-  | 'Recuperação de bola'
-  | 'Canto'
-  | 'Livre'
-  | 'Penálti'
-  | 'Pontapé de baliza'
-  | 'Ressalto'
-  | 'Outro';
+  'Bola jogada' | 'Recuperação de bola' | 'Canto' | 'Livre' | 'Penálti' | 'Pontapé de baliza' | 'Ressalto' | 'Outro';
 
 export type GoalOriginCategory = 'bola_corrida' | 'bola_parada' | 'outro';
 
 export type InsightType =
-  | 'strength'     // 🔥 Ponto forte
-  | 'warning'      // ⚠️ Alerta
-  | 'trend'        // 📈 Tendência
-  | 'efficiency'   // 🎯 Eficácia
-  | 'set_piece'    // 🚩 Bola parada
-  | 'opportunity'  // 💡 Oportunidade
-  | 'milestone';   // 🏆 Destaque
+  | 'strength' // 🔥 Ponto forte
+  | 'warning' // ⚠️ Alerta
+  | 'trend' // 📈 Tendência
+  | 'efficiency' // 🎯 Eficácia
+  | 'set_piece' // 🚩 Bola parada
+  | 'opportunity' // 💡 Oportunidade
+  | 'milestone'; // 🏆 Destaque
 
 export interface GameAnalysisInsight {
   id: string;
@@ -191,7 +184,7 @@ export interface AggregatedAnalysis {
   activeEventType: EventTypeFilter;
   eventTypeLabel: string;
   filterMetrics: EventFilterMetrics;
-  
+
   // Results
   wins: number;
   draws: number;

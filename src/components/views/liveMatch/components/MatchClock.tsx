@@ -37,9 +37,7 @@ export const MatchClock: React.FC<MatchClockProps> = ({ match, className = '' })
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <span className="text-base sm:text-lg">⏱️</span>
-          <span className="text-xl sm:text-2xl font-black font-mono tracking-wider text-white">
-            {timeFormatted}
-          </span>
+          <span className="text-xl sm:text-2xl font-black font-mono tracking-wider text-white">{timeFormatted}</span>
         </div>
 
         {/* Estado: a correr vs parado */}
@@ -60,9 +58,7 @@ export const MatchClock: React.FC<MatchClockProps> = ({ match, className = '' })
 
       {/* Minuto contínuo de jogo sugerido pelo relógio */}
       <div className="flex items-center gap-1.5">
-        <span className="text-[10px] text-slate-400 uppercase font-mono font-bold">
-          Minuto:
-        </span>
+        <span className="text-[10px] text-slate-400 uppercase font-mono font-bold">Minuto:</span>
         <span
           className={`px-2.5 py-1 rounded-xl text-xs font-black font-mono border ${
             suggestedMin

@@ -6,10 +6,7 @@ interface MatchStatsSectionProps {
   onUpdateMatch: (updated: Match) => void;
 }
 
-export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({
-  match,
-  onUpdateMatch
-}) => {
+export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onUpdateMatch }) => {
   // Remates Favor (Nossa Equipa)
   const rematesDentroArea = match.rematesDentroArea ?? match.shotsInBoxFor ?? 0;
   const rematesForaArea = match.rematesForaArea ?? match.shotsOutBoxFor ?? 0;
@@ -113,9 +110,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-                <span className="text-xs font-bold text-cyan-300 uppercase tracking-wide">
-                  Remates a Favor (Nós)
-                </span>
+                <span className="text-xs font-bold text-cyan-300 uppercase tracking-wide">Remates a Favor (Nós)</span>
               </div>
               <span className="text-xs font-mono font-black text-white px-2.5 py-0.5 rounded-lg bg-cyan-950/80 border border-cyan-500/40">
                 Total: {totalRematesFavor}
@@ -127,7 +122,9 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({
               <div className="flex items-center justify-between bg-slate-900/90 px-3 py-2.5 rounded-xl border border-slate-800">
                 <div>
                   <span className="text-xs font-bold text-emerald-400 block">Dentro da Área</span>
-                  <span className="text-[10px] text-slate-400 font-mono">Remates a favor no interior da grande área</span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Remates a favor no interior da grande área
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
@@ -198,7 +195,9 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({
               <div className="flex items-center justify-between bg-slate-900/90 px-3 py-2.5 rounded-xl border border-slate-800">
                 <div>
                   <span className="text-xs font-bold text-rose-400 block">Dentro da Área</span>
-                  <span className="text-[10px] text-slate-400 font-mono">Remates sofridos dentro da nossa grande área</span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Remates sofridos dentro da nossa grande área
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
@@ -225,7 +224,9 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({
               <div className="flex items-center justify-between bg-slate-900/90 px-3 py-2.5 rounded-xl border border-slate-800">
                 <div>
                   <span className="text-xs font-bold text-orange-400 block">Fora da Área</span>
-                  <span className="text-[10px] text-slate-400 font-mono">Remates sofridos de média/longa distância</span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Remates sofridos de média/longa distância
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
@@ -278,9 +279,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({
                   >
                     -
                   </button>
-                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">
-                    {cornersFor}
-                  </span>
+                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">{cornersFor}</span>
                   <button
                     onClick={() => handleStatChange('cornersFor', 1)}
                     className="w-6 h-6 rounded bg-emerald-700 hover:bg-emerald-600 text-white font-bold flex items-center justify-center text-xs"
@@ -299,9 +298,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({
                   >
                     -
                   </button>
-                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">
-                    {cornersAgainst}
-                  </span>
+                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">{cornersAgainst}</span>
                   <button
                     onClick={() => handleStatChange('cornersAgainst', 1)}
                     className="w-6 h-6 rounded bg-red-700 hover:bg-red-600 text-white font-bold flex items-center justify-center text-xs"
@@ -331,9 +328,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({
                   >
                     -
                   </button>
-                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">
-                    {foulsCommitted}
-                  </span>
+                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">{foulsCommitted}</span>
                   <button
                     onClick={() => handleStatChange('foulsCommitted', 1)}
                     className="w-6 h-6 rounded bg-amber-700 hover:bg-amber-600 text-white font-bold flex items-center justify-center text-xs"
@@ -352,9 +347,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({
                   >
                     -
                   </button>
-                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">
-                    {foulsSuffered}
-                  </span>
+                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">{foulsSuffered}</span>
                   <button
                     onClick={() => handleStatChange('foulsSuffered', 1)}
                     className="w-6 h-6 rounded bg-blue-700 hover:bg-blue-600 text-white font-bold flex items-center justify-center text-xs"

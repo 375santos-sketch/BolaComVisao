@@ -43,9 +43,7 @@ export const ConcededGoalEventsList: React.FC<ConcededGoalEventsListProps> = ({
                     {String(g.minute).endsWith("'") ? g.minute : `${g.minute}'`}
                   </span>
                 )}
-                {g.period && (
-                  <span className="text-[11px] text-slate-400 font-medium">({g.period})</span>
-                )}
+                {g.period && <span className="text-[11px] text-slate-400 font-medium">({g.period})</span>}
               </div>
               <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
                 <span className="px-1.5 py-0.5 rounded bg-red-950/80 text-red-300 border border-red-800/50 text-[10px]">

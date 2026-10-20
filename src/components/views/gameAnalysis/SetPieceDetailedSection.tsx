@@ -31,7 +31,10 @@ export const SetPieceDetailedSection: React.FC<SetPieceAnalysisViewProps> = ({
   } = setPieces;
 
   return (
-    <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5" id="set-piece-detailed-section">
+    <section
+      className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5"
+      id="set-piece-detailed-section"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800">
         <div>
           <h3 className="text-base sm:text-lg font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -46,7 +49,9 @@ export const SetPieceDetailedSection: React.FC<SetPieceAnalysisViewProps> = ({
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-400 font-mono">
             Saldo Líquido:{' '}
-            <strong className={`px-2 py-0.5 rounded-lg ${netBalance >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
+            <strong
+              className={`px-2 py-0.5 rounded-lg ${netBalance >= 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}
+            >
               {netBalance >= 0 ? `+${netBalance}` : netBalance} golos
             </strong>
           </span>
@@ -112,7 +117,8 @@ export const SetPieceDetailedSection: React.FC<SetPieceAnalysisViewProps> = ({
           </div>
 
           <div className="mt-4 pt-3 border-t border-emerald-500/20 text-[11px] text-slate-300">
-            💡 Dica de treino: {scoredRate >= 30
+            💡 Dica de treino:{' '}
+            {scoredRate >= 30
               ? 'Manter as rotinas de bloqueios e segundo poste que têm demonstrado alta eficácia.'
               : 'Oportunidade para desenhar 2 a 3 variantes ensaiadas de cantos e livres laterais nos treinos.'}
           </div>
@@ -169,18 +175,21 @@ export const SetPieceDetailedSection: React.FC<SetPieceAnalysisViewProps> = ({
 
             <div className="bg-slate-900/80 p-3 rounded-2xl border border-rose-500/20 flex items-center justify-between text-xs">
               <span className="text-slate-300 font-bold">Avaliação de Solidez Defensiva:</span>
-              <span className={`font-mono font-black px-2.5 py-1 rounded-lg ${
-                defensiveVulnerabilityIndex === 'Risco Elevado'
-                  ? 'bg-rose-500/20 text-rose-400'
-                  : 'bg-emerald-500/20 text-emerald-400'
-              }`}>
+              <span
+                className={`font-mono font-black px-2.5 py-1 rounded-lg ${
+                  defensiveVulnerabilityIndex === 'Risco Elevado'
+                    ? 'bg-rose-500/20 text-rose-400'
+                    : 'bg-emerald-500/20 text-emerald-400'
+                }`}
+              >
                 {defensiveVulnerabilityIndex}
               </span>
             </div>
           </div>
 
           <div className="mt-4 pt-3 border-t border-rose-500/20 text-[11px] text-slate-300">
-            💡 Foco de treino: {concededTotal > 0
+            💡 Foco de treino:{' '}
+            {concededTotal > 0
               ? 'Reforçar marcação individual/zona mista e ataque agressivo à 1.ª bola defensiva aérea.'
               : 'Excelente postura e concentração sem consentir golos de esquemas táticos adversários.'}
           </div>

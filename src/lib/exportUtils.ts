@@ -77,9 +77,7 @@ function createBolaComVisaoSheet(
   let fullRows = [...metaRows, ...dataRows];
 
   if (cleanModeGame) {
-    fullRows = fullRows.map((row) =>
-      row.map((cell) => sanitizeExcelModeGameText(cell))
-    );
+    fullRows = fullRows.map((row) => row.map((cell) => sanitizeExcelModeGameText(cell)));
   }
 
   const ws = XLSX.utils.aoa_to_sheet(fullRows);
@@ -162,7 +160,16 @@ export async function exportTrainingsStatsExcel(state: AppState) {
     const absences = completedTrainings.filter((tr) => (tr.absences || []).includes(p.id)).length;
     const presences = Math.max(0, totalTrainings - absences);
     const pct = totalTrainings > 0 ? Math.round((presences / totalTrainings) * 100) : 0;
-    const grade = totalTrainings === 0 ? 'Sem dados' : pct >= 85 ? 'Excelente' : pct >= 70 ? 'Bom' : pct >= 50 ? 'Regular' : 'Baixa Assiduidade';
+    const grade =
+      totalTrainings === 0
+        ? 'Sem dados'
+        : pct >= 85
+          ? 'Excelente'
+          : pct >= 70
+            ? 'Bom'
+            : pct >= 50
+              ? 'Regular'
+              : 'Baixa Assiduidade';
 
     return [
       p.number !== null && p.number !== undefined ? `#${p.number}` : '-',
@@ -391,9 +398,21 @@ export function buildMatchSheetExcelWorkbook(match: Match, state: AppState, XLSX
 
   const headers = ['TIPO DE REGISTO', 'DETALHE / EVENTO', 'ORIGEM / TIPO DE GOLO', 'MINUTO', 'ATLETA / INTERVENIENTES'];
   const rows: (string | number)[][] = [
-    ['RESULTADO FINAL', `${myClub} ${sc} - ${co} ${match.opponent}`.toUpperCase(), '-', '-', `DATA: ${match.date}`.toUpperCase()],
+    [
+      'RESULTADO FINAL',
+      `${myClub} ${sc} - ${co} ${match.opponent}`.toUpperCase(),
+      '-',
+      '-',
+      `DATA: ${match.date}`.toUpperCase()
+    ],
     ['CONDIÇÃO', match.location === 'casa' ? 'CASA' : 'FORA', '-', '-', '-'],
-    ['TIPO DE JOGO', typeLabel, '-', '-', `ORIGEM: ${compDetails.source === 'agenda' ? 'AGENDA DE JOGOS' : 'FICHA DE JOGO'}`],
+    [
+      'TIPO DE JOGO',
+      typeLabel,
+      '-',
+      '-',
+      `ORIGEM: ${compDetails.source === 'agenda' ? 'AGENDA DE JOGOS' : 'FICHA DE JOGO'}`
+    ],
     ['FASE / JORNADA', phaseLabel, '-', '-', `COMPETIÇÃO: ${compLabel}`],
     ['COMPETIÇÃO', compLabel, '-', '-', phaseLabel]
   ];
@@ -413,26 +432,66 @@ export function buildMatchSheetExcelWorkbook(match: Match, state: AppState, XLSX
   const foulsSuffered = match.foulsSuffered ?? match.faltasAdv ?? 0;
 
   // Remates da Nossa Equipa (sem símbolos ou imagens)
-  rows.push(['REMATES A FAVOR (DENTRO DA ÁREA)', `${shotsInBoxFor} REMATES`, 'DENTRO DA ÁREA', '-', `EQUIPA: ${myClub}`.toUpperCase()]);
-  rows.push(['REMATES A FAVOR (FORA DA ÁREA)', `${shotsOutBoxFor} REMATES`, 'FORA DA ÁREA', '-', `EQUIPA: ${myClub}`.toUpperCase()]);
+  rows.push([
+    'REMATES A FAVOR (DENTRO DA ÁREA)',
+    `${shotsInBoxFor} REMATES`,
+    'DENTRO DA ÁREA',
+    '-',
+    `EQUIPA: ${myClub}`.toUpperCase()
+  ]);
+  rows.push([
+    'REMATES A FAVOR (FORA DA ÁREA)',
+    `${shotsOutBoxFor} REMATES`,
+    'FORA DA ÁREA',
+    '-',
+    `EQUIPA: ${myClub}`.toUpperCase()
+  ]);
   rows.push(['TOTAL DE REMATES A FAVOR', `${totalShotsFor} REMATES`, 'TOTAL', '-', `EQUIPA: ${myClub}`.toUpperCase()]);
 
   // Remates do Adversário (sem símbolos ou imagens)
-  rows.push(['REMATES CONTRA (DENTRO DA ÁREA)', `${shotsInBoxAgainst} REMATES`, 'DENTRO DA ÁREA', '-', `ADVERSÁRIO: ${match.opponent}`.toUpperCase()]);
-  rows.push(['REMATES CONTRA (FORA DA ÁREA)', `${shotsOutBoxAgainst} REMATES`, 'FORA DA ÁREA', '-', `ADVERSÁRIO: ${match.opponent}`.toUpperCase()]);
-  rows.push(['TOTAL DE REMATES CONTRA', `${totalShotsAgainst} REMATES`, 'TOTAL', '-', `ADVERSÁRIO: ${match.opponent}`.toUpperCase()]);
+  rows.push([
+    'REMATES CONTRA (DENTRO DA ÁREA)',
+    `${shotsInBoxAgainst} REMATES`,
+    'DENTRO DA ÁREA',
+    '-',
+    `ADVERSÁRIO: ${match.opponent}`.toUpperCase()
+  ]);
+  rows.push([
+    'REMATES CONTRA (FORA DA ÁREA)',
+    `${shotsOutBoxAgainst} REMATES`,
+    'FORA DA ÁREA',
+    '-',
+    `ADVERSÁRIO: ${match.opponent}`.toUpperCase()
+  ]);
+  rows.push([
+    'TOTAL DE REMATES CONTRA',
+    `${totalShotsAgainst} REMATES`,
+    'TOTAL',
+    '-',
+    `ADVERSÁRIO: ${match.opponent}`.toUpperCase()
+  ]);
 
   // Cantos e Faltas (sem símbolos)
-  rows.push(['CANTOS', `A FAVOR: ${cornersFor} | CONTRA: ${cornersAgainst}`, 'BOLA PARADA', '-', `NÓS ${cornersFor} - ${cornersAgainst} ADV`]);
-  rows.push(['FALTAS', `COMETIDAS: ${foulsCommitted} | SOFRIDAS: ${foulsSuffered}`, 'INFRAÇÕES', '-', `NÓS ${foulsCommitted} - ${foulsSuffered} ADV`]);
+  rows.push([
+    'CANTOS',
+    `A FAVOR: ${cornersFor} | CONTRA: ${cornersAgainst}`,
+    'BOLA PARADA',
+    '-',
+    `NÓS ${cornersFor} - ${cornersAgainst} ADV`
+  ]);
+  rows.push([
+    'FALTAS',
+    `COMETIDAS: ${foulsCommitted} | SOFRIDAS: ${foulsSuffered}`,
+    'INFRAÇÕES',
+    '-',
+    `NÓS ${foulsCommitted} - ${foulsSuffered} ADV`
+  ]);
 
   // Goals com Origem / Tipo de Golo explícito (tempo puramente numérico, sem ' ou símbolos)
   match.goals.forEach((g) => {
     const minVal: string | number =
-      g.minute != null && String(g.minute).trim() !== ''
-        ? sanitizeExcelModeGameText(g.minute)
-        : '-';
-    const periodLabel = (g.half ? `${g.half}ª PARTE` : (g.period || 'TEMPO REGULAMENTAR')).toUpperCase();
+      g.minute != null && String(g.minute).trim() !== '' ? sanitizeExcelModeGameText(g.minute) : '-';
+    const periodLabel = (g.half ? `${g.half}ª PARTE` : g.period || 'TEMPO REGULAMENTAR').toUpperCase();
     const goalOrigin = (g.goalType || 'BOLA JOGADA').toUpperCase();
 
     if (g.type === 'scored') {
@@ -459,11 +518,15 @@ export function buildMatchSheetExcelWorkbook(match: Match, state: AppState, XLSX
   // Cards (tempo puramente número, sem ')
   (match.cards || []).forEach((c) => {
     const minVal: string | number =
-      c.minute != null && String(c.minute).trim() !== ''
-        ? sanitizeExcelModeGameText(c.minute)
-        : '-';
+      c.minute != null && String(c.minute).trim() !== '' ? sanitizeExcelModeGameText(c.minute) : '-';
     const cardPeriodLabel = (c.period ? c.period : c.half ? `${c.half}ª PARTE` : 'TEMPO REGULAMENTAR').toUpperCase();
-    rows.push([`CARTÃO ${c.color.toUpperCase()}`, `DISCIPLINA (${cardPeriodLabel})`, '-', minVal, getPName(c.playerId)]);
+    rows.push([
+      `CARTÃO ${c.color.toUpperCase()}`,
+      `DISCIPLINA (${cardPeriodLabel})`,
+      '-',
+      minVal,
+      getPName(c.playerId)
+    ]);
   });
 
   // Titulares 1.ª Parte e 2.ª Parte (sem texto repetido)
@@ -487,7 +550,12 @@ export function buildMatchSheetExcelWorkbook(match: Match, state: AppState, XLSX
   // Folha 1: Ficha Principal de Jogo
   const extraMeta: (string | number)[][] = [
     ['TIPO:', typeLabel, 'FASE / JORNADA:', phaseLabel, 'ADVERSÁRIO:', match.opponent.toUpperCase()],
-    ['COMPETIÇÃO:', compLabel, 'SINCRONIZAÇÃO:', compDetails.source === 'agenda' ? 'SINCRONIZADO COM A AGENDA' : 'FICHA DE JOGO']
+    [
+      'COMPETIÇÃO:',
+      compLabel,
+      'SINCRONIZAÇÃO:',
+      compDetails.source === 'agenda' ? 'SINCRONIZADO COM A AGENDA' : 'FICHA DE JOGO'
+    ]
   ];
   const ws = createBolaComVisaoSheet(
     XLSX,
@@ -709,7 +777,13 @@ export async function exportGameAnalysisExcel(
     ['Média Cartões / Jogo', analysis.cardsPerMatchAvg]
   ];
 
-  const wsSummary = createBolaComVisaoSheet(XLSX, 'Análise Estatística - Resumo Geral', state, summaryHeaders, summaryRows);
+  const wsSummary = createBolaComVisaoSheet(
+    XLSX,
+    'Análise Estatística - Resumo Geral',
+    state,
+    summaryHeaders,
+    summaryRows
+  );
 
   // Sheet 1.5: Insights Automáticos (O que os dados nos dizem)
   const insightHeaders = ['Tipo / Categoria', 'Título', 'Destaque / Valor', 'Descrição'];
@@ -719,7 +793,13 @@ export async function exportGameAnalysisExcel(
     ins.stat || '-',
     ins.description
   ]);
-  const wsInsights = createBolaComVisaoSheet(XLSX, 'O que os dados nos dizem - Insights Automáticos', state, insightHeaders, insightRows);
+  const wsInsights = createBolaComVisaoSheet(
+    XLSX,
+    'O que os dados nos dizem - Insights Automáticos',
+    state,
+    insightHeaders,
+    insightRows
+  );
 
   // Sheet 2: Distribuição Temporal (0-15, 16-30, 31-45, 46-60, 61-75, 76-90, 90+)
   const timeHeaders = ['Período de Jogo', 'Golos Marcados', 'Golos Sofridos', 'Saldo'];
@@ -732,7 +812,12 @@ export async function exportGameAnalysisExcel(
   const wsTime = createBolaComVisaoSheet(XLSX, 'Distribuição Temporal de Golos', state, timeHeaders, timeRows);
 
   // Sheet 3: Origem dos Golos Marcados e Sofridos
-  const goalTypeHeaders = ['Tipo / Origem do Lance', 'Golos Marcados (Nós)', 'Percentagem Marcados (%)', 'Golos Sofridos (Adv)'];
+  const goalTypeHeaders = [
+    'Tipo / Origem do Lance',
+    'Golos Marcados (Nós)',
+    'Percentagem Marcados (%)',
+    'Golos Sofridos (Adv)'
+  ];
   const concededMap = new Map((analysis.concededGoalTypes || []).map((cg) => [cg.type, cg.count]));
   const goalTypeRows = analysis.goalTypes.map((gt) => [
     gt.type,
@@ -740,7 +825,13 @@ export async function exportGameAnalysisExcel(
     `${gt.percentage}%`,
     concededMap.get(gt.type) || 0
   ]);
-  const wsGoalTypes = createBolaComVisaoSheet(XLSX, 'Origem dos Golos Marcados e Sofridos', state, goalTypeHeaders, goalTypeRows);
+  const wsGoalTypes = createBolaComVisaoSheet(
+    XLSX,
+    'Origem dos Golos Marcados e Sofridos',
+    state,
+    goalTypeHeaders,
+    goalTypeRows
+  );
 
   // Sheet 4: Lista de Jogos Filtrados
   const matchHeaders = [
@@ -804,7 +895,7 @@ export async function exportGameAnalysisExcel(
     'Detalhes / Notas'
   ];
   const eventRows = analysis.allEvents.map((ev) => [
-    ev.minute != null ? `${ev.minute}'` : (ev.period || '-'),
+    ev.minute != null ? `${ev.minute}'` : ev.period || '-',
     ev.match.date,
     ev.match.opponent,
     ev.detail,
@@ -825,10 +916,7 @@ export async function exportGameAnalysisExcel(
   XLSX.utils.book_append_sheet(wb, wsEvents, 'Acontecimentos');
 
   const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '_');
-  XLSX.writeFile(
-    wb,
-    `Analise_Jogos_BolaComVisao_${sanitize(myClub)}_${new Date().toISOString().slice(0, 10)}.xlsx`
-  );
+  XLSX.writeFile(wb, `Analise_Jogos_BolaComVisao_${sanitize(myClub)}_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 export function exportJSONBackup(state: AppState) {

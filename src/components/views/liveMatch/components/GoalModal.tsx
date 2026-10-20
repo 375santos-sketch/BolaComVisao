@@ -46,10 +46,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
 
   const isAutoGolo = goalScorerId === 'autogolo';
   const showSuggestedLabel =
-    !editingGoal &&
-    !isModified &&
-    Boolean(suggestedMinute) &&
-    goalMinute.trim() === suggestedMinute?.trim();
+    !editingGoal && !isModified && Boolean(suggestedMinute) && goalMinute.trim() === suggestedMinute?.trim();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
@@ -133,9 +130,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
         {/* Minuto */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Minuto *
-            </label>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Minuto *</label>
             {showSuggestedLabel && (
               <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
                 <span>🕒</span>
@@ -152,12 +147,12 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
               setIsModified(true);
             }}
             className={`w-full bg-slate-950 border rounded-xl px-3 py-2 text-white text-sm focus:outline-none ${
-              !goalMinute.trim() ? 'border-slate-700 focus:border-emerald-500' : 'border-slate-700 focus:border-emerald-500'
+              !goalMinute.trim()
+                ? 'border-slate-700 focus:border-emerald-500'
+                : 'border-slate-700 focus:border-emerald-500'
             }`}
           />
-          {!goalMinute.trim() && (
-            <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>
-          )}
+          {!goalMinute.trim() && <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>}
         </div>
 
         {/* Actions */}

@@ -6,13 +6,9 @@ import { Training } from '../types';
  * - Starts at 1 for a new team / season.
  * - Always takes the highest previously assigned number (+1), even if prior trainings were deleted.
  */
-export function getNextTrainingNumber(
-  trainings: Training[] = [],
-  lastAssignedNumber?: number
-): number {
-  let highest = typeof lastAssignedNumber === 'number' && !isNaN(lastAssignedNumber)
-    ? Math.max(0, lastAssignedNumber)
-    : 0;
+export function getNextTrainingNumber(trainings: Training[] = [], lastAssignedNumber?: number): number {
+  let highest =
+    typeof lastAssignedNumber === 'number' && !isNaN(lastAssignedNumber) ? Math.max(0, lastAssignedNumber) : 0;
 
   for (const tr of trainings) {
     if (typeof tr.trainingNumber === 'number' && !isNaN(tr.trainingNumber) && tr.trainingNumber > highest) {
@@ -69,9 +65,8 @@ export function normalizeAndMigrateTrainings(
 
   let hasChanges = false;
   const existingNumbers = new Set<number>();
-  let highestKnown = typeof lastAssignedNumber === 'number' && !isNaN(lastAssignedNumber)
-    ? Math.max(0, lastAssignedNumber)
-    : 0;
+  let highestKnown =
+    typeof lastAssignedNumber === 'number' && !isNaN(lastAssignedNumber) ? Math.max(0, lastAssignedNumber) : 0;
 
   // 1. Separate trainings that already have a valid unique trainingNumber from those that need one
   const mappedTrainings: Training[] = [];
@@ -144,10 +139,7 @@ export function normalizeAndMigrateTrainings(
  * Formats display label for a training.
  * e.g., "Treino 24" or "TREINO Nº 24"
  */
-export function formatTrainingTitle(
-  training: Partial<Training>,
-  uppercase: boolean = false
-): string {
+export function formatTrainingTitle(training: Partial<Training>, uppercase: boolean = false): string {
   const num = training.trainingNumber;
   if (typeof num === 'number' && num > 0) {
     return uppercase ? `TREINO ${num}` : `Treino ${num}`;
@@ -158,10 +150,7 @@ export function formatTrainingTitle(
 /**
  * Checks if search query matches a training by its number (e.g. "24", "Treino 24", "T24").
  */
-export function matchesTrainingNumberSearch(
-  training: Partial<Training>,
-  query: string
-): boolean {
+export function matchesTrainingNumberSearch(training: Partial<Training>, query: string): boolean {
   if (!query || !query.trim()) return false;
   const q = query.trim().toLowerCase();
   const num = training.trainingNumber;

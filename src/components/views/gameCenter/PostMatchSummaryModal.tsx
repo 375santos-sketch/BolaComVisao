@@ -61,7 +61,9 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
   let firstGoalMin: number | null = null;
 
   if (scoredGoals.length > 0) {
-    const sorted = [...scoredGoals].sort((a, b) => (parseMinuteToNumber(a.minute) || 0) - (parseMinuteToNumber(b.minute) || 0));
+    const sorted = [...scoredGoals].sort(
+      (a, b) => (parseMinuteToNumber(a.minute) || 0) - (parseMinuteToNumber(b.minute) || 0)
+    );
     firstGoalMin = sorted[0].minute ? parseMinuteToNumber(sorted[0].minute) : null;
 
     scoredGoals.forEach((g) => {
@@ -166,12 +168,8 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
         {/* 2. Placar de Destaque */}
         <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-slate-800 flex items-center justify-between shadow-inner">
           <div className="text-center flex-1">
-            <span className="text-xs text-slate-400 font-mono uppercase block truncate">
-              {myClubName}
-            </span>
-            <div className="text-4xl sm:text-5xl font-black font-mono text-cyan-400 mt-1">
-              {scoredCount}
-            </div>
+            <span className="text-xs text-slate-400 font-mono uppercase block truncate">{myClubName}</span>
+            <div className="text-4xl sm:text-5xl font-black font-mono text-cyan-400 mt-1">{scoredCount}</div>
           </div>
 
           <div className="px-3 text-2xl font-black text-slate-600 font-mono">—</div>
@@ -180,9 +178,7 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
             <span className="text-xs text-slate-400 font-mono uppercase block truncate">
               {match.opponent || 'Adversário'}
             </span>
-            <div className="text-4xl sm:text-5xl font-black font-mono text-rose-400 mt-1">
-              {concededCount}
-            </div>
+            <div className="text-4xl sm:text-5xl font-black font-mono text-rose-400 mt-1">{concededCount}</div>
           </div>
         </div>
 
@@ -211,21 +207,23 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
           <div className="p-3 rounded-2xl bg-slate-950/90 border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-base">🎯</span>
-              <span className="text-xs font-bold text-cyan-300 uppercase font-mono">
-                Remates à Baliza:
-              </span>
+              <span className="text-xs font-bold text-cyan-300 uppercase font-mono">Remates à Baliza:</span>
             </div>
             <div className="flex items-center gap-4 text-xs font-mono">
               <div>
                 <span className="text-slate-400">Nós: </span>
                 <span className="font-black text-cyan-400">{totalRematesFavor}</span>{' '}
-                <span className="text-[10px] text-slate-500">({rematesDentroArea} d.área, {rematesForaArea} f.área)</span>
+                <span className="text-[10px] text-slate-500">
+                  ({rematesDentroArea} d.área, {rematesForaArea} f.área)
+                </span>
               </div>
               <span className="text-slate-600 font-bold">vs</span>
               <div>
                 <span className="text-slate-400">Adv: </span>
                 <span className="font-black text-rose-400">{totalRematesContra}</span>{' '}
-                <span className="text-[10px] text-slate-500">({rematesDentroAreaAdv} d.área, {rematesForaAreaAdv} f.área)</span>
+                <span className="text-[10px] text-slate-500">
+                  ({rematesDentroAreaAdv} d.área, {rematesForaAreaAdv} f.área)
+                </span>
               </div>
             </div>
           </div>
@@ -272,9 +270,7 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
 
         {/* 6. Linha do Tempo */}
         <div className="space-y-1.5">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-            Cronologia de Jogo:
-          </span>
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cronologia de Jogo:</span>
           <div className="max-h-36 overflow-y-auto pr-1">
             <MatchTimeline match={match} />
           </div>
@@ -338,4 +334,3 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
     </div>
   );
 };
-

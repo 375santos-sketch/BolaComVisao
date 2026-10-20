@@ -126,7 +126,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           🧠
         </span>
-        {hasActiveMatch && <span className="absolute top-1.5 right-3 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
+        {hasActiveMatch && (
+          <span className="absolute top-1.5 right-3 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+        )}
         <span className="text-[10px] font-['Chakra_Petch'] uppercase tracking-wider">Performance</span>
       </button>
 

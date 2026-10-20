@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AppState, UserAccount, TeamDataset, TeamDatabaseRow } from '../types';
 import { uid, sanitizeExcelText } from '../lib/utils';
-import {
-  getUserAccessibleTeams,
-  canManageTeamDatabase,
-  getEffectiveTeamRole
-} from '../lib/permissionsEngine';
+import { getUserAccessibleTeams, canManageTeamDatabase, getEffectiveTeamRole } from '../lib/permissionsEngine';
 import {
   MAX_COLUMNS_LIMIT,
   MAX_FILE_SIZE_BYTES,
@@ -28,17 +24,13 @@ interface HistoryStep {
   rows: TeamDatabaseRow[];
 }
 
-function createEmptyRow(
-  cols: string[],
-  order: number,
-  user?: UserAccount | null
-): TeamDatabaseRow {
+function createEmptyRow(cols: string[], order: number, user?: UserAccount | null): TeamDatabaseRow {
   const newRow: TeamDatabaseRow = {
     id: uid(),
     data: {},
     order,
     updatedAt: Date.now(),
-    updatedBy: user?.name || user?.username || 'Utilizador',
+    updatedBy: user?.name || user?.username || 'Utilizador'
   };
   cols.forEach((col) => {
     newRow.data[col] = '';
@@ -46,11 +38,7 @@ function createEmptyRow(
   return newRow;
 }
 
-export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
-  state,
-  onShowToast,
-  onShowConfirm
-}) => {
+export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onShowToast, onShowConfirm }) => {
   const currentUser = state.currentUser;
   const accessibleTeams = useMemo(() => {
     return getUserAccessibleTeams(currentUser, state.teams || []);
@@ -188,7 +176,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
   const pushHistory = (currentCols: string[], currentRows: TeamDatabaseRow[]) => {
     historyRef.current.push({
       columns: [...currentCols],
-      rows: JSON.parse(JSON.stringify(currentRows)),
+      rows: JSON.parse(JSON.stringify(currentRows))
     });
     // keep max 25 steps
     if (historyRef.current.length > 25) {
@@ -226,7 +214,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
         rowCount: rows.length,
         version: 1,
         updatedAt: Date.now(),
-        updatedBy: currentUser.name || currentUser.username,
+        updatedBy: currentUser.name || currentUser.username
       };
 
       const updatedDataset: TeamDataset = {
@@ -234,7 +222,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
         columns,
         rowCount: rows.length,
         updatedAt: Date.now(),
-        updatedBy: currentUser.name || currentUser.username,
+        updatedBy: currentUser.name || currentUser.username
       };
 
       await saveTeamDatasetWithRows(
@@ -246,9 +234,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
         currentUser
       );
 
-      setDatasets((prev) =>
-        prev.map((d) => (d.id === updatedDataset.id ? updatedDataset : d))
-      );
+      setDatasets((prev) => prev.map((d) => (d.id === updatedDataset.id ? updatedDataset : d)));
       setSaveStatus('saved');
       setHasUnsavedChanges(false);
       onShowToast('Base de dados guardada com sucesso! ☁️');
@@ -306,10 +292,10 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
               ...r,
               data: {
                 ...r.data,
-                [col]: cleaned,
+                [col]: cleaned
               },
               updatedAt: Date.now(),
-              updatedBy: currentUser?.name || currentUser?.username || 'Utilizador',
+              updatedBy: currentUser?.name || currentUser?.username || 'Utilizador'
             };
           }
           return r;
@@ -346,8 +332,8 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
         ...r,
         data: {
           ...r.data,
-          [sanitizedCol]: '',
-        },
+          [sanitizedCol]: ''
+        }
       }))
     );
     setColModal(null);
@@ -417,7 +403,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
       rowCount: rows.length,
       version: 1,
       updatedAt: Date.now(),
-      updatedBy: currentUser?.name || 'Utilizador',
+      updatedBy: currentUser?.name || 'Utilizador'
     };
     exportTeamDatabaseToExcel(currentDataset, rows, activeTeam.clubName);
     onShowToast('Base de dados exportada para Excel! 📥');
@@ -450,7 +436,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
           sheetNames: inspection.sheetNames,
           selectedSheet: firstSheet,
           parsedSheets: inspection.sheets,
-          isProcessing: false,
+          isProcessing: false
         });
       } catch (err: any) {
         onShowToast(err.message || 'Erro ao ler o ficheiro Excel.');
@@ -478,7 +464,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
       data: rowMap,
       order: idx,
       updatedAt: Date.now(),
-      updatedBy: currentUser.name || currentUser.username,
+      updatedBy: currentUser.name || currentUser.username
     }));
 
     const newDataset: TeamDataset = {
@@ -488,7 +474,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
       rowCount: newRows.length,
       version: 1,
       updatedAt: Date.now(),
-      updatedBy: currentUser.name || currentUser.username,
+      updatedBy: currentUser.name || currentUser.username
     };
 
     setImportModal(null);
@@ -527,8 +513,8 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
       result = result.filter((row) =>
-        Object.values(row.data).some((val) =>
-          val !== null && val !== undefined && String(val).toLowerCase().includes(term)
+        Object.values(row.data).some(
+          (val) => val !== null && val !== undefined && String(val).toLowerCase().includes(term)
         )
       );
     }
@@ -581,9 +567,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
       {/* Team Selector & Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-900/90 border border-cyan-500/30 rounded-xl">
         <div className="flex items-center gap-2 flex-wrap">
-          <label className="text-xs font-['Chakra_Petch'] font-bold uppercase text-cyan-300">
-            Equipa:
-          </label>
+          <label className="text-xs font-['Chakra_Petch'] font-bold uppercase text-cyan-300">Equipa:</label>
           <select
             value={selectedTeamId}
             onChange={(e) => setSelectedTeamId(e.target.value)}
@@ -628,12 +612,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
             <label className="cursor-pointer px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 hover:text-white rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase border border-cyan-500/30 transition-all flex items-center gap-1">
               <span>📥</span>
               <span>Importar Excel</span>
-              <input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
+              <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} className="hidden" />
             </label>
           )}
 
@@ -666,8 +645,8 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
                 saveStatus === 'saving'
                   ? 'bg-amber-600 text-white animate-pulse'
                   : hasUnsavedChanges
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.4)] hover:brightness-110'
-                  : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.4)] hover:brightness-110'
+                    : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
               }`}
             >
               {saveStatus === 'saving' ? (
@@ -718,9 +697,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
             placeholder="Pesquisar em todas as colunas..."
             className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none"
           />
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs">
-            🔍
-          </span>
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs">🔍</span>
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
@@ -762,23 +739,17 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
         ) : columns.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-slate-400 p-6 text-center">
             <div className="text-4xl mb-3">📊</div>
-            <div className="font-bold text-white text-sm mb-1 font-['Chakra_Petch'] uppercase">
-              Base de Dados Vazia
-            </div>
+            <div className="font-bold text-white text-sm mb-1 font-['Chakra_Petch'] uppercase">Base de Dados Vazia</div>
             <p className="text-xs text-slate-400 max-w-sm mb-4">
-              Esta equipa ainda não tem nenhuma base de dados configurada. Importa um ficheiro Excel (.xlsx/.xls/.csv) ou cria uma nova coluna.
+              Esta equipa ainda não tem nenhuma base de dados configurada. Importa um ficheiro Excel (.xlsx/.xls/.csv)
+              ou cria uma nova coluna.
             </p>
             {canEdit && (
               <div className="flex items-center gap-2">
                 <label className="cursor-pointer px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all flex items-center gap-2">
                   <span>📥</span>
                   <span>Importar Excel</span>
-                  <input
-                    type="file"
-                    accept=".xlsx,.xls,.csv"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
+                  <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} className="hidden" />
                 </label>
                 <button
                   onClick={() => setColModal({ mode: 'add', newColName: 'NOME' })}
@@ -808,18 +779,14 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
                       >
                         <span>{col}</span>
                         {sortColumn === col && (
-                          <span className="text-[10px] text-cyan-400">
-                            {sortDirection === 'asc' ? '▲' : '▼'}
-                          </span>
+                          <span className="text-[10px] text-cyan-400">{sortDirection === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </span>
 
                       {canEdit && (
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
-                            onClick={() =>
-                              setColModal({ mode: 'rename', oldCol: col, newColName: col })
-                            }
+                            onClick={() => setColModal({ mode: 'rename', oldCol: col, newColName: col })}
                             className="p-1 hover:text-cyan-300 text-slate-400 text-[10px]"
                             title="Renomear coluna"
                           >
@@ -837,36 +804,25 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
                     </div>
                   </th>
                 ))}
-                {canEdit && (
-                  <th className="p-2 w-12 text-center text-slate-500 font-mono text-[10px]">
-                    Ações
-                  </th>
-                )}
+                {canEdit && <th className="p-2 w-12 text-center text-slate-500 font-mono text-[10px]">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-mono">
               {displayedRows.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={columns.length + (canEdit ? 2 : 1)}
-                    className="p-6 text-center text-slate-500 text-xs"
-                  >
+                  <td colSpan={columns.length + (canEdit ? 2 : 1)} className="p-6 text-center text-slate-500 text-xs">
                     Nenhum registo encontrado com o filtro atual.
                   </td>
                 </tr>
               ) : (
                 displayedRows.map((row, idx) => (
-                  <tr
-                    key={row.id}
-                    className="hover:bg-slate-900/60 transition-colors group"
-                  >
+                  <tr key={row.id} className="hover:bg-slate-900/60 transition-colors group">
                     <td className="p-2 text-center text-[10px] text-slate-600 border-r border-slate-800/80">
                       {idx + 1}
                     </td>
 
                     {columns.map((col) => {
-                      const isEditing =
-                        editingCell?.rowId === row.id && editingCell?.col === col;
+                      const isEditing = editingCell?.rowId === row.id && editingCell?.col === col;
                       const cellVal = row.data[col] ?? '';
 
                       return (
@@ -982,10 +938,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
                 <span>📊</span>
                 <span>Pré-visualização do Ficheiro Excel</span>
               </div>
-              <button
-                onClick={() => setImportModal(null)}
-                className="text-slate-400 hover:text-white text-lg p-1"
-              >
+              <button onClick={() => setImportModal(null)} className="text-slate-400 hover:text-white text-lg p-1">
                 ✕
               </button>
             </div>
@@ -1002,9 +955,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
                     <span className="text-slate-400">Folha: </span>
                     <select
                       value={importModal.selectedSheet}
-                      onChange={(e) =>
-                        setImportModal({ ...importModal, selectedSheet: e.target.value })
-                      }
+                      onChange={(e) => setImportModal({ ...importModal, selectedSheet: e.target.value })}
                       className="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white"
                     >
                       {importModal.sheetNames.map((s) => (
@@ -1037,7 +988,8 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
                 return (
                   <div className="space-y-2">
                     <div className="text-[11px] text-slate-400">
-                      A mostrar as primeiras 10 linhas de um total de {sheet.totalRows} linhas e {sheet.columns.length} colunas:
+                      A mostrar as primeiras 10 linhas de um total de {sheet.totalRows} linhas e {sheet.columns.length}{' '}
+                      colunas:
                     </div>
                     <div className="max-h-64 overflow-auto border border-slate-800 rounded-xl scrollbar-thin">
                       <table className="w-full text-left text-[11px] border-collapse font-mono">
@@ -1056,7 +1008,10 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({
                             <tr key={rIdx} className="hover:bg-slate-900/50">
                               <td className="p-1.5 text-center text-slate-600">{rIdx + 1}</td>
                               {sheet.columns.map((c) => (
-                                <td key={c} className="p-1.5 border-r border-slate-800 whitespace-nowrap max-w-[160px] truncate text-slate-300">
+                                <td
+                                  key={c}
+                                  className="p-1.5 border-r border-slate-800 whitespace-nowrap max-w-[160px] truncate text-slate-300"
+                                >
                                   {r[c] || '—'}
                                 </td>
                               ))}

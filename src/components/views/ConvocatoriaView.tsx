@@ -257,7 +257,8 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           >
             {state.schedule.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.opponent} ({s.date.split('-').reverse().join('/')} - {s.time}h){s.callupFinalized ? ' ✓ [Finalizada]' : ''}
+                {s.opponent} ({s.date.split('-').reverse().join('/')} - {s.time}h)
+                {s.callupFinalized ? ' ✓ [Finalizada]' : ''}
               </option>
             ))}
           </select>
@@ -280,7 +281,8 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                   </span>
                 </div>
                 <div className="text-[11px] text-emerald-400/80 font-mono mt-0.5">
-                  Esta convocatória está concluída e pronta para envio. Clica em "Editar" se precisares de efetuar alterações.
+                  Esta convocatória está concluída e pronta para envio. Clica em "Editar" se precisares de efetuar
+                  alterações.
                   {match.callupFinalizedAt
                     ? ` • ${new Date(match.callupFinalizedAt).toLocaleDateString('pt-PT')} ${new Date(match.callupFinalizedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
                     : ''}

@@ -963,5 +963,3 @@ export interface TeamDatabaseRow {
   updatedAt: number;
   updatedBy: string;
 }
-
-

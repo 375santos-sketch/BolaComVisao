@@ -173,10 +173,42 @@ describe('CoachViewEngine - Visão do Treinador', () => {
 
   describe('Top 3 Marcadores e Top 3 Assistentes', () => {
     const mockRoster: Player[] = [
-      { id: 'p1', name: 'Cristiano Ronaldo', nickname: 'CR7', number: 7, positions: 'Avançado', birthDate: null, active: true },
-      { id: 'p2', name: 'Bernardo Silva', nickname: 'Bernardo', number: 10, positions: 'Médio', birthDate: null, active: true },
-      { id: 'p3', name: 'Bruno Fernandes', nickname: 'Bruno F.', number: 8, positions: 'Médio', birthDate: null, active: true },
-      { id: 'p4', name: 'Diogo Jota', nickname: 'Jota', number: 20, positions: 'Extremo', birthDate: null, active: true }
+      {
+        id: 'p1',
+        name: 'Cristiano Ronaldo',
+        nickname: 'CR7',
+        number: 7,
+        positions: 'Avançado',
+        birthDate: null,
+        active: true
+      },
+      {
+        id: 'p2',
+        name: 'Bernardo Silva',
+        nickname: 'Bernardo',
+        number: 10,
+        positions: 'Médio',
+        birthDate: null,
+        active: true
+      },
+      {
+        id: 'p3',
+        name: 'Bruno Fernandes',
+        nickname: 'Bruno F.',
+        number: 8,
+        positions: 'Médio',
+        birthDate: null,
+        active: true
+      },
+      {
+        id: 'p4',
+        name: 'Diogo Jota',
+        nickname: 'Jota',
+        number: 20,
+        positions: 'Extremo',
+        birthDate: null,
+        active: true
+      }
     ];
 
     it('calculates top 3 scorers and top 3 assisters with correct ranks and counts', () => {
@@ -357,9 +389,7 @@ describe('CoachViewEngine - Visão do Treinador', () => {
           subs: [],
           capitao: 'dragao_1',
           finished: true,
-          goals: [
-            { id: 'g3', type: 'scored', scorerId: 'dragao_10', assistId: 'dragao_12', minute: '15' }
-          ]
+          goals: [{ id: 'g3', type: 'scored', scorerId: 'dragao_10', assistId: 'dragao_12', minute: '15' }]
         }
       ];
 
@@ -421,6 +451,3 @@ describe('CoachViewEngine - Visão do Treinador', () => {
     });
   });
 });
-
-
-

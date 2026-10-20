@@ -66,7 +66,8 @@ export const TrainingFilters: React.FC<TrainingFiltersProps> = ({
         </div>
 
         <div className="text-[11px] font-mono text-slate-400">
-          A exibir {displayedCount} {listFilter === 'scheduled' ? `de ${scheduledCount} agendados` : `de ${completedCount} concluídos`}
+          A exibir {displayedCount}{' '}
+          {listFilter === 'scheduled' ? `de ${scheduledCount} agendados` : `de ${completedCount} concluídos`}
         </div>
       </div>
 

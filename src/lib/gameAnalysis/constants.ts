@@ -20,12 +20,12 @@ export const STANDARD_GOAL_TYPES: readonly StandardGoalType[] = [
 export const GOAL_ORIGIN_MAP: Record<StandardGoalType, GoalOriginCategory> = {
   'Bola jogada': 'bola_corrida',
   'Recuperação de bola': 'bola_corrida',
-  'Ressalto': 'bola_corrida',
-  'Canto': 'bola_parada',
-  'Livre': 'bola_parada',
-  'Penálti': 'bola_parada',
+  Ressalto: 'bola_corrida',
+  Canto: 'bola_parada',
+  Livre: 'bola_parada',
+  Penálti: 'bola_parada',
   'Pontapé de baliza': 'bola_parada',
-  'Outro': 'outro'
+  Outro: 'outro'
 };
 
 /**
@@ -45,19 +45,48 @@ export function normalizeGoalType(rawType: string | null | undefined): StandardG
     .replace(/[\u0300-\u036f]/g, '');
 
   if (clean.includes('canto') || clean.includes('corner')) return 'Canto';
-  if (clean.includes('livre') || clean.includes('freekick') || clean.includes('falta direta') || clean.includes('falta indirecta')) return 'Livre';
-  if (clean.includes('penal') || clean.includes('penalty') || clean.includes('gp') || clean.includes('g.p.')) return 'Penálti';
+  if (
+    clean.includes('livre') ||
+    clean.includes('freekick') ||
+    clean.includes('falta direta') ||
+    clean.includes('falta indirecta')
+  )
+    return 'Livre';
+  if (clean.includes('penal') || clean.includes('penalty') || clean.includes('gp') || clean.includes('g.p.'))
+    return 'Penálti';
   if (clean.includes('pontape de baliza') || clean.includes('saida') || clean.includes('baliza')) {
     return 'Pontapé de baliza';
   }
   if (clean.includes('recupera') || clean.includes('pressao') || clean.includes('roubo') || clean.includes('desarme')) {
     return 'Recuperação de bola';
   }
-  if (clean.includes('ressalto') || clean.includes('sobra') || clean.includes('ricochete') || clean.includes('defesa incompleta')) return 'Ressalto';
-  if (clean.includes('jogada') || clean.includes('construcao') || clean.includes('trabalhada') || clean.includes('bola corrida') || clean.includes('corrida') || clean.includes('transicao') || clean.includes('contra-ataque') || clean.includes('posicional')) {
+  if (
+    clean.includes('ressalto') ||
+    clean.includes('sobra') ||
+    clean.includes('ricochete') ||
+    clean.includes('defesa incompleta')
+  )
+    return 'Ressalto';
+  if (
+    clean.includes('jogada') ||
+    clean.includes('construcao') ||
+    clean.includes('trabalhada') ||
+    clean.includes('bola corrida') ||
+    clean.includes('corrida') ||
+    clean.includes('transicao') ||
+    clean.includes('contra-ataque') ||
+    clean.includes('posicional')
+  ) {
     return 'Bola jogada';
   }
-  if (clean.includes('outro') || clean.includes('desconhecido') || clean.includes('auto') || clean.includes('n/a') || clean.includes('sem registo')) return 'Outro';
+  if (
+    clean.includes('outro') ||
+    clean.includes('desconhecido') ||
+    clean.includes('auto') ||
+    clean.includes('n/a') ||
+    clean.includes('sem registo')
+  )
+    return 'Outro';
 
   return 'Outro';
 }
@@ -88,29 +117,29 @@ export const EVENT_TYPE_OPTIONS: { id: EventTypeFilter; label: string; group: st
  * Standard Half Durations per Football Category in Portugal (Item 2)
  */
 export const CATEGORY_DEFAULT_HALF_DURATION: Record<string, number> = {
-  'Petizes': 20,
-  'Traquinas': 20,
+  Petizes: 20,
+  Traquinas: 20,
   'Sub-7': 20,
   'Sub-8': 20,
   'Sub-9': 20,
-  'Benjamins': 30, // 2 x 30 min (Fut 7)
+  Benjamins: 30, // 2 x 30 min (Fut 7)
   'Sub-10': 30,
   'Sub-11': 30,
-  'Infantis': 30, // 2 x 30 ou 2 x 35 min (Fut 7/9)
+  Infantis: 30, // 2 x 30 ou 2 x 35 min (Fut 7/9)
   'Sub-12': 30,
   'Sub-13': 35,
-  'Iniciados': 35, // 2 x 35 min (Fut 11)
+  Iniciados: 35, // 2 x 35 min (Fut 11)
   'Sub-14': 35,
   'Sub-15': 40,
-  'Juvenis': 40, // 2 x 40 ou 2 x 45 min
+  Juvenis: 40, // 2 x 40 ou 2 x 45 min
   'Sub-16': 40,
   'Sub-17': 45,
-  'Juniores': 45, // 2 x 45 min
+  Juniores: 45, // 2 x 45 min
   'Sub-18': 45,
   'Sub-19': 45,
-  'Seniores': 45, // 2 x 45 min
-  'Veteranos': 45,
-  'Feminino': 45
+  Seniores: 45, // 2 x 45 min
+  Veteranos: 45,
+  Feminino: 45
 };
 
 /**
@@ -130,7 +159,13 @@ export function getCategoryHalfDuration(categoryName?: string): number {
   if (catClean.includes('11') || catClean.includes('10')) return 30;
   if (catClean.includes('12') || catClean.includes('13')) return 35;
   if (catClean.includes('14') || catClean.includes('15')) return 40;
-  if (catClean.includes('16') || catClean.includes('17') || catClean.includes('19') || catClean.toLowerCase().includes('senior')) return 45;
+  if (
+    catClean.includes('16') ||
+    catClean.includes('17') ||
+    catClean.includes('19') ||
+    catClean.toLowerCase().includes('senior')
+  )
+    return 45;
 
   return 30;
 }

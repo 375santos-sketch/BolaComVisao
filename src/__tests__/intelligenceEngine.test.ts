@@ -104,9 +104,7 @@ describe('intelligenceEngine', () => {
   it('returns 0 attendance when there are no completed trainings', () => {
     const testState: Partial<AppState> = {
       ...baseState,
-      trainings: [
-        { id: 't1', date: '2026-05-10', notes: 'Treino agendado', absences: [], completed: false }
-      ]
+      trainings: [{ id: 't1', date: '2026-05-10', notes: 'Treino agendado', absences: [], completed: false }]
     };
     const evo = calculatePlayerEvolution(player, testState as AppState);
     expect(evo).not.toBeNull();

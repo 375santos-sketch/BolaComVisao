@@ -165,7 +165,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
             <span className="text-4xl block mb-3">⏱️</span>
             <h3 className="text-lg font-bold text-white mb-2">Nenhum jogo em direto a decorrer</h3>
             <p className="text-sm text-slate-400 mb-6">
-              Inicie um jogo a partir do calendário ou crie uma nova partida para acompanhar os acontecimentos ao minuto.
+              Inicie um jogo a partir do calendário ou crie uma nova partida para acompanhar os acontecimentos ao
+              minuto.
             </p>
             <button
               className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition-all w-full"
@@ -321,9 +322,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           {/* Badge do Estado Atual */}
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
-              Fase:
-            </span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Fase:</span>
             {matchPhase === 'nao_iniciado' && (
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -358,11 +357,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
               title={`Gerir ${lineupSize} Titulares da 1.ª Parte`}
             >
               <span>👥 Titulares 1.ª P:</span>
-              <strong
-                className={`font-black ${
-                  isLineup1stHalfReady ? 'text-emerald-400' : 'text-amber-400'
-                }`}
-              >
+              <strong className={`font-black ${isLineup1stHalfReady ? 'text-emerald-400' : 'text-amber-400'}`}>
                 {starting1stHalfCount}/{lineupSize}
               </strong>
             </button>
@@ -400,7 +395,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
                 Intervalo de Jogo
               </strong>
               <span>
-                Apenas são permitidas substituições (minuto 'INT'). Golos, golos sofridos e cartões estão bloqueados durante o intervalo.
+                Apenas são permitidas substituições (minuto 'INT'). Golos, golos sofridos e cartões estão bloqueados
+                durante o intervalo.
               </span>
             </div>
           </div>
@@ -601,9 +597,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
-                      Golos Marcados
-                    </h4>
+                    <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Golos Marcados</h4>
                     <button
                       onClick={openAddGoalModal}
                       className="text-xs text-emerald-400 hover:underline font-semibold"
@@ -621,9 +615,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-bold text-red-400 uppercase tracking-wider">
-                      Golos Sofridos
-                    </h4>
+                    <h4 className="text-xs font-bold text-red-400 uppercase tracking-wider">Golos Sofridos</h4>
                     <button
                       onClick={openAddConcededModal}
                       className="text-xs text-red-400 hover:underline font-semibold"
@@ -644,13 +636,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
             {activeTab === 'subs' && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider">
-                    Registo de Substituições
-                  </h4>
-                  <button
-                    onClick={openAddSubModal}
-                    className="text-xs text-blue-400 hover:underline font-semibold"
-                  >
+                  <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider">Registo de Substituições</h4>
+                  <button onClick={openAddSubModal} className="text-xs text-blue-400 hover:underline font-semibold">
                     + Adicionar Substituição
                   </button>
                 </div>
@@ -666,13 +653,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
             {activeTab === 'cards' && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                    Sanções Disciplinares
-                  </h4>
-                  <button
-                    onClick={openAddCardModal}
-                    className="text-xs text-amber-400 hover:underline font-semibold"
-                  >
+                  <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Sanções Disciplinares</h4>
+                  <button onClick={openAddCardModal} className="text-xs text-amber-400 hover:underline font-semibold">
                     + Adicionar Cartão
                   </button>
                 </div>
@@ -685,9 +667,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
               </div>
             )}
 
-            {activeTab === 'stats' && (
-              <MatchStatsSection match={match} onUpdateMatch={updateMatchInState} />
-            )}
+            {activeTab === 'stats' && <MatchStatsSection match={match} onUpdateMatch={updateMatchInState} />}
           </div>
         </div>
       )}
@@ -882,7 +862,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           onNavigate={onNavigate}
         />
       )}
-
     </div>
   );
 };

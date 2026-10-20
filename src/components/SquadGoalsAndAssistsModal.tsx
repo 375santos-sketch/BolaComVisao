@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Match, Player } from '../types';
-import {
-  computeTopScorersAndAssisters
-} from '../lib/gameAnalysis';
+import { computeTopScorersAndAssisters } from '../lib/gameAnalysis';
 
 export type GoalsAssistsTab = 'marcadores' | 'assistentes' | 'participacoes' | 'todos';
 
@@ -140,10 +138,10 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
                   {activeTab === 'marcadores'
                     ? 'Melhores Marcadores do Plantel'
                     : activeTab === 'assistentes'
-                    ? 'Melhores Assistentes do Plantel'
-                    : activeTab === 'participacoes'
-                    ? 'Participações em Golos (G+A)'
-                    : 'Golos e Assistências do Plantel'}
+                      ? 'Melhores Assistentes do Plantel'
+                      : activeTab === 'participacoes'
+                        ? 'Participações em Golos (G+A)'
+                        : 'Golos e Assistências do Plantel'}
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
                   {clubName} {category ? `• ${category}` : ''}
@@ -213,9 +211,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
             <span className="text-2xl">👥</span>
             <div>
               <div className="text-[10px] font-mono uppercase text-slate-400 font-bold">Plantel Ativo</div>
-              <div className="text-base sm:text-lg font-black font-mono text-blue-400">
-                {totalSquadCount} Atletas
-              </div>
+              <div className="text-base sm:text-lg font-black font-mono text-blue-400">{totalSquadCount} Atletas</div>
             </div>
           </div>
         </div>
@@ -302,8 +298,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
             </div>
           ) : (
             filteredAndSortedPlayers.map((player, idx) => {
-              const medal =
-                idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.º`;
+              const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.º`;
               const isTop3 = idx < 3;
               const hasGoals = player.goals > 0;
               const hasAssists = player.assists > 0;
@@ -325,10 +320,10 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
                         idx === 0
                           ? 'bg-amber-400 text-slate-950 shadow-sm font-black text-sm'
                           : idx === 1
-                          ? 'bg-slate-300 text-slate-950 font-black text-sm'
-                          : idx === 2
-                          ? 'bg-amber-700 text-white font-black text-sm'
-                          : 'bg-slate-800/80 text-slate-400'
+                            ? 'bg-slate-300 text-slate-950 font-black text-sm'
+                            : idx === 2
+                              ? 'bg-amber-700 text-white font-black text-sm'
+                              : 'bg-slate-800/80 text-slate-400'
                       }`}
                     >
                       {medal}
@@ -350,9 +345,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
                     {/* Name & Position */}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-white truncate">
-                          {player.playerName}
-                        </span>
+                        <span className="text-sm font-bold text-white truncate">{player.playerName}</span>
                         {player.playerNumber != null && (
                           <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-bold shrink-0">
                             #{player.playerNumber}
@@ -364,8 +357,8 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
                               player.status === 'lesionado'
                                 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                                 : player.status === 'suspenso'
-                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                : 'bg-slate-700 text-slate-300'
+                                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                  : 'bg-slate-700 text-slate-300'
                             }`}
                           >
                             {player.status}
@@ -394,9 +387,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
                     >
                       <span className="text-sm">⚽</span>
                       <div className="text-right">
-                        <div className="text-xs font-mono font-black text-emerald-400">
-                          {player.goals}
-                        </div>
+                        <div className="text-xs font-mono font-black text-emerald-400">{player.goals}</div>
                         <div className="text-[9px] text-slate-400 font-mono">
                           {player.goals === 1 ? 'golo' : 'golos'}
                         </div>
@@ -413,9 +404,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
                     >
                       <span className="text-sm">🎯</span>
                       <div className="text-right">
-                        <div className="text-xs font-mono font-black text-cyan-400">
-                          {player.assists}
-                        </div>
+                        <div className="text-xs font-mono font-black text-cyan-400">{player.assists}</div>
                         <div className="text-[9px] text-slate-400 font-mono">
                           {player.assists === 1 ? 'assistência' : 'assistências'}
                         </div>
@@ -424,9 +413,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
 
                     {/* Total G+A */}
                     <div className="px-2.5 py-1.5 rounded-xl bg-purple-950/40 border border-purple-500/30 text-purple-300 text-right min-w-[54px] hidden xs:block">
-                      <div className="text-xs font-mono font-black text-purple-300">
-                        {player.totalContributions}
-                      </div>
+                      <div className="text-xs font-mono font-black text-purple-300">{player.totalContributions}</div>
                       <div className="text-[9px] text-slate-400 font-mono">G+A</div>
                     </div>
 
@@ -455,8 +442,8 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
           <div className="flex items-center gap-1.5">
             <span>🛡️</span>
             <span>
-              Apenas atletas oficiais do plantel dos{' '}
-              <strong className="text-white">{clubName}</strong> ({totalSquadCount} jogadores) são contabilizados.
+              Apenas atletas oficiais do plantel dos <strong className="text-white">{clubName}</strong> (
+              {totalSquadCount} jogadores) são contabilizados.
             </span>
           </div>
 

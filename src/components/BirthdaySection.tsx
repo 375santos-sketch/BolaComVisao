@@ -19,12 +19,7 @@ interface BirthdaySectionProps {
   onShowToast: (msg: string) => void;
 }
 
-export const BirthdaySection: React.FC<BirthdaySectionProps> = ({
-  state,
-  onEditPlayer,
-  onEditStaff,
-  onShowToast
-}) => {
+export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditPlayer, onEditStaff, onShowToast }) => {
   const [typeFilter, setTypeFilter] = useState<BirthdayTypeFilter>('todos');
   const [periodFilter, setPeriodFilter] = useState<BirthdayPeriodFilter>('todos');
   const [searchTerm, setSearchTerm] = useState('');

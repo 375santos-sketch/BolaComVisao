@@ -31,14 +31,11 @@ const LineupModalInner: React.FC<LineupModalProps> = ({
   canCancel = true
 }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>(() =>
-    (initialSelection || []).filter((id) =>
-      availablePlayers.some((p) => p.id === id)
-    )
+    (initialSelection || []).filter((id) => availablePlayers.some((p) => p.id === id))
   );
   const [searchTerm, setSearchTerm] = useState('');
 
-  const hasFewConvocados =
-    convocadosIds !== undefined && convocadosIds.length < lineupSize;
+  const hasFewConvocados = convocadosIds !== undefined && convocadosIds.length < lineupSize;
 
   // Se houver poucos convocados, listar primeiro os convocados e depois os não convocados
   const sortedPlayers = useMemo(() => {
@@ -91,9 +88,7 @@ const LineupModalInner: React.FC<LineupModalProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-2xl">👥</span>
               <h3 className="text-lg sm:text-xl font-bold font-['Chakra_Petch'] uppercase tracking-wide text-white">
-                {half === 1
-                  ? `${lineupSize} Titulares da 1.ª Parte`
-                  : `${lineupSize} Titulares da 2.ª Parte`}
+                {half === 1 ? `${lineupSize} Titulares da 1.ª Parte` : `${lineupSize} Titulares da 2.ª Parte`}
               </h3>
             </div>
             <p className="text-xs text-slate-400 mt-1">
@@ -127,9 +122,7 @@ const LineupModalInner: React.FC<LineupModalProps> = ({
         {/* Counter & Status Bar */}
         <div className="my-3 p-3 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
-              Titulares:
-            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">Titulares:</span>
             <div
               className={`px-3 py-1 rounded-xl text-sm font-black font-mono flex items-center gap-1.5 ${
                 isExact
@@ -178,9 +171,7 @@ const LineupModalInner: React.FC<LineupModalProps> = ({
         {/* Player List / Grid */}
         <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 py-1 min-h-[220px]">
           {filteredPlayers.length === 0 ? (
-            <div className="text-center py-8 text-xs text-slate-500">
-              Nenhum jogador encontrado com essa pesquisa.
-            </div>
+            <div className="text-center py-8 text-xs text-slate-500">Nenhum jogador encontrado com essa pesquisa.</div>
           ) : (
             filteredPlayers.map((player) => {
               const isSelected = selectedIds.includes(player.id);
@@ -202,9 +193,7 @@ const LineupModalInner: React.FC<LineupModalProps> = ({
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div
                       className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold font-mono text-xs ${
-                        isSelected
-                          ? 'bg-cyan-500 text-slate-950 shadow-sm'
-                          : 'bg-slate-800 text-slate-300'
+                        isSelected ? 'bg-cyan-500 text-slate-950 shadow-sm' : 'bg-slate-800 text-slate-300'
                       }`}
                     >
                       {num ? player.number : '•'}
@@ -214,9 +203,7 @@ const LineupModalInner: React.FC<LineupModalProps> = ({
                       <div className="text-xs sm:text-sm font-bold truncate flex items-center gap-1.5">
                         <span>{label}</span>
                         {player.captain && (
-                          <span className="text-[10px] px-1 rounded bg-amber-500/20 text-amber-300">
-                            C
-                          </span>
+                          <span className="text-[10px] px-1 rounded bg-amber-500/20 text-amber-300">C</span>
                         )}
                         {hasFewConvocados && isConvocado !== null && (
                           <span
@@ -237,9 +224,7 @@ const LineupModalInner: React.FC<LineupModalProps> = ({
                   <div className="flex items-center gap-2 shrink-0">
                     <span
                       className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
-                        isSelected
-                          ? 'bg-cyan-500 text-slate-950 shadow-sm'
-                          : 'border border-slate-700 text-transparent'
+                        isSelected ? 'bg-cyan-500 text-slate-950 shadow-sm' : 'border border-slate-700 text-transparent'
                       }`}
                     >
                       {isSelected ? '✓' : ''}
@@ -273,9 +258,7 @@ const LineupModalInner: React.FC<LineupModalProps> = ({
                 : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-60'
             }`}
           >
-            {half === 1
-              ? `Confirmar ${lineupSize} Titulares`
-              : 'Confirmar e Iniciar 2.ª Parte'}
+            {half === 1 ? `Confirmar ${lineupSize} Titulares` : 'Confirmar e Iniciar 2.ª Parte'}
           </button>
         </div>
       </div>

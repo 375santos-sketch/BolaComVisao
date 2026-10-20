@@ -6,22 +6,18 @@ import {
   MAX_COLUMNS_LIMIT,
   MAX_FILE_SIZE_BYTES
 } from '../lib/teamDatabaseService';
-import {
-  canViewTeamDatabase,
-  canManageTeamDatabase,
-  hasPermission
-} from '../lib/permissionsEngine';
+import { canViewTeamDatabase, canManageTeamDatabase, hasPermission } from '../lib/permissionsEngine';
 import { UserAccount } from '../types';
 
 describe('Team Database - Import Pipeline & Sanitization', () => {
   it('should sanitize column headers to uppercase, no accents, and deduplicate duplicate names', () => {
     const rawHeaders = [
-      "  Nome do Atleta  ",
-      "Posição (Campo)",
-      "Nº Camisola",
-      "Posição (Campo)", // duplicate
-      "",                 // empty
-      "Email @"
+      '  Nome do Atleta  ',
+      'Posição (Campo)',
+      'Nº Camisola',
+      'Posição (Campo)', // duplicate
+      '', // empty
+      'Email @'
     ];
 
     const cleaned = sanitizeAndDeduplicateHeaders(rawHeaders);
@@ -43,16 +39,14 @@ describe('Team Database - Import Pipeline & Sanitization', () => {
 
   it('should reject files exceeding the 2 MB limit', () => {
     const fakeLargeBuffer = new Uint8Array(MAX_FILE_SIZE_BYTES + 1024);
-    expect(() => inspectExcelBuffer(fakeLargeBuffer, 'huge.xlsx')).toThrow(
-      /limite máximo permitido de 2 MB/i
-    );
+    expect(() => inspectExcelBuffer(fakeLargeBuffer, 'huge.xlsx')).toThrow(/limite máximo permitido de 2 MB/i);
   });
 
   it('should ignore empty rows and sanitize text cells in workbook inspection', () => {
     // Generate a simple in-memory workbook with XLSX
     const data = [
       ['Jogador', 'Posição', 'Golos', 'Email'],
-      ['João d\'Almeida-Silva', 'Avançado/Extremo', '12', 'JOAO@Clube.pt'],
+      ["João d'Almeida-Silva", 'Avançado/Extremo', '12', 'JOAO@Clube.pt'],
       ['', '', '', ''], // empty row should be skipped
       ['  José   Mário  ', 'Médio-Centro', '3', 'jose.mario@clube.pt'],
       ['   ', '   ', '', ''] // another empty row

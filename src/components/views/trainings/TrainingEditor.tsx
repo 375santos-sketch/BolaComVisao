@@ -50,7 +50,9 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
   const exerciseLibrary = state.exerciseLibrary || [];
 
   useEffect(() => {
-    getAllPDFDocuments().then((docs) => setPdfLibraryCount(docs.length)).catch(() => {});
+    getAllPDFDocuments()
+      .then((docs) => setPdfLibraryCount(docs.length))
+      .catch(() => {});
   }, []);
 
   const isEdit = !!trainingForm.id;
@@ -301,7 +303,8 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                         Treino {trainingForm.trainingNumber}
                       </div>
                       <div className="text-[10px] font-mono text-slate-400">
-                        {state.category || 'Equipa'} • Época {state.season || 'Atual'} (Numeração automática e sequencial)
+                        {state.category || 'Equipa'} • Época {state.season || 'Atual'} (Numeração automática e
+                        sequencial)
                       </div>
                     </div>
                   </div>
@@ -656,7 +659,9 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                         <div className="flex items-center gap-2 min-w-0">
                           <span
                             className={`w-5 h-5 rounded-md font-mono font-bold text-[10px] flex items-center justify-center shrink-0 ${
-                              isAbsent ? 'bg-red-900 text-red-200' : 'bg-cyan-950 text-cyan-300 border border-cyan-500/40'
+                              isAbsent
+                                ? 'bg-red-900 text-red-200'
+                                : 'bg-cyan-950 text-cyan-300 border border-cyan-500/40'
                             }`}
                           >
                             {p.number !== null ? p.number : '—'}
@@ -728,12 +733,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
       />
 
       {/* PDF Viewer Modal */}
-      {viewerDoc && (
-        <PDFViewerModal
-          document={viewerDoc}
-          onClose={() => setViewerDoc(null)}
-        />
-      )}
+      {viewerDoc && <PDFViewerModal document={viewerDoc} onClose={() => setViewerDoc(null)} />}
     </>
   );
 };

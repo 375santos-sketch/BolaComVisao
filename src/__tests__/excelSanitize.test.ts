@@ -8,10 +8,7 @@ import {
   normalizeWeight,
   normalizePlayerNumber
 } from '../lib/excelPlayerImporter';
-import {
-  parseMatchRows,
-  normalizeHeader as normalizeMatchHeader
-} from '../lib/matchExcelImporter';
+import { parseMatchRows, normalizeHeader as normalizeMatchHeader } from '../lib/matchExcelImporter';
 import { Player } from '../types';
 
 describe('Excel Text Sanitization & Structured Fields', () => {

@@ -46,7 +46,9 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
         ? `${g.goalType || 'Bola Jogada'}${assistName ? ` • Assist: ${assistName}` : ''}`
         : g.goalType || 'Golo Sofrido',
       icon: isScored ? '⚽' : '🔴',
-      badgeColor: isScored ? 'border-cyan-500 bg-cyan-950/60 text-cyan-300' : 'border-rose-500 bg-rose-950/60 text-rose-300',
+      badgeColor: isScored
+        ? 'border-cyan-500 bg-cyan-950/60 text-cyan-300'
+        : 'border-rose-500 bg-rose-950/60 text-rose-300',
       rawGoal: g
     });
   });
@@ -62,7 +64,9 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
       title: `${isRed ? 'Cartão Vermelho' : 'Cartão Amarelo'} (${playerName})`,
       subtitle: c.reason || 'Disciplina',
       icon: isRed ? '🟥' : '🟨',
-      badgeColor: isRed ? 'border-rose-600 bg-rose-950/60 text-rose-300' : 'border-amber-500 bg-amber-950/60 text-amber-300',
+      badgeColor: isRed
+        ? 'border-rose-600 bg-rose-950/60 text-rose-300'
+        : 'border-amber-500 bg-amber-950/60 text-amber-300',
       rawCard: c
     });
   });
@@ -121,13 +125,9 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-mono font-black">{item.minute}'</span>
-                  <span className="text-xs font-bold text-white font-['Chakra_Petch'] truncate">
-                    {item.title}
-                  </span>
+                  <span className="text-xs font-bold text-white font-['Chakra_Petch'] truncate">{item.title}</span>
                 </div>
-                {item.subtitle && (
-                  <p className="text-[11px] text-slate-300 truncate mt-0.5">{item.subtitle}</p>
-                )}
+                {item.subtitle && <p className="text-[11px] text-slate-300 truncate mt-0.5">{item.subtitle}</p>}
               </div>
             </div>
 

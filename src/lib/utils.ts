@@ -294,8 +294,8 @@ export function getPlayersOnPitchAtEndOfHalf(m: Match, half: 1 | 2): string[] {
         const halfA = a.half ?? 1;
         const halfB = b.half ?? 1;
         if (halfA !== halfB) return halfA - halfB;
-        const minA = a.isHalftime ? 9999 : (a.minuteInHalf != null ? a.minuteInHalf : parseMinuteOrder(a.minute));
-        const minB = b.isHalftime ? 9999 : (b.minuteInHalf != null ? b.minuteInHalf : parseMinuteOrder(b.minute));
+        const minA = a.isHalftime ? 9999 : a.minuteInHalf != null ? a.minuteInHalf : parseMinuteOrder(a.minute);
+        const minB = b.isHalftime ? 9999 : b.minuteInHalf != null ? b.minuteInHalf : parseMinuteOrder(b.minute);
         return minA - minB;
       });
 
@@ -307,9 +307,7 @@ export function getPlayersOnPitchAtEndOfHalf(m: Match, half: 1 | 2): string[] {
   }
 
   // half === 2
-  let current = hasLineup2
-    ? [...(m.lineupSecondHalf || [])]
-    : getPlayersOnPitchAtEndOfHalf(m, 1);
+  let current = hasLineup2 ? [...(m.lineupSecondHalf || [])] : getPlayersOnPitchAtEndOfHalf(m, 1);
 
   const subs = (m.subs || [])
     .filter((s) => {
@@ -342,8 +340,8 @@ export function calcPlayerMinutes(m: Match, pId: string): number {
       half === 1
         ? (m.lineup || []).includes(pId)
         : hasLineup2
-        ? (m.lineupSecondHalf || []).includes(pId)
-        : getPlayersOnPitchAtEndOfHalf(m, 1).includes(pId);
+          ? (m.lineupSecondHalf || []).includes(pId)
+          : getPlayersOnPitchAtEndOfHalf(m, 1).includes(pId);
     let timeOn = 0;
 
     const subsInHalf = (m.subs || [])
@@ -489,16 +487,12 @@ export function getMatchCompetitionDetails(match: Match, state?: AppState): Matc
   const matchOpp = (match.opponent || '').trim().toLowerCase();
   const matchDate = (match.date || '').trim();
   if (!scheduled && matchOpp && matchDate) {
-    scheduled = schedule.find(
-      (s) => s.date === matchDate && (s.opponent || '').trim().toLowerCase() === matchOpp
-    );
+    scheduled = schedule.find((s) => s.date === matchDate && (s.opponent || '').trim().toLowerCase() === matchOpp);
   }
 
   // 4. Procurar na agenda por nome de adversário
   if (!scheduled && matchOpp) {
-    scheduled = schedule.find(
-      (s) => (s.opponent || '').trim().toLowerCase() === matchOpp
-    );
+    scheduled = schedule.find((s) => (s.opponent || '').trim().toLowerCase() === matchOpp);
   }
 
   // 5. Se não encontrou na agenda ativa, usar o snapshot salvo no próprio jogo (originalSchedule)
@@ -527,8 +521,7 @@ export function getMatchCompetitionDetails(match: Match, state?: AppState): Matc
     faseJornadaText,
     rawType,
     tournamentName: rawTournament || undefined,
-    source: scheduled ? 'agenda' : (match.type || match.phase ? 'match' : 'default'),
+    source: scheduled ? 'agenda' : match.type || match.phase ? 'match' : 'default',
     scheduledMatch: scheduled
   };
 }
-

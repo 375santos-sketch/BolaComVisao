@@ -196,7 +196,13 @@ export function scoreHeaderRow(row: any[]): { score: number; matchedFields: stri
     }
 
     // Height / Weight
-    if (normClean.includes('ALTURA') || normClean.includes('HEIGHT') || normClean === 'ALT' || normClean.includes('ESTATURA') || normUpper.includes('ALTURA')) {
+    if (
+      normClean.includes('ALTURA') ||
+      normClean.includes('HEIGHT') ||
+      normClean === 'ALT' ||
+      normClean.includes('ESTATURA') ||
+      normUpper.includes('ALTURA')
+    ) {
       if (!matchedFields.includes('height')) {
         score += 8;
         matchedFields.push('height');
@@ -230,21 +236,40 @@ export function scoreHeaderRow(row: any[]): { score: number; matchedFields: stri
     }
 
     // Phone / Email / Status
-    if (normClean.includes('TELEMOVEL') || normClean.includes('TELEFONE') || normClean === 'TEL' || normClean === 'PHONE' || normClean.includes('CONTACTO') || normUpper.includes('TELEFONE') || normUpper.includes('TELEMOVEL')) {
+    if (
+      normClean.includes('TELEMOVEL') ||
+      normClean.includes('TELEFONE') ||
+      normClean === 'TEL' ||
+      normClean === 'PHONE' ||
+      normClean.includes('CONTACTO') ||
+      normUpper.includes('TELEFONE') ||
+      normUpper.includes('TELEMOVEL')
+    ) {
       if (!matchedFields.includes('phone')) {
         score += 8;
         matchedFields.push('phone');
       }
       return;
     }
-    if (normClean.includes('EMAIL') || normClean.includes('CORREIOELETRONICO') || normClean === 'MAIL' || normUpper.includes('EMAIL')) {
+    if (
+      normClean.includes('EMAIL') ||
+      normClean.includes('CORREIOELETRONICO') ||
+      normClean === 'MAIL' ||
+      normUpper.includes('EMAIL')
+    ) {
       if (!matchedFields.includes('email')) {
         score += 8;
         matchedFields.push('email');
       }
       return;
     }
-    if (normClean.includes('ESTADO') || normClean.includes('STATUS') || normClean.includes('SITUACAO') || normClean.includes('DISPONIBILIDADE') || normUpper.includes('ESTADO')) {
+    if (
+      normClean.includes('ESTADO') ||
+      normClean.includes('STATUS') ||
+      normClean.includes('SITUACAO') ||
+      normClean.includes('DISPONIBILIDADE') ||
+      normUpper.includes('ESTADO')
+    ) {
       if (!matchedFields.includes('status')) {
         score += 8;
         matchedFields.push('status');
@@ -494,14 +519,21 @@ export function autoDetectColumnMapping(headers: string[]): ColumnMapping {
     // 6. Height
     if (
       !mapping.height &&
-      (normClean.includes('ALTURA') || normClean.includes('HEIGHT') || normClean === 'ALT' || normClean.includes('ESTATURA') || normUpper.includes('ALTURA'))
+      (normClean.includes('ALTURA') ||
+        normClean.includes('HEIGHT') ||
+        normClean === 'ALT' ||
+        normClean.includes('ESTATURA') ||
+        normUpper.includes('ALTURA'))
     ) {
       mapping.height = h;
       return;
     }
 
     // 7. Weight
-    if (!mapping.weight && (normClean.includes('PESO') || normClean.includes('WEIGHT') || normClean === 'KG' || normUpper.includes('PESO'))) {
+    if (
+      !mapping.weight &&
+      (normClean.includes('PESO') || normClean.includes('WEIGHT') || normClean === 'KG' || normUpper.includes('PESO'))
+    ) {
       mapping.weight = h;
       return;
     }
@@ -560,7 +592,13 @@ export function autoDetectColumnMapping(headers: string[]): ColumnMapping {
     }
 
     // 11. Email
-    if (!mapping.email && (normClean.includes('EMAIL') || normClean.includes('CORREIOELETRONICO') || normClean === 'MAIL' || normUpper.includes('EMAIL'))) {
+    if (
+      !mapping.email &&
+      (normClean.includes('EMAIL') ||
+        normClean.includes('CORREIOELETRONICO') ||
+        normClean === 'MAIL' ||
+        normUpper.includes('EMAIL'))
+    ) {
       mapping.email = h;
       return;
     }
@@ -667,7 +705,8 @@ export function formatExcelDate(val: any): string | null {
 export function normalizeDominantFoot(val: any): DominantFoot {
   if (!val) return 'Direito';
   const str = String(val).toLowerCase().trim();
-  if (str.includes('esq') || str === 'e' || str === 'l' || str.includes('left') || str.includes('canhoto')) return 'Esquerdo';
+  if (str.includes('esq') || str === 'e' || str === 'l' || str.includes('left') || str.includes('canhoto'))
+    return 'Esquerdo';
   if (str.includes('amb') || str.includes('ambos') || str.includes('both') || str === 'a') return 'Ambidestro';
   return 'Direito';
 }
@@ -1082,21 +1121,37 @@ export function parseRosterRows(
   const seenNumbersInSheet = new Map<number, number>(); // number -> count
 
   return rows.map((row, idx) => {
-    const rawName = mapping.name ? row[mapping.name] : row['Nome'] || row['Nome Completo'] || row['Jogador'] || row['Atleta'] || row['NOME'] || row['NOME COMPLETO'] || '';
+    const rawName = mapping.name
+      ? row[mapping.name]
+      : row['Nome'] ||
+        row['Nome Completo'] ||
+        row['Jogador'] ||
+        row['Atleta'] ||
+        row['NOME'] ||
+        row['NOME COMPLETO'] ||
+        '';
     const name = sanitizeExcelText(rawName);
     const normName = normalizePlayerName(name);
 
-    const rawNumber = mapping.number ? row[mapping.number] : row['Nº'] || row['Camisola'] || row['Dorsal'] || row['Numero'] || row['CAMISOLA'] || row['N DE CAMISOLA'] || '';
+    const rawNumber = mapping.number
+      ? row[mapping.number]
+      : row['Nº'] || row['Camisola'] || row['Dorsal'] || row['Numero'] || row['CAMISOLA'] || row['N DE CAMISOLA'] || '';
     const number = normalizePlayerNumber(rawNumber);
 
-    const rawPos = mapping.positions ? row[mapping.positions] : row['Posição'] || row['Posicao'] || row['Pos'] || row['POSICAO'] || '';
+    const rawPos = mapping.positions
+      ? row[mapping.positions]
+      : row['Posição'] || row['Posicao'] || row['Pos'] || row['POSICAO'] || '';
     const positions = sanitizeExcelText(normalizePosition(rawPos));
 
-    const rawBirth = mapping.birthDate ? row[mapping.birthDate] : row['Data de Nascimento'] || row['Nascimento'] || row['Data'] || row['DATA DE NASCIMENTO'] || '';
+    const rawBirth = mapping.birthDate
+      ? row[mapping.birthDate]
+      : row['Data de Nascimento'] || row['Nascimento'] || row['Data'] || row['DATA DE NASCIMENTO'] || '';
     const birthDate = formatExcelDate(rawBirth);
     const age = birthDate ? computeAge(birthDate) : null;
 
-    const rawFoot = mapping.dominantFoot ? row[mapping.dominantFoot] : row['Pé Dominante'] || row['Pé'] || row['Pe'] || row['PE DOMINANTE'] || '';
+    const rawFoot = mapping.dominantFoot
+      ? row[mapping.dominantFoot]
+      : row['Pé Dominante'] || row['Pé'] || row['Pe'] || row['PE DOMINANTE'] || '';
     const dominantFoot = normalizeDominantFoot(rawFoot);
 
     const rawHeight = mapping.height ? row[mapping.height] : row['Altura'] || row['ALTURA'] || '';
@@ -1107,15 +1162,26 @@ export function parseRosterRows(
 
     const rawEmerg = mapping.emergencyContact
       ? row[mapping.emergencyContact]
-      : row['Nome e Contato de Emergência'] || row['Contacto Emergência'] || row['Emergência'] || row['Encarregado de Educação'] || row['NOME E CONTATO DE EMERGENCIA'] || '';
+      : row['Nome e Contato de Emergência'] ||
+        row['Contacto Emergência'] ||
+        row['Emergência'] ||
+        row['Encarregado de Educação'] ||
+        row['NOME E CONTATO DE EMERGENCIA'] ||
+        '';
     const rawEmergPhone = mapping.emergencyPhone ? row[mapping.emergencyPhone] : '';
     const emergencyContact = sanitizeExcelText(normalizeEmergencyContact(rawEmerg, rawEmergPhone));
 
-    const rawPhone = mapping.phone ? row[mapping.phone] : row['Telefone'] || row['Telemóvel'] || row['Contacto'] || row['TELEFONE'] || row['TELEMOVEL DO JOGADOR'] || '';
+    const rawPhone = mapping.phone
+      ? row[mapping.phone]
+      : row['Telefone'] || row['Telemóvel'] || row['Contacto'] || row['TELEFONE'] || row['TELEMOVEL DO JOGADOR'] || '';
     const phone = String(rawPhone || '').replace(/\D/g, '');
 
-    const rawEmail = mapping.email ? row[mapping.email] : row['Email'] || row['Correio Eletrónico'] || row['EMAIL'] || '';
-    const email = String(rawEmail || '').trim().toLowerCase();
+    const rawEmail = mapping.email
+      ? row[mapping.email]
+      : row['Email'] || row['Correio Eletrónico'] || row['EMAIL'] || '';
+    const email = String(rawEmail || '')
+      .trim()
+      .toLowerCase();
 
     const rawStatus = mapping.status ? row[mapping.status] : row['Estado'] || row['Status'] || '';
     let status: PlayerStatus = 'disponivel';
@@ -1169,7 +1235,9 @@ export function parseRosterRows(
 
     if (isDuplicate) {
       if (existingPlayer) {
-        validationWarnings.push(`Atleta "${existingPlayer.name}" já existe no plantel (os dados serão alterados/atualizados)`);
+        validationWarnings.push(
+          `Atleta "${existingPlayer.name}" já existe no plantel (os dados serão alterados/atualizados)`
+        );
       } else if (previousInSheet) {
         validationWarnings.push(`Nome repetido nesta folha (linha ${previousInSheet.rowIndex}) — será unificado`);
       }

@@ -2,10 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AppState, OpponentScouting, ScheduledMatch } from '../../types';
 import { uid } from '../../lib/utils';
 import { Header } from '../Header';
-import {
-  SEVEN_A_SIDE_PRESETS,
-  formatMatchCompetition
-} from './opponentScoutingUtils';
+import { SEVEN_A_SIDE_PRESETS, formatMatchCompetition } from './opponentScoutingUtils';
 
 interface OpponentScoutingViewProps {
   state: AppState;
@@ -29,7 +26,7 @@ function createDefaultScoutingReport(match?: ScheduledMatch, myClubStadium?: str
     location: match?.location || 'casa',
     matchType: match?.type || 'campeonato',
     phase: compFormatted,
-    stadium: match?.venue || (match?.location === 'casa' ? (myClubStadium || 'Campo Municipal') : 'Campo Adversário'),
+    stadium: match?.venue || (match?.location === 'casa' ? myClubStadium || 'Campo Municipal' : 'Campo Adversário'),
     ourFormation: '2-3-1',
     ourPlayingModel: 'Pressão Alta e Domínio Posicional',
     ourDefensiveBlock: 'medio',
@@ -97,7 +94,9 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
     return scheduleList.find(
       (m) =>
         m.id === currentScout.matchId ||
-        (m.opponent && currentScout.opponentName && m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
+        (m.opponent &&
+          currentScout.opponentName &&
+          m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
     );
   }, [scheduleList, currentScout]);
 
@@ -180,9 +179,7 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
   // Clean standalone reports created by user (excluding dummy 'Adversário 1')
   const customBlankReports: OpponentScouting[] = useMemo(() => {
     return scoutingList.filter(
-      (s) =>
-        s.opponentName !== 'Adversário 1' &&
-        (!s.matchId || !scheduleList.some((m) => m.id === s.matchId))
+      (s) => s.opponentName !== 'Adversário 1' && (!s.matchId || !scheduleList.some((m) => m.id === s.matchId))
     );
   }, [scoutingList, scheduleList]);
 
@@ -246,7 +243,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
       location: match.location || 'casa',
       matchType: match.type || 'campeonato',
       phase: compFormatted,
-      stadium: match.venue || (match.location === 'casa' ? (state.myClubStadium || 'Campo Municipal') : 'Campo Adversário'),
+      stadium:
+        match.venue || (match.location === 'casa' ? state.myClubStadium || 'Campo Municipal' : 'Campo Adversário'),
       ourFormation: '2-3-1',
       ourPlayingModel: 'Pressão Alta e Domínio Posicional',
       ourDefensiveBlock: 'medio',
@@ -276,7 +274,9 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
     const match = scheduleList.find(
       (m) =>
         m.id === targetMatchId ||
-        (m.opponent && currentScout.opponentName && m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
+        (m.opponent &&
+          currentScout.opponentName &&
+          m.opponent.trim().toLowerCase() === currentScout.opponentName.trim().toLowerCase())
     );
     if (!match) {
       onShowToast('Nenhum jogo correspondente encontrado na Agenda.');
@@ -293,7 +293,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
       location: match.location || 'casa',
       matchType: match.type || 'campeonato',
       phase: compFormatted,
-      stadium: match.venue || (match.location === 'casa' ? (state.myClubStadium || 'Campo Municipal') : 'Campo Adversário')
+      stadium:
+        match.venue || (match.location === 'casa' ? state.myClubStadium || 'Campo Municipal' : 'Campo Adversário')
     });
 
     onShowToast(`Informação do jogo vs ${match.opponent} importada da Agenda com sucesso! 📅✓`);
@@ -485,9 +486,7 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
         {/* Opponent Selector Bar */}
         <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap flex-1">
-            <span className="text-xs font-mono text-amber-400 font-bold whitespace-nowrap">
-              ADVERSÁRIO EM ANÁLISE:
-            </span>
+            <span className="text-xs font-mono text-amber-400 font-bold whitespace-nowrap">ADVERSÁRIO EM ANÁLISE:</span>
             <select
               value={currentScout ? currentScout.id : ''}
               onChange={(e) => {
@@ -513,11 +512,9 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
                     );
                     const dateStr = m.date ? m.date.split('-').reverse().join('/') : '';
                     return (
-                      <option
-                        key={`sched-${m.id}`}
-                        value={linkedReport ? linkedReport.id : `create_match:${m.id}`}
-                      >
-                        vs {m.opponent}{dateStr ? ` (${dateStr})` : ''}
+                      <option key={`sched-${m.id}`} value={linkedReport ? linkedReport.id : `create_match:${m.id}`}>
+                        vs {m.opponent}
+                        {dateStr ? ` (${dateStr})` : ''}
                       </option>
                     );
                   })}
@@ -569,7 +566,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
                   </span>
                 </div>
                 <div className="text-[11px] text-emerald-400/80 font-mono mt-0.5">
-                  O relatório de scouting e pontos vulneráveis do adversário está concluído. Clica em "Editar" se precisares de efetuar alterações.
+                  O relatório de scouting e pontos vulneráveis do adversário está concluído. Clica em "Editar" se
+                  precisares de efetuar alterações.
                   {currentScout.scoutingFinalizedAt
                     ? ` • Finalizado a ${new Date(currentScout.scoutingFinalizedAt).toLocaleDateString('pt-PT')} às ${new Date(currentScout.scoutingFinalizedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
                     : ''}
@@ -598,7 +596,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
                   Modo de Edição Ativo (Adversário)
                 </span>
                 <div className="text-[11px] text-amber-400/80 font-mono mt-0.5">
-                  Podes ajustar sistema tático rival, pontos fortes, pontos fracos e marcações. Quando concluíres, clica em "Finalizar".
+                  Podes ajustar sistema tático rival, pontos fortes, pontos fracos e marcações. Quando concluíres, clica
+                  em "Finalizar".
                 </div>
               </div>
             </div>
@@ -650,7 +649,8 @@ export const OpponentScoutingView: React.FC<OpponentScoutingViewProps> = ({
                     <span className="text-amber-400 font-bold">Ligado ao Jogo da Agenda:</span>{' '}
                     <span className="text-white font-bold">vs {linkedMatch.opponent}</span>{' '}
                     <span className="text-slate-400">
-                      • {linkedMatch.date.split('-').reverse().join('/')} às {linkedMatch.time || '10:30'}h ({linkedMatch.location === 'casa' ? 'Casa' : 'Fora'} - {formatMatchCompetition(linkedMatch)})
+                      • {linkedMatch.date.split('-').reverse().join('/')} às {linkedMatch.time || '10:30'}h (
+                      {linkedMatch.location === 'casa' ? 'Casa' : 'Fora'} - {formatMatchCompetition(linkedMatch)})
                     </span>
                   </div>
                 </div>

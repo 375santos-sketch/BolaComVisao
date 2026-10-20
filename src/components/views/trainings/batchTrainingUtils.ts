@@ -36,7 +36,15 @@ export function calculateBatchTrainings(settings: {
 
   if (start > end) return [];
 
-  const DAY_NAMES = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+  const DAY_NAMES = [
+    'Domingo',
+    'Segunda-feira',
+    'Terça-feira',
+    'Quarta-feira',
+    'Quinta-feira',
+    'Sexta-feira',
+    'Sábado'
+  ];
   const DAY_SHORTS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   const results: GeneratedTrainingPreview[] = [];
@@ -50,9 +58,7 @@ export function calculateBatchTrainings(settings: {
       const d = String(current.getDate()).padStart(2, '0');
       const dateStr = `${y}-${m}-${d}`;
       const time =
-        settings.useCustomDayTimes && settings.dayTimes[dow]
-          ? settings.dayTimes[dow]
-          : settings.defaultTime || '18:30';
+        settings.useCustomDayTimes && settings.dayTimes[dow] ? settings.dayTimes[dow] : settings.defaultTime || '18:30';
 
       results.push({
         date: dateStr,

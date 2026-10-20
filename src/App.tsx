@@ -33,9 +33,15 @@ const ConvocatoriaView = lazyWithRetry(() => import('./components/views/Convocat
 const TrainingsView = lazyWithRetry(() => import('./components/views/TrainingsView'), 'TrainingsView');
 const ResultsView = lazyWithRetry(() => import('./components/views/ResultsView'), 'ResultsView');
 const StatsView = lazyWithRetry(() => import('./components/views/StatsView'), 'StatsView');
-const GameAnalysisDashboard = lazyWithRetry(() => import('./components/views/GameAnalysisDashboard'), 'GameAnalysisDashboard');
+const GameAnalysisDashboard = lazyWithRetry(
+  () => import('./components/views/GameAnalysisDashboard'),
+  'GameAnalysisDashboard'
+);
 const SquadView = lazyWithRetry(() => import('./components/views/SquadView'), 'SquadView');
-const OpponentScoutingView = lazyWithRetry(() => import('./components/views/OpponentScoutingView'), 'OpponentScoutingView');
+const OpponentScoutingView = lazyWithRetry(
+  () => import('./components/views/OpponentScoutingView'),
+  'OpponentScoutingView'
+);
 const PreMatchPlanView = lazyWithRetry(() => import('./components/views/PreMatchPlanView'), 'PreMatchPlanView');
 const RelatoriosView = lazyWithRetry(() => import('./components/views/RelatoriosView'), 'RelatoriosView');
 
@@ -48,7 +54,6 @@ import { SyncModal } from './components/SyncModal';
 import { TeamInviteModal } from './components/TeamInviteModal';
 import { SeasonSelectorModal } from './components/SeasonSelectorModal';
 import { NotificationModal } from './components/NotificationModal';
-
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
@@ -159,7 +164,8 @@ export default function App() {
                 season: updates.season !== undefined ? updates.season : t.season,
                 clubLogoUrl: updates.clubLogoUrl !== undefined ? updates.clubLogoUrl : t.clubLogoUrl,
                 clubEvents: updates.clubEvents !== undefined ? updates.clubEvents : t.clubEvents,
-                staffUnavailability: updates.staffUnavailability !== undefined ? updates.staffUnavailability : t.staffUnavailability,
+                staffUnavailability:
+                  updates.staffUnavailability !== undefined ? updates.staffUnavailability : t.staffUnavailability,
                 opponentScouting: updates.opponentScouting !== undefined ? updates.opponentScouting : t.opponentScouting
               };
             }
@@ -203,17 +209,20 @@ export default function App() {
           clearTimeout(cloudSyncDebounceTimerRef.current);
         }
         const isWiping = !updated.teams || updated.teams.length === 0;
-        cloudSyncDebounceTimerRef.current = setTimeout(() => {
-          saveMasterClubState(
-            updated.currentUser?.clubId || 'main',
-            updated,
-            updated.currentUser?.id,
-            updated.currentUser?.name,
-            isWiping
-          ).catch((err) => {
-            console.warn('Background master cloud save error:', err);
-          });
-        }, isWiping ? 200 : 3500);
+        cloudSyncDebounceTimerRef.current = setTimeout(
+          () => {
+            saveMasterClubState(
+              updated.currentUser?.clubId || 'main',
+              updated,
+              updated.currentUser?.id,
+              updated.currentUser?.name,
+              isWiping
+            ).catch((err) => {
+              console.warn('Background master cloud save error:', err);
+            });
+          },
+          isWiping ? 200 : 3500
+        );
       }
 
       return updated;
@@ -582,7 +591,11 @@ export default function App() {
                     const targetClubLower = (target.clubName || '').toLowerCase().trim();
                     if (
                       sTeamId === target.id ||
-                      (sTeamName && targetClubLower && (sTeamName === targetClubLower || targetClubLower.includes(sTeamName) || sTeamName.includes(targetClubLower))) ||
+                      (sTeamName &&
+                        targetClubLower &&
+                        (sTeamName === targetClubLower ||
+                          targetClubLower.includes(sTeamName) ||
+                          sTeamName.includes(targetClubLower))) ||
                       (targetClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
                     ) {
                       if (!targetScheduleMap.has(s.id)) {
@@ -604,7 +617,11 @@ export default function App() {
                     if (
                       mTeamId === target.id ||
                       !mTeamId ||
-                      (mTeamName && targetClubLower && (mTeamName === targetClubLower || targetClubLower.includes(mTeamName) || mTeamName.includes(targetClubLower))) ||
+                      (mTeamName &&
+                        targetClubLower &&
+                        (mTeamName === targetClubLower ||
+                          targetClubLower.includes(mTeamName) ||
+                          mTeamName.includes(targetClubLower))) ||
                       (targetClubLower.includes('drag') && (mTeamName?.includes('drag') || !mTeamId))
                     ) {
                       if (!targetMatchesMap.has(m.id)) {
@@ -621,9 +638,9 @@ export default function App() {
                     clubLogoUrl: target.clubLogoUrl,
                     category: target.category,
                     season: target.season,
-                    roster: target.roster && target.roster.length > 0 ? target.roster : (state.roster || []),
+                    roster: target.roster && target.roster.length > 0 ? target.roster : state.roster || [],
                     staffMembers: target.staffMembers || [],
-                    matches: resolvedTargetMatches.length > 0 ? resolvedTargetMatches : (state.matches || []),
+                    matches: resolvedTargetMatches.length > 0 ? resolvedTargetMatches : state.matches || [],
                     trainings: target.trainings || [],
                     schedule: resolvedTargetSchedule,
                     tactics: target.tactics || [],
@@ -891,9 +908,7 @@ export default function App() {
       )}
 
       {/* Audit Log Modal */}
-      {showAuditLogs && (
-        <AuditLogModal state={state} onClose={() => setShowAuditLogs(false)} onShowToast={showToast} />
-      )}
+      {showAuditLogs && <AuditLogModal state={state} onClose={() => setShowAuditLogs(false)} onShowToast={showToast} />}
 
       {/* Team Invite Modal */}
       {showInviteStaff && (

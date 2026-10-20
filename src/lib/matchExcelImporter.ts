@@ -210,7 +210,13 @@ export function autoDetectMatchColumnMapping(headers: string[]): MatchColumnMapp
     }
 
     // Season
-    if (!mapping.season && (normClean.includes('EPOCA') || normClean.includes('TEMPORADA') || normClean.includes('SEASON') || normUpper.includes('EPOCA'))) {
+    if (
+      !mapping.season &&
+      (normClean.includes('EPOCA') ||
+        normClean.includes('TEMPORADA') ||
+        normClean.includes('SEASON') ||
+        normUpper.includes('EPOCA'))
+    ) {
       mapping.season = h;
       return;
     }
@@ -380,7 +386,12 @@ export function parseMatchType(val: any): MatchType {
   if (norm.includes('torneio') || norm.includes('taca') || norm.includes('cup') || norm.includes('tournament')) {
     return 'torneio';
   }
-  if (norm.includes('amigavel') || norm.includes('treino') || norm.includes('friendly') || norm.includes('preparacao')) {
+  if (
+    norm.includes('amigavel') ||
+    norm.includes('treino') ||
+    norm.includes('friendly') ||
+    norm.includes('preparacao')
+  ) {
     return 'amigavel';
   }
   return 'campeonato';
@@ -448,10 +459,7 @@ export async function readMatchExcelFile(file: File): Promise<MatchExcelWorkbook
 /**
  * Switch sheet in Excel workbook
  */
-export async function switchMatchExcelSheet(
-  buffer: ArrayBuffer,
-  sheetName: string
-): Promise<MatchExcelWorkbookData> {
+export async function switchMatchExcelSheet(buffer: ArrayBuffer, sheetName: string): Promise<MatchExcelWorkbookData> {
   const XLSX = await getXLSX();
   const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
   const worksheet = workbook.Sheets[sheetName];
@@ -493,7 +501,9 @@ export function parseMatchRows(
   const seasonFallback = currentSeason || defaultSeason();
 
   return rawRows.map((row, idx) => {
-    const rawOpponent = mapping.opponent ? sanitizeExcelText(row[mapping.opponent]) : sanitizeExcelText(row['ADVERSARIO'] || row['Adversário'] || '');
+    const rawOpponent = mapping.opponent
+      ? sanitizeExcelText(row[mapping.opponent])
+      : sanitizeExcelText(row['ADVERSARIO'] || row['Adversário'] || '');
     const rawDate = mapping.date ? row[mapping.date] : null;
     const rawTime = mapping.time ? String(row[mapping.time] || '').trim() : '';
     const rawType = mapping.type ? row[mapping.type] : 'campeonato';
@@ -625,55 +635,55 @@ export async function downloadMatchExcelTemplate(): Promise<void> {
 
   const templateRows = [
     {
-      'Adversário': 'Sporting CP B',
+      Adversário: 'Sporting CP B',
       'Data (AAAA-MM-DD)': '2025-10-12',
-      'Hora': '15:30',
+      Hora: '15:30',
       'Tipo de Jogo': 'Campeonato',
       'Local (Casa/Fora)': 'Casa',
       'Jornada/Fase': 'Jornada 5',
       'Competição/Torneio': 'Campeonato Nacional',
-      'Época': '2025/2026',
+      Época: '2025/2026',
       'Golos Marcados': 3,
       'Golos Sofridos': 1,
       'Cantos a Favor': 6,
       'Cantos Contra': 2,
       'Faltas Cometidas': 11,
       'Faltas Sofridas': 14,
-      'Notas': 'Excelente exibição com pressão alta na 1ª parte.'
+      Notas: 'Excelente exibição com pressão alta na 1ª parte.'
     },
     {
-      'Adversário': 'SL Benfica B',
+      Adversário: 'SL Benfica B',
       'Data (AAAA-MM-DD)': '2025-10-19',
-      'Hora': '11:00',
+      Hora: '11:00',
       'Tipo de Jogo': 'Campeonato',
       'Local (Casa/Fora)': 'Fora',
       'Jornada/Fase': 'Jornada 6',
       'Competição/Torneio': 'Campeonato Nacional',
-      'Época': '2025/2026',
+      Época: '2025/2026',
       'Golos Marcados': 2,
       'Golos Sofridos': 2,
       'Cantos a Favor': 4,
       'Cantos Contra': 5,
       'Faltas Cometidas': 15,
       'Faltas Sofridas': 12,
-      'Notas': 'Empate disputado até ao último minuto.'
+      Notas: 'Empate disputado até ao último minuto.'
     },
     {
-      'Adversário': 'FC Porto Sub-19',
+      Adversário: 'FC Porto Sub-19',
       'Data (AAAA-MM-DD)': '2025-10-26',
-      'Hora': '16:00',
+      Hora: '16:00',
       'Tipo de Jogo': 'Torneio',
       'Local (Casa/Fora)': 'Casa',
       'Jornada/Fase': 'Quartos de Final',
       'Competição/Torneio': 'Taça Associação',
-      'Época': '2025/2026',
+      Época: '2025/2026',
       'Golos Marcados': 1,
       'Golos Sofridos': 0,
       'Cantos a Favor': 7,
       'Cantos Contra': 3,
       'Faltas Cometidas': 9,
       'Faltas Sofridas': 16,
-      'Notas': 'Golo de canto aos 75m.'
+      Notas: 'Golo de canto aos 75m.'
     }
   ];
 

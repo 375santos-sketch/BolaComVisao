@@ -84,8 +84,8 @@ export const StaffChatBoardView: React.FC<StaffChatBoardViewProps> = ({
               isUrgent
                 ? 'bg-gradient-to-b from-rose-950/50 to-slate-950 border-rose-500/60 shadow-[0_0_15px_rgba(244,63,94,0.15)]'
                 : isMeeting
-                ? 'bg-gradient-to-b from-cyan-950/40 to-slate-950 border-cyan-500/50 shadow-[0_0_15px_rgba(0,210,255,0.1)]'
-                : 'bg-slate-900/80 border-slate-800/90 hover:border-slate-700'
+                  ? 'bg-gradient-to-b from-cyan-950/40 to-slate-950 border-cyan-500/50 shadow-[0_0_15px_rgba(0,210,255,0.1)]'
+                  : 'bg-slate-900/80 border-slate-800/90 hover:border-slate-700'
             }`}
           >
             {/* Pinned Tag */}
@@ -135,9 +135,7 @@ export const StaffChatBoardView: React.FC<StaffChatBoardViewProps> = ({
 
             {/* Title */}
             {msg.title && msg.title.trim() && (
-              <h4 className="text-sm sm:text-base font-bold font-['Chakra_Petch'] text-cyan-200 mb-2">
-                {msg.title}
-              </h4>
+              <h4 className="text-sm sm:text-base font-bold font-['Chakra_Petch'] text-cyan-200 mb-2">{msg.title}</h4>
             )}
 
             {/* Meeting Card Details */}
@@ -246,8 +244,12 @@ export const StaffChatBoardView: React.FC<StaffChatBoardViewProps> = ({
                 {replies.map((r) => (
                   <div key={r.id} className="p-2 rounded-lg bg-slate-900 border border-slate-800/80 text-xs">
                     <div className="flex items-center justify-between text-slate-400 font-mono text-[10px] mb-0.5">
-                      <span className="font-bold text-white">{r.senderName} ({r.senderRole || 'Staff'})</span>
-                      <span>{new Date(r.createdAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="font-bold text-white">
+                        {r.senderName} ({r.senderRole || 'Staff'})
+                      </span>
+                      <span>
+                        {new Date(r.createdAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
                     <p className="text-slate-200">{r.content}</p>
                   </div>

@@ -1,9 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AppState } from '../../../types';
-import {
-  CoachViewFilter,
-  computeCoachViewData
-} from '../../../lib/gameAnalysis';
+import { CoachViewFilter, computeCoachViewData } from '../../../lib/gameAnalysis';
 import { SquadGoalsAndAssistsModal, GoalsAssistsTab } from '../../SquadGoalsAndAssistsModal';
 
 interface CoachDashboardViewProps {
@@ -104,7 +101,10 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-5 max-w-5xl mx-auto pb-8 font-sans text-slate-100" id="coach-dashboard-view">
+    <div
+      className="flex flex-col gap-4 sm:gap-5 max-w-5xl mx-auto pb-8 font-sans text-slate-100"
+      id="coach-dashboard-view"
+    >
       {/* 1. FILTER BAR (TOP CONTROLS) */}
       <div className="bg-slate-900/90 border border-cyan-500/30 rounded-3xl p-3 sm:p-4 shadow-xl backdrop-blur-md flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
@@ -242,7 +242,8 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             </span>
             <span className="text-slate-600">•</span>
             <span className="text-xs text-slate-400 font-mono">
-              {coachData.finishedMatchesCount} {coachData.finishedMatchesCount === 1 ? 'jogo realizado' : 'jogos realizados'}
+              {coachData.finishedMatchesCount}{' '}
+              {coachData.finishedMatchesCount === 1 ? 'jogo realizado' : 'jogos realizados'}
             </span>
           </div>
           <div className="text-2xl sm:text-3xl font-black font-['Chakra_Petch'] text-white tracking-tight mt-1 flex items-center gap-3">
@@ -391,9 +392,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               >
                 {coachData.indicators.winRate.deltaText}
               </div>
-              <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                {coachData.indicators.winRate.subtext}
-              </div>
+              <div className="text-[10px] text-slate-400 mt-0.5 truncate">{coachData.indicators.winRate.subtext}</div>
             </div>
           </div>
 
@@ -427,9 +426,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               >
                 {coachData.indicators.corners.deltaText}
               </div>
-              <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                {coachData.indicators.corners.subtext}
-              </div>
+              <div className="text-[10px] text-slate-400 mt-0.5 truncate">{coachData.indicators.corners.subtext}</div>
             </div>
           </div>
 
@@ -452,9 +449,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               </div>
             </div>
             <div className="mt-3 pt-2.5 border-t border-slate-800/80">
-              <div className="text-xs font-bold text-slate-300">
-                {coachData.indicators.firstGoalMinute.deltaText}
-              </div>
+              <div className="text-xs font-bold text-slate-300">{coachData.indicators.firstGoalMinute.deltaText}</div>
               <div className="text-[10px] text-cyan-300/90 mt-0.5 truncate font-medium">
                 {coachData.indicators.firstGoalMinute.subtext}
               </div>
@@ -482,9 +477,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                   <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 font-['Chakra_Petch'] group-hover/hdr:text-emerald-300 transition-colors">
                     Melhores Marcadores
                   </h3>
-                  <p className="text-[10px] text-slate-400">
-                    Os 3 melhores marcadores ({coachData.filterLabel})
-                  </p>
+                  <p className="text-[10px] text-slate-400">Os 3 melhores marcadores ({coachData.filterLabel})</p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
@@ -515,18 +508,12 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-base select-none shrink-0 opacity-50">{medal}</span>
                         <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-semibold text-slate-500 truncate">
-                            —
-                          </div>
-                          <div className="text-[10px] text-slate-600 font-mono">
-                            {idx + 1}.º Marcador (sem registo)
-                          </div>
+                          <div className="text-xs sm:text-sm font-semibold text-slate-500 truncate">—</div>
+                          <div className="text-[10px] text-slate-600 font-mono">{idx + 1}.º Marcador (sem registo)</div>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-xs sm:text-sm font-bold font-mono text-slate-600">
-                          0 golos
-                        </span>
+                        <span className="text-xs sm:text-sm font-bold font-mono text-slate-600">0 golos</span>
                       </div>
                     </div>
                   );
@@ -553,9 +540,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                         <div className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-emerald-300 transition-colors">
                           {scorer.playerName}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono truncate">
-                          {scorer.position}
-                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono truncate">{scorer.position}</div>
                       </div>
                     </div>
 
@@ -645,18 +630,14 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-base select-none shrink-0 opacity-50">{medal}</span>
                         <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-semibold text-slate-500 truncate">
-                            —
-                          </div>
+                          <div className="text-xs sm:text-sm font-semibold text-slate-500 truncate">—</div>
                           <div className="text-[10px] text-slate-600 font-mono">
                             {idx + 1}.º Assistente (sem registo)
                           </div>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-xs sm:text-sm font-bold font-mono text-slate-600">
-                          0 assistências
-                        </span>
+                        <span className="text-xs sm:text-sm font-bold font-mono text-slate-600">0 assistências</span>
                       </div>
                     </div>
                   );
@@ -683,9 +664,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                         <div className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-cyan-300 transition-colors">
                           {assister.playerName}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono truncate">
-                          {assister.position}
-                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono truncate">{assister.position}</div>
                       </div>
                     </div>
 
@@ -818,11 +797,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
 
                 <div className="grid grid-cols-5 gap-2 items-end h-20 pt-2 pb-1 border-b border-slate-800">
                   {coachData.trend.matches.map((m, idx) => {
-                    const maxGoal = Math.max(
-                      1,
-                      ...coachData.trend.scoredBars,
-                      ...coachData.trend.concededBars
-                    );
+                    const maxGoal = Math.max(1, ...coachData.trend.scoredBars, ...coachData.trend.concededBars);
                     const scHeight = Math.max(12, Math.round((m.scored / maxGoal) * 60));
                     const coHeight = Math.max(12, Math.round((m.conceded / maxGoal) * 60));
 
@@ -949,21 +924,15 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           <div className="mt-3 pt-2.5 border-t border-slate-800 grid grid-cols-3 gap-1 text-center font-mono">
             <div className="bg-slate-950/60 p-1.5 rounded-xl">
               <span className="text-[9px] text-slate-500 uppercase block">Vitórias</span>
-              <span className="text-xs font-bold text-emerald-400">
-                {coachData.firstGoalStats.scoredFirstWins}
-              </span>
+              <span className="text-xs font-bold text-emerald-400">{coachData.firstGoalStats.scoredFirstWins}</span>
             </div>
             <div className="bg-slate-950/60 p-1.5 rounded-xl">
               <span className="text-[9px] text-slate-500 uppercase block">Empates</span>
-              <span className="text-xs font-bold text-amber-400">
-                {coachData.firstGoalStats.scoredFirstDraws}
-              </span>
+              <span className="text-xs font-bold text-amber-400">{coachData.firstGoalStats.scoredFirstDraws}</span>
             </div>
             <div className="bg-slate-950/60 p-1.5 rounded-xl">
               <span className="text-[9px] text-slate-500 uppercase block">Derrotas</span>
-              <span className="text-xs font-bold text-rose-400">
-                {coachData.firstGoalStats.scoredFirstLosses}
-              </span>
+              <span className="text-xs font-bold text-rose-400">{coachData.firstGoalStats.scoredFirstLosses}</span>
             </div>
           </div>
         </div>

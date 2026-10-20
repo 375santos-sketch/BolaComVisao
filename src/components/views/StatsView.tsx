@@ -109,7 +109,13 @@ export const StatsView: React.FC<StatsViewProps> = ({
           scored++;
           scoredHalf[g.half] = (scoredHalf[g.half] || 0) + 1;
           const rawScorer = g.scorerId || (g as any).player;
-          if (rawScorer && rawScorer !== 'autogolo' && rawScorer !== 'auto_golo' && rawScorer !== 'none' && rawScorer !== 'unknown') {
+          if (
+            rawScorer &&
+            rawScorer !== 'autogolo' &&
+            rawScorer !== 'auto_golo' &&
+            rawScorer !== 'none' &&
+            rawScorer !== 'unknown'
+          ) {
             const p = squadLookup.get(rawScorer) || squadLookup.get(rawScorer.trim().toLowerCase());
             if (p) {
               scorerCount[p.id] = (scorerCount[p.id] || 0) + 1;
@@ -137,7 +143,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
         const rawPlayer = c.playerId || (c as any).player;
         if (rawPlayer && rawPlayer !== 'unknown') {
           const p = squadLookup.get(rawPlayer) || squadLookup.get(rawPlayer.trim().toLowerCase());
-          const targetId = p ? p.id : (activeRoster.length === 0 ? rawPlayer : null);
+          const targetId = p ? p.id : activeRoster.length === 0 ? rawPlayer : null;
           if (targetId) {
             if (c.color === 'Amarelo') yellowCount[targetId] = (yellowCount[targetId] || 0) + 1;
             else redCount[targetId] = (redCount[targetId] || 0) + 1;
@@ -262,9 +268,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
       {/* Quick Launch: Dashboard Completo de Análise dos Jogos */}
       <div className="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/80 via-blue-950/80 to-slate-900 border border-cyan-400/70 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-xl">
-            📊
-          </span>
+          <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-xl">📊</span>
           <div>
             <div className="font-['Chakra_Petch'] font-bold text-white text-sm uppercase flex items-center gap-2">
               <span>Dashboard de Análise dos Jogos</span>

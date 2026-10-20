@@ -48,8 +48,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
     (match.goals || []).length === 0 || (match.goals || []).every((g) => g.goalType && g.goalType.trim() !== '');
 
   // 3. Check Minutes
-  const allScoredMinutesAssigned =
-    scoredGoals.length === 0 || scoredGoals.every((g) => isGoalMinuteAssigned(g.minute));
+  const allScoredMinutesAssigned = scoredGoals.length === 0 || scoredGoals.every((g) => isGoalMinuteAssigned(g.minute));
   const allConcededMinutesAssigned =
     concededGoals.length === 0 || concededGoals.every((g) => isGoalMinuteAssigned(g.minute));
   const allMinutesAssigned =
@@ -174,9 +173,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 flex items-center gap-3 text-emerald-300 text-xs">
             <span className="text-xl shrink-0">✓</span>
             <div>
-              <span className="font-bold block uppercase font-['Chakra_Petch']">
-                Todos os dados do jogo validados!
-              </span>
+              <span className="font-bold block uppercase font-['Chakra_Petch']">Todos os dados do jogo validados!</span>
               <span className="text-[11px] text-emerald-200/80">
                 Registo estatístico 100% completo e pronto para arquivo analítico.
               </span>
@@ -215,9 +212,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
               </div>
 
               {!item.isComplete && (
-                <span className="text-[10px] font-mono text-amber-400 uppercase font-bold shrink-0">
-                  Preencher ➔
-                </span>
+                <span className="text-[10px] font-mono text-amber-400 uppercase font-bold shrink-0">Preencher ➔</span>
               )}
             </div>
           ))}

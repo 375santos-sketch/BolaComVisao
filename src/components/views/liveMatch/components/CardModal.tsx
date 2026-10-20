@@ -40,10 +40,7 @@ const CardModalInner: React.FC<CardModalProps> = ({
   const [isModified, setIsModified] = React.useState(false);
 
   const showSuggestedLabel =
-    !editingCard &&
-    !isModified &&
-    Boolean(suggestedMinute) &&
-    cardMinute.trim() === suggestedMinute?.trim();
+    !editingCard && !isModified && Boolean(suggestedMinute) && cardMinute.trim() === suggestedMinute?.trim();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
@@ -115,9 +112,7 @@ const CardModalInner: React.FC<CardModalProps> = ({
         {/* Minuto */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Minuto *
-            </label>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Minuto *</label>
             {showSuggestedLabel && (
               <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
                 <span>🕒</span>
@@ -135,9 +130,7 @@ const CardModalInner: React.FC<CardModalProps> = ({
             }}
             className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
           />
-          {!cardMinute.trim() && (
-            <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>
-          )}
+          {!cardMinute.trim() && <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>}
         </div>
 
         {/* Actions */}

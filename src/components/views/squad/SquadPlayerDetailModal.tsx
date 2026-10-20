@@ -99,9 +99,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
     // Se estiver a usar activeTeamId, atualiza também a equipa ativa
     let updatedTeams = state.teams;
     if (state.activeTeamId && state.teams) {
-      updatedTeams = state.teams.map((t) =>
-        t.id === state.activeTeamId ? { ...t, roster: updatedRoster } : t
-      );
+      updatedTeams = state.teams.map((t) => (t.id === state.activeTeamId ? { ...t, roster: updatedRoster } : t));
     }
 
     onUpdateState({
@@ -310,7 +308,9 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
 
                 <div className="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
                   <span className="text-slate-400 text-[10px] block">Média Avaliação:</span>
-                  <span className="font-bold text-amber-300 text-base">{evo.avgRating > 0 ? evo.avgRating : 'N/D'}</span>
+                  <span className="font-bold text-amber-300 text-base">
+                    {evo.avgRating > 0 ? evo.avgRating : 'N/D'}
+                  </span>
                   <span className="text-[10px] text-slate-500 block">({evo.minutes} min jogados)</span>
                 </div>
               </div>
@@ -323,26 +323,20 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                   </span>
                   <div className="space-y-1.5">
                     {evo.monthlyAttendance.map((m, idx) => {
-                      const barColor =
-                        m.rate >= 85
-                          ? 'bg-emerald-500'
-                          : m.rate >= 70
-                            ? 'bg-amber-500'
-                            : 'bg-rose-500';
+                      const barColor = m.rate >= 85 ? 'bg-emerald-500' : m.rate >= 70 ? 'bg-amber-500' : 'bg-rose-500';
 
                       const textColor =
-                        m.rate >= 85
-                          ? 'text-emerald-400'
-                          : m.rate >= 70
-                            ? 'text-amber-400'
-                            : 'text-rose-400';
+                        m.rate >= 85 ? 'text-emerald-400' : m.rate >= 70 ? 'text-amber-400' : 'text-rose-400';
 
                       return (
                         <div key={idx} className="bg-slate-900/80 p-2 rounded-xl border border-slate-800/80">
                           <div className="flex items-center justify-between text-xs font-mono mb-1">
                             <span className="text-slate-300 font-medium">{m.monthName}</span>
                             <span className={`font-bold ${textColor}`}>
-                              {m.rate}% <span className="text-slate-500 text-[10px]">({m.presences}/{m.totalTrainings})</span>
+                              {m.rate}%{' '}
+                              <span className="text-slate-500 text-[10px]">
+                                ({m.presences}/{m.totalTrainings})
+                              </span>
                             </span>
                           </div>
                           {/* Barra de Progresso */}
@@ -442,4 +436,3 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
     </div>
   );
 };
-

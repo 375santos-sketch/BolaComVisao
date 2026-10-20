@@ -22,11 +22,13 @@ export const MODULAR_PATHS = {
   TEAMS: (clubId: string) => `clubs/${clubId}/teams`,
   TEAM_DOC: (clubId: string, teamId: string) => `clubs/${clubId}/teams/${teamId}`,
   PLAYERS: (clubId: string, teamId: string) => `clubs/${clubId}/teams/${teamId}/players`,
-  PLAYER_DOC: (clubId: string, teamId: string, playerId: string) => `clubs/${clubId}/teams/${teamId}/players/${playerId}`,
+  PLAYER_DOC: (clubId: string, teamId: string, playerId: string) =>
+    `clubs/${clubId}/teams/${teamId}/players/${playerId}`,
   MATCHES: (clubId: string, teamId: string) => `clubs/${clubId}/teams/${teamId}/matches`,
   MATCH_DOC: (clubId: string, teamId: string, matchId: string) => `clubs/${clubId}/teams/${teamId}/matches/${matchId}`,
   TRAININGS: (clubId: string, teamId: string) => `clubs/${clubId}/teams/${teamId}/trainings`,
-  TRAINING_DOC: (clubId: string, teamId: string, trainingId: string) => `clubs/${clubId}/teams/${teamId}/trainings/${trainingId}`,
+  TRAINING_DOC: (clubId: string, teamId: string, trainingId: string) =>
+    `clubs/${clubId}/teams/${teamId}/trainings/${trainingId}`,
   SCHEDULE: (clubId: string, teamId: string) => `clubs/${clubId}/teams/${teamId}/schedule`,
   SCOUTING: (clubId: string, teamId: string) => `clubs/${clubId}/teams/${teamId}/scouting`,
   STAFF: (clubId: string) => `clubs/${clubId}/staff`,
@@ -111,11 +113,11 @@ export function convertMonolithicToModular(state: AppState, clubId = 'main'): Cl
     for (const t of state.teams) {
       const isActive = t.id === activeTeamId;
       // For the active team, use the top-level AppState fields as they may be more up to date
-      const teamRoster = isActive ? (state.roster || []) : (t.roster || []);
-      const teamMatches = isActive ? (state.matches || []) : (t.matches || []);
-      const teamTrainings = isActive ? (state.trainings || []) : (t.trainings || []);
-      const teamSchedule = isActive ? (state.schedule || []) : (t.schedule || []);
-      const teamScouting = isActive ? (state.opponentScouting || []) : (t.opponentScouting || []);
+      const teamRoster = isActive ? state.roster || [] : t.roster || [];
+      const teamMatches = isActive ? state.matches || [] : t.matches || [];
+      const teamTrainings = isActive ? state.trainings || [] : t.trainings || [];
+      const teamSchedule = isActive ? state.schedule || [] : t.schedule || [];
+      const teamScouting = isActive ? state.opponentScouting || [] : t.opponentScouting || [];
 
       for (const p of teamRoster) {
         players.push({ ...p, teamId: t.id });

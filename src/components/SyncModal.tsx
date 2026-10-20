@@ -142,7 +142,8 @@ export const SyncModal: React.FC<SyncModalProps> = ({ state, onUpdateState, onCl
               <strong>100% seguros e gravados offline (IndexedDB)</strong> neste dispositivo.
             </p>
             <p className="text-[10px] font-mono text-amber-200/90">
-              O limite diário renova automaticamente amanhã. Pode também verificar ou atualizar o plano no Firebase Console:
+              O limite diário renova automaticamente amanhã. Pode também verificar ou atualizar o plano no Firebase
+              Console:
             </p>
             <a
               href={quotaState.consoleUrl}

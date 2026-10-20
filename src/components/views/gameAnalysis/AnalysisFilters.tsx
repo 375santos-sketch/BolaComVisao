@@ -152,9 +152,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Month Filter */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-              📆 Mês
-            </label>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">📆 Mês</label>
             <select
               value={filters.month}
               onChange={(e) => onFilterChange({ month: e.target.value })}

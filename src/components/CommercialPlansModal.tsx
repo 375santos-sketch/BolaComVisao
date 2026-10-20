@@ -58,8 +58,7 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
   if (!isOpen) return null;
 
   const currentSub = state.subscription;
-  const isMasterAdmin =
-    state.currentUser?.email && isStrictAdminEmail(state.currentUser.email);
+  const isMasterAdmin = state.currentUser?.email && isStrictAdminEmail(state.currentUser.email);
   const daysRemaining = calculateDaysRemaining(currentSub?.validUntil);
 
   const handleActivateKey = () => {
@@ -111,7 +110,6 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-y-auto animate-fadeIn">
       <div className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-auto text-slate-100">
-        
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60 sticky top-0 z-10">
           <div className="flex items-center space-x-3">
@@ -120,9 +118,7 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">
-                  Módulos & Funcionalidades
-                </h2>
+                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">Módulos & Funcionalidades</h2>
                 <span className="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-medium">
                   100% Gratuito (Testes & Adaptações)
                 </span>
@@ -198,7 +194,6 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-6">
-          
           {/* TAB 1: PLANS TABLE */}
           {activeTab === 'plans' && (
             <div className="space-y-6">
@@ -216,7 +211,8 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
                       </span>
                     </h3>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      Todas as ferramentas de gestão de plantel, treinos, cronómetro de jogo ao vivo, convocatórias e relatórios PDF estão disponíveis sem qualquer custo para que possa testar e adaptar à sua equipa.
+                      Todas as ferramentas de gestão de plantel, treinos, cronómetro de jogo ao vivo, convocatórias e
+                      relatórios PDF estão disponíveis sem qualquer custo para que possa testar e adaptar à sua equipa.
                     </p>
                   </div>
                 </div>
@@ -299,12 +295,7 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
 
                         <button
                           onClick={() =>
-                            openWhatsAppCommercialInquiry(
-                              plan,
-                              'yearly',
-                              state.currentUser?.name,
-                              state.myClubName
-                            )
+                            openWhatsAppCommercialInquiry(plan, 'yearly', state.currentUser?.name, state.myClubName)
                           }
                           className="w-full py-2 px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-emerald-300 hover:bg-slate-800/80 transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
                         >
@@ -325,12 +316,7 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
                 </div>
                 <button
                   onClick={() =>
-                    openEmailCommercialInquiry(
-                      COMMERCIAL_PLANS[1],
-                      'yearly',
-                      state.currentUser?.name,
-                      state.myClubName
-                    )
+                    openEmailCommercialInquiry(COMMERCIAL_PLANS[1], 'yearly', state.currentUser?.name, state.myClubName)
                   }
                   className="text-emerald-400 hover:underline font-semibold flex items-center space-x-1"
                 >
@@ -350,7 +336,8 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
                 </div>
                 <h3 className="text-lg font-bold text-white">Ativar Licença Comercial</h3>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  Introduza a Chave de Licença recebida após o pagamento para desbloquear todas as funcionalidades do seu clube.
+                  Introduza a Chave de Licença recebida após o pagamento para desbloquear todas as funcionalidades do
+                  seu clube.
                 </p>
               </div>
 
@@ -369,9 +356,7 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
                     placeholder="ex: BCV-CLUB-A8B9-11C2"
                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 tracking-wider"
                   />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Formato: BCV-[PRO|CLUB|ELITE]-XXXX-XXXX
-                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1">Formato: BCV-[PRO|CLUB|ELITE]-XXXX-XXXX</p>
                 </div>
 
                 {activationError && (
@@ -448,7 +433,9 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
                     <span className="text-slate-400 block mb-1">Limite de Equipas</span>
                     <span className="text-lg font-bold text-white flex items-center space-x-1.5">
                       <Users className="w-4 h-4 text-teal-400" />
-                      <span>{state.teams.length} / {currentSub?.maxTeams || 10}</span>
+                      <span>
+                        {state.teams.length} / {currentSub?.maxTeams || 10}
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -456,9 +443,7 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
                 {currentSub?.licenseKey && (
                   <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs">
                     <span className="text-slate-400 block mb-1">Chave Registada</span>
-                    <span className="font-mono text-emerald-300 text-sm font-semibold">
-                      {currentSub.licenseKey}
-                    </span>
+                    <span className="font-mono text-emerald-300 text-sm font-semibold">{currentSub.licenseKey}</span>
                   </div>
                 )}
 
@@ -498,9 +483,7 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
               <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Módulo a Ativar
-                    </label>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Módulo a Ativar</label>
                     <select
                       value={genTier}
                       onChange={(e) => setGenTier(e.target.value as SubscriptionTierId)}
@@ -513,9 +496,7 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Duração
-                    </label>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Duração</label>
                     <select
                       value={genMonths}
                       onChange={(e) => setGenMonths(Number(e.target.value))}
@@ -602,7 +583,9 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
                     <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 text-[11px] text-slate-300">
                       <strong>Mensagem pronta para enviar ao cliente:</strong>
                       <div className="mt-1 text-slate-400 font-mono bg-slate-900 p-2 rounded border border-slate-800 select-all">
-                        Olá {generatedKeyResult.customerName}! A sua licença BolaComVisão ({generatedKeyResult.planName}) foi ativada. A sua chave é: {generatedKeyResult.key} . Basta abrir a aplicação e clicar em "Ativar Chave". Bom trabalho e bons jogos! ⚽
+                        Olá {generatedKeyResult.customerName}! A sua licença BolaComVisão ({generatedKeyResult.planName}
+                        ) foi ativada. A sua chave é: {generatedKeyResult.key} . Basta abrir a aplicação e clicar em
+                        "Ativar Chave". Bom trabalho e bons jogos! ⚽
                       </div>
                     </div>
                   </div>
@@ -610,9 +593,7 @@ export const CommercialPlansModal: React.FC<CommercialPlansModalProps> = ({
               </div>
             </div>
           )}
-
         </div>
-
       </div>
     </div>
   );

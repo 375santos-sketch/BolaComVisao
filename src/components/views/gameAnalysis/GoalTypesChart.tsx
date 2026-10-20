@@ -7,7 +7,8 @@ interface GoalTypesChartProps {
 }
 
 export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSelectGoalType }) => {
-  const { goalTypes, concededGoalTypes, goalsScored, goalsConceded, scoredOriginBreakdown, concededOriginBreakdown } = analysis;
+  const { goalTypes, concededGoalTypes, goalsScored, goalsConceded, scoredOriginBreakdown, concededOriginBreakdown } =
+    analysis;
 
   return (
     <div className="space-y-6">
@@ -19,9 +20,7 @@ export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSele
               <span>⚽</span>
               <span>Origem dos Golos Marcados ({goalsScored})</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Classificação centralizada: Bola Corrida vs Bolas Paradas
-            </p>
+            <p className="text-xs text-slate-400 mt-0.5">Classificação centralizada: Bola Corrida vs Bolas Paradas</p>
           </div>
 
           <div className="flex items-center gap-3 text-xs font-bold">
@@ -105,9 +104,7 @@ export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSele
               <span>🛡️</span>
               <span>Como Sofremos os Golos ({goalsConceded})</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Análise detalhada de golos sofridos por tipo e contexto
-            </p>
+            <p className="text-xs text-slate-400 mt-0.5">Análise detalhada de golos sofridos por tipo e contexto</p>
           </div>
 
           <div className="flex items-center gap-3 text-xs font-bold">
@@ -151,9 +148,7 @@ export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSele
               <div
                 key={`conceded-${gt.type}`}
                 className={`p-3 rounded-2xl border transition-all ${
-                  gt.count > 0
-                    ? 'bg-slate-950/60 border-slate-800'
-                    : 'bg-slate-950/30 border-slate-800/40 opacity-60'
+                  gt.count > 0 ? 'bg-slate-950/60 border-slate-800' : 'bg-slate-950/30 border-slate-800/40 opacity-60'
                 }`}
               >
                 <div className="flex items-center justify-between text-xs mb-1.5">

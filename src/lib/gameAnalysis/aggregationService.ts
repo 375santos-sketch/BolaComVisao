@@ -19,11 +19,7 @@ import {
   EVENT_TYPE_OPTIONS,
   getCategoryHalfDuration
 } from './constants';
-import {
-  generateTimePeriodsForDuration,
-  classifyIntoPeriod,
-  normalizeEventTiming
-} from './timingUtils';
+import { generateTimePeriodsForDuration, classifyIntoPeriod, normalizeEventTiming } from './timingUtils';
 import { generateGameAnalysisInsights } from './insightsEngine';
 import { parseMinuteOrder } from '../utils';
 
@@ -185,23 +181,23 @@ export function computeGameAnalysis(
   const goalTypeCounts: Record<StandardGoalType, { count: number; events: { match: Match; goal: GoalEvent }[] }> = {
     'Bola jogada': { count: 0, events: [] },
     'Recuperação de bola': { count: 0, events: [] },
-    'Canto': { count: 0, events: [] },
-    'Livre': { count: 0, events: [] },
-    'Penálti': { count: 0, events: [] },
+    Canto: { count: 0, events: [] },
+    Livre: { count: 0, events: [] },
+    Penálti: { count: 0, events: [] },
     'Pontapé de baliza': { count: 0, events: [] },
-    'Ressalto': { count: 0, events: [] },
-    'Outro': { count: 0, events: [] }
+    Ressalto: { count: 0, events: [] },
+    Outro: { count: 0, events: [] }
   };
 
   const concededTypeCounts: Record<StandardGoalType, { count: number; events: { match: Match; goal: GoalEvent }[] }> = {
     'Bola jogada': { count: 0, events: [] },
     'Recuperação de bola': { count: 0, events: [] },
-    'Canto': { count: 0, events: [] },
-    'Livre': { count: 0, events: [] },
-    'Penálti': { count: 0, events: [] },
+    Canto: { count: 0, events: [] },
+    Livre: { count: 0, events: [] },
+    Penálti: { count: 0, events: [] },
     'Pontapé de baliza': { count: 0, events: [] },
-    'Ressalto': { count: 0, events: [] },
-    'Outro': { count: 0, events: [] }
+    Ressalto: { count: 0, events: [] },
+    Outro: { count: 0, events: [] }
   };
 
   // First goal metrics tracking (Item 5 & 9)
@@ -328,7 +324,10 @@ export function computeGameAnalysis(
       if (earliestScoredMin !== null && (earliestConcededMin === null || earliestScoredMin < earliestConcededMin)) {
         scoredFirstCount++;
         if (isWin) scoredFirstWinCount++;
-      } else if (earliestConcededMin !== null && (earliestScoredMin === null || earliestConcededMin < earliestScoredMin)) {
+      } else if (
+        earliestConcededMin !== null &&
+        (earliestScoredMin === null || earliestConcededMin < earliestScoredMin)
+      ) {
         concededFirstCount++;
         if (isWin) concededFirstComebackWins++;
       }
@@ -356,9 +355,12 @@ export function computeGameAnalysis(
     opponentsMap[oppName].scored += scCount;
     opponentsMap[oppName].conceded += coCount;
     if (m.cornersFor !== undefined && m.cornersFor !== null) opponentsMap[oppName].cornersFor += m.cornersFor;
-    if (m.cornersAgainst !== undefined && m.cornersAgainst !== null) opponentsMap[oppName].cornersAgainst += m.cornersAgainst;
-    if (m.foulsCommitted !== undefined && m.foulsCommitted !== null) opponentsMap[oppName].foulsCommitted += m.foulsCommitted;
-    if (m.foulsSuffered !== undefined && m.foulsSuffered !== null) opponentsMap[oppName].foulsSuffered += m.foulsSuffered;
+    if (m.cornersAgainst !== undefined && m.cornersAgainst !== null)
+      opponentsMap[oppName].cornersAgainst += m.cornersAgainst;
+    if (m.foulsCommitted !== undefined && m.foulsCommitted !== null)
+      opponentsMap[oppName].foulsCommitted += m.foulsCommitted;
+    if (m.foulsSuffered !== undefined && m.foulsSuffered !== null)
+      opponentsMap[oppName].foulsSuffered += m.foulsSuffered;
 
     if (isFinished) {
       if (scCount > coCount) opponentsMap[oppName].wins++;
@@ -408,7 +410,12 @@ export function computeGameAnalysis(
         else allConcededMinutes.push(timing.absoluteMinute);
       }
 
-      const pKey = classifyIntoPeriod(timing.absoluteMinute, timing.half === 2 ? 2 : 1, periodList, defaultHalfDuration);
+      const pKey = classifyIntoPeriod(
+        timing.absoluteMinute,
+        timing.half === 2 ? 2 : 1,
+        periodList,
+        defaultHalfDuration
+      );
 
       if (timePeriodsMap[pKey]) {
         if (isScored) {
@@ -427,7 +434,7 @@ export function computeGameAnalysis(
         // Scorer & Assist - resolve against active squad roster
         const rawScorer = g.scorerId || (g as any).player || 'unknown';
         const scorerPlayer = resolveSquadPlayer(rawScorer);
-        const sId = scorerPlayer ? scorerPlayer.id : (activeRoster.length === 0 ? rawScorer : 'unknown');
+        const sId = scorerPlayer ? scorerPlayer.id : activeRoster.length === 0 ? rawScorer : 'unknown';
 
         if (sId !== 'unknown') {
           if (!scorerCounts[sId]) scorerCounts[sId] = { scored: 0, assists: 0 };
@@ -437,7 +444,7 @@ export function computeGameAnalysis(
         const rawAssist = g.assistId || (g as any).assistant;
         if (rawAssist && rawAssist !== 'none' && rawAssist !== 'unknown') {
           const assistPlayer = resolveSquadPlayer(rawAssist);
-          const aId = assistPlayer ? assistPlayer.id : (activeRoster.length === 0 ? rawAssist : null);
+          const aId = assistPlayer ? assistPlayer.id : activeRoster.length === 0 ? rawAssist : null;
           if (aId) {
             if (!scorerCounts[aId]) scorerCounts[aId] = { scored: 0, assists: 0 };
             scorerCounts[aId].assists++;
@@ -490,7 +497,7 @@ export function computeGameAnalysis(
       const isRed = cColor === 'Vermelho' || String(cColor).toLowerCase() === 'red';
       const rawPId = c.playerId || (c as any).player || 'unknown';
       const cardPlayer = resolveSquadPlayer(rawPId);
-      const pId = cardPlayer ? cardPlayer.id : (activeRoster.length === 0 ? rawPId : 'unknown');
+      const pId = cardPlayer ? cardPlayer.id : activeRoster.length === 0 ? rawPId : 'unknown';
       const timing = normalizeEventTiming(c.minute, c.half, c.period, mHalfDuration);
 
       if (isYellow) {
@@ -554,9 +561,11 @@ export function computeGameAnalysis(
     if (activeEvType === 'golos_livre') return ev.kind === 'golo_marcado' && ev.goalType === 'Livre';
     if (activeEvType === 'golos_penalti') return ev.kind === 'golo_marcado' && ev.goalType === 'Penálti';
     if (activeEvType === 'golos_bola_jogada') return ev.kind === 'golo_marcado' && ev.goalType === 'Bola jogada';
-    if (activeEvType === 'golos_recuperacao') return ev.kind === 'golo_marcado' && ev.goalType === 'Recuperação de bola';
+    if (activeEvType === 'golos_recuperacao')
+      return ev.kind === 'golo_marcado' && ev.goalType === 'Recuperação de bola';
     if (activeEvType === 'golos_ressalto') return ev.kind === 'golo_marcado' && ev.goalType === 'Ressalto';
-    if (activeEvType === 'golos_pontape_baliza') return ev.kind === 'golo_marcado' && ev.goalType === 'Pontapé de baliza';
+    if (activeEvType === 'golos_pontape_baliza')
+      return ev.kind === 'golo_marcado' && ev.goalType === 'Pontapé de baliza';
     if (activeEvType === 'golos_sofridos') return ev.kind === 'golo_sofrido';
     if (activeEvType === 'amarelos') return ev.kind === 'cartao' && ev.cardColor === 'Amarelo';
     if (activeEvType === 'vermelhos') return ev.kind === 'cartao' && ev.cardColor === 'Vermelho';
@@ -602,8 +611,7 @@ export function computeGameAnalysis(
   const totalMatchesAnalyzed = filteredMatches.length;
   const matchOccurrenceRate =
     totalMatchesAnalyzed > 0 ? Math.round((matchesWithOccurrencesCount / totalMatchesAnalyzed) * 100) : 0;
-  const avgPerMatch =
-    totalMatchesAnalyzed > 0 ? parseFloat((allEvents.length / totalMatchesAnalyzed).toFixed(2)) : 0;
+  const avgPerMatch = totalMatchesAnalyzed > 0 ? parseFloat((allEvents.length / totalMatchesAnalyzed).toFixed(2)) : 0;
 
   const topPlayerOccurrences = Object.entries(filterPlayerTracker)
     .map(([playerId, count]) => ({ playerId, count }))
@@ -678,11 +686,19 @@ export function computeGameAnalysis(
   const timingWindows: BestTimingWindows = {
     mostScoredPeriod:
       bestScoredP && (bestScoredP as TimePeriodStat).scored > 0
-        ? { periodKey: (bestScoredP as TimePeriodStat).key, label: (bestScoredP as TimePeriodStat).label, count: (bestScoredP as TimePeriodStat).scored }
+        ? {
+            periodKey: (bestScoredP as TimePeriodStat).key,
+            label: (bestScoredP as TimePeriodStat).label,
+            count: (bestScoredP as TimePeriodStat).scored
+          }
         : null,
     mostConcededPeriod:
       worstConcededP && (worstConcededP as TimePeriodStat).conceded > 0
-        ? { periodKey: (worstConcededP as TimePeriodStat).key, label: (worstConcededP as TimePeriodStat).label, count: (worstConcededP as TimePeriodStat).conceded }
+        ? {
+            periodKey: (worstConcededP as TimePeriodStat).key,
+            label: (worstConcededP as TimePeriodStat).label,
+            count: (worstConcededP as TimePeriodStat).conceded
+          }
         : null,
     safestPeriod: null
   };
@@ -748,9 +764,7 @@ export function computeGameAnalysis(
   // 11. Format Opponent Comparisons and Last 5 matches (Item 12)
   const opponentStats: OpponentComparisonStat[] = Object.entries(opponentsMap)
     .map(([opp, data]) => {
-      const sortedMatches = [...data.matches].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
+      const sortedMatches = [...data.matches].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       const last5 = sortedMatches.slice(0, 5).map((m) => {
         const sc = (m.goals || []).filter((g) => g.type === 'scored').length;
         const co = (m.goals || []).filter((g) => g.type === 'conceded').length;
@@ -801,7 +815,9 @@ export function computeGameAnalysis(
     .map(([id, data]) => ({ playerId: id, count: data.assists }))
     .sort((a, b) => b.count - a.count);
 
-  const allCardedPlayerIds = Array.from(new Set([...Object.keys(yellowCounts), ...Object.keys(redCounts)])).filter((id) => id !== 'unknown');
+  const allCardedPlayerIds = Array.from(new Set([...Object.keys(yellowCounts), ...Object.keys(redCounts)])).filter(
+    (id) => id !== 'unknown'
+  );
   const cardedPlayers = allCardedPlayerIds
     .map((id) => ({
       playerId: id,
@@ -837,8 +853,7 @@ export function computeGameAnalysis(
   const foulsSufferedAvg =
     foulsSufferedRecordedCount > 0 ? (foulsSufferedSum / foulsSufferedRecordedCount).toFixed(1) : null;
 
-  const cornersForAvg =
-    cornersForRecordedCount > 0 ? (cornersForSum / cornersForRecordedCount).toFixed(1) : null;
+  const cornersForAvg = cornersForRecordedCount > 0 ? (cornersForSum / cornersForRecordedCount).toFixed(1) : null;
   const cornersAgainstAvg =
     cornersAgainstRecordedCount > 0 ? (cornersAgainstSum / cornersAgainstRecordedCount).toFixed(1) : null;
 
@@ -942,4 +957,3 @@ export function computeGameAnalysis(
     allEvents
   };
 }
-

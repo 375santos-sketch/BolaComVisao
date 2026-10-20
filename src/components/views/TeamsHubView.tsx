@@ -426,9 +426,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">
-              Clube / Instituição *
-            </label>
+            <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">Clube / Instituição *</label>
             <input
               type="text"
               required
@@ -441,9 +439,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">
-                Escalão / Categoria *
-              </label>
+              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">Escalão / Categoria *</label>
               <select
                 value={newCategory}
                 onChange={(e) => {
@@ -472,9 +468,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">
-                Época Desportiva *
-              </label>
+              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">Época Desportiva *</label>
               <input
                 type="text"
                 placeholder="Ex: 2026/27 ou 2025/26"
@@ -487,9 +481,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">
-                Treinador Principal
-              </label>
+              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">Treinador Principal</label>
               <input
                 type="text"
                 placeholder="Ex: João Silva"
@@ -580,7 +572,8 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               Ainda não tem nenhuma equipa registada
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mb-7 leading-relaxed font-sans">
-              Comece por registar a sua equipa, clube e escalão para ter acesso imediato à gestão tática, plantel, calendário, treinos e análise de jogo.
+              Comece por registar a sua equipa, clube e escalão para ter acesso imediato à gestão tática, plantel,
+              calendário, treinos e análise de jogo.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
@@ -623,7 +616,10 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               Sem equipa atribuída
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mb-7 leading-relaxed font-sans">
-              A sua conta está aprovada como <span className="text-amber-300 font-bold">{state.currentUser?.role || 'Treinador'}</span>, mas ainda não tem nenhuma equipa ou escalão associado pelo Administrador. Por favor, solicite ao Administrador do clube a atribuição da sua equipa.
+              A sua conta está aprovada como{' '}
+              <span className="text-amber-300 font-bold">{state.currentUser?.role || 'Treinador'}</span>, mas ainda não
+              tem nenhuma equipa ou escalão associado pelo Administrador. Por favor, solicite ao Administrador do clube
+              a atribuição da sua equipa.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               {onLogout && (
@@ -670,7 +666,11 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               if (
                 isActive ||
                 sTeamId === team.id ||
-                (sTeamName && teamClubLower && (sTeamName === teamClubLower || teamClubLower.includes(sTeamName) || sTeamName.includes(teamClubLower))) ||
+                (sTeamName &&
+                  teamClubLower &&
+                  (sTeamName === teamClubLower ||
+                    teamClubLower.includes(sTeamName) ||
+                    sTeamName.includes(teamClubLower))) ||
                 (teamClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
               ) {
                 if (!teamScheduleMap.has(s.id)) {
@@ -693,7 +693,11 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               if (
                 isActive ||
                 mTeamId === team.id ||
-                (mTeamName && teamClubLower && (mTeamName === teamClubLower || teamClubLower.includes(mTeamName) || mTeamName.includes(teamClubLower))) ||
+                (mTeamName &&
+                  teamClubLower &&
+                  (mTeamName === teamClubLower ||
+                    teamClubLower.includes(mTeamName) ||
+                    mTeamName.includes(teamClubLower))) ||
                 (teamClubLower.includes('drag') && (mTeamName?.includes('drag') || !mTeamId))
               ) {
                 if (!teamMatchesMap.has(m.id)) {
@@ -718,194 +722,199 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             const scheduledMatchesCount = distinctScheduled.length;
             const playedMatchesCount = currentMatches.length;
 
-          if (isEditing) {
-            return (
-              <div key={team.id} className="p-4 rounded-2xl bg-slate-950 border border-cyan-400/60 text-left space-y-2">
-                <div className="text-xs font-bold font-['Chakra_Petch'] text-cyan-300 uppercase">
-                  Editar Dados da Equipa
-                </div>
-                <input
-                  type="text"
-                  placeholder="Nome do Clube"
-                  value={editClubName}
-                  onChange={(e) => setEditClubName(e.target.value)}
-                  className="w-full bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    placeholder="Categoria / Escalão"
-                    value={editCategory}
-                    onChange={(e) => setEditCategory(e.target.value)}
-                    className="bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Época (ex: 2025/2026)"
-                    value={editSeason}
-                    onChange={(e) => setEditSeason(e.target.value)}
-                    className="bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                  />
-                </div>
-                <input
-                  type="text"
-                  placeholder="URL do Emblema / Logo (Opcional)"
-                  value={editLogoUrl}
-                  onChange={(e) => setEditLogoUrl(e.target.value)}
-                  className="w-full bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                />
-
-                <div className="flex gap-2 pt-2">
-                  <button
-                    className="flex-1 py-2 rounded-lg bg-cyan-500 text-slate-950 font-bold text-xs"
-                    onClick={() => handleSaveEdit(team.id)}
-                  >
-                    Guardar Alterações
-                  </button>
-                  <button
-                    className="px-3 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs"
-                    onClick={() => setEditingTeamId(null)}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            );
-          }
-
-          return (
-            <div
-              key={team.id}
-              onClick={() => onSelectTeam(team.id)}
-              className={`p-3.5 sm:p-4 rounded-2xl border transition-all text-left relative overflow-hidden group cursor-pointer active:scale-[0.99] touch-manipulation ${
-                isActive
-                  ? 'bg-slate-950/90 border-cyan-400 shadow-[0_0_25px_rgba(0,210,255,0.25)]'
-                  : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-950'
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                {/* Left Section: Logo & Name Info */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-slate-900 border border-cyan-500/30 flex items-center justify-center overflow-hidden shrink-0">
-                    {currentLogo ? (
-                      <img
-                        src={currentLogo}
-                        alt="Logo"
-                        className="w-full h-full object-contain p-1"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <span className="text-2xl">🛡️</span>
-                    )}
+            if (isEditing) {
+              return (
+                <div
+                  key={team.id}
+                  className="p-4 rounded-2xl bg-slate-950 border border-cyan-400/60 text-left space-y-2"
+                >
+                  <div className="text-xs font-bold font-['Chakra_Petch'] text-cyan-300 uppercase">
+                    Editar Dados da Equipa
                   </div>
+                  <input
+                    type="text"
+                    placeholder="Nome do Clube"
+                    value={editClubName}
+                    onChange={(e) => setEditClubName(e.target.value)}
+                    className="w-full bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Categoria / Escalão"
+                      value={editCategory}
+                      onChange={(e) => setEditCategory(e.target.value)}
+                      className="bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Época (ex: 2025/2026)"
+                      value={editSeason}
+                      onChange={(e) => setEditSeason(e.target.value)}
+                      className="bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="URL do Emblema / Logo (Opcional)"
+                    value={editLogoUrl}
+                    onChange={(e) => setEditLogoUrl(e.target.value)}
+                    className="w-full bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                  />
 
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold font-['Chakra_Petch'] text-base text-white uppercase tracking-wide">
-                        {currentClubName}
-                      </span>
-                      {isActive && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-emerald-400 text-[10px] font-mono uppercase font-bold tracking-wider">
-                          ✓ Selecionada
-                        </span>
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      className="flex-1 py-2 rounded-lg bg-cyan-500 text-slate-950 font-bold text-xs"
+                      onClick={() => handleSaveEdit(team.id)}
+                    >
+                      Guardar Alterações
+                    </button>
+                    <button
+                      className="px-3 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs"
+                      onClick={() => setEditingTeamId(null)}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                key={team.id}
+                onClick={() => onSelectTeam(team.id)}
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all text-left relative overflow-hidden group cursor-pointer active:scale-[0.99] touch-manipulation ${
+                  isActive
+                    ? 'bg-slate-950/90 border-cyan-400 shadow-[0_0_25px_rgba(0,210,255,0.25)]'
+                    : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-950'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  {/* Left Section: Logo & Name Info */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-slate-900 border border-cyan-500/30 flex items-center justify-center overflow-hidden shrink-0">
+                      {currentLogo ? (
+                        <img
+                          src={currentLogo}
+                          alt="Logo"
+                          className="w-full h-full object-contain p-1"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <span className="text-2xl">🛡️</span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="px-2.5 py-0.5 rounded-md bg-cyan-950 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono font-semibold">
-                        {currentCategory || 'Sub-19'}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-slate-300 text-[11px] font-mono">
-                        Época {currentSeason || defaultSeason()}
-                      </span>
-                    </div>
-
-                    <div className="text-[11px] font-mono text-slate-400 mt-2 flex gap-3 flex-wrap items-center">
-                      <span className="flex items-center gap-1">
-                        <span>👥</span>
-                        <strong
-                          className={currentRosterLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'}
-                        >
-                          {currentRosterLen}
-                        </strong>
-                        <span>{currentRosterLen === 1 ? 'Jogador' : 'Jogadores'}</span>
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="flex items-center gap-1">
-                          <span>⚽</span>
-                          <strong
-                            className={totalMatchesLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'}
-                          >
-                            {totalMatchesLen}
-                          </strong>
-                          <span>{totalMatchesLen === 1 ? 'Jogo' : 'Jogos'}</span>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold font-['Chakra_Petch'] text-base text-white uppercase tracking-wide">
+                          {currentClubName}
                         </span>
-                        {scheduledMatchesCount > 0 && (
-                          <span
-                            className="text-[10px] px-1.5 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono font-medium"
-                            title={`${scheduledMatchesCount} ${scheduledMatchesCount === 1 ? 'jogo agendado' : 'jogos agendados'}${playedMatchesCount > 0 ? `, ${playedMatchesCount} já realizados` : ''}`}
-                          >
-                            {scheduledMatchesCount} {scheduledMatchesCount === 1 ? 'agendado' : 'agendados'}
+                        {isActive && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-emerald-400 text-[10px] font-mono uppercase font-bold tracking-wider">
+                            ✓ Selecionada
                           </span>
                         )}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span>🏃</span>
-                        <strong
-                          className={currentTrainingsLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'}
-                        >
-                          {currentTrainingsLen}
-                        </strong>
-                        <span>{currentTrainingsLen === 1 ? 'Treino' : 'Treinos'}</span>
-                      </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="px-2.5 py-0.5 rounded-md bg-cyan-950 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono font-semibold">
+                          {currentCategory || 'Sub-19'}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-slate-300 text-[11px] font-mono">
+                          Época {currentSeason || defaultSeason()}
+                        </span>
+                      </div>
+
+                      <div className="text-[11px] font-mono text-slate-400 mt-2 flex gap-3 flex-wrap items-center">
+                        <span className="flex items-center gap-1">
+                          <span>👥</span>
+                          <strong
+                            className={currentRosterLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'}
+                          >
+                            {currentRosterLen}
+                          </strong>
+                          <span>{currentRosterLen === 1 ? 'Jogador' : 'Jogadores'}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-1">
+                            <span>⚽</span>
+                            <strong
+                              className={totalMatchesLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'}
+                            >
+                              {totalMatchesLen}
+                            </strong>
+                            <span>{totalMatchesLen === 1 ? 'Jogo' : 'Jogos'}</span>
+                          </span>
+                          {scheduledMatchesCount > 0 && (
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono font-medium"
+                              title={`${scheduledMatchesCount} ${scheduledMatchesCount === 1 ? 'jogo agendado' : 'jogos agendados'}${playedMatchesCount > 0 ? `, ${playedMatchesCount} já realizados` : ''}`}
+                            >
+                              {scheduledMatchesCount} {scheduledMatchesCount === 1 ? 'agendado' : 'agendados'}
+                            </span>
+                          )}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span>🏃</span>
+                          <strong
+                            className={
+                              currentTrainingsLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'
+                            }
+                          >
+                            {currentTrainingsLen}
+                          </strong>
+                          <span>{currentTrainingsLen === 1 ? 'Treino' : 'Treinos'}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Right Section: Action Buttons */}
-                <div 
-                  className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    className="flex-1 sm:flex-none px-5 py-2.5 min-h-[42px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider shadow-[0_0_12px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 touch-manipulation"
-                    onClick={() => onSelectTeam(team.id)}
+                  {/* Right Section: Action Buttons */}
+                  <div
+                    className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <span>Entrar no Painel</span>
-                    <span>➔</span>
-                  </button>
+                    <button
+                      className="flex-1 sm:flex-none px-5 py-2.5 min-h-[42px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider shadow-[0_0_12px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 touch-manipulation"
+                      onClick={() => onSelectTeam(team.id)}
+                    >
+                      <span>Entrar no Painel</span>
+                      <span>➔</span>
+                    </button>
 
-                  {isUserAdmin && (
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        className="px-2.5 py-1.5 min-h-[34px] text-xs bg-slate-900 border border-slate-700 rounded-lg hover:border-cyan-400 text-cyan-300 cursor-pointer active:scale-95 touch-manipulation"
-                        title="Editar Informações"
-                        onClick={() => handleStartEdit(team)}
-                      >
-                        ✏️ Editar
-                      </button>
-                      <button
-                        className="px-2.5 py-1.5 min-h-[34px] text-xs bg-slate-900 border border-slate-700 rounded-lg hover:border-cyan-400 text-cyan-300 cursor-pointer active:scale-95 touch-manipulation"
-                        title="Duplicar para Nova Época"
-                        onClick={() => handleDuplicateToNewSeason(team)}
-                      >
-                        📋 Duplicar
-                      </button>
-                      <button
-                        className="px-2.5 py-1.5 min-h-[34px] text-xs bg-slate-900 border border-slate-700 rounded-lg hover:border-red-500 text-red-400 cursor-pointer active:scale-95 touch-manipulation"
-                        title="Apagar Equipa"
-                        onClick={() => handleDeleteTeam(team.id)}
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  )}
+                    {isUserAdmin && (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          className="px-2.5 py-1.5 min-h-[34px] text-xs bg-slate-900 border border-slate-700 rounded-lg hover:border-cyan-400 text-cyan-300 cursor-pointer active:scale-95 touch-manipulation"
+                          title="Editar Informações"
+                          onClick={() => handleStartEdit(team)}
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button
+                          className="px-2.5 py-1.5 min-h-[34px] text-xs bg-slate-900 border border-slate-700 rounded-lg hover:border-cyan-400 text-cyan-300 cursor-pointer active:scale-95 touch-manipulation"
+                          title="Duplicar para Nova Época"
+                          onClick={() => handleDuplicateToNewSeason(team)}
+                        >
+                          📋 Duplicar
+                        </button>
+                        <button
+                          className="px-2.5 py-1.5 min-h-[34px] text-xs bg-slate-900 border border-slate-700 rounded-lg hover:border-red-500 text-red-400 cursor-pointer active:scale-95 touch-manipulation"
+                          title="Apagar Equipa"
+                          onClick={() => handleDeleteTeam(team.id)}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

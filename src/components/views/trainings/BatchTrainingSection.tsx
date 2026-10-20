@@ -93,11 +93,13 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
       if (selectedDays.length === 1) return; // Keep at least one
       setSelectedDays(selectedDays.filter((d) => d !== day));
     } else {
-      setSelectedDays([...selectedDays, day].sort((a, b) => {
-        const orderA = a === 0 ? 7 : a;
-        const orderB = b === 0 ? 7 : b;
-        return orderA - orderB;
-      }));
+      setSelectedDays(
+        [...selectedDays, day].sort((a, b) => {
+          const orderA = a === 0 ? 7 : a;
+          const orderB = b === 0 ? 7 : b;
+          return orderA - orderB;
+        })
+      );
     }
   };
 
@@ -179,7 +181,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               Adicionar Múltiplos Treinos por Período
             </h3>
             <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
-              Define o intervalo de datas, escolhe os dias da semana e personaliza os horários para gerar toda a grelha de treinos automaticamente.
+              Define o intervalo de datas, escolhe os dias da semana e personaliza os horários para gerar toda a grelha
+              de treinos automaticamente.
             </p>
           </div>
         </div>
@@ -291,12 +294,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
                 }`}
               >
                 <span className="text-xs font-['Chakra_Petch'] uppercase tracking-wider">{d.short}</span>
-                <span className="text-[10px] font-mono opacity-90 truncate max-w-full">
-                  {d.name.split('-')[0]}
-                </span>
-                <span className="text-[11px] font-mono mt-0.5 font-bold">
-                  {isSelected ? '✓ Ativo' : '—'}
-                </span>
+                <span className="text-[10px] font-mono opacity-90 truncate max-w-full">{d.name.split('-')[0]}</span>
+                <span className="text-[11px] font-mono mt-0.5 font-bold">{isSelected ? '✓ Ativo' : '—'}</span>
               </button>
             );
           })}
@@ -316,9 +315,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               type="button"
               onClick={() => setUseCustomDayTimes(false)}
               className={`px-3 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
-                !useCustomDayTimes
-                  ? 'bg-cyan-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                !useCustomDayTimes ? 'bg-cyan-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Horário Único
@@ -327,9 +324,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               type="button"
               onClick={() => setUseCustomDayTimes(true)}
               className={`px-3 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
-                useCustomDayTimes
-                  ? 'bg-cyan-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                useCustomDayTimes ? 'bg-cyan-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Horários por Dia
@@ -380,10 +375,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
                 const config = WEEKDAY_CONFIG.find((x) => x.day === dow);
                 const currentTime = dayTimes[dow] || defaultTime;
                 return (
-                  <div
-                    key={dow}
-                    className="p-3 rounded-xl bg-slate-950 border border-cyan-500/30 flex flex-col gap-2"
-                  >
+                  <div key={dow} className="p-3 rounded-xl bg-slate-950 border border-cyan-500/30 flex flex-col gap-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-['Chakra_Petch'] font-bold text-cyan-300 uppercase">
                         {config?.name}
@@ -545,12 +537,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
           </div>
 
           <div className="text-right">
-            <span className="text-2xl font-black font-mono text-cyan-300">
-              {finalTrainingsToCreate.length}
-            </span>
-            <span className="text-xs font-['Chakra_Petch'] uppercase text-slate-400 block">
-              treinos calculados
-            </span>
+            <span className="text-2xl font-black font-mono text-cyan-300">{finalTrainingsToCreate.length}</span>
+            <span className="text-xs font-['Chakra_Petch'] uppercase text-slate-400 block">treinos calculados</span>
           </div>
         </div>
 
@@ -630,7 +618,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
         >
           <span>🚀</span>
           <span>
-            Adicionar {finalTrainingsToCreate.length} {finalTrainingsToCreate.length === 1 ? 'Treino' : 'Treinos'} de uma Vez
+            Adicionar {finalTrainingsToCreate.length} {finalTrainingsToCreate.length === 1 ? 'Treino' : 'Treinos'} de
+            uma Vez
           </span>
         </button>
       </div>

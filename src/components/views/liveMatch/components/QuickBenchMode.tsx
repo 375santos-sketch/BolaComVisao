@@ -79,9 +79,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
           <span className="text-[11px] text-slate-400 font-mono uppercase block truncate max-w-[130px] sm:max-w-none mx-auto">
             {myClubName}
           </span>
-          <div className="text-4xl sm:text-5xl font-black font-mono text-cyan-400 mt-0.5">
-            {scoredCount}
-          </div>
+          <div className="text-4xl sm:text-5xl font-black font-mono text-cyan-400 mt-0.5">{scoredCount}</div>
         </div>
 
         <div className="px-3 text-xl font-mono text-slate-600 font-bold">—</div>
@@ -90,9 +88,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
           <span className="text-[11px] text-slate-400 font-mono uppercase block truncate max-w-[130px] sm:max-w-none mx-auto">
             {match.opponent || 'Adversário'}
           </span>
-          <div className="text-4xl sm:text-5xl font-black font-mono text-rose-400 mt-0.5">
-            {concededCount}
-          </div>
+          <div className="text-4xl sm:text-5xl font-black font-mono text-rose-400 mt-0.5">{concededCount}</div>
         </div>
       </div>
 
@@ -394,7 +390,9 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
           <div className="flex flex-wrap gap-2">
             {recentGoals.map((g, idx) => {
               const scorerPlayer = g.scorerId ? roster.find((p) => p.id === g.scorerId) : null;
-              const scorerName = scorerPlayer ? scorerPlayer.name : g.scorer || (g.type === 'scored' ? 'Nossa Equipa' : match.opponent);
+              const scorerName = scorerPlayer
+                ? scorerPlayer.name
+                : g.scorer || (g.type === 'scored' ? 'Nossa Equipa' : match.opponent);
               return (
                 <span
                   key={idx}

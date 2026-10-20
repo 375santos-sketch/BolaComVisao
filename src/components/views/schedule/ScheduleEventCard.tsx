@@ -241,7 +241,9 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
             {(() => {
               const linkedScout = (state.opponentScouting || []).find(
-                (sc) => sc.matchId === s.id || (sc.opponentName && sc.opponentName.trim().toLowerCase() === s.opponent.trim().toLowerCase())
+                (sc) =>
+                  sc.matchId === s.id ||
+                  (sc.opponentName && sc.opponentName.trim().toLowerCase() === s.opponent.trim().toLowerCase())
               );
               const isPreMatchFin = Boolean(s.preMatchFinalized || linkedScout?.preMatchFinalized);
               const isScoutingFin = Boolean(s.scoutingFinalized || linkedScout?.scoutingFinalized);
@@ -496,11 +498,13 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               </div>
             )}
 
-            <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1 ${
-              isEventCompleted
-                ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50'
-                : 'bg-purple-950 text-purple-300 border border-purple-500/50'
-            }`}>
+            <span
+              className={`px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1 ${
+                isEventCompleted
+                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50'
+                  : 'bg-purple-950 text-purple-300 border border-purple-500/50'
+              }`}
+            >
               <span>{typeIcon}</span>
               <span>{typeLabel}</span>
             </span>
@@ -545,8 +549,9 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  onShowConfirm(`Tens a certeza que desejas eliminar esta ${singleNoun.toLowerCase()} cancelada da agenda?`, () =>
-                    handleDeleteClubEvent(c.id)
+                  onShowConfirm(
+                    `Tens a certeza que desejas eliminar esta ${singleNoun.toLowerCase()} cancelada da agenda?`,
+                    () => handleDeleteClubEvent(c.id)
                   );
                 }}
                 className="p-1.5 px-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 text-xs"
@@ -565,9 +570,13 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           title="Clica para abrir / editar a reunião ou formação"
         >
           <div className="text-base font-black text-white font-['Chakra_Petch'] flex items-center gap-2">
-            <span className={`text-lg transition-colors flex items-center gap-1.5 ${
-              isEventCompleted ? 'text-emerald-300 line-through opacity-85' : 'text-purple-300 group-hover:text-purple-200'
-            }`}>
+            <span
+              className={`text-lg transition-colors flex items-center gap-1.5 ${
+                isEventCompleted
+                  ? 'text-emerald-300 line-through opacity-85'
+                  : 'text-purple-300 group-hover:text-purple-200'
+              }`}
+            >
               {c?.title || ev.title}
               <span className="text-xs text-purple-400 opacity-60 group-hover:opacity-100">↗</span>
             </span>
@@ -629,8 +638,9 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             <button
               type="button"
               onClick={() => {
-                onShowConfirm(`Tens a certeza que desejas eliminar esta ${singleNoun.toLowerCase()} cancelada da agenda?`, () =>
-                  handleDeleteClubEvent(c.id)
+                onShowConfirm(
+                  `Tens a certeza que desejas eliminar esta ${singleNoun.toLowerCase()} cancelada da agenda?`,
+                  () => handleDeleteClubEvent(c.id)
                 );
               }}
               className="px-3 py-1.5 rounded-xl bg-red-950/70 border border-red-500/50 hover:bg-red-900 text-red-300 hover:text-white font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all ml-auto"
@@ -731,7 +741,9 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           <button
             type="button"
             onClick={() => {
-              onShowConfirm('Tens a certeza que desejas eliminar este treino cancelado da agenda?', () => handleDeleteTraining(tr.id));
+              onShowConfirm('Tens a certeza que desejas eliminar este treino cancelado da agenda?', () =>
+                handleDeleteTraining(tr.id)
+              );
             }}
             className="p-1.5 px-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 text-xs"
             title="Eliminar Treino Cancelado"

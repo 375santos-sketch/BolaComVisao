@@ -13,7 +13,7 @@ interface PlayerEvolutionSectionProps {
 export const PlayerEvolutionSection: React.FC<PlayerEvolutionSectionProps> = ({
   state,
   selectedPlayerId,
-  onSelectPlayer,
+  onSelectPlayer
 }) => {
   const activePlayers = (state.roster || []).filter((p) => p.active !== false);
   const [currentSelectedId, setCurrentSelectedId] = useState<string>(selectedPlayerId || activePlayers[0]?.id || '');

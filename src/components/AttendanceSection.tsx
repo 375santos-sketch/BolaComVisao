@@ -43,10 +43,7 @@ const CATEGORY_BADGES: Record<
   }
 };
 
-export const AttendanceSection: React.FC<AttendanceSectionProps> = ({
-  state,
-  onSelectPlayer
-}) => {
+export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onSelectPlayer }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<AttendancePeriod>('30d');
   const [categoryFilter, setCategoryFilter] = useState<'todas' | AttendanceCategory>('todas');
   const [searchQuery, setSearchQuery] = useState('');

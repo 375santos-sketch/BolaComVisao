@@ -22,7 +22,6 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
   onEditPlayer,
   onRemovePlayer
 }) => {
-
   const renderPlayerCard = (player: Player) => {
     const st = STATUS_CONFIG[player.status || 'disponivel'];
 

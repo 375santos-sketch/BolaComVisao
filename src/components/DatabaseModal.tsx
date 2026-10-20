@@ -279,7 +279,9 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-      <div className={`modal card ${activeTab === 'team_database' ? 'max-w-5xl' : 'max-w-lg'} w-full max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto bg-slate-950 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 shadow-[0_0_50px_rgba(0,210,255,0.3)] text-left pb-[max(1.5rem,env(safe-area-inset-bottom))] scrollbar-thin transition-all`}>
+      <div
+        className={`modal card ${activeTab === 'team_database' ? 'max-w-5xl' : 'max-w-lg'} w-full max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto bg-slate-950 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 shadow-[0_0_50px_rgba(0,210,255,0.3)] text-left pb-[max(1.5rem,env(safe-area-inset-bottom))] scrollbar-thin transition-all`}
+      >
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-cyan-500/20">
           <div className="font-['Chakra_Petch'] font-bold text-base text-cyan-300 uppercase tracking-wider flex items-center gap-2">
@@ -320,11 +322,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
         </div>
 
         {activeTab === 'team_database' ? (
-          <TeamDatabaseView
-            state={state}
-            onShowToast={onShowToast}
-            onShowConfirm={onShowConfirm}
-          />
+          <TeamDatabaseView state={state} onShowToast={onShowToast} onShowConfirm={onShowConfirm} />
         ) : !isCreating ? (
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -352,9 +350,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                     <div className="text-[11px] font-bold text-white font-['Chakra_Petch'] uppercase group-hover:text-cyan-300 transition-colors">
                       Importar Plantel Excel
                     </div>
-                    <div className="text-[9px] text-slate-400 font-mono">
-                      Ficheiro .xlsx com atletas
-                    </div>
+                    <div className="text-[9px] text-slate-400 font-mono">Ficheiro .xlsx com atletas</div>
                   </div>
                 </div>
               </button>
@@ -370,9 +366,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                     <div className="text-[11px] font-bold text-white font-['Chakra_Petch'] uppercase group-hover:text-cyan-300 transition-colors">
                       Importar Jogos Excel
                     </div>
-                    <div className="text-[9px] text-slate-400 font-mono">
-                      Resultados e jornadas
-                    </div>
+                    <div className="text-[9px] text-slate-400 font-mono">Resultados e jornadas</div>
                   </div>
                 </div>
               </button>
@@ -403,7 +397,11 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                   if (
                     isActive ||
                     sTeamId === team.id ||
-                    (sTeamName && teamClubLower && (sTeamName === teamClubLower || teamClubLower.includes(sTeamName) || sTeamName.includes(teamClubLower))) ||
+                    (sTeamName &&
+                      teamClubLower &&
+                      (sTeamName === teamClubLower ||
+                        teamClubLower.includes(sTeamName) ||
+                        sTeamName.includes(teamClubLower))) ||
                     (teamClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
                   ) {
                     if (!teamScheduleMap.has(s.id)) {
@@ -426,7 +424,11 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                   if (
                     isActive ||
                     mTeamId === team.id ||
-                    (mTeamName && teamClubLower && (mTeamName === teamClubLower || teamClubLower.includes(mTeamName) || mTeamName.includes(teamClubLower))) ||
+                    (mTeamName &&
+                      teamClubLower &&
+                      (mTeamName === teamClubLower ||
+                        teamClubLower.includes(mTeamName) ||
+                        mTeamName.includes(teamClubLower))) ||
                     (teamClubLower.includes('drag') && (mTeamName?.includes('drag') || !mTeamId))
                   ) {
                     if (!teamMatchesMap.has(m.id)) {

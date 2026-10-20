@@ -165,27 +165,19 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
   // Toggle selection
   const handleToggleSelectRow = (id: string) => {
-    setParsedRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, selected: !r.selected } : r))
-    );
+    setParsedRows((prev) => prev.map((r) => (r.id === id ? { ...r, selected: !r.selected } : r)));
   };
 
   const handleToggleSelectAll = (select: boolean) => {
-    setParsedRows((prev) =>
-      prev.map((r) => (r.isValid ? { ...r, selected: select } : r))
-    );
+    setParsedRows((prev) => prev.map((r) => (r.isValid ? { ...r, selected: select } : r)));
   };
 
   const handleSetDuplicateAction = (id: string, action: MatchDuplicateAction) => {
-    setParsedRows((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, duplicateAction: action } : r))
-    );
+    setParsedRows((prev) => prev.map((r) => (r.id === id ? { ...r, duplicateAction: action } : r)));
   };
 
   const handleSetAllDuplicateActions = (action: MatchDuplicateAction) => {
-    setParsedRows((prev) =>
-      prev.map((r) => (r.isDuplicate ? { ...r, duplicateAction: action } : r))
-    );
+    setParsedRows((prev) => prev.map((r) => (r.isDuplicate ? { ...r, duplicateAction: action } : r)));
   };
 
   // Final Import Confirmation
@@ -329,9 +321,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
             <span>3.</span>
             <span>Pré-visualização & Importação</span>
             {parsedRows.length > 0 && (
-              <span className="text-[10px] bg-slate-950/40 px-1.5 py-0.2 rounded-full">
-                {parsedRows.length}
-              </span>
+              <span className="text-[10px] bg-slate-950/40 px-1.5 py-0.2 rounded-full">{parsedRows.length}</span>
             )}
           </button>
         </div>
@@ -462,9 +452,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {/* Opponent */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">
-                  Adversário *
-                </label>
+                <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">Adversário *</label>
                 <select
                   value={columnMapping.opponent}
                   onChange={(e) => setColumnMapping({ ...columnMapping, opponent: e.target.value })}
@@ -481,9 +469,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Date */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">
-                  Data do Jogo *
-                </label>
+                <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">Data do Jogo *</label>
                 <select
                   value={columnMapping.date}
                   onChange={(e) => setColumnMapping({ ...columnMapping, date: e.target.value })}
@@ -500,9 +486,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Time */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                  Hora de Início
-                </label>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Hora de Início</label>
                 <select
                   value={columnMapping.time}
                   onChange={(e) => setColumnMapping({ ...columnMapping, time: e.target.value })}
@@ -538,9 +522,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Location */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                  Local (Casa / Fora)
-                </label>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Local (Casa / Fora)</label>
                 <select
                   value={columnMapping.location}
                   onChange={(e) => setColumnMapping({ ...columnMapping, location: e.target.value })}
@@ -576,9 +558,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Goals Conceded */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-rose-400 uppercase mb-1">
-                  Golos Sofridos
-                </label>
+                <label className="block text-[11px] font-bold text-rose-400 uppercase mb-1">Golos Sofridos</label>
                 <select
                   value={columnMapping.goalsConceded}
                   onChange={(e) => setColumnMapping({ ...columnMapping, goalsConceded: e.target.value })}
@@ -595,9 +575,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Phase / Round */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                  Jornada / Fase
-                </label>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Jornada / Fase</label>
                 <select
                   value={columnMapping.phase}
                   onChange={(e) => setColumnMapping({ ...columnMapping, phase: e.target.value })}
@@ -614,9 +592,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
               {/* Corners For */}
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
-                  Cantos a Favor
-                </label>
+                <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Cantos a Favor</label>
                 <select
                   value={columnMapping.cornersFor}
                   onChange={(e) => setColumnMapping({ ...columnMapping, cornersFor: e.target.value })}
@@ -832,9 +808,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                           )}
                         </div>
                         {row.validationErrors.length > 0 && (
-                          <div className="text-[10px] text-rose-400 mt-0.5">
-                            {row.validationErrors.join(' • ')}
-                          </div>
+                          <div className="text-[10px] text-rose-400 mt-0.5">{row.validationErrors.join(' • ')}</div>
                         )}
                       </td>
                       <td className="p-2.5 font-mono text-slate-300">
@@ -856,16 +830,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                         <span className="text-slate-500 mx-1">-</span>
                         <span className="text-rose-400">{row.goalsConceded}</span>
                       </td>
-                      <td className="p-2.5 text-slate-400">
-                        {row.phase || row.tournamentName || row.type}
-                      </td>
+                      <td className="p-2.5 text-slate-400">{row.phase || row.tournamentName || row.type}</td>
                       <td className="p-2.5">
                         {row.isDuplicate ? (
                           <select
                             value={row.duplicateAction}
-                            onChange={(e) =>
-                              handleSetDuplicateAction(row.id, e.target.value as MatchDuplicateAction)
-                            }
+                            onChange={(e) => handleSetDuplicateAction(row.id, e.target.value as MatchDuplicateAction)}
                             className="bg-slate-900 border border-amber-500/40 text-amber-300 text-[11px] rounded px-2 py-1"
                           >
                             <option value="replace">Substituir Existente</option>

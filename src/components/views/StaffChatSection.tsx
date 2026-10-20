@@ -8,11 +8,7 @@ import {
   StaffChatReply
 } from '../../types';
 import { uid } from '../../lib/utils';
-import {
-  openWhatsAppAlert,
-  sendStaffPushNotification,
-  syncStaffMeetingToClubEvents
-} from '../../lib/staffAlertUtils';
+import { openWhatsAppAlert, sendStaffPushNotification, syncStaffMeetingToClubEvents } from '../../lib/staffAlertUtils';
 import { StaffChatViewMode } from './staffChat/types';
 import { StaffChatQuickBar } from './staffChat/StaffChatQuickBar';
 import { StaffChatConversationView } from './staffChat/StaffChatConversationView';
@@ -69,7 +65,9 @@ export const StaffChatSection: React.FC<StaffChatSectionProps> = ({
         const matchContent = msg.content?.toLowerCase().includes(q) || false;
         const matchSender = msg.senderName?.toLowerCase().includes(q) || false;
         const matchAgenda = msg.meetingDetails?.agenda?.toLowerCase().includes(q) || false;
-        const matchReplies = (msg.replies || []).some((r) => r.content.toLowerCase().includes(q) || r.senderName.toLowerCase().includes(q));
+        const matchReplies = (msg.replies || []).some(
+          (r) => r.content.toLowerCase().includes(q) || r.senderName.toLowerCase().includes(q)
+        );
         if (!matchTitle && !matchContent && !matchSender && !matchAgenda && !matchReplies) {
           return false;
         }
@@ -80,33 +78,36 @@ export const StaffChatSection: React.FC<StaffChatSectionProps> = ({
   }, [messages, filterType, searchQuery]);
 
   // Send inline reply
-  const handleSendInlineReply = React.useCallback((messageId: string, content: string) => {
-    if (!content.trim()) return;
+  const handleSendInlineReply = React.useCallback(
+    (messageId: string, content: string) => {
+      if (!content.trim()) return;
 
-    const timestamp = Date.now();
-    const newReply: StaffChatReply = {
-      id: uid(),
-      senderId: currentSenderId,
-      senderName: currentSenderName,
-      senderRole: currentSenderRole,
-      content: content.trim(),
-      createdAt: timestamp,
-      reactions: []
-    };
+      const timestamp = Date.now();
+      const newReply: StaffChatReply = {
+        id: uid(),
+        senderId: currentSenderId,
+        senderName: currentSenderName,
+        senderRole: currentSenderRole,
+        content: content.trim(),
+        createdAt: timestamp,
+        reactions: []
+      };
 
-    const updatedMessages = messages.map((m) => {
-      if (m.id === messageId) {
-        return {
-          ...m,
-          replies: [...(m.replies || []), newReply]
-        };
-      }
-      return m;
-    });
+      const updatedMessages = messages.map((m) => {
+        if (m.id === messageId) {
+          return {
+            ...m,
+            replies: [...(m.replies || []), newReply]
+          };
+        }
+        return m;
+      });
 
-    onUpdateState({ staffMessages: updatedMessages });
-    onShowToast('Resposta adicionada à conversa ✓');
-  }, [currentSenderId, currentSenderName, currentSenderRole, messages, onShowToast, onUpdateState]);
+      onUpdateState({ staffMessages: updatedMessages });
+      onShowToast('Resposta adicionada à conversa ✓');
+    },
+    [currentSenderId, currentSenderName, currentSenderRole, messages, onShowToast, onUpdateState]
+  );
 
   // Handle Quick Message sending from bar
   const handleSendQuickMessage = React.useCallback(
@@ -163,64 +164,63 @@ export const StaffChatSection: React.FC<StaffChatSectionProps> = ({
   );
 
   // Handle creating formal meeting / memo from modal
-  const handleCreateComposerMessage = React.useCallback((payload: {
-    type: StaffMessageType;
-    title: string;
-    content: string;
-    priority: 'normal' | 'alta' | 'urgente';
-    meetingDetails?: StaffMeetingDetails;
-    targetStaffIds: string[];
-    targetLabel: string;
-    sendWhatsAppImmediate: boolean;
-    sendPushImmediate: boolean;
-    addToClubCalendar: boolean;
-  }) => {
-    const timestamp = Date.now();
-    const newMessage: StaffChatMessage = {
-      id: uid(),
-      teamId: state.activeTeamId,
-      senderId: currentSenderId,
-      senderName: currentSenderName,
-      senderRole: currentSenderRole,
-      type: payload.type,
-      title: payload.title,
-      content: payload.content,
-      priority: payload.priority,
-      meetingDetails: payload.meetingDetails,
-      targetStaffIds: payload.targetStaffIds,
-      targetLabel: payload.targetLabel,
-      createdAt: timestamp,
-      pinned: payload.type === 'urgente' || payload.priority === 'urgente',
-      reactions: [],
-      replies: []
-    };
+  const handleCreateComposerMessage = React.useCallback(
+    (payload: {
+      type: StaffMessageType;
+      title: string;
+      content: string;
+      priority: 'normal' | 'alta' | 'urgente';
+      meetingDetails?: StaffMeetingDetails;
+      targetStaffIds: string[];
+      targetLabel: string;
+      sendWhatsAppImmediate: boolean;
+      sendPushImmediate: boolean;
+      addToClubCalendar: boolean;
+    }) => {
+      const timestamp = Date.now();
+      const newMessage: StaffChatMessage = {
+        id: uid(),
+        teamId: state.activeTeamId,
+        senderId: currentSenderId,
+        senderName: currentSenderName,
+        senderRole: currentSenderRole,
+        type: payload.type,
+        title: payload.title,
+        content: payload.content,
+        priority: payload.priority,
+        meetingDetails: payload.meetingDetails,
+        targetStaffIds: payload.targetStaffIds,
+        targetLabel: payload.targetLabel,
+        createdAt: timestamp,
+        pinned: payload.type === 'urgente' || payload.priority === 'urgente',
+        reactions: [],
+        replies: []
+      };
 
-    const updatedMessages = [newMessage, ...messages];
-    const updates: Partial<AppState> = { staffMessages: updatedMessages };
+      const updatedMessages = [newMessage, ...messages];
+      const updates: Partial<AppState> = { staffMessages: updatedMessages };
 
-    // Calendar sync
-    if (payload.type === 'reuniao' && payload.meetingDetails && payload.addToClubCalendar) {
-      syncStaffMeetingToClubEvents(payload.meetingDetails, state, (partial) => {
-        if (partial.clubEvents) updates.clubEvents = partial.clubEvents;
-      });
-    }
+      // Calendar sync
+      if (payload.type === 'reuniao' && payload.meetingDetails && payload.addToClubCalendar) {
+        syncStaffMeetingToClubEvents(payload.meetingDetails, state, (partial) => {
+          if (partial.clubEvents) updates.clubEvents = partial.clubEvents;
+        });
+      }
 
-    // Notifications
-    if (payload.sendPushImmediate) {
-      void sendStaffPushNotification(newMessage, state);
-    }
+      // Notifications
+      if (payload.sendPushImmediate) {
+        void sendStaffPushNotification(newMessage, state);
+      }
 
-    onUpdateState(updates);
-    onShowToast(
-      payload.type === 'reuniao'
-        ? 'Reunião agendada e publicada ✓'
-        : 'Recado publicado com sucesso ✓'
-    );
+      onUpdateState(updates);
+      onShowToast(payload.type === 'reuniao' ? 'Reunião agendada e publicada ✓' : 'Recado publicado com sucesso ✓');
 
-    if (payload.sendWhatsAppImmediate) {
-      openWhatsAppAlert(newMessage, state);
-    }
-  }, [currentSenderId, currentSenderName, currentSenderRole, messages, onShowToast, onUpdateState, state]);
+      if (payload.sendWhatsAppImmediate) {
+        openWhatsAppAlert(newMessage, state);
+      }
+    },
+    [currentSenderId, currentSenderName, currentSenderRole, messages, onShowToast, onUpdateState, state]
+  );
 
   // Reaction toggles
   const handleReaction = (messageId: string, emoji: string) => {

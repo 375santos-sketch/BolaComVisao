@@ -49,7 +49,10 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
         return {
           icon: ev.cardColor === 'Vermelho' ? '🟥' : '🟨',
           label: ev.cardColor === 'Vermelho' ? 'Cartão Vermelho' : 'Cartão Amarelo',
-          color: ev.cardColor === 'Vermelho' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+          color:
+            ev.cardColor === 'Vermelho'
+              ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+              : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
         };
       case 'sub':
         return {
@@ -172,9 +175,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
 
             <div className="space-y-3.5 text-xs text-slate-300">
               <div className="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-                  Tipo de Lance
-                </span>
+                <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Tipo de Lance</span>
                 <div className="text-sm font-bold text-white flex items-center gap-2">
                   <span>{getEventBadge(selectedEvent).label}</span>
                 </div>
@@ -182,18 +183,14 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-                    ⏱️ Minuto
-                  </span>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">⏱️ Minuto</span>
                   <span className="text-sm font-mono font-bold text-cyan-400">
                     {selectedEvent.minute ? `${selectedEvent.minute}'` : 'N/D'} (Abs: {selectedEvent.absoluteMinute}')
                   </span>
                 </div>
 
                 <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-                    Período
-                  </span>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Período</span>
                   <span className="text-sm font-bold text-white">
                     {selectedEvent.period || `${selectedEvent.half}.ª Parte`}
                   </span>
@@ -214,23 +211,21 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
                     👟 Secundário / Assistência / Entrada
                   </span>
-                  <span className="text-sm font-bold text-cyan-300">{getPlayerName(selectedEvent.playerSecondaryId)}</span>
+                  <span className="text-sm font-bold text-cyan-300">
+                    {getPlayerName(selectedEvent.playerSecondaryId)}
+                  </span>
                 </div>
               )}
 
               {selectedEvent.notes && (
                 <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-                    📝 Observações
-                  </span>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">📝 Observações</span>
                   <span className="text-xs text-slate-200">{selectedEvent.notes}</span>
                 </div>
               )}
 
               <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-                  🏟️ Contexto do Jogo
-                </span>
+                <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">🏟️ Contexto do Jogo</span>
                 <div className="text-xs font-bold text-white">
                   vs {selectedEvent.match.opponent} ({selectedEvent.match.location === 'casa' ? 'Casa' : 'Fora'})
                 </div>

@@ -82,4 +82,3 @@ export function classifyTimePeriod(
   if (abs <= 60) return '56-60';
   return '60+';
 }
-
