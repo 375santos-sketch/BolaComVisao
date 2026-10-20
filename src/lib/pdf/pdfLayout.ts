@@ -1,5 +1,6 @@
 import { AppState, Player } from '../../types';
 import bolacomvisaoLogoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
+import { defaultSeason } from '../utils';
 
 export async function getJsPDF() {
   const mod = await import('jspdf');
@@ -137,7 +138,7 @@ export function drawDocumentHeader(doc: jsPDF, state: AppState, title: string, s
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(185, 215, 235);
-  const catSeason = `${state.category || 'Futebol'} • Época ${state.season || '2025/2026'}${subtitle ? ' • ' + subtitle : ''}`;
+  const catSeason = `${state.category || 'Futebol'} • Época ${state.season || defaultSeason()}${subtitle ? ' • ' + subtitle : ''}`;
   doc.text(catSeason, 105, 27.5, { align: 'center' });
 
   doc.setFontSize(7.5);

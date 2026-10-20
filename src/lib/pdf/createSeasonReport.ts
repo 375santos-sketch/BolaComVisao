@@ -1,5 +1,5 @@
 import { AppState } from '../../types';
-import { playerLabel } from '../utils';
+import { playerLabel, defaultSeason } from '../utils';
 import { t } from '../../i18n/dict';
 import type { TimePeriodKey, AggregatedAnalysis, AnalysisFilters } from '../gameAnalysisUtils';
 import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters } from './pdfLayout';
@@ -134,7 +134,7 @@ export async function generateClubBoardReportPDF(state: AppState) {
   });
 
   const myClub = state.myClubName || 'BolaComVisão Clube';
-  const season = state.season || '2025/2026';
+  const season = state.season || defaultSeason();
   const teams = state.teams || [];
 
   drawDocumentHeader(doc, state, 'RELATÓRIO INSTITUCIONAL DA DIREÇÃO', `ÉPOCA DESPORTIVA ${season}`);

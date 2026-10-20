@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { AppState, UserAccount, AppNotification } from './types';
 import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
+import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
 import { exportJSONBackup } from './lib/exportUtils';
 import { evaluateSystemNotifications } from './lib/notificationEngine';
 import { syncStateWithCloud, processOfflineMutationsQueue } from './lib/syncEngine';
 import { recordAuditLog } from './lib/auditEngine';
 import {
-  saveAppStateToCloud,
   subscribeToCloudState,
   logoutCoachUser,
   subscribeToAllClubUsers,
@@ -61,6 +61,45 @@ export default function App() {
   useEffect(() => {
     latestStateRef.current = state;
   }, [state]);
+
+  // Cloud save tracking: only saves confirmed by Firestore count as "guardado na nuvem".
+  const [cloudSavedAt, setCloudSavedAt] = useState<number>(() => readCloudSavedAt());
+  const [cloudSaving, setCloudSaving] = useState(false);
+  const [cloudSaveError, setCloudSaveError] = useState<string | undefined>(undefined);
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
+
+  const markCloudSaved = (ts: number) => {
+    setCloudSavedAt((prev) => {
+      const next = Math.max(prev, ts);
+      writeCloudSavedAt(next);
+      return next;
+    });
+  };
+
+  const pushStateToCloud = async (s: AppState, forceOverwrite = false) => {
+    if (!s.currentUser?.id) return;
+    setCloudSaving(true);
+    try {
+      const res = await saveMasterClubState(
+        s.currentUser.clubId || 'main',
+        s,
+        s.currentUser.id,
+        s.currentUser.name,
+        forceOverwrite
+      );
+      if (res.success) {
+        markCloudSaved(s.lastLocalMutationAt || 0);
+        setCloudSaveError(undefined);
+      } else {
+        setCloudSaveError(res.message || 'Não foi possível guardar na nuvem.');
+      }
+    } catch (err: any) {
+      console.warn('Erro ao guardar na nuvem:', err);
+      setCloudSaveError(err?.message || 'Não foi possível guardar na nuvem.');
+    } finally {
+      setCloudSaving(false);
+    }
+  };
   const [currentTab, setCurrentTab] = useState<TabType>('teams');
   const [targetOpponentId, setTargetOpponentId] = useState<string | undefined>(undefined);
 
@@ -222,15 +261,7 @@ export default function App() {
         const isWiping = !updated.teams || updated.teams.length === 0;
         cloudSyncDebounceTimerRef.current = setTimeout(
           () => {
-            saveMasterClubState(
-              updated.currentUser?.clubId || 'main',
-              updated,
-              updated.currentUser?.id,
-              updated.currentUser?.name,
-              isWiping
-            ).catch((err) => {
-              console.warn('Background master cloud save error:', err);
-            });
+            pushStateToCloud(updated, isWiping);
           },
           isWiping ? 200 : 3500
         );
@@ -239,6 +270,55 @@ export default function App() {
       return updated;
     });
   };
+
+  const cloudSync = deriveCloudSyncStatus({
+    signedIn: Boolean(state.currentUser?.id),
+    online: isOnline,
+    saving: cloudSaving,
+    error: cloudSaveError,
+    lastLocalMutationAt: state.lastLocalMutationAt || 0,
+    cloudSavedAt
+  });
+
+  useEffect(() => {
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
+
+  // Keep retrying changes that never reached the cloud (failed save, quota cooldown, app reopened offline...).
+  useEffect(() => {
+    if (!cloudSync.hasUnsavedChanges || !isOnline || cloudSaving) return;
+    const retry = setTimeout(
+      () => {
+        if (getFirestoreQuotaState().isExhausted) {
+          setCloudSaveError('Quota diária gratuita do Firebase atingida');
+        } else {
+          pushStateToCloud(latestStateRef.current);
+        }
+      },
+      cloudSaveError ? 60000 : 15000
+    );
+    return () => clearTimeout(retry);
+    // pushStateToCloud reads the latest state through latestStateRef.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cloudSync.hasUnsavedChanges, isOnline, cloudSaving, cloudSaveError, state.lastLocalMutationAt]);
+
+  // Warn before closing the app while changes exist only on this device.
+  useEffect(() => {
+    if (!cloudSync.hasUnsavedChanges) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [cloudSync.hasUnsavedChanges]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -262,17 +342,11 @@ export default function App() {
           const local = latestStateRef.current;
           if ((local.lastLocalMutationAt || 0) > (cloudState.updatedAt || 0)) {
             if (!getFirestoreQuotaState().isExhausted) {
-              saveMasterClubState(
-                local.currentUser?.clubId || 'main',
-                local,
-                local.currentUser?.id,
-                local.currentUser?.name
-              ).catch((err) => {
-                console.warn('Erro ao reenviar alterações locais para a nuvem:', err);
-              });
+              pushStateToCloud(local);
             }
             return;
           }
+          markCloudSaved(cloudState.updatedAt || 0);
 
           isRemoteSyncRef.current = true;
           setState((prev) => {
@@ -452,7 +526,7 @@ export default function App() {
       });
 
       if (state.currentUser?.id) {
-        await saveAppStateToCloud(state.currentUser.id, state);
+        await pushStateToCloud(state);
       }
 
       const res = await syncStateWithCloud(state, currentSyncInfo.syncId);
@@ -501,6 +575,8 @@ export default function App() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
+    // Handlers are rebuilt with the latest state on every change; the helper functions are not memoized.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   // Periodic notification evaluation
@@ -575,434 +651,438 @@ export default function App() {
   const hasActiveMatch = (state.matches || []).some((m) => !m.finished);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 font-sans pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-[env(safe-area-inset-top,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] overflow-x-hidden">
-      {/* Top Banner for PWA Install Prompt */}
-      <InstallPwaBanner />
+    <CloudSyncContext.Provider value={cloudSync}>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 font-sans pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-[env(safe-area-inset-top,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] overflow-x-hidden">
+        {/* Top Banner for PWA Install Prompt */}
+        <InstallPwaBanner />
 
-      {/* Main Content Area */}
-      <div className="flex-1 w-full max-w-7xl mx-auto px-2.5 sm:px-6 pt-2 sm:pt-6 overflow-x-hidden">
-        <Suspense fallback={<ViewLoadingFallback />}>
-          {currentTab === 'teams' && (
-            <TeamsHubView
-              state={state}
-              onUpdateState={updateState}
-              onSelectTeam={(teamId) => {
-                const target = state.teams?.find((t) => t.id === teamId);
-                if (target) {
-                  const updatedTeams = (state.teams || []).map((t) => {
-                    if (t.id === state.activeTeamId) {
-                      return {
-                        ...t,
-                        roster: state.roster || [],
-                        staffMembers: state.staffMembers || [],
-                        matches: state.matches || [],
-                        trainings: state.trainings || [],
-                        schedule: state.schedule || [],
-                        tactics: state.tactics || [],
-                        tacticFormat: state.tacticFormat || 11,
-                        opponentScouting: state.opponentScouting || [],
-                        clubEvents: state.clubEvents || [],
-                        staffUnavailability: state.staffUnavailability || []
-                      };
-                    }
-                    return t;
-                  });
-
-                  const targetScheduleMap = new Map<string, any>();
-                  (target.schedule || []).forEach((s) => {
-                    if (s && s.id) targetScheduleMap.set(s.id, s);
-                  });
-                  (state.schedule || []).forEach((s) => {
-                    if (!s || !s.id) return;
-                    const sTeamId = (s as any).teamId;
-                    const sTeamName = (s as any).teamName?.toLowerCase().trim();
-                    const targetClubLower = (target.clubName || '').toLowerCase().trim();
-                    if (
-                      sTeamId === target.id ||
-                      (sTeamName &&
-                        targetClubLower &&
-                        (sTeamName === targetClubLower ||
-                          targetClubLower.includes(sTeamName) ||
-                          sTeamName.includes(targetClubLower))) ||
-                      (targetClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
-                    ) {
-                      if (!targetScheduleMap.has(s.id)) {
-                        targetScheduleMap.set(s.id, s);
+        {/* Main Content Area */}
+        <div className="flex-1 w-full max-w-7xl mx-auto px-2.5 sm:px-6 pt-2 sm:pt-6 overflow-x-hidden">
+          <Suspense fallback={<ViewLoadingFallback />}>
+            {currentTab === 'teams' && (
+              <TeamsHubView
+                state={state}
+                onUpdateState={updateState}
+                onSelectTeam={(teamId) => {
+                  const target = state.teams?.find((t) => t.id === teamId);
+                  if (target) {
+                    const updatedTeams = (state.teams || []).map((t) => {
+                      if (t.id === state.activeTeamId) {
+                        return {
+                          ...t,
+                          roster: state.roster || [],
+                          staffMembers: state.staffMembers || [],
+                          matches: state.matches || [],
+                          trainings: state.trainings || [],
+                          schedule: state.schedule || [],
+                          tactics: state.tactics || [],
+                          tacticFormat: state.tacticFormat || 11,
+                          opponentScouting: state.opponentScouting || [],
+                          clubEvents: state.clubEvents || [],
+                          staffUnavailability: state.staffUnavailability || []
+                        };
                       }
-                    }
-                  });
-                  const resolvedTargetSchedule = Array.from(targetScheduleMap.values());
+                      return t;
+                    });
 
-                  const targetMatchesMap = new Map<string, any>();
-                  (target.matches || []).forEach((m) => {
-                    if (m && m.id) targetMatchesMap.set(m.id, m);
-                  });
-                  (state.matches || []).forEach((m) => {
-                    if (!m || !m.id) return;
-                    const mTeamId = (m as any).teamId;
-                    const mTeamName = (m as any).teamName?.toLowerCase().trim();
-                    const targetClubLower = (target.clubName || '').toLowerCase().trim();
-                    if (
-                      mTeamId === target.id ||
-                      !mTeamId ||
-                      (mTeamName &&
-                        targetClubLower &&
-                        (mTeamName === targetClubLower ||
-                          targetClubLower.includes(mTeamName) ||
-                          mTeamName.includes(targetClubLower))) ||
-                      (targetClubLower.includes('drag') && (mTeamName?.includes('drag') || !mTeamId))
-                    ) {
-                      if (!targetMatchesMap.has(m.id)) {
-                        targetMatchesMap.set(m.id, m);
+                    const targetScheduleMap = new Map<string, any>();
+                    (target.schedule || []).forEach((s) => {
+                      if (s && s.id) targetScheduleMap.set(s.id, s);
+                    });
+                    (state.schedule || []).forEach((s) => {
+                      if (!s || !s.id) return;
+                      const sTeamId = (s as any).teamId;
+                      const sTeamName = (s as any).teamName?.toLowerCase().trim();
+                      const targetClubLower = (target.clubName || '').toLowerCase().trim();
+                      if (
+                        sTeamId === target.id ||
+                        (sTeamName &&
+                          targetClubLower &&
+                          (sTeamName === targetClubLower ||
+                            targetClubLower.includes(sTeamName) ||
+                            sTeamName.includes(targetClubLower))) ||
+                        (targetClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
+                      ) {
+                        if (!targetScheduleMap.has(s.id)) {
+                          targetScheduleMap.set(s.id, s);
+                        }
                       }
-                    }
-                  });
-                  const resolvedTargetMatches = Array.from(targetMatchesMap.values());
+                    });
+                    const resolvedTargetSchedule = Array.from(targetScheduleMap.values());
 
-                  updateState({
-                    activeTeamId: teamId,
-                    teams: updatedTeams,
-                    myClubName: target.clubName,
-                    clubLogoUrl: target.clubLogoUrl,
-                    category: target.category,
-                    season: target.season,
-                    roster: target.roster && target.roster.length > 0 ? target.roster : state.roster || [],
-                    staffMembers: target.staffMembers || [],
-                    matches: resolvedTargetMatches.length > 0 ? resolvedTargetMatches : state.matches || [],
-                    trainings: target.trainings || [],
-                    schedule: resolvedTargetSchedule,
-                    tactics: target.tactics || [],
-                    tacticFormat: target.tacticFormat || 11,
-                    opponentScouting: target.opponentScouting || [],
-                    clubEvents: target.clubEvents || [],
-                    staffUnavailability: target.staffUnavailability || []
-                  });
-                }
-                setCurrentTab('home');
-              }}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onOpenAdminUsers={() => setShowAdminUsers(true)}
-              pendingUsersCount={pendingUsersCount}
-              onLogout={handleLogout}
-              onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-              onShowToast={showToast}
-            />
-          )}
+                    const targetMatchesMap = new Map<string, any>();
+                    (target.matches || []).forEach((m) => {
+                      if (m && m.id) targetMatchesMap.set(m.id, m);
+                    });
+                    (state.matches || []).forEach((m) => {
+                      if (!m || !m.id) return;
+                      const mTeamId = (m as any).teamId;
+                      const mTeamName = (m as any).teamName?.toLowerCase().trim();
+                      const targetClubLower = (target.clubName || '').toLowerCase().trim();
+                      if (
+                        mTeamId === target.id ||
+                        !mTeamId ||
+                        (mTeamName &&
+                          targetClubLower &&
+                          (mTeamName === targetClubLower ||
+                            targetClubLower.includes(mTeamName) ||
+                            mTeamName.includes(targetClubLower))) ||
+                        (targetClubLower.includes('drag') && (mTeamName?.includes('drag') || !mTeamId))
+                      ) {
+                        if (!targetMatchesMap.has(m.id)) {
+                          targetMatchesMap.set(m.id, m);
+                        }
+                      }
+                    });
+                    const resolvedTargetMatches = Array.from(targetMatchesMap.values());
 
-          {currentTab === 'home' && (
-            <HomeView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenDatabase={() => setShowDatabase(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onOpenAdminUsers={() => setShowAdminUsers(true)}
-              pendingUsersCount={pendingUsersCount}
-              latestPendingUser={latestPendingUser}
-              onExportBackup={() => {
-                exportJSONBackup(state);
-                showToast('Backup exportado ✓');
-              }}
-              onShowToast={showToast}
-            />
-          )}
+                    updateState({
+                      activeTeamId: teamId,
+                      teams: updatedTeams,
+                      myClubName: target.clubName,
+                      clubLogoUrl: target.clubLogoUrl,
+                      category: target.category,
+                      season: target.season,
+                      roster: target.roster && target.roster.length > 0 ? target.roster : state.roster || [],
+                      staffMembers: target.staffMembers || [],
+                      matches: resolvedTargetMatches.length > 0 ? resolvedTargetMatches : state.matches || [],
+                      trainings: target.trainings || [],
+                      schedule: resolvedTargetSchedule,
+                      tactics: target.tactics || [],
+                      tacticFormat: target.tacticFormat || 11,
+                      opponentScouting: target.opponentScouting || [],
+                      clubEvents: target.clubEvents || [],
+                      staffUnavailability: target.staffUnavailability || []
+                    });
+                  }
+                  setCurrentTab('home');
+                }}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onOpenAdminUsers={() => setShowAdminUsers(true)}
+                pendingUsersCount={pendingUsersCount}
+                onLogout={handleLogout}
+                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowToast={showToast}
+              />
+            )}
 
-          {currentTab === 'jogo' && (
-            <LiveMatchView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-              onShowToast={showToast}
-            />
-          )}
+            {currentTab === 'home' && (
+              <HomeView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenDatabase={() => setShowDatabase(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onOpenAdminUsers={() => setShowAdminUsers(true)}
+                pendingUsersCount={pendingUsersCount}
+                latestPendingUser={latestPendingUser}
+                onExportBackup={() => {
+                  exportJSONBackup(state);
+                  showToast('Backup exportado ✓');
+                }}
+                onShowToast={showToast}
+              />
+            )}
 
-          {currentTab === 'calendario' && (
-            <ScheduleView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-              onShowToast={showToast}
-            />
-          )}
+            {currentTab === 'jogo' && (
+              <LiveMatchView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowToast={showToast}
+              />
+            )}
 
-          {currentTab === 'convocatoria' && (
-            <ConvocatoriaView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowToast={showToast}
-              initialMatchId={targetOpponentId}
-            />
-          )}
+            {currentTab === 'calendario' && (
+              <ScheduleView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowToast={showToast}
+              />
+            )}
 
-          {currentTab === 'prejogo' && (
-            <PreMatchPlanView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowToast={showToast}
-              targetOpponentId={targetOpponentId}
-            />
-          )}
+            {currentTab === 'convocatoria' && (
+              <ConvocatoriaView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowToast={showToast}
+                initialMatchId={targetOpponentId}
+              />
+            )}
 
-          {currentTab === 'adversario' && (
-            <OpponentScoutingView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowToast={showToast}
-              targetOpponentId={targetOpponentId}
-            />
-          )}
+            {currentTab === 'prejogo' && (
+              <PreMatchPlanView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowToast={showToast}
+                targetOpponentId={targetOpponentId}
+              />
+            )}
 
-          {currentTab === 'treinos' && (
-            <TrainingsView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-              onShowToast={showToast}
-              initialTab="list"
-            />
-          )}
+            {currentTab === 'adversario' && (
+              <OpponentScoutingView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowToast={showToast}
+                targetOpponentId={targetOpponentId}
+              />
+            )}
 
-          {currentTab === 'biblioteca' && (
-            <TrainingsView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-              onShowToast={showToast}
-              initialTab="library"
-            />
-          )}
+            {currentTab === 'treinos' && (
+              <TrainingsView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowToast={showToast}
+                initialTab="list"
+              />
+            )}
 
-          {currentTab === 'jogos' && (
-            <ResultsView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-              onShowToast={showToast}
-            />
-          )}
+            {currentTab === 'biblioteca' && (
+              <TrainingsView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowToast={showToast}
+                initialTab="library"
+              />
+            )}
 
-          {currentTab === 'stats' && (
-            <StatsView
-              state={state}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowToast={showToast}
-            />
-          )}
+            {currentTab === 'jogos' && (
+              <ResultsView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowToast={showToast}
+              />
+            )}
 
-          {currentTab === 'analise_jogos' && (
-            <GameAnalysisDashboard
-              state={state}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowToast={showToast}
-            />
-          )}
+            {currentTab === 'stats' && (
+              <StatsView
+                state={state}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowToast={showToast}
+              />
+            )}
 
-          {(currentTab === 'plantel' || currentTab === 'chat_staff') && (
-            <SquadView
-              key={currentTab}
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-              onShowToast={showToast}
-              initialSquadTab={currentTab === 'chat_staff' ? 'chat_staff' : 'jogadores'}
-            />
-          )}
+            {currentTab === 'analise_jogos' && (
+              <GameAnalysisDashboard
+                state={state}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowToast={showToast}
+              />
+            )}
 
-          {currentTab === 'relatorios' && (
-            <RelatoriosView
-              state={state}
-              onUpdateState={updateState}
-              onNavigate={handleNavigate}
-              onOpenSettings={() => setShowSettings(true)}
-              onOpenNotifications={() => setShowNotifications(true)}
-              onOpenSync={() => setShowSyncModal(true)}
-              onOpenAdminUsers={() => setShowAdminUsers(true)}
-              pendingUsersCount={pendingUsersCount}
-              onShowToast={showToast}
-            />
-          )}
-        </Suspense>
-      </div>
+            {(currentTab === 'plantel' || currentTab === 'chat_staff') && (
+              <SquadView
+                key={currentTab}
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowToast={showToast}
+                initialSquadTab={currentTab === 'chat_staff' ? 'chat_staff' : 'jogadores'}
+              />
+            )}
 
-      {/* Global Bottom Navigation */}
-      <Navbar
-        currentTab={currentTab}
-        lang={state.lang}
-        onNavigate={(tab) => setCurrentTab(tab)}
-        onOpenMore={() => setShowMoreDrawer(true)}
-        hasActiveMatch={hasActiveMatch}
-        pendingCount={pendingUsersCount}
-      />
+            {currentTab === 'relatorios' && (
+              <RelatoriosView
+                state={state}
+                onUpdateState={updateState}
+                onNavigate={handleNavigate}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenNotifications={() => setShowNotifications(true)}
+                onOpenSync={() => setShowSyncModal(true)}
+                onOpenAdminUsers={() => setShowAdminUsers(true)}
+                pendingUsersCount={pendingUsersCount}
+                onShowToast={showToast}
+              />
+            )}
+          </Suspense>
+        </div>
 
-      {/* More / Gestão Drawer */}
-      <MoreDrawer
-        isOpen={showMoreDrawer}
-        onClose={() => setShowMoreDrawer(false)}
-        state={state}
-        onNavigate={(tab) => {
-          handleNavigate(tab);
-          setShowMoreDrawer(false);
-        }}
-        onOpenSettings={() => setShowSettings(true)}
-        onOpenDatabase={() => setShowDatabase(true)}
-        onOpenNotifications={() => setShowNotifications(true)}
-        onOpenSync={() => setShowSyncModal(true)}
-        onOpenAdminUsers={() => setShowAdminUsers(true)}
-        onOpenAuditLogs={() => setShowAuditLogs(true)}
-        onOpenInviteStaff={() => setShowInviteStaff(true)}
-        onOpenSeasons={() => setShowSeasonSelector(true)}
-        pendingUsersCount={pendingUsersCount}
-        onLogout={handleLogout}
-      />
-
-      {/* Modals */}
-      {/* Database Modal */}
-      {showDatabase && (
-        <DatabaseModal
-          state={state}
-          onUpdateState={updateState}
-          onClose={() => setShowDatabase(false)}
-          onShowToast={showToast}
-          onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+        {/* Global Bottom Navigation */}
+        <Navbar
+          currentTab={currentTab}
+          lang={state.lang}
+          onNavigate={(tab) => setCurrentTab(tab)}
+          onOpenMore={() => setShowMoreDrawer(true)}
+          hasActiveMatch={hasActiveMatch}
+          pendingCount={pendingUsersCount}
         />
-      )}
 
-      {/* Settings Modal */}
-      {showSettings && (
-        <SettingsModal
+        {/* More / Gestão Drawer */}
+        <MoreDrawer
+          isOpen={showMoreDrawer}
+          onClose={() => setShowMoreDrawer(false)}
           state={state}
-          onUpdateState={updateState}
-          onClose={() => setShowSettings(false)}
-          onShowToast={showToast}
-          onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-          onOpenAdminUsers={() => setShowAdminUsers(true)}
-          pendingUsersCount={pendingUsersCount}
-        />
-      )}
-
-      {/* Admin Users & Coaches Access Modal */}
-      {showAdminUsers && (
-        <AdminUsersModal
-          state={state}
-          onUpdateState={updateState}
-          onClose={() => setShowAdminUsers(false)}
-          onShowToast={showToast}
-        />
-      )}
-
-      {/* Audit Log Modal */}
-      {showAuditLogs && <AuditLogModal state={state} onClose={() => setShowAuditLogs(false)} onShowToast={showToast} />}
-
-      {/* Team Invite Modal */}
-      {showInviteStaff && (
-        <TeamInviteModal
-          state={state}
-          onUpdateState={updateState}
-          onClose={() => setShowInviteStaff(false)}
-          onShowToast={showToast}
-        />
-      )}
-
-      {/* Season Selector Modal */}
-      {showSeasonSelector && (
-        <SeasonSelectorModal
-          state={state}
-          onUpdateState={updateState}
-          onClose={() => setShowSeasonSelector(false)}
-          onShowToast={showToast}
-        />
-      )}
-
-      {/* Notifications Modal */}
-      {showNotifications && (
-        <NotificationModal
-          state={state}
-          onUpdateState={updateState}
-          onClose={() => setShowNotifications(false)}
           onNavigate={(tab) => {
             handleNavigate(tab);
-            setShowNotifications(false);
+            setShowMoreDrawer(false);
           }}
+          onOpenSettings={() => setShowSettings(true)}
+          onOpenDatabase={() => setShowDatabase(true)}
+          onOpenNotifications={() => setShowNotifications(true)}
+          onOpenSync={() => setShowSyncModal(true)}
           onOpenAdminUsers={() => setShowAdminUsers(true)}
-          onShowToast={showToast}
+          onOpenAuditLogs={() => setShowAuditLogs(true)}
+          onOpenInviteStaff={() => setShowInviteStaff(true)}
+          onOpenSeasons={() => setShowSeasonSelector(true)}
+          pendingUsersCount={pendingUsersCount}
+          onLogout={handleLogout}
         />
-      )}
 
-      {/* Sync Status Modal */}
-      {showSyncModal && (
-        <SyncModal
-          state={state}
-          onUpdateState={updateState}
-          onClose={() => setShowSyncModal(false)}
-          onShowToast={showToast}
-        />
-      )}
+        {/* Modals */}
+        {/* Database Modal */}
+        {showDatabase && (
+          <DatabaseModal
+            state={state}
+            onUpdateState={updateState}
+            onClose={() => setShowDatabase(false)}
+            onShowToast={showToast}
+            onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+          />
+        )}
 
-      {/* Global Confirmation Modal */}
-      {confirmModalConfig && (
-        <ConfirmModal
-          message={confirmModalConfig.message}
-          lang="pt"
-          onConfirm={() => {
-            confirmModalConfig.onConfirm();
-            setConfirmModalConfig(null);
-          }}
-          onCancel={() => setConfirmModalConfig(null)}
-        />
-      )}
+        {/* Settings Modal */}
+        {showSettings && (
+          <SettingsModal
+            state={state}
+            onUpdateState={updateState}
+            onClose={() => setShowSettings(false)}
+            onShowToast={showToast}
+            onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+            onOpenAdminUsers={() => setShowAdminUsers(true)}
+            pendingUsersCount={pendingUsersCount}
+          />
+        )}
 
-      {/* Floating Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 z-[999999] bg-slate-900/95 border border-cyan-500/50 text-white px-5 py-3 rounded-2xl shadow-[0_0_30px_rgba(0,210,255,0.3)] font-mono text-xs animate-in fade-in slide-in-from-bottom-5 backdrop-blur-md flex items-center gap-2.5 max-w-[90vw] text-center">
-          <span className="text-cyan-400 text-sm">⚽</span>
-          <span>{toastMessage}</span>
-        </div>
-      )}
-    </div>
+        {/* Admin Users & Coaches Access Modal */}
+        {showAdminUsers && (
+          <AdminUsersModal
+            state={state}
+            onUpdateState={updateState}
+            onClose={() => setShowAdminUsers(false)}
+            onShowToast={showToast}
+          />
+        )}
+
+        {/* Audit Log Modal */}
+        {showAuditLogs && (
+          <AuditLogModal state={state} onClose={() => setShowAuditLogs(false)} onShowToast={showToast} />
+        )}
+
+        {/* Team Invite Modal */}
+        {showInviteStaff && (
+          <TeamInviteModal
+            state={state}
+            onUpdateState={updateState}
+            onClose={() => setShowInviteStaff(false)}
+            onShowToast={showToast}
+          />
+        )}
+
+        {/* Season Selector Modal */}
+        {showSeasonSelector && (
+          <SeasonSelectorModal
+            state={state}
+            onUpdateState={updateState}
+            onClose={() => setShowSeasonSelector(false)}
+            onShowToast={showToast}
+          />
+        )}
+
+        {/* Notifications Modal */}
+        {showNotifications && (
+          <NotificationModal
+            state={state}
+            onUpdateState={updateState}
+            onClose={() => setShowNotifications(false)}
+            onNavigate={(tab) => {
+              handleNavigate(tab);
+              setShowNotifications(false);
+            }}
+            onOpenAdminUsers={() => setShowAdminUsers(true)}
+            onShowToast={showToast}
+          />
+        )}
+
+        {/* Sync Status Modal */}
+        {showSyncModal && (
+          <SyncModal
+            state={state}
+            onUpdateState={updateState}
+            onClose={() => setShowSyncModal(false)}
+            onShowToast={showToast}
+          />
+        )}
+
+        {/* Global Confirmation Modal */}
+        {confirmModalConfig && (
+          <ConfirmModal
+            message={confirmModalConfig.message}
+            lang="pt"
+            onConfirm={() => {
+              confirmModalConfig.onConfirm();
+              setConfirmModalConfig(null);
+            }}
+            onCancel={() => setConfirmModalConfig(null)}
+          />
+        )}
+
+        {/* Floating Toast Notification */}
+        {toastMessage && (
+          <div className="fixed bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 z-[999999] bg-slate-900/95 border border-cyan-500/50 text-white px-5 py-3 rounded-2xl shadow-[0_0_30px_rgba(0,210,255,0.3)] font-mono text-xs animate-in fade-in slide-in-from-bottom-5 backdrop-blur-md flex items-center gap-2.5 max-w-[90vw] text-center">
+            <span className="text-cyan-400 text-sm">⚽</span>
+            <span>{toastMessage}</span>
+          </div>
+        )}
+      </div>
+    </CloudSyncContext.Provider>
   );
 }

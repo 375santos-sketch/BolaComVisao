@@ -1,5 +1,12 @@
 import { AppState, ScheduledMatch, Player, Match, Language } from '../types';
-import { playerLabel, computeAge, sortPlayerObjs, calcPlayerMinutes, getMatchCompetitionDetails } from './utils';
+import {
+  playerLabel,
+  computeAge,
+  sortPlayerObjs,
+  calcPlayerMinutes,
+  getMatchCompetitionDetails,
+  defaultSeason
+} from './utils';
 
 /**
  * Lazy loads the XLSX library on demand so it does not inflate the initial bundle.
@@ -67,7 +74,7 @@ function createBolaComVisaoSheet(
   const metaRows: (string | number)[][] = [
     firstHeaderRow,
     ['DOCUMENTO:', title.toUpperCase()],
-    ['CLUBE:', myClub, 'ESCALÃO:', state.category || 'Geral', 'ÉPOCA:', state.season || '2025/2026'],
+    ['CLUBE:', myClub, 'ESCALÃO:', state.category || 'Geral', 'ÉPOCA:', state.season || defaultSeason()],
     ...(Array.isArray(extraMetaRows) ? (extraMetaRows as (string | number)[][]) : []),
     ['EMISSÃO / MARCA DE ÁGUA:', 'BolaComVisao', 'DATA:', currentDate],
     [], // Blank separator row
@@ -946,7 +953,7 @@ export function exportTXTReport(state: AppState, _lang: Language) {
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : 'BolaComVisao';
   lines.push(`Clube: ${myClub}`);
   lines.push(`Escalão: ${state.category || 'Geral'}`);
-  lines.push(`Época: ${state.season || '2025/2026'}`);
+  lines.push(`Época: ${state.season || defaultSeason()}`);
   lines.push(`Total de Jogadores: ${state.roster.filter((p) => p.active !== false).length}`);
   lines.push(`Total de Jogos: ${state.matches.length}`);
   lines.push(`Total de Treinos: ${state.trainings.length}`);

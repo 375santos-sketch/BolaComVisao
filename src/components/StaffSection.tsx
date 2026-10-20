@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppState, StaffMember } from '../types';
 import { StaffModal } from './StaffModal';
+import { defaultSeason } from '../lib/utils';
 
 interface StaffSectionProps {
   state: AppState;
@@ -131,7 +132,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({
             </div>
             <p className="text-xs font-mono text-slate-400">
               Gestão da equipa técnica e liderança associada ao escalão {state.category || 'Sub-19'} (
-              {state.season || '2025/2026'}).
+              {state.season || defaultSeason()}).
             </p>
           </div>
 

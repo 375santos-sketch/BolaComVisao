@@ -196,6 +196,9 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
     setParsedRows((prev) => prev.map((r) => (r.isDuplicate ? { ...r, duplicateAction: action } : r)));
   };
 
+  // Imported matches belong to the active team
+  const teamTag = { teamId: state.activeTeamId, teamName: state.myClubName };
+
   // Final Import Confirmation
   const handleConfirmImport = () => {
     const toImport = parsedRows.filter((r) => r.selected && r.isValid);
@@ -218,7 +221,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
         if (row.duplicateAction === 'replace') {
           const matchIndex = existingMatches.findIndex((m) => m.id === row.duplicateWithMatchId);
           if (matchIndex >= 0) {
-            const updatedMatch = buildMatchFromParsedRow(row, state.roster || []);
+            const updatedMatch = { ...buildMatchFromParsedRow(row, state.roster || []), ...teamTag };
             updatedMatch.id = row.duplicateWithMatchId;
             existingMatches[matchIndex] = updatedMatch;
             replacedCount++;
@@ -228,7 +231,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
       }
 
       // Create new
-      const newMatch = buildMatchFromParsedRow(row, state.roster || []);
+      const newMatch = { ...buildMatchFromParsedRow(row, state.roster || []), ...teamTag };
       existingMatches.push(newMatch);
       addedCount++;
     });
@@ -257,8 +260,10 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
     const existing = state.matches || [];
     const matches =
       replaceExisting && sheetDuplicate
-        ? existing.map((m) => (m.id === sheetDuplicate.id ? { ...sheetImport.match, id: sheetDuplicate.id } : m))
-        : [...existing, sheetImport.match];
+        ? existing.map((m) =>
+            m.id === sheetDuplicate.id ? { ...sheetImport.match, ...teamTag, id: sheetDuplicate.id } : m
+          )
+        : [...existing, { ...sheetImport.match, ...teamTag }];
     matches.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     onUpdateState({ matches });
     onShowToast(`🎉 Jogo vs ${sheetImport.match.opponent} recuperado da Ficha de Jogo!`);

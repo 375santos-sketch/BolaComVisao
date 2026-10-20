@@ -4,6 +4,7 @@ import { uid, defaultSeason } from '../../lib/utils';
 import logoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { isAppAdmin } from '../../services/cloudAuthService';
 import { getUserAccessibleTeams, isAdminAccount } from '../../lib/permissionsEngine';
+import { SyncStatusBadge } from '../ui/SyncStatusBadge';
 
 interface TeamsHubViewProps {
   state: AppState;
@@ -32,7 +33,6 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
-  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
   const syncInfo = state.syncInfo;
   const isAdmin = isAppAdmin(state.currentUser);
 
@@ -291,38 +291,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {onOpenSync && (
-            <button
-              onClick={onOpenSync}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl font-mono text-xs font-bold border transition-all ${
-                !isOnline
-                  ? 'bg-amber-950/90 border-amber-500/70 text-amber-300 animate-pulse'
-                  : syncInfo?.status === 'syncing'
-                    ? 'bg-cyan-950/80 border-cyan-500/60 text-cyan-300'
-                    : 'bg-slate-900 border-cyan-500/30 text-emerald-300 hover:border-cyan-400'
-              }`}
-              title={
-                !isOnline ? 'Modo Offline Ativo. Clique para gerir.' : 'Estado de Sincronização. Clique para gerir.'
-              }
-            >
-              {!isOnline ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
-                  <span>⚡ Offline</span>
-                </>
-              ) : syncInfo?.status === 'syncing' ? (
-                <>
-                  <span className="animate-spin text-xs">🔄</span>
-                  <span className="hidden sm:inline">A Sincronizar</span>
-                </>
-              ) : (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
-                  <span>Nuvem</span>
-                </>
-              )}
-            </button>
-          )}
+          {onOpenSync && <SyncStatusBadge onClick={onOpenSync} fallbackSyncInfo={syncInfo} />}
 
           {state.currentUser && (
             <div className="hidden sm:flex items-center gap-1.5 bg-slate-900 border border-cyan-500/30 rounded-xl px-2.5 py-1 text-xs font-mono text-cyan-200">

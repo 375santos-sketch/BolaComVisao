@@ -11,6 +11,7 @@ import {
   StaffUnavailability,
   SquadProfile
 } from '../types';
+import { defaultSeason } from './utils';
 
 /**
  * Modular Subcollection Paths Architecture:
@@ -75,7 +76,7 @@ export function convertMonolithicToModular(state: AppState, clubId = 'main'): Cl
     id: t.id,
     name: t.clubName || state.myClubName || 'Equipa Principal',
     category: t.category || state.category || 'Sub-11',
-    season: t.season || state.season || '2025/2026',
+    season: t.season || state.season || defaultSeason(),
     tacticFormat: t.tacticFormat || state.tacticFormat || 7
   }));
 
@@ -85,7 +86,7 @@ export function convertMonolithicToModular(state: AppState, clubId = 'main'): Cl
       id: currentTeamId,
       name: state.myClubName || 'Equipa Principal',
       category: state.category || 'Sub-11',
-      season: state.season || '2025/2026',
+      season: state.season || defaultSeason(),
       tacticFormat: state.tacticFormat || 7
     });
   }
@@ -207,7 +208,7 @@ export function convertModularToMonolithic(
     myClubStadium: modular.profile.myClubStadium,
     clubLogoUrl: modular.profile.clubLogoUrl,
     category: targetTeam?.category || 'Sub-11',
-    season: targetTeam?.season || '2025/2026',
+    season: targetTeam?.season || defaultSeason(),
     staffMembers: modular.staff,
     opponentScouting: teamScouting,
     exerciseLibrary: modular.exercises,

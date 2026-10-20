@@ -4,6 +4,7 @@ import { isAppAdmin } from '../services/cloudAuthService';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import logoImg from '../assets/images/bolacomvisao_logo_1786622535530.jpg';
+import { defaultSeason } from '../lib/utils';
 
 export interface MoreDrawerProps {
   isOpen: boolean;
@@ -253,7 +254,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
                   <div className="font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5">
                     <span>Épocas Desportivas</span>
                     <Badge variant="slate" size="xs">
-                      {state.season || '2025/2026'}
+                      {state.season || defaultSeason()}
                     </Badge>
                   </div>
                   <div className="text-[11px] text-slate-400">Histórico multi-época sem perda de dados</div>

@@ -1,5 +1,5 @@
 import { Match, MatchType, MatchLocation, GoalEvent, Player } from '../types';
-import { uid, defaultSeason, sanitizeExcelText, sanitizeExcelRawCell } from './utils';
+import { uid, defaultSeason, seasonFromDate, sanitizeExcelText, sanitizeExcelRawCell } from './utils';
 
 async function getXLSX() {
   return await import('xlsx');
@@ -510,7 +510,7 @@ export function parseMatchRows(
     const rawLocation = mapping.location ? row[mapping.location] : 'casa';
     const rawPhase = mapping.phase ? sanitizeExcelText(row[mapping.phase]) : '';
     const rawTournament = mapping.tournamentName ? sanitizeExcelText(row[mapping.tournamentName]) : '';
-    const rawSeason = mapping.season ? String(row[mapping.season] || '').trim() : seasonFallback;
+    const rawSeason = mapping.season ? String(row[mapping.season] || '').trim() : '';
     const rawNotes = mapping.notes ? sanitizeExcelText(row[mapping.notes]) : '';
 
     // Handle goals & scores (support '3-1', '2x0', etc.)
@@ -606,7 +606,7 @@ export function parseMatchRows(
       location: matchLocation,
       phase: rawPhase || undefined,
       tournamentName: rawTournament || undefined,
-      season: rawSeason || seasonFallback,
+      season: rawSeason || (parsedDate ? seasonFromDate(parsedDate) : seasonFallback),
       goalsScored,
       goalsConceded,
       cornersFor,
