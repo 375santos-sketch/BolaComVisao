@@ -1,0 +1,7 @@
+node_modules
+dist
+build
+coverage
+.aistudio
+firebase-applet-config.json
+*.min.js

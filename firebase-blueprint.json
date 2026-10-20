@@ -1,0 +1,167 @@
+{
+  "entities": {
+    "UserAccount": {
+      "title": "UserAccount",
+      "description": "User profile and permissions for coaches, staff, and club administrators",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "username": { "type": "string", "maxLength": 80 },
+        "email": { "type": "string", "maxLength": 120 },
+        "name": { "type": "string", "maxLength": 100 },
+        "role": {
+          "type": "string",
+          "enum": [
+            "Administrador",
+            "Treinador Principal",
+            "Treinador Adjunto",
+            "Treinador de Guarda-Redes",
+            "Preparador Físico",
+            "Analista / Observador",
+            "Fisioterapeuta / Médico",
+            "Diretor Desportivo",
+            "Coordenador Técnico",
+            "Seccionista / Dirigente",
+            "Outro"
+          ]
+        },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "approvedBy": { "type": "string", "maxLength": 100 },
+        "approvedAt": { "type": "number" },
+        "assignedTeams": { "type": "array" },
+        "clubId": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "username", "role", "status"]
+    },
+    "UserDocument": {
+      "title": "UserDocument",
+      "description": "Top-level user record stored in the /users collection",
+      "type": "object",
+      "properties": {
+        "account": { "$ref": "UserAccount" },
+        "passHash": { "type": "string", "maxLength": 128 },
+        "lastActiveAt": { "type": "number" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["account"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "System administrator designation record",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 120 },
+        "role": { "type": "string", "enum": ["Administrador"] },
+        "grantedAt": { "type": "number" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "ClubWorkspace": {
+      "title": "ClubWorkspace",
+      "description": "Central master database state and sync metadata for the football club",
+      "type": "object",
+      "properties": {
+        "state": { "type": "object" },
+        "updatedAt": { "type": "number" },
+        "lastUpdatedBy": { "type": "string", "maxLength": 128 },
+        "lastUpdatedByName": { "type": "string", "maxLength": 100 },
+        "clubId": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["state", "updatedAt"]
+    },
+    "SystemConfig": {
+      "title": "SystemConfig",
+      "description": "Global system configurations and diagnostic records",
+      "type": "object",
+      "properties": {
+        "version": { "type": "string" },
+        "updatedAt": { "type": "number" },
+        "maintenance": { "type": "boolean" }
+      }
+    },
+    "TeamDatabaseMeta": {
+      "title": "TeamDatabaseMeta",
+      "description": "Per-team dedicated custom spreadsheet database metadata",
+      "type": "object",
+      "properties": {
+        "clubId": { "type": "string", "maxLength": 64 },
+        "name": { "type": "string", "maxLength": 100 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "number" },
+        "updatedBy": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["clubId", "name", "createdBy", "updatedAt"]
+    },
+    "TeamDataset": {
+      "title": "TeamDataset",
+      "description": "Team dataset schema definition, column headers and row count",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "columns": { "type": "array" },
+        "rowCount": { "type": "number" },
+        "version": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "updatedBy": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["name", "columns", "rowCount", "version", "updatedAt", "updatedBy"]
+    },
+    "TeamDatabaseRow": {
+      "title": "TeamDatabaseRow",
+      "description": "Individual row in subcollection guaranteeing < 1MB doc size",
+      "type": "object",
+      "properties": {
+        "data": { "type": "object" },
+        "order": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "updatedBy": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["data", "order", "updatedAt", "updatedBy"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserDocument",
+      "description": "Registered coach, staff, and admin user profiles and credentials"
+    },
+    "/admins/{adminId}": {
+      "schema": "AdminRecord",
+      "description": "Dedicated trusted master admin documents for fast secure RBAC checks"
+    },
+    "/club_workspace/{workspaceId}": {
+      "schema": "ClubWorkspace",
+      "description": "Shared real-time tactical, squad roster, trainings, and match records"
+    },
+    "/team_workspaces/{teamId}": {
+      "schema": "ClubWorkspace",
+      "description": "Team-isolated workspace records"
+    },
+    "/team_databases/{teamId}": {
+      "schema": "TeamDatabaseMeta",
+      "description": "Team-isolated custom Excel database root metadata"
+    },
+    "/team_databases/{teamId}/datasets/{datasetId}": {
+      "schema": "TeamDataset",
+      "description": "Team dataset metadata and column definitions"
+    },
+    "/team_databases/{teamId}/datasets/{datasetId}/rows/{rowId}": {
+      "schema": "TeamDatabaseRow",
+      "description": "Team dataset individual rows stored in subcollection"
+    },
+    "/clubs/{clubId}": {
+      "schema": "ClubWorkspace",
+      "description": "Multi-tenant club partitioned records"
+    },
+    "/invitations/{invitationId}": {
+      "schema": "UserAccount",
+      "description": "Pending and active staff club invitations"
+    },
+    "/system/{docId}": {
+      "schema": "SystemConfig",
+      "description": "System metadata and configuration"
+    }
+  }
+}

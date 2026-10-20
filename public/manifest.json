@@ -1,0 +1,64 @@
+{
+  "name": "BolaComVisão - Gestão Desportiva & Treinadores",
+  "short_name": "BolaComVisão",
+  "description": "Plataforma profissional de gestão desportiva, convocatórias, jogos em direto, treinos, inteligência de assiduidade e relatórios para clubes e treinadores.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
+  "background_color": "#030712",
+  "theme_color": "#06b6d4",
+  "orientation": "any",
+  "categories": ["sports", "productivity", "management"],
+  "lang": "pt-PT",
+  "shortcuts": [
+    {
+      "name": "Convocatória Rápida",
+      "short_name": "Convocatória",
+      "description": "Criar ou consultar a convocatória do próximo jogo",
+      "url": "/?tab=convocatoria",
+      "icons": [{ "src": "/logo.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Registo de Presenças",
+      "short_name": "Presenças",
+      "description": "Marcar presenças e assiduidade no treino",
+      "url": "/?tab=treinos",
+      "icons": [{ "src": "/logo.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Modo Jogo ao Vivo",
+      "short_name": "Jogo ao Vivo",
+      "description": "Acompanhar cronómetro, golos, cartões e substituições",
+      "url": "/?tab=jogo",
+      "icons": [{ "src": "/logo.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Relatórios da Direção",
+      "short_name": "Relatórios",
+      "description": "Consultar dashboard da direção e métricas globais",
+      "url": "/?tab=relatorios",
+      "icons": [{ "src": "/logo.jpg", "sizes": "192x192" }]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
+}

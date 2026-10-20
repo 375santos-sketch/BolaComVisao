@@ -1,0 +1,739 @@
+import React, { useState, useEffect } from 'react';
+import { AppState, Exercise, ExerciseCategory, Player, SessionBlock, Training } from '../../../types';
+import { t } from '../../../i18n/dict';
+import { uid } from '../../../lib/utils';
+import { Header } from '../../Header';
+import { ExerciseLibraryModal } from '../../ExerciseLibraryModal';
+import { BatchTrainingSection } from './BatchTrainingSection';
+import { getAllPDFDocuments, getPDFDocumentById, PDFDocumentItem } from '../../../lib/pdfLibraryDB';
+import { PDFPickerModal } from './PDFPickerModal';
+import { PDFViewerModal } from './PDFViewerModal';
+import { TrainingFormData, TRAINING_TYPES } from './types';
+
+interface TrainingEditorProps {
+  trainingForm: TrainingFormData;
+  setTrainingForm: React.Dispatch<React.SetStateAction<TrainingFormData | null>>;
+  state: AppState;
+  onUpdateState: (updates: Partial<AppState>) => void;
+  onNavigate: (tab: any, targetId?: string) => void;
+  onOpenSettings: () => void;
+  onOpenNotifications?: () => void;
+  onOpenSync?: () => void;
+  onShowToast: (msg: string) => void;
+  creationMode: 'single' | 'batch';
+  setCreationMode: (mode: 'single' | 'batch') => void;
+  eligiblePlayers: Player[];
+  onSaveTraining: (forceStatus?: boolean) => void;
+  onBatchGenerated: (newTrainings: Training[]) => void;
+}
+
+export const TrainingEditor: React.FC<TrainingEditorProps> = ({
+  trainingForm,
+  setTrainingForm,
+  state,
+  onUpdateState,
+  onNavigate,
+  onOpenSettings,
+  onOpenNotifications,
+  onOpenSync,
+  onShowToast,
+  creationMode,
+  setCreationMode,
+  eligiblePlayers,
+  onSaveTraining,
+  onBatchGenerated
+}) => {
+  const [libraryModalMode, setLibraryModalMode] = useState<'closed' | 'manage' | 'pick'>('closed');
+  const [showPDFPicker, setShowPDFPicker] = useState<boolean>(false);
+  const [viewerDoc, setViewerDoc] = useState<PDFDocumentItem | null>(null);
+  const [pdfLibraryCount, setPdfLibraryCount] = useState<number>(0);
+  const exerciseLibrary = state.exerciseLibrary || [];
+
+  useEffect(() => {
+    getAllPDFDocuments().then((docs) => setPdfLibraryCount(docs.length)).catch(() => {});
+  }, []);
+
+  const isEdit = !!trainingForm.id;
+  const plannedMinutes = (trainingForm.sessionBlocks || []).reduce((sum, b) => sum + (b.durationMinutes || 0), 0);
+  const totalDuration = trainingForm.durationMinutes || 90;
+  const isOvertime = plannedMinutes > totalDuration;
+
+  const handleToggleAbsence = (pId: string) => {
+    const isAbs = trainingForm.absences.includes(pId);
+    const newAbs = isAbs ? trainingForm.absences.filter((x) => x !== pId) : [...trainingForm.absences, pId];
+    setTrainingForm({ ...trainingForm, absences: newAbs });
+  };
+
+  const handleAddCustomBlock = () => {
+    const newBlock: SessionBlock = { id: uid(), title: '', durationMinutes: 10 };
+    setTrainingForm({ ...trainingForm, sessionBlocks: [...trainingForm.sessionBlocks, newBlock] });
+  };
+
+  const handleAddBlockFromExercise = (exercise: Exercise) => {
+    const newBlock: SessionBlock = {
+      id: uid(),
+      exerciseId: exercise.id,
+      title: exercise.name,
+      category: exercise.category,
+      durationMinutes: exercise.durationMinutes,
+      notes: exercise.description
+    };
+    setTrainingForm({ ...trainingForm, sessionBlocks: [...trainingForm.sessionBlocks, newBlock] });
+    setLibraryModalMode('closed');
+    onShowToast(`"${exercise.name}" adicionado à sessão! ➕`);
+  };
+
+  const handleAddBlockFromPDF = (doc: PDFDocumentItem) => {
+    const cat = doc.category && doc.category !== 'geral' ? (doc.category as ExerciseCategory) : undefined;
+    const newBlock: SessionBlock = {
+      id: uid(),
+      pdfId: doc.id,
+      pdfTitle: doc.title,
+      pdfFileName: doc.fileName,
+      title: doc.title,
+      category: cat,
+      durationMinutes: 15,
+      notes: doc.description || `Ficha de Treino em PDF: ${doc.fileName}`
+    };
+    setTrainingForm({ ...trainingForm, sessionBlocks: [...trainingForm.sessionBlocks, newBlock] });
+    setShowPDFPicker(false);
+    onShowToast(`"${doc.title}" adicionado da biblioteca de PDFs! 📄`);
+  };
+
+  const handleOpenBlockPDF = async (pdfId: string) => {
+    try {
+      const doc = await getPDFDocumentById(pdfId);
+      if (doc) {
+        setViewerDoc(doc);
+      } else {
+        onShowToast('Documento PDF não encontrado na biblioteca local.');
+      }
+    } catch {
+      onShowToast('Erro ao abrir documento PDF.');
+    }
+  };
+
+  const handleUpdateBlock = (blockId: string, updates: Partial<SessionBlock>) => {
+    setTrainingForm({
+      ...trainingForm,
+      sessionBlocks: trainingForm.sessionBlocks.map((b) => (b.id === blockId ? { ...b, ...updates } : b))
+    });
+  };
+
+  const handleRemoveBlock = (blockId: string) => {
+    setTrainingForm({ ...trainingForm, sessionBlocks: trainingForm.sessionBlocks.filter((b) => b.id !== blockId) });
+  };
+
+  const handleMoveBlock = (index: number, direction: -1 | 1) => {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= trainingForm.sessionBlocks.length) return;
+    const blocks = [...trainingForm.sessionBlocks];
+    [blocks[index], blocks[newIndex]] = [blocks[newIndex], blocks[index]];
+    setTrainingForm({ ...trainingForm, sessionBlocks: blocks });
+  };
+
+  return (
+    <>
+      <div className="pb-44 max-w-4xl mx-auto text-left relative">
+        <Header
+          title={isEdit ? '✏️ Editar Treino' : t(state.lang, 'tr_new')}
+          lang={state.lang}
+          onGoHome={() => onNavigate('home')}
+          onOpenSettings={onOpenSettings}
+          onOpenDatabase={() => onNavigate('teams')}
+          onOpenNotifications={onOpenNotifications}
+          onOpenSync={onOpenSync}
+          unreadNotificationsCount={(state.notifications || []).filter((n) => !n.read).length}
+          syncInfo={state.syncInfo}
+          clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
+        />
+
+        {/* Top Sticky Quick Action Bar for Mobile & Desktop */}
+        <div className="sticky top-0 z-30 p-3 mb-3.5 rounded-2xl bg-slate-950/95 border border-cyan-500/40 shadow-xl backdrop-blur-md flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xl shrink-0">{isEdit ? '✏️' : creationMode === 'batch' ? '📅' : '⚽'}</span>
+            <div className="min-w-0">
+              <h2 className="text-xs sm:text-sm font-['Chakra_Petch'] font-black uppercase text-white tracking-wider truncate leading-tight flex items-center gap-2">
+                <span>
+                  {isEdit
+                    ? trainingForm.trainingNumber
+                      ? `Editar Treino Nº ${trainingForm.trainingNumber}`
+                      : 'Editar Treino'
+                    : creationMode === 'batch'
+                      ? 'Adicionar Vários Treinos (Período)'
+                      : trainingForm.trainingNumber
+                        ? `Novo Treino (Treino Nº ${trainingForm.trainingNumber})`
+                        : 'Novo Treino'}
+                </span>
+                {trainingForm.trainingNumber && (
+                  <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-mono font-bold">
+                    Nº {trainingForm.trainingNumber}
+                  </span>
+                )}
+              </h2>
+              <span className="text-[10px] font-mono block truncate text-cyan-300">
+                {creationMode === 'batch' && !isEdit
+                  ? 'Geração automática por período e horários'
+                  : trainingForm.completed
+                    ? '🟢 Concluído (Estatísticas)'
+                    : '🟡 Agendado / Planeado'}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setTrainingForm(null)}
+              className="px-2.5 py-2 min-h-[38px] rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white font-mono text-xs font-bold active:scale-95 transition-all"
+              title="Cancelar"
+            >
+              ✕
+            </button>
+
+            {!isEdit && creationMode === 'batch' ? null : (
+              <button
+                type="button"
+                onClick={() => onSaveTraining(trainingForm.completed)}
+                className="px-3.5 py-2 min-h-[38px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,255,0.4)] flex items-center gap-1.5 active:scale-95 transition-all hover:brightness-110"
+              >
+                <span>💾</span>
+                <span>Guardar</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Mode Switcher when creating new training */}
+        {!isEdit && (
+          <div className="p-2 rounded-2xl bg-slate-900 border border-cyan-500/30 mb-3.5 shadow-lg">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+              <button
+                type="button"
+                onClick={() => setCreationMode('single')}
+                className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
+                  creationMode === 'single'
+                    ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span>⚽</span>
+                <span>Treino Individual</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCreationMode('batch')}
+                className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
+                  creationMode === 'batch'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black shadow-[0_0_15px_rgba(0,210,255,0.4)]'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span>📅</span>
+                <span>Vários Treinos (Período)</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {creationMode === 'batch' && !isEdit ? (
+          <BatchTrainingSection
+            isModal={false}
+            existingTrainings={state.trainings || []}
+            onGenerate={onBatchGenerated}
+            onCancel={() => setTrainingForm(null)}
+          />
+        ) : (
+          <>
+            {/* Status Selection Pill */}
+            <div className="p-4 rounded-2xl bg-slate-900 border border-cyan-500/30 mb-3.5 shadow-lg">
+              <label className="block text-xs font-['Chakra_Petch'] font-bold text-cyan-400 uppercase tracking-wider mb-2">
+                🚦 Estado do Treino
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTrainingForm({ ...trainingForm, completed: false })}
+                  className={`p-3 rounded-xl border font-['Chakra_Petch'] font-bold text-xs uppercase flex flex-col items-center justify-center gap-1 transition-all ${
+                    !trainingForm.completed
+                      ? 'bg-amber-950/80 border-amber-400 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <span>🟡</span>
+                    <span>Agendado / Planeado</span>
+                  </div>
+                  <span className="text-[10px] font-mono opacity-80 lowercase">
+                    (Em aberto • não entra nas estatísticas)
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTrainingForm({ ...trainingForm, completed: true })}
+                  className={`p-3 rounded-xl border font-['Chakra_Petch'] font-bold text-xs uppercase flex flex-col items-center justify-center gap-1 transition-all ${
+                    trainingForm.completed
+                      ? 'bg-emerald-950/80 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <span>🟢</span>
+                    <span>Concluído / Fechado</span>
+                  </div>
+                  <span className="text-[10px] font-mono opacity-80 lowercase">
+                    (Realizado • entra nas estatísticas)
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Core Date & Details Card */}
+            <div className="card space-y-3.5 mb-3.5">
+              {trainingForm.trainingNumber && (
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-amber-500/30">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🏋️</span>
+                    <div>
+                      <div className="text-xs font-['Chakra_Petch'] font-black uppercase text-amber-300 tracking-wider">
+                        Treino {trainingForm.trainingNumber}
+                      </div>
+                      <div className="text-[10px] font-mono text-slate-400">
+                        {state.category || 'Equipa'} • Época {state.season || 'Atual'} (Numeração automática e sequencial)
+                      </div>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-mono font-black text-xs">
+                    Nº {trainingForm.trainingNumber}
+                  </span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="field">
+                  <label>{t(state.lang, 'sch_date')} *</label>
+                  <input
+                    type="date"
+                    value={trainingForm.date}
+                    onChange={(e) => setTrainingForm({ ...trainingForm, date: e.target.value })}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="field">
+                  <label>Hora de Início</label>
+                  <input
+                    type="time"
+                    value={trainingForm.time}
+                    onChange={(e) => setTrainingForm({ ...trainingForm, time: e.target.value })}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="field">
+                  <label>Duração (Minutos)</label>
+                  <input
+                    type="number"
+                    min="15"
+                    max="240"
+                    step="5"
+                    value={trainingForm.durationMinutes}
+                    onChange={(e) =>
+                      setTrainingForm({ ...trainingForm, durationMinutes: parseInt(e.target.value, 10) || 90 })
+                    }
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="field">
+                  <label>Local / Campo</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Campo Sintético, Campo Principal, Pavilhão..."
+                    value={trainingForm.location}
+                    onChange={(e) => setTrainingForm({ ...trainingForm, location: e.target.value })}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="field">
+                  <label>Foco / Tipo de Treino</label>
+                  <div className="flex flex-wrap gap-1.5 mb-1.5">
+                    {TRAINING_TYPES.map((typeOpt) => (
+                      <button
+                        key={typeOpt}
+                        type="button"
+                        onClick={() => setTrainingForm({ ...trainingForm, type: typeOpt })}
+                        className={`px-2 py-1 rounded-lg text-[11px] font-mono border transition-all ${
+                          trainingForm.type === typeOpt
+                            ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-bold shadow-sm'
+                            : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        {typeOpt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="field mb-0">
+                <label>{t(state.lang, 'tr_notes')}</label>
+                <textarea
+                  placeholder="Ex: Aquecimento lúdico, circulação de bola, transições defesa-ataque e finalização..."
+                  rows={3}
+                  value={trainingForm.notes}
+                  onChange={(e) => setTrainingForm({ ...trainingForm, notes: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* 🎯 Plano de Sessão de Treino */}
+            <div className="card mb-4 border border-cyan-500/30 bg-slate-900/90">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-cyan-500/20 flex-wrap gap-2">
+                <div>
+                  <div className="panel-title mb-0.5 flex items-center gap-2">
+                    <span>📋 Plano da Sessão</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono">
+                      {trainingForm.sessionBlocks.length} {trainingForm.sessionBlocks.length === 1 ? 'bloco' : 'blocos'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-slate-400 font-mono">
+                    Estrutura a sessão em blocos/exercícios com duração e foco técnico.
+                  </div>
+                </div>
+
+                {/* Total Duration Indicator */}
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <span
+                    className={`px-2.5 py-1 rounded-lg border font-bold ${
+                      isOvertime
+                        ? 'border-red-500/50 bg-red-950/40 text-red-300'
+                        : plannedMinutes === totalDuration
+                          ? 'border-emerald-500/50 bg-emerald-950/40 text-emerald-300'
+                          : 'border-cyan-500/40 bg-cyan-950/40 text-cyan-300'
+                    }`}
+                  >
+                    Planeado: {plannedMinutes} / {totalDuration} min
+                  </span>
+                </div>
+              </div>
+
+              {/* Session Objective */}
+              <div className="field mb-4">
+                <label className="flex items-center gap-1.5">
+                  <span>🎯 Objetivo Principal da Sessão</span>
+                  <span className="text-[10px] text-slate-400 font-normal">(opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Melhorar a pressão defensiva em bloco alto e transição rápida..."
+                  value={trainingForm.sessionObjective}
+                  onChange={(e) => setTrainingForm({ ...trainingForm, sessionObjective: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Action Buttons: Add Custom / Pick from Library / Pick from PDF / Manage Library */}
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setLibraryModalMode('pick')}
+                  className="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <span>📚</span>
+                  <span>Escolher da Biblioteca</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPDFPicker(true)}
+                  className="px-3 py-2 rounded-xl bg-slate-900 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/60 text-xs font-mono font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <span>📄</span>
+                  <span>Ficha PDF</span>
+                  {pdfLibraryCount > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.2 bg-cyan-950 rounded-full border border-cyan-500/40">
+                      {pdfLibraryCount}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleAddCustomBlock}
+                  className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 hover:bg-slate-900 text-xs font-mono font-bold transition-all flex items-center gap-1.5"
+                >
+                  <span>➕</span>
+                  <span>Bloco Personalizado</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setLibraryModalMode('manage')}
+                  className="ml-auto px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white text-xs font-mono transition-all flex items-center gap-1"
+                  title="Gerir Biblioteca de Exercícios Reutilizáveis"
+                >
+                  <span>⚙️</span>
+                  <span className="hidden sm:inline">Gerir Biblioteca ({exerciseLibrary.length})</span>
+                </button>
+              </div>
+
+              {/* Blocks List */}
+              {trainingForm.sessionBlocks.length === 0 ? (
+                <div className="py-6 text-center bg-slate-950/40 rounded-2xl border border-dashed border-slate-800 p-4 space-y-2">
+                  <div className="text-2xl">📋</div>
+                  <div className="text-xs font-mono text-slate-400">
+                    Nenhum bloco ou exercício adicionado a esta sessão.
+                  </div>
+                  <div className="text-[11px] font-mono text-slate-500">
+                    Podes adicionar exercícios da biblioteca ou criar blocos livres para estruturar o tempo do treino.
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {trainingForm.sessionBlocks.map((block, idx) => (
+                    <div
+                      key={block.id}
+                      className="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-2.5 transition-all hover:border-cyan-500/30"
+                    >
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        {/* Index & Title */}
+                        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                          <span className="w-6 h-6 rounded-lg bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                            {idx + 1}
+                          </span>
+                          <input
+                            type="text"
+                            placeholder="Nome do bloco / exercício (Ex: Rondo 4v2)"
+                            value={block.title}
+                            onChange={(e) => handleUpdateBlock(block.id, { title: e.target.value })}
+                            className="flex-1 text-xs font-bold text-white font-['Chakra_Petch'] bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 focus:border-cyan-500 focus:outline-none"
+                          />
+                        </div>
+
+                        {/* Duration & Category & Actions */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {/* Duration */}
+                          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1">
+                            <span className="text-[10px] text-slate-400 font-mono">⏱️</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="180"
+                              step="1"
+                              value={block.durationMinutes || 10}
+                              onChange={(e) =>
+                                handleUpdateBlock(block.id, {
+                                  durationMinutes: parseInt(e.target.value, 10) || 0
+                                })
+                              }
+                              className="w-12 bg-transparent text-cyan-300 font-mono font-bold text-xs text-center focus:outline-none"
+                            />
+                            <span className="text-[10px] font-mono text-slate-400">min</span>
+                          </div>
+
+                          {/* Category selector */}
+                          <select
+                            value={block.category || ''}
+                            onChange={(e) =>
+                              handleUpdateBlock(block.id, {
+                                category: (e.target.value as ExerciseCategory) || undefined
+                              })
+                            }
+                            className="bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-[11px] font-mono text-slate-300 focus:border-cyan-500 focus:outline-none"
+                          >
+                            <option value="">Sem categoria</option>
+                            <option value="aquecimento">🔥 Aquecimento</option>
+                            <option value="tecnica">⚽ Técnica</option>
+                            <option value="tatica">⚡ Tática</option>
+                            <option value="fisico">🏃 Físico</option>
+                            <option value="jogo">🥅 Jogo</option>
+                          </select>
+
+                          {/* Move Up/Down */}
+                          <div className="flex items-center gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveBlock(idx, -1)}
+                              disabled={idx === 0}
+                              className="p-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-30 text-xs"
+                              title="Mover para cima"
+                            >
+                              ▲
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveBlock(idx, 1)}
+                              disabled={idx === trainingForm.sessionBlocks.length - 1}
+                              className="p-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-30 text-xs"
+                              title="Mover para baixo"
+                            >
+                              ▼
+                            </button>
+                          </div>
+
+                          {/* Delete */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBlock(block.id)}
+                            className="p-1.5 rounded-md bg-slate-900 border border-slate-800 text-red-400 hover:border-red-500 text-xs transition-colors"
+                            title="Remover Bloco"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* PDF Attachment Badge */}
+                      {block.pdfId && (
+                        <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-xs">
+                          <div className="flex items-center gap-2 text-cyan-300 font-mono overflow-hidden">
+                            <span>📄</span>
+                            <span className="truncate">
+                              Ficha PDF: <strong>{block.pdfFileName || block.pdfTitle}</strong>
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenBlockPDF(block.pdfId!)}
+                            className="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-[11px] font-mono shrink-0 transition-colors"
+                          >
+                            👁️ Ver PDF
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Notes / Instructions */}
+                      <textarea
+                        rows={2}
+                        placeholder="Instruções específicas para este bloco, regras de espaço, rotações..."
+                        value={block.notes || ''}
+                        onChange={(e) => handleUpdateBlock(block.id, { notes: e.target.value })}
+                        className="w-full text-xs font-mono bg-slate-900/60 border border-slate-800/80 rounded-xl px-2.5 py-1.5 text-slate-300 placeholder-slate-600 focus:border-cyan-500 focus:outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Attendance & Absences Selection Card */}
+            <div className="card mb-4">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-cyan-500/20">
+                <div>
+                  <div className="panel-title mb-0.5">{t(state.lang, 'tr_abs')} & Presenças</div>
+                  <div className="text-xs text-muted">{t(state.lang, 'tr_abs_desc')}</div>
+                </div>
+                <div className="text-right font-mono text-xs">
+                  <span className="text-emerald-400 font-bold">
+                    {eligiblePlayers.length - trainingForm.absences.length} presentes
+                  </span>
+                  <span className="text-slate-500 mx-1">/</span>
+                  <span className="text-red-400 font-bold">{trainingForm.absences.length} faltas</span>
+                </div>
+              </div>
+
+              {eligiblePlayers.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {eligiblePlayers.map((p) => {
+                    const isAbsent = trainingForm.absences.includes(p.id);
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => handleToggleAbsence(p.id)}
+                        className={`p-2.5 rounded-xl border text-left flex items-center justify-between gap-2 transition-all ${
+                          isAbsent
+                            ? 'bg-red-950/80 border-red-500 text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
+                            : 'bg-slate-950/80 border-cyan-500/30 text-white hover:border-cyan-400'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span
+                            className={`w-5 h-5 rounded-md font-mono font-bold text-[10px] flex items-center justify-center shrink-0 ${
+                              isAbsent ? 'bg-red-900 text-red-200' : 'bg-cyan-950 text-cyan-300 border border-cyan-500/40'
+                            }`}
+                          >
+                            {p.number !== null ? p.number : '—'}
+                          </span>
+                          <span className="text-xs font-['Chakra_Petch'] font-bold truncate">{p.name}</span>
+                        </div>
+
+                        <span className="text-xs shrink-0 font-bold">{isAbsent ? '❌ Falta' : '🟢 Pres.'}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="empty">{t(state.lang, 'pl_none')}</div>
+              )}
+            </div>
+
+            {/* ALWAYS VISIBLE STICKY ACTION BAR ON MOBILE & DESKTOP */}
+            <div className="sticky bottom-[calc(4.25rem+env(safe-area-inset-bottom))] sm:bottom-4 z-30 mt-6 p-3 sm:p-4 rounded-2xl bg-slate-950/95 border-2 border-cyan-500/50 shadow-[0_4px_30px_rgba(0,0,0,0.9)] backdrop-blur-md mb-6">
+              <div className="flex flex-col sm:flex-row gap-2.5">
+                <button
+                  type="button"
+                  className="flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 active:scale-95 transition-all min-h-[48px]"
+                  onClick={() => onSaveTraining(true)}
+                >
+                  <span>✅</span>
+                  <span>Guardar & Concluir (Nas Estatísticas)</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="py-3 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/70 text-amber-200 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center justify-center gap-2 shadow-sm min-h-[48px] active:scale-95"
+                  onClick={() => onSaveTraining(false)}
+                >
+                  <span>📅</span>
+                  <span>Guardar como Agendado</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="py-3 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-mono text-xs font-bold min-h-[48px] active:scale-95 transition-all"
+                  onClick={() => setTrainingForm(null)}
+                >
+                  {t(state.lang, 'cancel')}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Exercise Library Modal (Manage or Pick) */}
+      <ExerciseLibraryModal
+        isOpen={libraryModalMode !== 'closed'}
+        onClose={() => setLibraryModalMode('closed')}
+        exercises={exerciseLibrary}
+        onSaveLibrary={(updatedLib) => onUpdateState({ exerciseLibrary: updatedLib })}
+        onShowToast={onShowToast}
+        pickerMode={libraryModalMode === 'pick'}
+        onPick={handleAddBlockFromExercise}
+      />
+
+      {/* PDF Picker Modal */}
+      <PDFPickerModal
+        isOpen={showPDFPicker}
+        onClose={() => setShowPDFPicker(false)}
+        onSelectPDF={handleAddBlockFromPDF}
+        onShowToast={onShowToast}
+      />
+
+      {/* PDF Viewer Modal */}
+      {viewerDoc && (
+        <PDFViewerModal
+          document={viewerDoc}
+          onClose={() => setViewerDoc(null)}
+        />
+      )}
+    </>
+  );
+};

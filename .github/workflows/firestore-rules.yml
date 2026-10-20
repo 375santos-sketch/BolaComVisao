@@ -1,0 +1,39 @@
+name: Deploy Firestore Rules
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'firestore.rules'
+      - 'firebase.json'
+      - 'firestore.indexes.json'
+  workflow_dispatch:
+
+jobs:
+  deploy-rules:
+    name: Validate and Deploy Firestore Rules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy Firestore Rules to Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "::error::Secret FIREBASE_TOKEN não configurado nos Secrets do repositório GitHub. Consulte o README.md para obter instruções de configuração."
+            exit 1
+          fi
+          firebase deploy --only firestore:rules --token "$FIREBASE_TOKEN" --non-interactive

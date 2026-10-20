@@ -1,0 +1,371 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==============================================================================
+    // AUTORIZAÇÃO DE ADMINISTRADOR:
+    // Baseada em registo na coleção /admins/{uid} ou claims de autenticação,
+    // eliminando dependência estática de emails em código nas regras de segurança.
+    // ==============================================================================
+
+    // Default Deny All root fallback
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helper Functions ---
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isMasterAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token.keys().hasAny(['admin']) && request.auth.token.admin == true) ||
+        (request.auth.token.keys().hasAny(['role']) && (request.auth.token.role == 'admin' || request.auth.token.role == 'Administrador')) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isApprovedUser() {
+      return isAuthenticated() && (
+        isMasterAdmin() || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.account.status == 'approved')
+      );
+    }
+
+    /**
+     * Retrieves the clubId assigned to the authenticated user from their user account document.
+     */
+    function getUserClubId() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.account.keys().hasAny(['clubId'])
+             ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.account.clubId
+             : null;
+    }
+
+    /**
+     * Retrieves the user account object for the authenticated user.
+     */
+    function getUserAccount() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.account
+        : null;
+    }
+
+    /**
+     * Retrieves the list of assigned team IDs for the authenticated user.
+     */
+    function getUserAssignedTeams() {
+      let acc = getUserAccount();
+      return (acc != null && acc.keys().hasAny(['assignedTeams']) && acc.assignedTeams is list)
+        ? acc.assignedTeams
+        : [];
+    }
+
+    /**
+     * Enforces strict team-level multi-tenant isolation:
+     * A coach can ONLY read and write data belonging to the specific team workspace(s) assigned to them.
+     * Administrators have global access to all team workspaces.
+     */
+    function canAccessTeamWorkspace(workspaceId) {
+      return isAuthenticated() && (
+        isMasterAdmin() || 
+        (isApprovedUser() && (
+          (getUserAssignedTeams().hasAny([workspaceId, 'all'])) &&
+          (resource == null || !resource.data.keys().hasAny(['clubId']) || resource.data.clubId == getUserClubId() || getUserClubId() == null)
+        ))
+      );
+    }
+
+    /**
+     * Verifies if the authenticated user is an approved member of the specific team.
+     * Administrators have unrestricted access.
+     * Regular members must have teamId in assignedTeams (or 'all') and match clubId.
+     */
+    function isTeamMember(teamId) {
+      return isAuthenticated() && (
+        isMasterAdmin() || 
+        (isApprovedUser() && (
+          getUserAssignedTeams().hasAny([teamId, 'all'])
+        ) && (
+          resource == null || !resource.data.keys().hasAny(['clubId']) || resource.data.clubId == getUserClubId() || getUserClubId() == null
+        ))
+      );
+    }
+
+    /**
+     * Verifies if the authenticated user has edit privileges on the team database:
+     * Allowed: Administrador, Treinador Principal, Treinador Adjunto.
+     */
+    function canEditTeamDatabase(teamId) {
+      let acc = getUserAccount();
+      return isAuthenticated() && (
+        isMasterAdmin() ||
+        (isTeamMember(teamId) && acc != null && (
+          acc.role in ['Administrador', 'Treinador Principal', 'Treinador Adjunto']
+        ))
+      );
+    }
+
+    /**
+     * Validates team database root metadata
+     */
+    function isValidTeamDbMeta(data) {
+      return data is map &&
+        data.size() <= 10 &&
+        data.keys().hasAll(['clubId', 'name', 'createdBy', 'updatedAt']) &&
+        data.clubId is string && data.clubId.size() <= 64 &&
+        data.name is string && data.name.size() <= 100 &&
+        data.createdBy is string && data.createdBy.size() <= 128 &&
+        (!data.keys().hasAny(['updatedBy']) || (data.updatedBy is string && data.updatedBy.size() <= 100)) &&
+        data.updatedAt is number && data.updatedAt >= 0 &&
+        data.updatedAt <= (request.time.toMillis() + 600000);
+    }
+
+    /**
+     * Validates dataset metadata (columns <= 40, rowCount <= 5000, strings <= 500)
+     */
+    function isValidTeamDataset(data) {
+      return data is map &&
+        data.size() <= 10 &&
+        data.keys().hasAll(['name', 'columns', 'rowCount', 'version', 'updatedAt', 'updatedBy']) &&
+        data.name is string && data.name.size() <= 100 &&
+        data.columns is list && data.columns.size() <= 40 &&
+        data.rowCount is number && data.rowCount >= 0 && data.rowCount <= 5000 &&
+        data.version is number &&
+        data.updatedBy is string && data.updatedBy.size() <= 128 &&
+        data.updatedAt is number && data.updatedAt >= 0 &&
+        data.updatedAt <= (request.time.toMillis() + 600000);
+    }
+
+    /**
+     * Validates individual row data in subcollection
+     */
+    function isValidTeamDbRow(data) {
+      return data is map &&
+        data.size() <= 10 &&
+        data.keys().hasAll(['data', 'order', 'updatedAt', 'updatedBy']) &&
+        data.data is map && data.data.size() <= 40 &&
+        data.order is number &&
+        data.updatedBy is string && data.updatedBy.size() <= 128 &&
+        data.updatedAt is number && data.updatedAt >= 0 &&
+        data.updatedAt <= (request.time.toMillis() + 600000);
+    }
+
+    /**
+     * Enforces strict multi-club tenant isolation:
+     * A coach or staff user can ONLY read and write data belonging to their own club workspace.
+     */
+    function canAccessClubWorkspace(workspaceId) {
+      return isAuthenticated() && (
+        isMasterAdmin() || 
+        (isApprovedUser() && (
+          // Exact match with user's assigned clubId
+          (getUserClubId() != null && workspaceId == getUserClubId()) ||
+          // Default legacy workspace fallback for users who haven't yet been assigned a custom clubId
+          (getUserClubId() == null && (workspaceId == 'main' || workspaceId == 'default')) ||
+          // If the resource document has an explicit clubId property matching the user's clubId
+          (resource != null && resource.data.keys().hasAny(['clubId']) && resource.data.clubId == getUserClubId())
+        ))
+      );
+    }
+
+    function isValidUserDoc(data) {
+      return data is map && 
+        data.keys().hasAll(['account']) && 
+        data.account is map && 
+        data.account.keys().hasAll(['id', 'username', 'role', 'status']) && 
+        data.account.id is string && data.account.id.size() <= 128 && 
+        data.account.username is string && data.account.username.size() <= 80 && 
+        data.account.role is string && data.account.role.size() <= 60 && 
+        data.account.status is string && data.account.status in ['pending', 'approved', 'rejected'];
+    }
+
+    /**
+     * Validates club and team workspace payloads to prevent denial-of-wallet,
+     * document bloat, type mismatch, and corrupt timestamp attacks.
+     *
+     * Justificativa dos limites de tamanho:
+     * - data.size() <= 20: O documento raiz armazena apenas 'state', 'updatedAt', 'lastUpdatedBy', 'lastUpdatedByName'
+     *   e metadados opcionais de sincronização (versão, clientTimestamp). 20 chaves protegem contra poluição na raiz.
+     * - data.state.size() <= 50: AppState contém atualmente ~20 propriedades de topo. O limite de 50 previne mapas
+     *   de estado inflacionados permitindo margem saudável para evolução da aplicação.
+     * - Listas de topo (roster <= 250, matches <= 350, trainings <= 600, schedule <= 350, tactics <= 150, teams <= 50):
+     *   Uma época desportiva típica tem 20-30 atletas, ~35 jogos e ~120 treinos. Estes limites suportam histórico
+     *   multi-anual e escalões múltiplos sem permitir injeções de dezenas de milhares de registos maliciosos.
+     * - Strings (clubName <= 200, category <= 100, season <= 50): Suficiente para nomes desportivos completos.
+     * - updatedAt: Impede timestamps negativos ou no futuro distante (margem de 10 min / 600.000 ms para desvio de relógio).
+     */
+    function isValidClubWorkspace(data) {
+      return data is map && 
+        data.size() <= 20 &&
+        data.keys().hasAll(['state', 'updatedAt']) && 
+        data.state is map && 
+        data.state.size() <= 50 &&
+        data.updatedAt is number &&
+        data.updatedAt >= 0 &&
+        data.updatedAt <= (request.time.toMillis() + 600000) &&
+        (!data.state.keys().hasAny(['roster']) || (data.state.roster is list && data.state.roster.size() <= 250)) &&
+        (!data.state.keys().hasAny(['matches']) || (data.state.matches is list && data.state.matches.size() <= 350)) &&
+        (!data.state.keys().hasAny(['trainings']) || (data.state.trainings is list && data.state.trainings.size() <= 600)) &&
+        (!data.state.keys().hasAny(['schedule']) || (data.state.schedule is list && data.state.schedule.size() <= 350)) &&
+        (!data.state.keys().hasAny(['tactics']) || (data.state.tactics is list && data.state.tactics.size() <= 150)) &&
+        (!data.state.keys().hasAny(['teams']) || (data.state.teams is list && data.state.teams.size() <= 50)) &&
+        (!data.state.keys().hasAny(['staffMembers']) || (data.state.staffMembers is list && data.state.staffMembers.size() <= 50)) &&
+        (!data.state.keys().hasAny(['myClubName']) || (data.state.myClubName is string && data.state.myClubName.size() <= 200)) &&
+        (!data.state.keys().hasAny(['clubName']) || (data.state.clubName is string && data.state.clubName.size() <= 200)) &&
+        (!data.state.keys().hasAny(['category']) || (data.state.category is string && data.state.category.size() <= 100)) &&
+        (!data.state.keys().hasAny(['exerciseLibrary']) || (data.state.exerciseLibrary is list && data.state.exerciseLibrary.size() <= 200)) &&
+        (!data.state.keys().hasAny(['season']) || (data.state.season is string && data.state.season.size() <= 50));
+    }
+
+    // --- Collection Security Rules ---
+
+    // Dedicated Admins Collection
+    match /admins/{adminId} {
+      allow read: if isMasterAdmin();
+      allow write: if isMasterAdmin();
+    }
+
+    // User accounts collection
+    match /users/{userId} {
+      // Individual user profile reading
+      allow get: if isAuthenticated() && (
+        isMasterAdmin() || 
+        isOwner(userId) || 
+        isApprovedUser()
+      );
+
+      // Listing user profiles (for admin approval dashboard or club staff directory)
+      allow list: if isAuthenticated() && (
+        isMasterAdmin() || 
+        isApprovedUser()
+      );
+
+      // Self registration (pending status, non-admin role, empty teams) or Master Admin creation
+      allow create: if isAuthenticated() && 
+        isValidId(userId) && 
+        isValidUserDoc(incoming()) && (
+          isMasterAdmin() || 
+          (isOwner(userId) && 
+           incoming().account.status == 'pending' && 
+           incoming().account.role != 'Administrador' &&
+           (!incoming().account.keys().hasAny(['assignedTeams']) || incoming().account.assignedTeams.size() == 0))
+        );
+
+      // Updates: Master Admin can update anything; regular approved owner can update non-critical profile fields only
+      // A regular coach is FORBIDDEN from elevating role, status, clubId, or assigned teams
+      allow update: if isAuthenticated() && 
+        isValidId(userId) && 
+        isValidUserDoc(incoming()) && (
+          isMasterAdmin() || 
+          (isOwner(userId) && 
+           isApprovedUser() && 
+           incoming().account.role == existing().account.role && 
+           incoming().account.status == existing().account.status &&
+           (!existing().account.keys().hasAny(['assignedTeams']) || incoming().account.assignedTeams == existing().account.assignedTeams) &&
+           (!existing().account.keys().hasAny(['clubId']) || incoming().account.clubId == existing().account.clubId))
+        );
+
+      // Only Master Admin can delete accounts
+      allow delete: if isMasterAdmin();
+    }
+
+    // Shared Master Club Database (tactics, squad, matches, trainings, schedule)
+    match /club_workspace/{workspaceId} {
+      allow get, list: if canAccessClubWorkspace(workspaceId);
+      
+      allow create, update: if canAccessClubWorkspace(workspaceId) && 
+        isValidId(workspaceId) && 
+        isValidClubWorkspace(incoming());
+      
+      allow delete: if isMasterAdmin();
+    }
+
+    // Team-isolated workspaces (Enforced per-team access control)
+    match /team_workspaces/{workspaceId} {
+      allow get, list: if canAccessTeamWorkspace(workspaceId);
+      
+      allow create, update: if canAccessTeamWorkspace(workspaceId) && 
+        isValidId(workspaceId) && 
+        isValidClubWorkspace(incoming());
+      
+      allow delete: if isMasterAdmin();
+    }
+
+    // Team-isolated custom spreadsheet databases (Excel datasets and rows)
+    match /team_databases/{teamId} {
+      allow get, list: if isTeamMember(teamId);
+      allow create, update: if canEditTeamDatabase(teamId) && isValidId(teamId) && isValidTeamDbMeta(incoming());
+      allow delete: if isMasterAdmin();
+
+      match /datasets/{datasetId} {
+        allow get, list: if isTeamMember(teamId);
+        allow create, update: if canEditTeamDatabase(teamId) && isValidId(datasetId) && isValidTeamDataset(incoming());
+        // Elimination of an entire dataset is restricted to Administrator
+        allow delete: if isMasterAdmin();
+
+        match /rows/{rowId} {
+          allow get, list: if isTeamMember(teamId);
+          allow create, update: if canEditTeamDatabase(teamId) && isValidId(rowId) && isValidTeamDbRow(incoming());
+          // Elimination of individual rows can be performed by coaches/editors
+          allow delete: if canEditTeamDatabase(teamId);
+        }
+      }
+    }
+
+    // Multi-tenant club subcollections: clubs/{clubId}/...
+    match /clubs/{clubId} {
+      allow get, list: if canAccessClubWorkspace(clubId);
+      allow create, update: if canAccessClubWorkspace(clubId) && isValidId(clubId);
+      allow delete: if isMasterAdmin();
+
+      match /{subcollection}/{docId} {
+        allow get, list: if canAccessClubWorkspace(clubId);
+        allow create, update: if canAccessClubWorkspace(clubId) && isValidId(docId);
+        allow delete: if isMasterAdmin();
+      }
+    }
+
+    // Immutable Audit Logs (Append-only security guarantee)
+    match /audit_logs/{logId} {
+      allow read: if isApprovedUser();
+      allow create: if isAuthenticated() && 
+        isValidId(logId) && 
+        (isMasterAdmin() || (incoming().keys().hasAny(['userId']) && incoming().userId == request.auth.uid));
+      // Absolute immutability: no updates or deletions allowed by anyone
+      allow update, delete: if false;
+    }
+
+    // Staff and Team Invitations
+    match /invitations/{invitationId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isApprovedUser() && isValidId(invitationId);
+      allow delete: if isMasterAdmin();
+    }
+
+    // System configurations & metadata
+    match /system/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isMasterAdmin();
+    }
+  }
+}

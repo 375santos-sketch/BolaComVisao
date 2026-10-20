@@ -1,0 +1,6 @@
+{
+  "name": "BolaComVisão - Gestão de Plantel",
+  "description": "Plataforma avançada de gestão de plantel, convocatórias PDF, acompanhamento de jogos ao vivo e prancha tática para treinadores - BolaComVisão.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
