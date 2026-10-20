@@ -3,6 +3,7 @@ import { AppState, UserAccount } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { isAppAdmin } from '../../services/cloudAuthService';
+import { defaultSeason } from '../../lib/utils';
 
 interface DashboardHeaderProps {
   state: AppState;
@@ -67,7 +68,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
             <div className="flex items-center gap-2.5 text-xs text-slate-400 font-mono mt-1 flex-wrap">
               <span className="text-slate-300">
-                Época: <strong className="text-cyan-300 font-bold">{state.season || '2025/2026'}</strong>
+                Época: <strong className="text-cyan-300 font-bold">{state.season || defaultSeason()}</strong>
               </span>
               <span>•</span>
               <span className="text-slate-400">

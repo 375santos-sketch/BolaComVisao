@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppState, StaffMember } from '../types';
 import { StaffModal } from './StaffModal';
+import { defaultSeason } from '../lib/utils';
 
 interface StaffHighlightSectionProps {
   state: AppState;
@@ -86,7 +87,7 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
               EQUIPA TÉCNICA
             </h2>
             <div className="text-[11px] font-mono text-cyan-400/80">
-              Quadro Técnico & Liderança • {state.category || 'Sub-19'} {state.season || '2025/2026'}
+              Quadro Técnico & Liderança • {state.category || 'Sub-19'} {state.season || defaultSeason()}
             </div>
           </div>
         </div>

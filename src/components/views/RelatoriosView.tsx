@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { StatCard } from '../ui/StatCard';
 import { computeClubBoardSummary, exportTeamComparisonCSV } from '../../lib/reportEngine';
 import { recordAuditLog } from '../../lib/auditEngine';
+import { defaultSeason } from '../../lib/utils';
 
 interface RelatoriosViewProps {
   state: AppState;
@@ -46,7 +47,7 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
         state.currentUser,
         'report_export',
         'relatorio',
-        `Exportou Relatório Institucional da Direção em PDF (${state.season || '2025/2026'})`
+        `Exportou Relatório Institucional da Direção em PDF (${state.season || defaultSeason()})`
       );
       if (onShowToast) onShowToast('Relatório da Direção exportado com sucesso em PDF! 📄');
     } catch (e) {
@@ -325,7 +326,8 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
                       {selectedTeam.clubName} · {selectedTeam.category || 'Sub-19'}
                     </CardTitle>
                     <p className="text-xs text-slate-400 font-mono mt-0.5">
-                      Época {selectedTeam.season || '2025/2026'} · {selectedTeam.roster?.length || 0} Atletas no Plantel
+                      Época {selectedTeam.season || defaultSeason()} · {selectedTeam.roster?.length || 0} Atletas no
+                      Plantel
                     </p>
                   </div>
                   <Badge variant="cyan" size="sm">

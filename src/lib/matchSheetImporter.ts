@@ -1,5 +1,5 @@
 import { Match, Player, GoalEvent, CardEvent, SubEvent, MatchPeriod, ScheduledMatch } from '../types';
-import { uid, formatMinute } from './utils';
+import { uid, formatMinute, seasonFromDate } from './utils';
 import { parseMatchType } from './matchExcelImporter';
 
 /**
@@ -255,7 +255,8 @@ export function parseMatchSheetRows(
     type,
     phase: scheduled?.phase || phase || undefined,
     ...(tournamentName ? { tournamentName } : {}),
-    season: season || options.fallbackSeason,
+    // The sheet's "ÉPOCA" is whatever season was selected when exporting; the game's date is authoritative.
+    season: seasonFromDate(date),
     location: scheduled?.location || location,
     finished: true,
     goals,

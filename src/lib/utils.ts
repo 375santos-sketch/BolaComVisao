@@ -1,4 +1,4 @@
-import { Player, Match, ThemeName, AppState, ScheduledMatch, MatchType } from '../types';
+import { Player, Match, ThemeName, AppState, ScheduledMatch, MatchType, ClubSeason } from '../types';
 import { getLineupSize } from './constants';
 
 /**
@@ -171,10 +171,28 @@ export function playerLabel(p?: Player, noNameFallback = 'Sem Nome'): string {
   return p.number ? `${p.number} - ${p.name}` : p.name || noNameFallback;
 }
 
-export function defaultSeason(): string {
-  const d = new Date();
+/** Football season ("2026/2027") a date belongs to; seasons run from July to June. */
+export function seasonFromDate(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(`${date.slice(0, 10)}T12:00:00`) : date;
+  if (Number.isNaN(d.getTime())) return defaultSeason();
   const y = d.getFullYear();
   return d.getMonth() >= 6 ? `${y}/${y + 1}` : `${y - 1}/${y}`;
+}
+
+export function defaultSeason(): string {
+  return seasonFromDate(new Date());
+}
+
+/** Previous, current and next season (by today's date), with the current one marked. */
+export function buildDefaultSeasons(currentName: string = defaultSeason()): ClubSeason[] {
+  const startYear = Number(currentName.slice(0, 4)) || new Date().getFullYear();
+  return [startYear, startYear - 1, startYear + 1].map((y) => ({
+    id: `season_${String(y).slice(2)}${String(y + 1).slice(2)}`,
+    name: `${y}/${y + 1}`,
+    startDate: `${y}-07-01`,
+    endDate: `${y + 1}-06-30`,
+    isCurrent: y === startYear
+  }));
 }
 
 export function normalizeSeasonString(s?: string | null): string {

@@ -1,4 +1,5 @@
 import { AppState, ClubBoardSummary, TeamComparisonMetric, SquadProfile } from '../types';
+import { defaultSeason } from './utils';
 
 /**
  * Computes consolidated performance and attendance metrics for a single squad profile
@@ -134,7 +135,7 @@ export function computeClubBoardSummary(state: AppState): ClubBoardSummary {
 
   return {
     clubName: state.myClubName || 'BolaComVisão Clube',
-    season: state.season || '2025/2026',
+    season: state.season || defaultSeason(),
     totalTeams,
     totalPlayers,
     totalStaff,

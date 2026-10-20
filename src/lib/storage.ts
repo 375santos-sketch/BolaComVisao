@@ -1,17 +1,14 @@
-import { AppState, SquadProfile, UserAccount, Player, Match } from '../types';
+import { AppState, SquadProfile, UserAccount, Player, Match, ScheduledMatch, ClubSeason } from '../types';
 import { saveToIndexedDB, defaultSyncState } from './syncEngine';
 import { normalizeAndMigrateTrainings } from './trainingNumbering';
+import { buildDefaultSeasons, defaultSeason, seasonFromDate, normalizeSeasonString } from './utils';
 
 const STORAGE_KEY = 'coach-app-data-v1';
 
 // Placeholder matches injected by older versions that must never be shown or synced again.
 const REMOVED_PLACEHOLDER_MATCH_IDS = ['match_tramagal_20261017'];
 
-export const defaultClubSeasons = [
-  { id: 'season_2526', name: '2025/2026', startDate: '2025-08-01', endDate: '2026-06-30', isCurrent: true },
-  { id: 'season_2425', name: '2024/2025', startDate: '2024-08-01', endDate: '2025-06-30', isCurrent: false },
-  { id: 'season_2627', name: '2026/2027', startDate: '2026-08-01', endDate: '2027-06-30', isCurrent: false }
-];
+export const defaultClubSeasons = buildDefaultSeasons();
 
 export const defaultDragonsSub11Roster: Player[] = [
   {
@@ -113,7 +110,7 @@ export const initialDefaultState: AppState = {
       id: 'team_dragons_sub11',
       clubName: 'Dragões de Alferrarede',
       category: 'Sub-11',
-      season: defaultClubSeasons[0].name,
+      season: defaultSeason(),
       createdAt: new Date(0).toISOString(),
       roster: defaultDragonsSub11Roster,
       matches: [defaultOurienseMatch],
@@ -143,7 +140,7 @@ export const initialDefaultState: AppState = {
   lang: 'pt',
   myClubName: 'Dragões de Alferrarede',
   category: 'Sub-11',
-  season: defaultClubSeasons[0].name,
+  season: defaultSeason(),
   seasons: defaultClubSeasons,
   currentUser: null,
   users: [],
@@ -166,7 +163,11 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
   if (!raw) {
     return { ...initialDefaultState };
   }
+  const normalized = normalizeClubStateFields(raw);
+  return (raw.version || 1) < SEASON_MIGRATION_VERSION ? migrateSeasonsFromDates(normalized) : normalized;
+}
 
+function normalizeClubStateFields(raw: Partial<AppState>): AppState {
   const teams: SquadProfile[] =
     Array.isArray(raw.teams) && raw.teams.length > 0
       ? [...raw.teams]
@@ -175,7 +176,7 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
             id: raw.activeTeamId || 'team_dragons_sub11',
             clubName: raw.myClubName || 'Dragões de Alferrarede',
             category: raw.category || 'Sub-11',
-            season: raw.season || defaultClubSeasons[0].name,
+            season: raw.season || defaultSeason(),
             createdAt: new Date().toISOString(),
             roster: Array.isArray(raw.roster) && raw.roster.length > 0 ? raw.roster : defaultDragonsSub11Roster,
             matches: Array.isArray(raw.matches) && raw.matches.length > 0 ? raw.matches : [defaultOurienseMatch],
@@ -295,7 +296,7 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
         clubName: t.clubName || raw.myClubName || 'Dragões de Alferrarede',
         clubLogoUrl: t.clubLogoUrl || raw.clubLogoUrl,
         category: t.category || raw.category || 'Sub-11',
-        season: t.season || raw.season || defaultClubSeasons[0].name
+        season: t.season || raw.season || defaultSeason()
       };
     }
 
@@ -369,7 +370,7 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
     myClubName: activeTeam?.clubName || raw.myClubName || 'Dragões de Alferrarede',
     clubLogoUrl: activeTeam?.clubLogoUrl || raw.clubLogoUrl,
     category: activeTeam?.category || raw.category || 'Sub-11',
-    season: activeTeam?.season || raw.season || defaultClubSeasons[0].name,
+    season: activeTeam?.season || raw.season || defaultSeason(),
     seasons: raw.seasons && raw.seasons.length > 0 ? raw.seasons : defaultClubSeasons,
     currentUser: raw.currentUser || null,
     users: raw.users || [],
@@ -445,4 +446,55 @@ export function saveAppState(state: AppState): boolean {
     }
     return false;
   }
+}
+
+// Data version that introduced date-based seasons (see migrateSeasonsFromDates).
+const SEASON_MIGRATION_VERSION = 2;
+
+const isIsoDate = (d?: string) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}/.test(d);
+const seasonStart = (season?: string) => Number(normalizeSeasonString(season).slice(0, 4)) || 0;
+
+/**
+ * One-off fix for data saved while the season list was hard-coded (2025/2026 was always "current"):
+ * - every match / scheduled match gets the season of its date (July–June);
+ * - a team whose active season is older than its latest played/scheduled game moves to that game's season;
+ * - the season list covers the seasons in use plus previous/current/next by today's date.
+ * Runs once (bumps `version`), so a season the coach picks afterwards is respected.
+ */
+export function migrateSeasonsFromDates(state: AppState): AppState {
+  const today = new Date().toISOString().slice(0, 10);
+  const fixMatch = <T extends Match | ScheduledMatch>(m: T): T =>
+    m && isIsoDate(m.date) ? { ...m, season: seasonFromDate(m.date) } : m;
+
+  const teams = state.teams.map((t) => {
+    const matches = (t.matches || []).map(fixMatch);
+    const schedule = (t.schedule || []).map(fixMatch);
+    const latestSeason = [...matches, ...schedule.filter((s) => s.date <= today)]
+      .filter((m) => m && isIsoDate(m.date))
+      .map((m) => seasonFromDate(m.date))
+      .sort((a, b) => seasonStart(b) - seasonStart(a))[0];
+    const season = latestSeason && seasonStart(latestSeason) > seasonStart(t.season) ? latestSeason : t.season;
+    return { ...t, matches, schedule, season };
+  });
+
+  const activeTeam = teams.find((t) => t.id === state.activeTeamId);
+  const season = activeTeam?.season || state.season || defaultSeason();
+
+  const seasonsByName = new Map<string, ClubSeason>();
+  [...(state.seasons || []), ...buildDefaultSeasons(), ...buildDefaultSeasons(season)].forEach((s) => {
+    if (!seasonsByName.has(s.name)) seasonsByName.set(s.name, s);
+  });
+  const seasons = Array.from(seasonsByName.values())
+    .map((s) => ({ ...s, isCurrent: s.name === season }))
+    .sort((a, b) => seasonStart(b.name) - seasonStart(a.name));
+
+  return {
+    ...state,
+    teams,
+    matches: (state.matches || []).map(fixMatch),
+    schedule: (state.schedule || []).map(fixMatch),
+    season,
+    seasons,
+    version: SEASON_MIGRATION_VERSION
+  };
 }

@@ -94,7 +94,7 @@ describe('Importar Ficha de Jogo (Excel exportado)', () => {
     expect(m.location).toBe('fora');
     expect(m.type).toBe('campeonato');
     expect(m.phase).toBe('Jornada 2');
-    expect(m.season).toBe('2025/2026');
+    expect(m.season).toBe('2026/2027'); // from the game's date, not the sheet's selected season
     expect(m.finished).toBe(true);
     expect(m.finalScore).toEqual({ scored: 2, conceded: 1 });
 

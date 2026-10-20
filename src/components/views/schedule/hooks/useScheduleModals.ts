@@ -12,7 +12,7 @@ import {
   Player
 } from '../../../../types';
 import { TournamentGameForm } from '../types';
-import { uid, defaultSeason, playerLabel, sortPlayerObjs } from '../../../../lib/utils';
+import { uid, defaultSeason, seasonFromDate, playerLabel, sortPlayerObjs } from '../../../../lib/utils';
 import { t } from '../../../../i18n/dict';
 import { getNextTrainingNumber, allocateBatchTrainingNumbers } from '../../../../lib/trainingNumbering';
 
@@ -225,7 +225,7 @@ export function useScheduleModals(
         type: 'torneio',
         phase: g.phase.trim(),
         tournamentName: matchForm.tournamentName.trim(),
-        season: state.season || defaultSeason(),
+        season: seasonFromDate(g.date || matchForm.date || todayStr),
         location: matchForm.loc || 'fora',
         venue: matchForm.venue ? matchForm.venue.trim() : undefined,
         callup: []
@@ -262,7 +262,7 @@ export function useScheduleModals(
         type: matchForm.type || 'amigavel',
         phase: matchForm.type === 'campeonato' || matchForm.type === 'torneio' ? (matchForm.phase || '').trim() : '',
         tournamentName: matchForm.tournamentName || '',
-        season: state.season || defaultSeason(),
+        season: seasonFromDate(matchForm.date || todayStr),
         location: matchForm.loc || 'casa',
         venue: matchForm.venue ? matchForm.venue.trim() : undefined,
         meetingTime: matchForm.meetingTime ? matchForm.meetingTime.trim() : undefined,
@@ -306,7 +306,7 @@ export function useScheduleModals(
         date: s.date,
         type: s.type,
         phase: s.phase || '',
-        season: s.season || defaultSeason(),
+        season: seasonFromDate(s.date),
         location: s.location,
         originalSchedule: s,
         tournamentName: s.tournamentName || '',

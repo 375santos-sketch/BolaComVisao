@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppState, ClubSeason } from '../types';
-import { uid } from '../lib/utils';
+import { uid, defaultSeason, buildDefaultSeasons } from '../lib/utils';
 import { recordAuditLog } from '../lib/auditEngine';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -22,15 +22,9 @@ export const SeasonSelectorModal: React.FC<SeasonSelectorModalProps> = ({
   const [newSeasonStart] = useState<string>('');
   const [newSeasonEnd] = useState<string>('');
 
-  const currentSeasonName = state.season || '2025/2026';
+  const currentSeasonName = state.season || defaultSeason();
   const seasons: ClubSeason[] =
-    state.seasons && state.seasons.length > 0
-      ? state.seasons
-      : [
-          { id: 'season_2526', name: '2025/2026', startDate: '2025-08-01', endDate: '2026-06-30', isCurrent: true },
-          { id: 'season_2425', name: '2024/2025', startDate: '2024-08-01', endDate: '2025-06-30', isCurrent: false },
-          { id: 'season_2627', name: '2026/2027', startDate: '2026-08-01', endDate: '2027-06-30', isCurrent: false }
-        ];
+    state.seasons && state.seasons.length > 0 ? state.seasons : buildDefaultSeasons(currentSeasonName);
 
   const handleSelectSeason = (seasonName: string) => {
     const updatedSeasons = seasons.map((s) => ({

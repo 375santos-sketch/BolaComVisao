@@ -1,6 +1,6 @@
 import { Player, Match, GoalEvent, CardEvent, SubEvent, Training, ScheduledMatch, AppState, GoalType } from '../types';
 import { normalizeGoalType } from './gameAnalysis/constants';
-import { uid } from './utils';
+import { uid, seasonFromDate } from './utils';
 
 export interface ValidationIssue {
   field: string;
@@ -207,7 +207,7 @@ export function validateAndSanitizeMatch(raw: any): ValidationResult<Match> {
     typeof raw.date === 'string' && raw.date.trim() ? raw.date.trim() : new Date().toISOString().split('T')[0];
   const type = ['amigavel', 'campeonato', 'torneio'].includes(raw.type) ? raw.type : 'campeonato';
   const location = raw.location === 'fora' ? 'fora' : 'casa';
-  const season = typeof raw.season === 'string' && raw.season.trim() ? raw.season.trim() : '2025/2026';
+  const season = typeof raw.season === 'string' && raw.season.trim() ? raw.season.trim() : seasonFromDate(date);
   const finished = Boolean(raw.finished);
 
   // Validate goals
