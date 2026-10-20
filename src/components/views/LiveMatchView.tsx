@@ -18,6 +18,7 @@ import { SubstitutionModal } from './liveMatch/components/SubstitutionModal';
 import { CardModal } from './liveMatch/components/CardModal';
 import { CaptainModal } from './liveMatch/components/CaptainModal';
 import { QuickBenchMode } from './liveMatch/components/QuickBenchMode';
+import { LivePlayingTimePanel } from './liveMatch/components/LivePlayingTimePanel';
 import { LineupModal } from './liveMatch/components/LineupModal';
 import { MatchClock } from './liveMatch/components/MatchClock';
 import { MatchTimeline } from './gameCenter/MatchTimeline';
@@ -385,6 +386,9 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 
         {/* Relógio do Jogo (MatchClock visível nos 3 modos) */}
         <MatchClock match={match} />
+
+        {/* Minutos de jogo por atleta e alertas de tempo de jogo */}
+        <LivePlayingTimePanel match={match} roster={state.roster || []} category={state.category} />
 
         {/* Mensagem e bloqueio específico durante o intervalo */}
         {matchPhase === 'intervalo' && (
