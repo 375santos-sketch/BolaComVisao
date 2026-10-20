@@ -201,8 +201,8 @@ describe('Match Competition Details from Agenda (Schedule)', () => {
       const matchWithDetails: Match = {
         ...baseMatch,
         goals: [
-          { id: 'g1', type: 'scored', minute: 14, scorerId: 'p1', scorer: 'Ronaldo', goalType: 'Bola jogada' },
-          { id: 'g2', type: 'conceded', minute: '38\'', opponent: 'Sporting', goalType: 'Canto' }
+          { id: 'g1', type: 'scored', minute: 14, scorerId: 'p1', assistId: null, scorer: 'Ronaldo', goalType: 'Bola jogada' },
+          { id: 'g2', type: 'conceded', minute: '38\'', scorerId: null, assistId: null, goalType: 'Canto' }
         ],
         cards: [
           { id: 'c1', color: 'Amarelo', half: 1, minute: 22, playerId: 'p1' }

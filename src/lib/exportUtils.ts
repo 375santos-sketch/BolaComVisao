@@ -1,4 +1,4 @@
-import { AppState, ScheduledMatch, Player, Match } from '../types';
+import { AppState, ScheduledMatch, Player, Match, Language } from '../types';
 import { playerLabel, computeAge, sortPlayerObjs, calcPlayerMinutes, getMatchCompetitionDetails } from './utils';
 
 /**

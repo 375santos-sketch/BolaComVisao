@@ -86,7 +86,7 @@ export const PDFPickerModal: React.FC<PDFPickerModalProps> = ({
         const success = await savePDFDocument(newDoc);
         if (success) {
           if (onShowToast) onShowToast(`PDF "${file.name}" guardado na biblioteca! 📄`);
-          await loadDocuments();
+          setDocuments(await getAllPDFDocuments());
           onSelectPDF(newDoc);
         } else {
           if (onShowToast) onShowToast('Erro ao guardar PDF na base de dados local.');

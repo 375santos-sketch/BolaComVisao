@@ -109,7 +109,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
   const handleTogglePlayer = (playerId: string) => {
     if (!match) return;
     if (isFinalized && !isEditing) {
-      setIsEditing(true);
+      setEditingMatchId(match.id);
       onShowToast('Modo de edição ativado ✓');
     }
     const isCalled = match.callup.includes(playerId);

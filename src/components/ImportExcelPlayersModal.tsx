@@ -454,7 +454,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                 </span>
                 {activeTeam && (
                   <span className="px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono">
-                    Equipa: {activeTeam.name || 'Ativa'}
+                    Equipa: {[activeTeam.clubName, activeTeam.category].filter(Boolean).join(' · ') || 'Ativa'}
                   </span>
                 )}
               </div>

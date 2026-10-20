@@ -313,7 +313,7 @@ function formatDeltaString(delta: number, prefix: string = '', suffix: string = 
 export function computeTopScorersAndAssisters(
   matches: Match[],
   roster: Player[] = []
-): { topScorers: CoachViewPlayerStat[]; topAssisters: CoachViewPlayerStat[] } {
+): { topScorers: CoachViewPlayerStat[]; topAssisters: CoachViewPlayerStat[]; allSquadStats: CoachViewPlayerFullStat[] } {
   const scorerMap = new Map<string, number>();
   const assistMap = new Map<string, number>();
 

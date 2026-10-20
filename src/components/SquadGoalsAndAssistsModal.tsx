@@ -33,13 +33,17 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
   const [activeTab, setActiveTab] = useState<GoalsAssistsTab>(initialTab);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Keep active tab in sync if initialTab changes on open
-  React.useEffect(() => {
+  // Keep active tab in sync if initialTab changes on open (adjusted during render, not in an effect)
+  const [syncedOpen, setSyncedOpen] = useState(isOpen);
+  const [syncedTab, setSyncedTab] = useState(initialTab);
+  if (isOpen !== syncedOpen || initialTab !== syncedTab) {
+    setSyncedOpen(isOpen);
+    setSyncedTab(initialTab);
     if (isOpen) {
       setActiveTab(initialTab);
       setSearchQuery('');
     }
-  }, [isOpen, initialTab]);
+  }
 
   // Close on Escape key
   React.useEffect(() => {

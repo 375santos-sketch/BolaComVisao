@@ -12,15 +12,15 @@ import { Match, Player } from '../types';
 
 describe('Match Phase and Lineup Logic', () => {
   const mockPlayers: Player[] = [
-    { id: 'p1', name: 'Afonso', number: 1, active: true },
-    { id: 'p2', name: 'Bernardo', number: 2, active: true },
-    { id: 'p3', name: 'Carlos', number: 3, active: true },
-    { id: 'p4', name: 'Diogo', number: 4, active: true },
-    { id: 'p5', name: 'Eduardo', number: 5, active: true },
-    { id: 'p6', name: 'Francisco', number: 6, active: true },
-    { id: 'p7', name: 'Gonçalo', number: 7, active: true },
-    { id: 'p8', name: 'Henrique', number: 8, active: true },
-    { id: 'p9', name: 'Ivo', number: 9, active: true }
+    { id: 'p1', name: 'Afonso', number: 1, positions: '', birthDate: null, active: true },
+    { id: 'p2', name: 'Bernardo', number: 2, positions: '', birthDate: null, active: true },
+    { id: 'p3', name: 'Carlos', number: 3, positions: '', birthDate: null, active: true },
+    { id: 'p4', name: 'Diogo', number: 4, positions: '', birthDate: null, active: true },
+    { id: 'p5', name: 'Eduardo', number: 5, positions: '', birthDate: null, active: true },
+    { id: 'p6', name: 'Francisco', number: 6, positions: '', birthDate: null, active: true },
+    { id: 'p7', name: 'Gonçalo', number: 7, positions: '', birthDate: null, active: true },
+    { id: 'p8', name: 'Henrique', number: 8, positions: '', birthDate: null, active: true },
+    { id: 'p9', name: 'Ivo', number: 9, positions: '', birthDate: null, active: true }
   ];
 
   const baseMatch: Match = {
