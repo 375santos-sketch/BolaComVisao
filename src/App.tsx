@@ -57,6 +57,10 @@ import { NotificationModal } from './components/NotificationModal';
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
+  const latestStateRef = useRef(state);
+  useEffect(() => {
+    latestStateRef.current = state;
+  }, [state]);
   const [currentTab, setCurrentTab] = useState<TabType>('teams');
   const [targetOpponentId, setTargetOpponentId] = useState<string | undefined>(undefined);
 
@@ -174,12 +178,11 @@ export default function App() {
         }
       }
 
-      const updated = {
+      const updated: AppState = {
         ...prev,
         ...updates,
         ...(syncedTeams !== prev.teams ? { teams: syncedTeams } : {})
       };
-      saveAppState(updated);
 
       // Check if substantive data changed that requires cloud persistence
       const hasSubstantiveChanges =
@@ -196,6 +199,14 @@ export default function App() {
         updates.clubEvents !== undefined ||
         updates.staffUnavailability !== undefined ||
         updates.exerciseLibrary !== undefined;
+
+      // Stamp local edits so an older cloud snapshot can never overwrite them (see the cloud listener below).
+      if (hasSubstantiveChanges && !isRemoteSyncRef.current) {
+        const now = Date.now();
+        updated.updatedAt = now;
+        updated.lastLocalMutationAt = now;
+      }
+      saveAppState(updated);
 
       // If user is authenticated in cloud, automatically push changes to shared club database with gentle throttling
       if (
@@ -246,6 +257,23 @@ export default function App() {
       state.currentUser.clubId || 'main',
       (cloudState) => {
         if (cloudState) {
+          // This device has edits the cloud does not have yet (e.g. a match recorded at an away ground without
+          // internet, or a save that failed). Never let the older cloud copy overwrite them: keep and re-send them.
+          const local = latestStateRef.current;
+          if ((local.lastLocalMutationAt || 0) > (cloudState.updatedAt || 0)) {
+            if (!getFirestoreQuotaState().isExhausted) {
+              saveMasterClubState(
+                local.currentUser?.clubId || 'main',
+                local,
+                local.currentUser?.id,
+                local.currentUser?.name
+              ).catch((err) => {
+                console.warn('Erro ao reenviar alterações locais para a nuvem:', err);
+              });
+            }
+            return;
+          }
+
           isRemoteSyncRef.current = true;
           setState((prev) => {
             const merged = {

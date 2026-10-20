@@ -4,6 +4,9 @@ import { normalizeAndMigrateTrainings } from './trainingNumbering';
 
 const STORAGE_KEY = 'coach-app-data-v1';
 
+// Placeholder matches injected by older versions that must never be shown or synced again.
+const REMOVED_PLACEHOLDER_MATCH_IDS = ['match_tramagal_20261017'];
+
 export const defaultClubSeasons = [
   { id: 'season_2526', name: '2025/2026', startDate: '2025-08-01', endDate: '2026-06-30', isCurrent: true },
   { id: 'season_2425', name: '2024/2025', startDate: '2024-08-01', endDate: '2025-06-30', isCurrent: false },
@@ -52,45 +55,6 @@ export const defaultDragonsSub11Roster: Player[] = [
     active: true
   }
 ];
-
-export const defaultTramagalMatch: Match = {
-  id: 'match_tramagal_20261017',
-  teamId: 'team_dragons_sub11',
-  teamName: 'Dragões de Alferrarede',
-  opponent: 'Tramagal',
-  date: '2026-10-17',
-  season: '2025/2026',
-  type: 'campeonato',
-  phase: 'Jornada 2',
-  location: 'fora',
-  finished: true,
-  finalScore: { scored: 1, conceded: 0 },
-  goals: [
-    {
-      id: 'g_tramagal_1',
-      type: 'scored',
-      scorerId: 'dragao_10',
-      assistId: 'dragao_12',
-      minute: "15'",
-      minuteBase: 'game',
-      half: 1,
-      period: '1.ª parte',
-      goalType: 'Bola jogada'
-    }
-  ],
-  cards: [],
-  subs: [],
-  lineup: ['dragao_1', 'dragao_3', 'dragao_5', 'dragao_6', 'dragao_8', 'dragao_10', 'dragao_12'],
-  capitao: 'dragao_1',
-  rematesDentroArea: 4,
-  rematesForaArea: 2,
-  rematesDentroAreaAdv: 1,
-  rematesForaAreaAdv: 1,
-  cantos: 3,
-  cantosAdv: 1,
-  faltas: 4,
-  faltasAdv: 5
-};
 
 export const defaultOurienseMatch: Match = {
   id: 'match_ouriense_20261010',
@@ -152,7 +116,7 @@ export const initialDefaultState: AppState = {
       season: defaultClubSeasons[0].name,
       createdAt: new Date(0).toISOString(),
       roster: defaultDragonsSub11Roster,
-      matches: [defaultOurienseMatch, defaultTramagalMatch],
+      matches: [defaultOurienseMatch],
       trainings: [],
       schedule: [],
       staffMembers: [],
@@ -168,7 +132,7 @@ export const initialDefaultState: AppState = {
   roster: defaultDragonsSub11Roster,
   staffMembers: [],
   staffMessages: [],
-  matches: [defaultOurienseMatch, defaultTramagalMatch],
+  matches: [defaultOurienseMatch],
   trainings: [],
   schedule: [],
   tactics: [],
@@ -214,10 +178,7 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
             season: raw.season || defaultClubSeasons[0].name,
             createdAt: new Date().toISOString(),
             roster: Array.isArray(raw.roster) && raw.roster.length > 0 ? raw.roster : defaultDragonsSub11Roster,
-            matches:
-              Array.isArray(raw.matches) && raw.matches.length > 0
-                ? raw.matches
-                : [defaultOurienseMatch, defaultTramagalMatch],
+            matches: Array.isArray(raw.matches) && raw.matches.length > 0 ? raw.matches : [defaultOurienseMatch],
             trainings: Array.isArray(raw.trainings) ? raw.trainings : [],
             schedule: Array.isArray(raw.schedule) ? raw.schedule : [],
             staffMembers: Array.isArray(raw.staffMembers) ? raw.staffMembers : [],
@@ -260,20 +221,9 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
     });
   });
 
-  // Guarantee that Tramagal completed match is never lost
-  if (
-    !allMatchesMap.has('match_tramagal_20261017') &&
-    !Array.from(allMatchesMap.values()).some((m) => m.opponent?.toLowerCase().includes('tramagal'))
-  ) {
-    allMatchesMap.set(defaultTramagalMatch.id, defaultTramagalMatch);
-  }
-  // Guarantee Ouriense match is also available if matches pool is small
-  if (
-    !allMatchesMap.has('match_ouriense_20261010') &&
-    !Array.from(allMatchesMap.values()).some((m) => m.opponent?.toLowerCase().includes('ouriense'))
-  ) {
-    allMatchesMap.set(defaultOurienseMatch.id, defaultOurienseMatch);
-  }
+  // Remove the placeholder demo matches that older versions injected automatically
+  // (fictional players; they kept coming back even after being deleted).
+  REMOVED_PLACEHOLDER_MATCH_IDS.forEach((id) => allMatchesMap.delete(id));
 
   const finalMatches = Array.from(allMatchesMap.values());
 
@@ -366,7 +316,10 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
 
     return {
       ...t,
-      matches: t.matches && t.matches.length > 0 ? t.matches : finalMatches,
+      matches:
+        t.matches && t.matches.length > 0
+          ? t.matches.filter((m) => !m || !REMOVED_PLACEHOLDER_MATCH_IDS.includes(m.id))
+          : finalMatches,
       schedule: Array.from(teamScheduleMap.values()),
       trainings: migratedTeamTrainings,
       lastTrainingNumber: Math.max(t.lastTrainingNumber || 0, teamMaxNumber)
@@ -423,8 +376,9 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
     auditLogs: raw.auditLogs || [],
     notifications: raw.notifications || [],
     notificationSettings: raw.notificationSettings || initialDefaultState.notificationSettings,
-    updatedAt: raw.updatedAt || Date.now(),
-    lastLocalMutationAt: raw.lastLocalMutationAt || raw.updatedAt || Date.now(),
+    // Missing timestamps mean "unknown age" (0), never "now": otherwise a stale copy would look newer than the cloud.
+    updatedAt: raw.updatedAt || 0,
+    lastLocalMutationAt: raw.lastLocalMutationAt || 0,
     version: raw.version || 1,
     syncInfo: raw.syncInfo
       ? {

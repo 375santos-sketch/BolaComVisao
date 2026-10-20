@@ -424,22 +424,33 @@ describe('CoachViewEngine - Visão do Treinador', () => {
       expect(p1?.matchesPlayed).toBe(2);
     });
 
-    it('guarantees Tramagal match and active squad are never lost when normalizing state', () => {
+    it('never injects the placeholder Tramagal match and removes it from saved data', () => {
       const normalized = normalizeClubState({});
-      expect(normalized.matches.some((m) => m.opponent.toLowerCase().includes('tramagal'))).toBe(true);
+      expect(normalized.matches.some((m) => m.opponent.toLowerCase().includes('tramagal'))).toBe(false);
       expect(normalized.roster).toHaveLength(12);
       expect(normalized.myClubName).toBe('Dragões de Alferrarede');
       expect(normalized.category).toBe('Sub-11');
 
-      // Even if teams array was empty in raw input, matches are never wiped
+      // A previously persisted placeholder is purged from top-level and team match lists
+      const placeholder = { id: 'match_tramagal_20261017', opponent: 'Tramagal', goals: [] } as any;
+      const cleaned = normalizeClubState({
+        activeTeamId: 'a',
+        matches: [placeholder],
+        teams: [{ id: 'a', matches: [placeholder] } as any, { id: 'b', matches: [placeholder] } as any]
+      });
+      expect(cleaned.matches.some((m) => m.id === placeholder.id)).toBe(false);
+      cleaned.teams.forEach((t) => expect(t.matches.some((m) => m.id === placeholder.id)).toBe(false));
+    });
+
+    it('keeps a real Tramagal match even if teams array was empty', () => {
       const normalizedFromEmptyTeams = normalizeClubState({
         teams: [],
         matches: [
           {
             id: 'custom_tramagal',
-            opponent: 'Tramagal',
+            opponent: 'Tramagal SU',
             date: '2026-10-17',
-            season: '2025/2026',
+            season: '2026/2027',
             type: 'campeonato',
             location: 'fora',
             finished: true,
@@ -447,7 +458,14 @@ describe('CoachViewEngine - Visão do Treinador', () => {
           } as any
         ]
       });
-      expect(normalizedFromEmptyTeams.matches.some((m) => m.opponent.toLowerCase().includes('tramagal'))).toBe(true);
+      expect(normalizedFromEmptyTeams.matches.map((m) => m.id)).toContain('custom_tramagal');
+    });
+
+    it('treats missing sync timestamps as unknown age instead of now', () => {
+      const normalized = normalizeClubState({ matches: [] });
+      expect(normalized.updatedAt).toBe(0);
+      expect(normalized.lastLocalMutationAt).toBe(0);
+      expect(normalizeClubState({ updatedAt: 5, lastLocalMutationAt: 7 }).lastLocalMutationAt).toBe(7);
     });
   });
 });
