@@ -4,6 +4,7 @@ import { uid, defaultSeason } from '../lib/utils';
 import { ImportExcelPlayersModal } from './ImportExcelPlayersModal';
 import { ImportMatchExcelModal } from './ImportMatchExcelModal';
 import { TeamDatabaseView } from './TeamDatabaseView';
+import { hasInventedImportData, removeInventedImportData } from '../lib/inventedImportCleanup';
 
 interface DatabaseModalProps {
   state: AppState;
@@ -42,6 +43,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
   const [showImportMatches, setShowImportMatches] = useState(false);
 
   const teams = state.teams || [];
+  const inventedImports = (state.matches || []).filter(hasInventedImportData);
 
   const handleSwitchTeam = (teamId: string) => {
     if (teamId === state.activeTeamId) return;
@@ -371,6 +373,46 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                 </div>
               </button>
             </div>
+
+            {/* Old list-style Excel imports with invented scorers/starters: offer to clean them */}
+            {inventedImports.length > 0 && (
+              <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/40 text-xs text-amber-100 space-y-2">
+                <div className="font-bold">
+                  ⚠️ {inventedImports.length}{' '}
+                  {inventedImports.length === 1 ? 'jogo importado tem' : 'jogos importados têm'} marcadores e titulares
+                  inventados
+                </div>
+                <div className="text-[11px] text-amber-200/80">
+                  Uma versão antiga da importação por Excel inventava marcadores, minutos e titulares. A limpeza mantém
+                  o resultado e retira só esses dados.
+                </div>
+                <ul className="text-[11px] font-mono text-amber-200/90">
+                  {inventedImports.map((m) => (
+                    <li key={m.id}>
+                      {m.date} · vs {m.opponent}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() =>
+                    onShowConfirm(
+                      `Limpar marcadores, minutos e titulares inventados de ${inventedImports.length} jogo(s)? O resultado mantém-se.`,
+                      () => {
+                        const ids = new Set(inventedImports.map((m) => m.id));
+                        onUpdateState({
+                          matches: (state.matches || []).map((m) => (ids.has(m.id) ? removeInventedImportData(m) : m))
+                        });
+                        onShowToast(`🧹 ${ids.size} jogo(s) limpos.`);
+                      }
+                    )
+                  }
+                  className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold"
+                >
+                  Limpar dados inventados
+                </button>
+              </div>
+            )}
 
             {/* List of Teams/Squads */}
             <div className="space-y-3">
