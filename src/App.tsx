@@ -44,10 +44,6 @@ const GameAnalysisDashboard = lazyWithRetry(
   'GameAnalysisDashboard'
 );
 const SquadView = lazyWithRetry(() => import('./components/views/SquadView'), 'SquadView');
-const OpponentScoutingView = lazyWithRetry(
-  () => import('./components/views/OpponentScoutingView'),
-  'OpponentScoutingView'
-);
 const PreMatchPlanView = lazyWithRetry(() => import('./components/views/PreMatchPlanView'), 'PreMatchPlanView');
 const RelatoriosView = lazyWithRetry(() => import('./components/views/RelatoriosView'), 'RelatoriosView');
 
@@ -629,7 +625,7 @@ export default function App() {
   }, [state.trainings, state.matches, state.schedule, state.roster]);
 
   const handleNavigate = (tab: string, targetId?: string) => {
-    if (tab === 'adversario' || tab === 'prejogo') {
+    if (tab === 'prejogo') {
       if (targetId) setTargetOpponentId(targetId);
     }
     setCurrentTab(tab as TabType);
@@ -871,19 +867,6 @@ export default function App() {
 
             {currentTab === 'prejogo' && (
               <PreMatchPlanView
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
-                onShowToast={showToast}
-                targetOpponentId={targetOpponentId}
-              />
-            )}
-
-            {currentTab === 'adversario' && (
-              <OpponentScoutingView
                 state={state}
                 onUpdateState={updateState}
                 onNavigate={handleNavigate}

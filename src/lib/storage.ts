@@ -1,4 +1,13 @@
-import { AppState, SquadProfile, UserAccount, Player, Match, ScheduledMatch, ClubSeason } from '../types';
+import {
+  AppState,
+  SquadProfile,
+  UserAccount,
+  Player,
+  Match,
+  ScheduledMatch,
+  ClubSeason,
+  OpponentScouting
+} from '../types';
 import { saveToIndexedDB, defaultSyncState } from './syncEngine';
 import { normalizeAndMigrateTrainings } from './trainingNumbering';
 import { buildDefaultSeasons, defaultSeason, seasonFromDate, normalizeSeasonString } from './utils';
@@ -127,8 +136,72 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
   if (!raw) {
     return { ...initialDefaultState };
   }
-  const normalized = normalizeClubStateFields(raw);
+  const normalized = withoutOpponentScouting(normalizeClubStateFields(raw));
   return (raw.version || 1) < SEASON_MIGRATION_VERSION ? migrateSeasonsFromDates(normalized) : normalized;
+}
+
+/** Fields of the removed "Adversário" (opponent scouting) screen; the plan for our own team stays. */
+const OPPONENT_SCOUTING_FIELDS = [
+  'formation',
+  'playingStyle',
+  'strengths',
+  'weaknesses',
+  'keyPlayer',
+  'tacticalNotes',
+  'setPiecesNotes',
+  'gamePlan',
+  'notes',
+  'scoutingFinalized',
+  'scoutingFinalizedAt'
+] as const;
+
+/**
+ * The opponent scouting was replaced by the post-match opponent report (Match.opponentReport). Its data is
+ * deleted: reports created only by that screen (id "scout-…") entirely, and the scouting fields of the
+ * pre-match plans that shared the same record. Idempotent: running it again changes nothing.
+ */
+export function withoutOpponentScouting(state: AppState): AppState {
+  const cleanList = (list?: OpponentScouting[]): OpponentScouting[] | undefined => {
+    if (!Array.isArray(list)) return list;
+    let changed = false;
+    const out = list
+      .filter((r) => {
+        const keep = !(r && typeof r.id === 'string' && r.id.startsWith('scout-'));
+        if (!keep) changed = true;
+        return keep;
+      })
+      .map((r) => {
+        const fields = r as unknown as Record<string, unknown>;
+        if (!r || !OPPONENT_SCOUTING_FIELDS.some((f) => fields[f] !== undefined)) return r;
+        changed = true;
+        const copy: Record<string, unknown> = { ...r };
+        OPPONENT_SCOUTING_FIELDS.forEach((f) => delete copy[f]);
+        return copy as unknown as OpponentScouting;
+      });
+    return changed ? out : list;
+  };
+  const hasScouting = (m?: ScheduledMatch) =>
+    Boolean(m && (m.scoutingFinalized !== undefined || m.scoutingFinalizedAt !== undefined));
+  const cleanSchedule = (list?: ScheduledMatch[]): ScheduledMatch[] | undefined => {
+    if (!Array.isArray(list) || !list.some(hasScouting)) return list;
+    return list.map((m) => {
+      if (!hasScouting(m)) return m;
+      const copy: Record<string, unknown> = { ...m };
+      delete copy.scoutingFinalized;
+      delete copy.scoutingFinalizedAt;
+      return copy as unknown as ScheduledMatch;
+    });
+  };
+  return {
+    ...state,
+    opponentScouting: cleanList(state.opponentScouting) || [],
+    schedule: cleanSchedule(state.schedule) || [],
+    teams: (state.teams || []).map((t) => ({
+      ...t,
+      opponentScouting: cleanList(t.opponentScouting),
+      schedule: cleanSchedule(t.schedule)
+    }))
+  };
 }
 
 function normalizeClubStateFields(raw: Partial<AppState>): AppState {

@@ -17,7 +17,6 @@ export function getActiveCategory(tab: TabType): MainCategory {
     case 'stats':
     case 'analise_jogos':
     case 'prejogo':
-    case 'adversario':
     case 'relatorios':
       return 'performance';
     case 'teams':

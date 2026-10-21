@@ -164,7 +164,8 @@ describe('Finalization and Editing Flow (Convocatória, Pré-Jogo, Adversário)'
     expect(sanitizedMatch.callupFinalizedAt).toBe(timestamp);
     expect(sanitizedMatch.preMatchFinalized).toBe(true);
     expect(sanitizedMatch.preMatchFinalizedAt).toBe(timestamp);
-    expect(sanitizedMatch.scoutingFinalized).toBe(true);
-    expect(sanitizedMatch.scoutingFinalizedAt).toBe(timestamp);
+    // The opponent scouting screen was removed: its finalization flag is dropped
+    expect(sanitizedMatch.scoutingFinalized).toBeUndefined();
+    expect(sanitizedMatch.scoutingFinalizedAt).toBeUndefined();
   });
 });

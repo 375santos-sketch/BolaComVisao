@@ -10,7 +10,6 @@ import { TodayFocusCard } from '../dashboard/TodayFocusCard';
 import { CoachExecutiveHub } from '../dashboard/CoachExecutiveHub';
 import { DashboardStatsGrid } from '../dashboard/DashboardStatsGrid';
 import { DashboardSmartInsights } from '../dashboard/DashboardSmartInsights';
-import { DashboardScoutingHub } from '../dashboard/DashboardScoutingHub';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 
@@ -31,7 +30,7 @@ interface HomeViewProps {
 
 export const HomeView: React.FC<HomeViewProps> = ({
   state,
-  onUpdateState,
+  onUpdateState: _onUpdateState,
   onNavigate,
   onOpenSettings,
   onOpenDatabase,
@@ -157,9 +156,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   });
 
   unifiedEvents.sort((a, b) => a.rawDate.getTime() - b.rawDate.getTime());
-
-  const nextMatch =
-    scheduledMatches.length > 0 ? scheduledMatches.find((m) => m.date >= todayStr) || scheduledMatches[0] : null;
 
   // Intelligence & Alerts
   const smartAlerts = generateSmartAlerts(state);
@@ -363,15 +359,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
             )}
           </Card>
         </div>
-
-        {/* Scouting & Tactical Opponent Hub */}
-        <DashboardScoutingHub
-          state={state}
-          nextMatch={nextMatch}
-          onNavigate={onNavigate}
-          onUpdateState={onUpdateState}
-          onShowToast={onShowToast}
-        />
       </div>
     </div>
   );

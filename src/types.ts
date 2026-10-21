@@ -180,6 +180,19 @@ export interface Match {
   finalScore?: { scored: number; conceded: number };
   pdfDataUrl?: string;
   pdfGeneratedAt?: string;
+  opponentReport?: OpponentReport; // Relatório do adversário pós-jogo
+}
+
+/** Post-match notes about the opponent (the numbers come from the match itself). */
+export interface OpponentReport {
+  system?: string; // Sistema tático que usaram
+  strengths?: string[];
+  weaknesses?: string[];
+  dangerousPlayers?: string[]; // ex.: "Nº 7 – rápido, finta para dentro"
+  notes?: string;
+  nextTime?: string; // O que fazer da próxima vez (aparece no Pré-jogo)
+  updatedAt?: number;
+  updatedBy?: string;
 }
 
 export interface Training {
@@ -351,17 +364,7 @@ export interface SmartAlert {
   timestamp: number;
   read?: boolean;
   targetTab?:
-    | 'treinos'
-    | 'convocatoria'
-    | 'plantel'
-    | 'calendario'
-    | 'stats'
-    | 'jogo'
-    | 'jogos'
-    | 'prejogo'
-    | 'adversario'
-    | 'teams'
-    | 'home';
+    'treinos' | 'convocatoria' | 'plantel' | 'calendario' | 'stats' | 'jogo' | 'jogos' | 'prejogo' | 'teams' | 'home';
   targetId?: string;
   actionLabel?: string;
   relatedCount?: number;
@@ -378,17 +381,7 @@ export interface SmartRecommendation {
   priority: SmartPriority;
   confidence: 'alta' | 'media' | 'insuficiente';
   targetTab?:
-    | 'treinos'
-    | 'convocatoria'
-    | 'plantel'
-    | 'calendario'
-    | 'stats'
-    | 'jogo'
-    | 'jogos'
-    | 'prejogo'
-    | 'adversario'
-    | 'teams'
-    | 'home';
+    'treinos' | 'convocatoria' | 'plantel' | 'calendario' | 'stats' | 'jogo' | 'jogos' | 'prejogo' | 'teams' | 'home';
   targetId?: string;
   actionLabel: string;
   metricLabel?: string;
@@ -404,17 +397,7 @@ export interface AppNotification {
   read: boolean;
   priority: 'alta' | 'media' | 'baixa' | SmartPriority;
   targetTab?:
-    | 'treinos'
-    | 'convocatoria'
-    | 'plantel'
-    | 'calendario'
-    | 'stats'
-    | 'jogo'
-    | 'jogos'
-    | 'prejogo'
-    | 'adversario'
-    | 'teams'
-    | 'home';
+    'treinos' | 'convocatoria' | 'plantel' | 'calendario' | 'stats' | 'jogo' | 'jogos' | 'prejogo' | 'teams' | 'home';
   targetId?: string;
   category?: string | AlertCategory;
   details?: string;
@@ -526,16 +509,16 @@ export interface OpponentScouting {
   teamKit?: TeamKitInfo;
   checklist?: string[]; // Itens verificados da checklist pré-jogo (opcional)
 
-  // ADVERSÁRIO (Scouting & Contexto do Oponente)
-  formation: string; // e.g. "4-3-3", "4-4-2", "3-5-2", "4-2-3-1", "5-3-2", "3-4-3", "4-1-4-1"
+  // ADVERSÁRIO (Scouting): ecrã removido a 21/10/2026, campos apagados pela limpeza em storage.ts (stripOpponentScouting)
+  formation?: string; // e.g. "4-3-3", "4-4-2", "3-5-2", "4-2-3-1", "5-3-2", "3-4-3", "4-1-4-1"
   playingStyle?: string; // e.g. "Bloco Médio / Transições", "Pressão Alta"
-  strengths: string[]; // Pontos Fortes
-  weaknesses: string[]; // Pontos Fracos
-  keyPlayer: KeyPlayerInfo; // Jogador Chave
-  tacticalNotes: string; // Tática & Dinâmicas (Organização Ofensiva/Defensiva)
+  strengths?: string[]; // Pontos Fortes
+  weaknesses?: string[]; // Pontos Fracos
+  keyPlayer?: KeyPlayerInfo; // Jogador Chave
+  tacticalNotes?: string; // Tática & Dinâmicas (Organização Ofensiva/Defensiva)
   setPiecesNotes?: string; // Bolas Paradas
-  gamePlan: string; // Plano de Jogo da nossa equipa
-  notes: string; // Notas / Observações gerais
+  gamePlan?: string; // Plano de Jogo da nossa equipa
+  notes?: string; // Notas / Observações gerais
   preMatchFinalized?: boolean; // Se o Plano Pré-Jogo da nossa equipa foi finalizado
   preMatchFinalizedAt?: number;
   scoutingFinalized?: boolean; // Se a Análise de Scouting do Adversário foi finalizada

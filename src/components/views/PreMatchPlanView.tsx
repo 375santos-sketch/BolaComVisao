@@ -8,6 +8,7 @@ import {
   getEffectiveTacticalPitch,
   formatMatchCompetition
 } from './opponentScoutingUtils';
+import { LastTimeAgainstCard } from './results/LastTimeAgainstCard';
 
 interface PreMatchPlanViewProps {
   state: AppState;
@@ -88,15 +89,6 @@ function createDefaultPreMatchReport(
       socksColor: 'Azul',
       gkColor: 'Amarelo'
     },
-    formation: '2-3-1',
-    playingStyle: 'Bloco Médio com transições rápidas pelas alas',
-    strengths: ['Transições rápidas'],
-    weaknesses: ['Espaço entrelinhas'],
-    keyPlayer: { name: '', number: undefined, positions: '', dominantFoot: 'Direito', threats: '', howToStop: '' },
-    tacticalNotes: '',
-    setPiecesNotes: '',
-    gamePlan: '',
-    notes: '',
     updatedAt: 0
   };
 }
@@ -320,15 +312,6 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
         socksColor: 'Azul',
         gkColor: 'Amarelo'
       },
-      formation: '2-3-1',
-      playingStyle: 'Bloco Médio com transições rápidas pelas alas',
-      strengths: ['Transições rápidas'],
-      weaknesses: ['Espaço entrelinhas'],
-      keyPlayer: { name: '', number: undefined, positions: '', dominantFoot: 'Direito', threats: '', howToStop: '' },
-      tacticalNotes: '',
-      setPiecesNotes: '',
-      gamePlan: '',
-      notes: '',
       updatedAt: Date.now()
     };
 
@@ -354,14 +337,6 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
       ourTacticalPitch: SEVEN_A_SIDE_PRESETS['2-3-1'],
       teamMotto: 'Foco e Atitude!',
       keyObjectives: ['Ganhar duelos', 'Comunicação', 'Finalizar'],
-      formation: '2-3-1',
-      playingStyle: 'Bloco Médio',
-      strengths: ['Transições'],
-      weaknesses: ['Espaço'],
-      keyPlayer: { name: '', number: undefined, positions: '', dominantFoot: 'Direito', threats: '', howToStop: '' },
-      tacticalNotes: '',
-      gamePlan: '',
-      notes: '',
       updatedAt: Date.now()
     };
 
@@ -525,16 +500,6 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
               <span>💬</span>
               <span>WhatsApp</span>
             </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('adversario', currentScout?.id)}
-              className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1.5"
-              title="Ir para o menu do Adversário (Scouting)"
-            >
-              <span>🛡️</span>
-              <span>Adversário ➔</span>
-            </button>
           </div>
         </div>
 
@@ -681,6 +646,11 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
 
       {currentScout && (
         <div className="space-y-4">
+          <LastTimeAgainstCard
+            matches={state.matches || []}
+            opponent={linkedMatch?.opponent || currentScout.opponentName}
+          />
+
           {/* 1. LEMA DE BALNEÁRIO & 3 OBJETIVOS INEGOCIÁVEIS */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Lema da Equipa */}
@@ -1293,15 +1263,6 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
                 <span>Convocatória</span>
               </button>
             </div>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('adversario', currentScout.id)}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 border border-cyan-500/40 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase hover:border-cyan-400 transition-all flex items-center gap-2"
-            >
-              <span>🛡️</span>
-              <span>Abrir Scouting do Adversário ➔</span>
-            </button>
           </div>
         </div>
       )}

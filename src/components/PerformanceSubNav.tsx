@@ -4,7 +4,6 @@ import type { TabType } from './Navbar';
 
 const TABS: TabItem[] = [
   { id: 'prejogo', label: 'Pré-jogo', icon: '⚡' },
-  { id: 'adversario', label: 'Adversário', icon: '🛡️' },
   { id: 'jogo', label: 'Jogo', icon: '⏱️' },
   { id: 'stats', label: 'Estatísticas', icon: '📈' },
   { id: 'analise_jogos', label: 'Análise', icon: '📊' },
