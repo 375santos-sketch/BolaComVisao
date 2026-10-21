@@ -27,18 +27,19 @@ O ficheiro de regras de segurança `firestore.rules` define as políticas de ace
 
 ### Opção 1: Publicação Automática via GitHub Actions (Recomendado)
 
-O repositório inclui um fluxo de CI/CD automatizado em `.github/workflows/firestore-rules.yml` que valida e publica as regras no Firebase sempre que o ficheiro `firestore.rules` é modificado na branch principal.
+O fluxo `.github/workflows/firestore-rules.yml` testa as regras nos emuladores em cada Pull Request que as altere
+e, depois do merge para `main`, publica-as na base de dados da app (a base com nome indicada em `firebase.json`).
 
-Para ativar o deploy automático:
+Para ativar (uma vez):
 
-1. No seu terminal local, gere um token da Firebase CLI correndo:
-   ```bash
-   npx firebase-tools login:ci
-   ```
-2. Copie o token de autenticação gerado.
-3. No GitHub, aceda ao repositório -> **Settings** -> **Secrets and variables** -> **Actions**.
-4. Crie um novo Repository Secret chamado `FIREBASE_TOKEN` e cole o token.
-5. A partir deste momento, qualquer push ou merge com alterações a `firestore.rules` faz o deploy automático para o Firebase.
+1. Consola do Firebase → ⚙️ **Definições do projeto** → **Contas de serviço** → **Gerar nova chave privada**. É
+   descarregado um ficheiro `.json`.
+2. No GitHub: repositório → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
+3. Nome: `FIREBASE_SERVICE_ACCOUNT`. Valor: o conteúdo completo do ficheiro `.json` (abrir no Bloco de Notas,
+   copiar tudo).
+4. Apagar o ficheiro `.json` do computador: dá acesso total ao projeto Firebase.
+
+Para publicar sem alterar as regras: GitHub → **Actions** → **Regras do Firestore** → **Run workflow**.
 
 ---
 
