@@ -50,19 +50,23 @@ jobs:
     needs: test
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    env:
+      # Secrets can't be read in step conditions: expose only whether each one exists.
+      HAS_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+      HAS_TOKEN: ${{ secrets.FIREBASE_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Verificar credenciais
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "::error::Falta o secret FIREBASE_SERVICE_ACCOUNT (chave da conta de serviço do Firebase). Ver docs/NOTAS_DE_PASSAGEM.md, secção 2."
+          if [ "$HAS_SERVICE_ACCOUNT" != "true" ] && [ "$HAS_TOKEN" != "true" ]; then
+            echo "::error::Falta o secret FIREBASE_TOKEN (ou FIREBASE_SERVICE_ACCOUNT). Ver README, secção das regras do Firestore."
             exit 1
           fi
 
+      # Conta de serviço, se o projeto permitir criar chaves (os projetos do AI Studio não permitem).
       - uses: google-github-actions/auth@v2
+        if: env.HAS_SERVICE_ACCOUNT == 'true'
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
@@ -70,5 +74,13 @@ jobs:
         with:
           node-version: 22
 
-      - name: Publicar firestore.rules
+      - name: Publicar firestore.rules (conta de serviço)
+        if: env.HAS_SERVICE_ACCOUNT == 'true'
+        run: npx -y firebase-tools@13.35.1 deploy --only firestore:rules --project glowing-orbit-vk8sk --non-interactive
+
+      # Sem conta de serviço, usa o código de acesso de "firebase login:ci" (FIREBASE_TOKEN).
+      - name: Publicar firestore.rules (código de acesso)
+        if: env.HAS_SERVICE_ACCOUNT != 'true'
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: npx -y firebase-tools@13.35.1 deploy --only firestore:rules --project glowing-orbit-vk8sk --non-interactive

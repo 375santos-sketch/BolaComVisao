@@ -30,14 +30,20 @@ O ficheiro de regras de segurança `firestore.rules` define as políticas de ace
 O fluxo `.github/workflows/firestore-rules.yml` testa as regras nos emuladores em cada Pull Request que as altere
 e, depois do merge para `main`, publica-as na base de dados da app (a base com nome indicada em `firebase.json`).
 
-Para ativar (uma vez):
+Para ativar (uma vez). O projeto não deixa criar chaves de contas de serviço (política dos projetos do AI
+Studio), por isso usa-se um código de acesso da conta Google do Administrador:
 
-1. Consola do Firebase → ⚙️ **Definições do projeto** → **Contas de serviço** → **Gerar nova chave privada**. É
-   descarregado um ficheiro `.json`.
-2. No GitHub: repositório → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
-3. Nome: `FIREBASE_SERVICE_ACCOUNT`. Valor: o conteúdo completo do ficheiro `.json` (abrir no Bloco de Notas,
-   copiar tudo).
-4. Apagar o ficheiro `.json` do computador: dá acesso total ao projeto Firebase.
+1. Abrir o [Cloud Shell](https://shell.cloud.google.com/?show=terminal) com a conta do Firebase.
+2. Correr `npx -y firebase-tools@13.35.1 login:ci --no-localhost`, abrir o link que aparece, autorizar e colar no
+   terminal o código de autorização.
+3. O terminal mostra o código de acesso (começa por `1//`). Copiá-lo.
+4. No GitHub: repositório → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
+   Nome `FIREBASE_TOKEN`, valor: o código copiado.
+
+O código dá acesso aos projetos Firebase dessa conta: não o partilhar. Para o anular, revogar o acesso da
+"Firebase CLI" em [myaccount.google.com/permissions](https://myaccount.google.com/permissions) (e gerar outro).
+Se um dia o projeto permitir chaves de contas de serviço, o secret `FIREBASE_SERVICE_ACCOUNT` (conteúdo do `.json`)
+tem prioridade.
 
 Para publicar sem alterar as regras: GitHub → **Actions** → **Regras do Firestore** → **Run workflow**.
 
