@@ -106,6 +106,9 @@ Regras importantes (cada uma corrige um problema real que já aconteceu):
 - **A sincronização em tempo real só arranca depois de o Firebase confirmar o login** (`authUid` em `App.tsx`). A
   app repõe o utilizador guardado no aparelho antes disso; sem esta espera, a ligação não arrancava e a migração
   nunca acontecia, sem mensagem nenhuma (problema de 21/10/2026).
+- **Sessão do Firebase terminada com o treinador ainda guardado no aparelho** ("Autenticação necessária para guardar
+  na Nuvem"): aparece o aviso `SessionExpiredBanner` para entrar de novo (palavra-passe ou Google, mesma conta) sem
+  apagar os dados do aparelho. "Terminar sessão" apagava as alterações ainda não enviadas.
 - Escritas pendentes (offline) não contam como "guardado": o indicador só fica verde com confirmação do servidor.
 
 ## 5. Segurança e acessos
@@ -140,7 +143,7 @@ consentimento RGPD dos pais.
 | ----------------------- | ---------------------------------------------------------------------------- | ---------- |
 | `npm run verify`        | Tipos, lint, formatação, testes unitários, build                             | Node       |
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
-| `npm run test:e2e`      | 11 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
+| `npm run test:e2e`      | 12 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
 
 O GitHub corre os três em cada Pull Request e em cada alteração à `main` (workflow **Testes**). Não fazer merge com
 ❌; se os testes de ecrã falharem, o relatório com capturas fica nos artefactos da execução. Os testes de ecrã correm na base com nome,
@@ -176,3 +179,4 @@ trocar as regras a meio dos testes.
 | #23 | Remates e eficácia de finalização na Análise; cópia de segurança completa com lembrete semanal                |
 | #24 | Fim do scouting do adversário; relatório do adversário pós-jogo (números, notas, próximo jogo, PDF, WhatsApp) |
 | #25 | Pré-jogo novo, simples (sistema, objetivos, com/sem bola, palavra de ordem, PDF, WhatsApp); antigo apagado    |
+| #26 | Aviso para entrar de novo quando a sessão na nuvem termina (sem perder os dados do aparelho)                  |
