@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppState, NotificationSettings, WeeklyTrainingSlot, SyncState } from '../types';
 import { t } from '../i18n/dict';
 import { exportJSONBackup, exportCSVStats, exportTXTReport } from '../lib/exportUtils';
+import { parseBackup, restoreFromBackup } from '../lib/backup';
 import {
   requestBrowserNotificationPermission,
   generateTestNotifications,
@@ -128,11 +129,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const parsed = JSON.parse(event.target?.result as string);
-        if (!parsed.roster && !parsed.matches) {
-          throw new Error('Formato inválido');
-        }
+        const read = parseBackup(event.target?.result as string);
         const doImport = () => {
+          if (read.kind === 'full') {
+            // Full club backup: every team with all its records, the club settings and the seasons
+            onUpdateState(restoreFromBackup(read.backup.club, state));
+            if (onShowToast) onShowToast(t(state.lang, 'msg_bkp_imp'));
+            return;
+          }
+          // Older file (one device's state): only the active team's lists, as before
+          const parsed = read.data;
           onUpdateState({
             roster: parsed.roster || [],
             matches: parsed.matches || [],

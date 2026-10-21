@@ -114,6 +114,12 @@ export default async function seed() {
     { id: 'g2', type: 'conceded', scorerId: null, assistId: null, minute: "30'" },
     { id: 'g3', type: 'scored', scorerId: 'p1', assistId: null, minute: "40'" }
   ];
+  Object.assign(tramagal, {
+    rematesDentroArea: 15,
+    rematesForaArea: 6,
+    rematesDentroAreaAdv: 3,
+    rematesForaAreaAdv: 2
+  });
   const matches = [finished('m1', 'Esparteiros', '2026-10-10'), tramagal];
   const schedule = [
     {

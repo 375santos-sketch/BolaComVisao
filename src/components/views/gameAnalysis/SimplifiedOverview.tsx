@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AggregatedAnalysis, StandardGoalType, AnalysisFilters as IAnalysisFilters } from '../../../lib/gameAnalysis';
 import { InsightsSection } from './InsightsSection';
+import { ShotsSection } from './ShotsSection';
 import { Player } from '../../../types';
 
 interface SimplifiedOverviewProps {
@@ -586,6 +587,9 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
           </div>
         )}
       </section>
+
+      {/* 🎯 REMATES (só os jogos com remates registados) */}
+      <ShotsSection matches={analysis.filteredMatches} />
 
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 6. 🧠 O QUE OS DADOS DIZEM [insights] */}
