@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { AppState, Player, PlayerStatus, DominantFoot, StaffMember } from '../../../../types';
 import { SquadTab, SquadViewMode, SquadSortBy, SquadSortDirection, POSITION_OPTIONS } from '../types';
 import { getPositionRank, sortPlayerObjs, uid, calcPlayerMinutes } from '../../../../lib/utils';
+import { withPlayableDurations } from '../../../../lib/playingTime';
 import { t } from '../../../../i18n/dict';
 import { getAllBirthdays } from '../../../../lib/birthdayUtils';
 
@@ -287,7 +288,7 @@ export function useSquadRoster({
         const isStarter2 = (m.lineupSecondHalf || []).includes(playerId);
         const enteredAsSub = (m.subs || []).some((s) => s.inId === playerId);
         const hasRating = m.ratings && m.ratings[playerId] !== undefined;
-        const playerMins = state.trackSubs ? calcPlayerMinutes(m, playerId) : 0;
+        const playerMins = state.trackSubs ? calcPlayerMinutes(withPlayableDurations(m, state.category), playerId) : 0;
         const participated = isStarter1 || isStarter2 || enteredAsSub || hasRating || playerMins > 0;
         if (participated) {
           totalJogosRealizados++;

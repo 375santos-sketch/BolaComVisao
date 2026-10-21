@@ -7,6 +7,7 @@ import {
   getMatchCompetitionDetails,
   defaultSeason
 } from './utils';
+import { withPlayableDurations } from './playingTime';
 
 /**
  * Lazy loads the XLSX library on demand so it does not inflate the initial bundle.
@@ -251,7 +252,7 @@ export async function exportSquadExcel(state: AppState) {
         if (isStarter1) jogosTitular++;
         if (isStarter2) titularSegundaParte++;
         partesTitular += (isStarter1 ? 1 : 0) + (isStarter2 ? 1 : 0);
-        minutos += calcPlayerMinutes(m, pId);
+        minutos += calcPlayerMinutes(withPlayableDurations(m, state.category), pId);
       }
       (m.goals || []).forEach((g) => {
         if (g.type === 'scored' && g.scorerId === pId) golos++;
@@ -680,7 +681,7 @@ export async function exportSeasonStatsExcel(state: AppState) {
         if (isStarter1) jogosTitular++;
         if (isStarter2) titularSegundaParte++;
         partesTitular += (isStarter1 ? 1 : 0) + (isStarter2 ? 1 : 0);
-        minutos += calcPlayerMinutes(m, pId);
+        minutos += calcPlayerMinutes(withPlayableDurations(m, state.category), pId);
       }
       (m.goals || []).forEach((g) => {
         if (g.type === 'scored' && g.scorerId === pId) golos++;

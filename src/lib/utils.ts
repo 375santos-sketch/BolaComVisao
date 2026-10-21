@@ -300,7 +300,29 @@ export function getHalfDuration(m: Match, half: 1 | 2): number {
   }
 }
 
-export function getPlayersOnPitchAtEndOfHalf(m: Match, half: 1 | 2): string[] {
+/**
+ * Substitutions imported from a Ficha de Jogo carry only the game minute (e.g. 43'), without the half. Places each
+ * one in its half (minute after the end of the 1st half → 2nd half, counted from the start of that half), so the
+ * minutes played are not computed as if every change happened in the 1st half.
+ */
+export function withSubHalves(m: Match): Match {
+  const subs = m.subs || [];
+  if (!subs.some((s) => s.half == null && s.minuteInHalf == null && !s.isHalftime)) return m;
+  const half1 = getHalfDuration(m, 1);
+  if (half1 <= 0) return m;
+  return {
+    ...m,
+    subs: subs.map((s) => {
+      if (s.half != null || s.minuteInHalf != null || s.isHalftime) return s;
+      const minute = parseMinuteOrder(s.minute);
+      if (minute === 999) return s;
+      return minute > half1 ? { ...s, half: 2, minuteInHalf: minute - half1 } : { ...s, half: 1, minuteInHalf: minute };
+    })
+  };
+}
+
+export function getPlayersOnPitchAtEndOfHalf(match: Match, half: 1 | 2): string[] {
+  const m = withSubHalves(match);
   const lineupSize = getLineupSize(m);
   const hasLineup2 = Boolean(m.lineupSecondHalf && m.lineupSecondHalf.length === lineupSize);
 
@@ -347,7 +369,8 @@ export function getPlayersOnPitchAtEndOfHalf(m: Match, half: 1 | 2): string[] {
   return current;
 }
 
-export function calcPlayerMinutes(m: Match, pId: string): number {
+export function calcPlayerMinutes(match: Match, pId: string): number {
+  const m = withSubHalves(match);
   let mins = 0;
   const lineupSize = getLineupSize(m);
   const hasLineup2 = Boolean(m.lineupSecondHalf && m.lineupSecondHalf.length === lineupSize);

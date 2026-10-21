@@ -128,23 +128,24 @@ trocar as regras a meio dos testes.
 
 ## 8. Histórico (outubro 2026)
 
-| PR  | O quê                                                                                            |
-| --- | ------------------------------------------------------------------------------------------------ |
-| #1  | Erros técnicos, jogo do Tramagal SU recuperado, importação da Ficha de Jogo                      |
-| #2  | Jogos separados por equipa, épocas pela data, indicador de gravação verdadeiro                   |
-| #3  | Minutos de jogo por atleta (ao vivo e resumo da época)                                           |
-| #4  | Armazenamento por registos (um documento por atleta, jogo e treino)                              |
-| #5  | Importação sem dados inventados, sem dados de demonstração, jogos apagados, partilha com os pais |
-| #6  | Segurança: acessos entre clubes fechados, dados apagados ao terminar sessão                      |
-| #7  | Convites seguros, verificados pelas regras                                                       |
-| #8  | Alertas de assiduidade, limpeza de dados inventados, app mais leve                               |
-| #9  | Mensagens de diagnóstico da migração                                                             |
-| #10 | Sincronização espera pelo login (a migração passou a acontecer)                                  |
-| #11 | Testes automáticos aos ecrãs                                                                     |
-| #12 | Notas de passagem                                                                                |
-| #13 | Publicação automática das regras (testadas antes)                                                |
-| #14 | Regras publicadas com o código de acesso da Firebase CLI (o projeto não permite chaves)          |
-| #15 | Todos os testes correm no GitHub em cada Pull Request                                            |
-| #16 | Separadores de Performance: Estatísticas a um toque                                              |
-| #17 | "Quando marcamos": gráfico a zeros corrigido; golos sem minuto já não vão para 0–15'             |
-| #18 | Definições do clube e equipas sem conflitos entre treinadores                                    |
+| PR  | O quê                                                                                                      |
+| --- | ---------------------------------------------------------------------------------------------------------- |
+| #1  | Erros técnicos, jogo do Tramagal SU recuperado, importação da Ficha de Jogo                                |
+| #2  | Jogos separados por equipa, épocas pela data, indicador de gravação verdadeiro                             |
+| #3  | Minutos de jogo por atleta (ao vivo e resumo da época)                                                     |
+| #4  | Armazenamento por registos (um documento por atleta, jogo e treino)                                        |
+| #5  | Importação sem dados inventados, sem dados de demonstração, jogos apagados, partilha com os pais           |
+| #6  | Segurança: acessos entre clubes fechados, dados apagados ao terminar sessão                                |
+| #7  | Convites seguros, verificados pelas regras                                                                 |
+| #8  | Alertas de assiduidade, limpeza de dados inventados, app mais leve                                         |
+| #9  | Mensagens de diagnóstico da migração                                                                       |
+| #10 | Sincronização espera pelo login (a migração passou a acontecer)                                            |
+| #11 | Testes automáticos aos ecrãs                                                                               |
+| #12 | Notas de passagem                                                                                          |
+| #13 | Publicação automática das regras (testadas antes)                                                          |
+| #14 | Regras publicadas com o código de acesso da Firebase CLI (o projeto não permite chaves)                    |
+| #15 | Todos os testes correm no GitHub em cada Pull Request                                                      |
+| #16 | Separadores de Performance: Estatísticas a um toque                                                        |
+| #17 | "Quando marcamos": gráfico a zeros corrigido; golos sem minuto já não vão para 0–15'                       |
+| #18 | Definições do clube e equipas sem conflitos entre treinadores                                              |
+| #19 | Minutos de jogo certos em jogos importados (substituições da 2.ª parte; titulares deduzidos quando faltam) |
