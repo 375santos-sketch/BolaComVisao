@@ -43,7 +43,7 @@ describe('Correção única das épocas (dados antigos)', () => {
     expect(state.teams[0].season).toBe('2026/2027');
     expect(state.season).toBe('2026/2027');
     expect(state.seasons?.find((s) => s.isCurrent)?.name).toBe('2026/2027');
-    expect(state.version).toBe(2);
+    expect(state.version).toBeGreaterThanOrEqual(2); // later one-off migrations bump it further
   });
 
   it('runs only once, so a season picked by the coach afterwards is kept', () => {

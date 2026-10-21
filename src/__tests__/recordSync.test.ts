@@ -280,7 +280,7 @@ describe('Registos separados — fusão (merge a três vias)', () => {
 });
 
 describe('Registos separados — estado completo', () => {
-  it('round trip is stable with trainings, schedule, staff messages and scouting reports', () => {
+  it('round trip is stable with trainings, schedule and staff messages (old pre-match/scouting reports are deleted)', () => {
     const trainings = [
       { id: 't1', date: '2026-10-14', notes: 'x', absences: ['p2'], completed: true },
       { id: 't2', date: '2026-10-16', notes: '', absences: [] }
@@ -305,7 +305,7 @@ describe('Registos separados — estado completo', () => {
     });
     const records = extractRecords(state);
     expect(new Set([...records.values()].map((r) => r.kind))).toEqual(
-      new Set(['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting'])
+      new Set(['club', 'player', 'match', 'training', 'schedule', 'message'])
     );
     const rebuilt = assembleState(records, state);
     expect(pendingRecordIds(extractRecords(rebuilt), syncedFrom(records))).toEqual([]);

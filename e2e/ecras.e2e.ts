@@ -83,7 +83,7 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   await expect(page.getByText('AGENDA & CALENDÁRIO ANUAL')).toBeVisible();
 
   await navTo(page, /performance/i);
-  await expect(page.getByText('PLANO ESTRATÉGICO & MODELO DE JOGO')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Plano' })).toBeVisible();
 
   // Performance tabs: Estatísticas (with playing time) is one tap away
   const performanceTabs = page.getByRole('navigation', { name: 'Performance' });
@@ -91,7 +91,7 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
   await expect(performanceTabs.getByRole('button', { name: /Adversário/ })).toHaveCount(0); // scouting removed
   await performanceTabs.getByRole('button', { name: /Pré-jogo/ }).click();
-  await expect(page.getByText('PLANO ESTRATÉGICO & MODELO DE JOGO')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Plano' })).toBeVisible();
 
   await navTo(page, /início/i);
   await expect(performanceTabs).toBeHidden();
@@ -111,26 +111,40 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   }
 });
 
-test('pré-jogo: abrir o ecrã não grava nada; finalizar grava um só plano', async ({ page }) => {
-  const scoutingRecords = async () => [...(await cloudRecords()).entries()].filter(([, r]) => r.kind === 'scouting');
+test('pré-jogo: abrir não grava nada; plano guardado no jogo da Agenda, PDF e plano pronto', async ({ page }) => {
+  const scheduleDoc = async () => {
+    const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/schedule__sub11__s1`, { headers: owner });
+    return ((await res.json()) as { fields?: any }).fields?.data?.mapValue?.fields || {};
+  };
   await signedIn(page);
   await navTo(page, /performance/i);
-  await expect(page.getByText('PLANO ESTRATÉGICO & MODELO DE JOGO')).toBeVisible();
+  const game = page.getByRole('region', { name: 'Jogo' });
+  await expect(game).toContainText('vs Abrantes');
   await page.waitForTimeout(5000); // longer than the 3.5 s save delay
-  expect(await scoutingRecords()).toEqual([]);
-  await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced');
+  expect((await scheduleDoc()).preMatchPlan).toBeUndefined();
+  expect([...(await cloudRecords()).values()].filter((r) => r.kind === 'scouting')).toEqual([]);
 
-  await page
-    .getByRole('navigation', { name: 'Performance' })
-    .getByRole('button', { name: /Pré-jogo/ })
-    .click();
-  await page
-    .getByRole('button', { name: /FINALIZAR PRÉ-JOGO/i })
-    .first()
-    .click();
+  const plan = page.getByRole('region', { name: 'Plano' });
+  await plan.getByPlaceholder('ex.: 2-3-1').fill('2-3-1');
+  await plan.getByLabel('Objetivo 1').fill('Ganhar as segundas bolas');
+  await plan.getByLabel(/Sem bola/).fill('Pressionar a saída de bola');
+  await plan.getByLabel(/Palavra de ordem/).fill('Juntos até ao fim!');
+  const download = page.waitForEvent('download');
+  await plan.getByRole('button', { name: /PDF/ }).click();
+  expect((await download).suggestedFilename()).toMatch(/^PreJogo_Abrantes_\d{4}-\d{2}-\d{2}\.pdf$/);
+  await plan.getByRole('button', { name: /Plano pronto/ }).click();
+  await expect(game).toContainText('✓ Plano pronto');
+
   await expect
-    .poll(async () => (await scoutingRecords()).map(([id]) => id), { timeout: 30_000 })
-    .toEqual(['scouting__sub11__report-s1']);
+    .poll(
+      async () => {
+        const d = await scheduleDoc();
+        const p = d.preMatchPlan?.mapValue?.fields;
+        return [d.preMatchFinalized?.booleanValue, p?.system?.stringValue, p?.motto?.stringValue];
+      },
+      { timeout: 30_000 }
+    )
+    .toEqual([true, '2-3-1', 'Juntos até ao fim!']);
 });
 
 test('análise: remates e eficácia de finalização', async ({ page }) => {

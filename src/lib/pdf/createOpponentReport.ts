@@ -1,5 +1,5 @@
 import { AppState, Match } from '../../types';
-import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters } from './pdfLayout';
+import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters, createTextReportWriter } from './pdfLayout';
 import { getOpponentMatchFacts } from '../opponentReport';
 import { getMatchCompetitionDetails } from '../utils';
 
@@ -15,57 +15,17 @@ export async function buildOpponentReportPDF(match: Match, state: AppState) {
 
   drawDocumentHeader(doc, state, 'RELATÓRIO DO ADVERSÁRIO (PÓS-JOGO)', match.opponent);
 
-  let y = 48;
-  const left = 14;
-  const width = 182;
-  const ensure = (h: number) => {
-    if (y + h > 280) {
-      doc.addPage();
-      y = 18;
-    }
-  };
-  const heading = (text: string) => {
-    ensure(12);
-    doc.setFillColor(10, 25, 42);
-    doc.rect(left, y - 4.5, width, 7, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(0, 190, 240);
-    doc.text(text.toUpperCase(), left + 2, y);
-    y += 7;
-  };
-  const paragraph = (text: string) => {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9.5);
-    doc.setTextColor(30, 41, 59);
-    const lines = doc.splitTextToSize(text, width - 4);
-    lines.forEach((line: string) => {
-      ensure(5);
-      doc.text(line, left + 2, y);
-      y += 4.8;
-    });
-    y += 2;
-  };
-  const list = (items?: string[]) => {
-    const clean = (items || []).filter((s) => s.trim());
-    if (clean.length === 0) paragraph('—');
-    else clean.forEach((s) => paragraph(`•  ${s}`));
-  };
+  const w = createTextReportWriter(doc, 48);
+  const { heading, paragraph, list } = w;
 
   const home = match.location !== 'fora';
   const score = home
     ? `${club} ${f.scored} - ${f.conceded} ${match.opponent}`
     : `${match.opponent} ${f.conceded} - ${f.scored} ${club}`;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(15, 23, 42);
-  doc.text(score, 105, y, { align: 'center' });
-  y += 6;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(71, 85, 105);
-  doc.text(`${date}  •  ${home ? 'Casa' : 'Fora'}  •  ${comp.typeLabel}`, 105, y, { align: 'center' });
-  y += 9;
+  w.centered(score, { size: 13, bold: true });
+  w.skip(-0.5);
+  w.centered(`${date}  •  ${home ? 'Casa' : 'Fora'}  •  ${comp.typeLabel}`, { size: 9, color: [71, 85, 105] });
+  w.skip(4.5);
 
   heading('No jogo');
   paragraph(

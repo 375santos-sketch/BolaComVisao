@@ -137,49 +137,45 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
     return { ...initialDefaultState };
   }
   const normalized = withoutOpponentScouting(normalizeClubStateFields(raw));
-  return (raw.version || 1) < SEASON_MIGRATION_VERSION ? migrateSeasonsFromDates(normalized) : normalized;
+  const seasonsFixed = (raw.version || 1) < SEASON_MIGRATION_VERSION ? migrateSeasonsFromDates(normalized) : normalized;
+  return (raw.version || 1) < PRE_MATCH_RESET_VERSION ? resetOldPreMatchFlags(seasonsFixed) : seasonsFixed;
 }
 
-/** Fields of the removed "Adversário" (opponent scouting) screen; the plan for our own team stays. */
-const OPPONENT_SCOUTING_FIELDS = [
-  'formation',
-  'playingStyle',
-  'strengths',
-  'weaknesses',
-  'keyPlayer',
-  'tacticalNotes',
-  'setPiecesNotes',
-  'gamePlan',
-  'notes',
-  'scoutingFinalized',
-  'scoutingFinalizedAt'
-] as const;
+// Data version that replaced the old Pré-jogo (see resetOldPreMatchFlags).
+const PRE_MATCH_RESET_VERSION = 3;
 
 /**
- * The opponent scouting was replaced by the post-match opponent report (Match.opponentReport). Its data is
- * deleted: reports created only by that screen (id "scout-…") entirely, and the scouting fields of the
- * pre-match plans that shared the same record. Idempotent: running it again changes nothing.
+ * Runs once: the old Pré-jogo plans were deleted, so their "finalized" mark on the Agenda games would show a ✓
+ * for a plan that no longer exists. Games that already have a new plan keep their mark.
+ */
+export function resetOldPreMatchFlags(state: AppState): AppState {
+  const reset = (list?: ScheduledMatch[]) =>
+    Array.isArray(list)
+      ? list.map((m) => {
+          if (!m || m.preMatchPlan || (m.preMatchFinalized === undefined && m.preMatchFinalizedAt === undefined))
+            return m;
+          const copy: Record<string, unknown> = { ...m };
+          delete copy.preMatchFinalized;
+          delete copy.preMatchFinalizedAt;
+          return copy as unknown as ScheduledMatch;
+        })
+      : list;
+  return {
+    ...state,
+    schedule: reset(state.schedule) || [],
+    teams: (state.teams || []).map((t) => ({ ...t, schedule: reset(t.schedule) })),
+    version: PRE_MATCH_RESET_VERSION
+  };
+}
+
+/**
+ * The old Pré-jogo and opponent scouting screens (both stored in opponentScouting) were replaced by
+ * ScheduledMatch.preMatchPlan and Match.opponentReport: their data is deleted, as the Administrator asked
+ * (21/10/2026). Idempotent: running it again changes nothing.
  */
 export function withoutOpponentScouting(state: AppState): AppState {
-  const cleanList = (list?: OpponentScouting[]): OpponentScouting[] | undefined => {
-    if (!Array.isArray(list)) return list;
-    let changed = false;
-    const out = list
-      .filter((r) => {
-        const keep = !(r && typeof r.id === 'string' && r.id.startsWith('scout-'));
-        if (!keep) changed = true;
-        return keep;
-      })
-      .map((r) => {
-        const fields = r as unknown as Record<string, unknown>;
-        if (!r || !OPPONENT_SCOUTING_FIELDS.some((f) => fields[f] !== undefined)) return r;
-        changed = true;
-        const copy: Record<string, unknown> = { ...r };
-        OPPONENT_SCOUTING_FIELDS.forEach((f) => delete copy[f]);
-        return copy as unknown as OpponentScouting;
-      });
-    return changed ? out : list;
-  };
+  const cleanList = (list?: OpponentScouting[]): OpponentScouting[] | undefined =>
+    Array.isArray(list) && list.length > 0 ? [] : list;
   const hasScouting = (m?: ScheduledMatch) =>
     Boolean(m && (m.scoutingFinalized !== undefined || m.scoutingFinalizedAt !== undefined));
   const cleanSchedule = (list?: ScheduledMatch[]): ScheduledMatch[] | undefined => {
