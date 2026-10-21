@@ -384,6 +384,7 @@ export function subscribeToClubCloud(
     (err) => {
       if (isQuotaExceededError(err)) markQuotaExhausted(30);
       // Permission denied = rules for the records sub-collection not published yet: keep working as before.
+      console.warn(`Registos separados indisponíveis (${ws}): ${(err as { code?: string }).code || ''} ${err.message}`);
       recordsBlocked = true;
       if (modeByWorkspace.get(ws) !== 'records') modeByWorkspace.set(ws, 'legacy');
       evaluate();
