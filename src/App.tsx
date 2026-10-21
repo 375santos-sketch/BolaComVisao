@@ -21,6 +21,7 @@ import { Navbar, TabType } from './components/Navbar';
 import { getActiveCategory } from './components/navCategory';
 import { PerformanceSubNav } from './components/PerformanceSubNav';
 import { BackupReminder } from './components/BackupReminder';
+import { SessionExpiredBanner } from './components/SessionExpiredBanner';
 import { MoreDrawer } from './components/MoreDrawer';
 import { ConfirmModal } from './components/ConfirmModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
@@ -345,7 +346,18 @@ export default function App() {
   // Firebase session: the saved user is restored from this device before Firebase confirms the login, and the
   // cloud listeners only work once it does.
   const [authUid, setAuthUid] = useState<string | null>(() => auth.currentUser?.uid ?? null);
-  useEffect(() => onAuthStateChanged(auth, (user) => setAuthUid(user?.uid ?? null)), []);
+  const [authReady, setAuthReady] = useState(false);
+  useEffect(
+    () =>
+      onAuthStateChanged(auth, (user) => {
+        setAuthUid(user?.uid ?? null);
+        setAuthReady(true);
+      }),
+    []
+  );
+  // Signed in on this device (saved user) but without a Firebase session: nothing reaches the cloud.
+  const cloudSessionLost =
+    authReady && !authUid && Boolean(state.currentUser?.id) && !state.currentUser?.id.startsWith('guest-');
 
   // Real-time cloud sync for multi-device use: the legacy single document or per-record storage (see clubCloud.ts)
   useEffect(() => {
@@ -691,6 +703,9 @@ export default function App() {
 
         {/* Main Content Area */}
         <div className="flex-1 w-full max-w-7xl mx-auto px-2.5 sm:px-6 pt-2 sm:pt-6 overflow-x-hidden">
+          {cloudSessionLost && state.currentUser && (
+            <SessionExpiredBanner user={state.currentUser} onRestored={() => setCloudSaveError(undefined)} />
+          )}
           {getActiveCategory(currentTab) === 'performance' && (
             <PerformanceSubNav currentTab={currentTab} onNavigate={handleNavigate} />
           )}

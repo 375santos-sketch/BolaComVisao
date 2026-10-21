@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { COACH_A, COACH_B, FIRESTORE, owner } from './seed';
+import { COACH_A, COACH_B, FIRESTORE, owner, PASSWORD } from './seed';
 import {
   cloudRecords,
   enterPanel,
@@ -262,6 +262,47 @@ test('modo jogo: abrir o jogo de hoje e registar um golo', async ({ page }) => {
     )
     .toBe(true);
   await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
+});
+
+test('sessão na nuvem terminada: aviso, entrar de novo sem perder o que ficou no aparelho', async ({
+  page,
+  browser
+}) => {
+  await signedIn(page);
+  await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
+  // Same device data (coach saved in localStorage) but without the Firebase session
+  const saved = await page.context().storageState();
+  const storageState = {
+    ...saved,
+    origins: saved.origins.map((o) => ({
+      ...o,
+      localStorage: o.localStorage.filter((item) => !item.name.startsWith('firebase:'))
+    }))
+  };
+  const device = await browser.newContext({ storageState });
+  const app = await device.newPage();
+  await app.goto('/');
+  await enterPanel(app);
+  const banner = app.getByRole('alert').filter({ hasText: 'A sessão na nuvem terminou' });
+  await expect(banner).toBeVisible();
+
+  // A change made meanwhile stays on this device…
+  await navTo(app, /equipa/i);
+  await addPlayer(app, 'Tiago Sessão', '31');
+  await expect(app.getByRole('heading', { name: 'Tiago Sessão' })).toBeVisible();
+
+  // …and reaches the cloud after signing in again from the banner
+  await banner.getByRole('button', { name: 'Entrar de novo' }).click();
+  await banner.getByLabel('Palavra-passe').fill(PASSWORD);
+  await banner.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await expect(banner).toBeHidden();
+  await expect
+    .poll(async () => [...(await cloudRecords()).values()].some((r) => r.name === 'Tiago Sessão'), {
+      timeout: 30_000
+    })
+    .toBe(true);
+  await expect(syncBadge(app)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
+  await device.close();
 });
 
 test('terminar sessão apaga os dados do clube neste aparelho', async ({ page }) => {
