@@ -385,7 +385,12 @@ export default function App() {
           // Give the legacy snapshot time to be applied, then move the club to per-record storage once.
           setTimeout(async () => {
             const current = latestStateRef.current;
-            if (!current.currentUser?.id || getCloudMode(workspaceId) !== 'legacy') return;
+            if (!current.currentUser?.id || getCloudMode(workspaceId) !== 'legacy') {
+              console.warn(
+                `Migração para registos separados não iniciada: utilizador=${current.currentUser?.id ? 'ok' : 'em falta'}, modo=${getCloudMode(workspaceId)}`
+              );
+              return;
+            }
             const res = await migrateClubToRecords(workspaceId, current, current.currentUser.id);
             if (res.success) {
               console.info('Base de dados do clube migrada para registos separados.', res.message);
