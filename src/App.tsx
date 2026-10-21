@@ -18,6 +18,8 @@ import {
   getFirestoreQuotaState
 } from './services/cloudAuthService';
 import { Navbar, TabType } from './components/Navbar';
+import { getActiveCategory } from './components/navCategory';
+import { PerformanceSubNav } from './components/PerformanceSubNav';
 import { MoreDrawer } from './components/MoreDrawer';
 import { ConfirmModal } from './components/ConfirmModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
@@ -692,6 +694,9 @@ export default function App() {
 
         {/* Main Content Area */}
         <div className="flex-1 w-full max-w-7xl mx-auto px-2.5 sm:px-6 pt-2 sm:pt-6 overflow-x-hidden">
+          {getActiveCategory(currentTab) === 'performance' && (
+            <PerformanceSubNav currentTab={currentTab} onNavigate={handleNavigate} />
+          )}
           <Suspense fallback={<ViewLoadingFallback />}>
             {currentTab === 'teams' && (
               <TeamsHubView

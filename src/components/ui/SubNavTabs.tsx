@@ -26,6 +26,7 @@ export const SubNavTabs: React.FC<SubNavTabsProps> = ({ tabs, activeTab, onChang
           <button
             key={tab.id}
             type="button"
+            aria-current={isActive ? 'page' : undefined}
             onClick={() => onChange(tab.id)}
             className={`flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-['Chakra_Petch'] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer ${
               isActive
