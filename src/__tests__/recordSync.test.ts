@@ -11,7 +11,8 @@ import {
   CLUB_DOC_ID,
   CloudRecord,
   LocalRecord,
-  SyncedHashes
+  SyncedHashes,
+  setSynced
 } from '../lib/recordSync';
 import { normalizeClubState } from '../lib/storage';
 import { AppState, Match, Player } from '../types';
@@ -304,5 +305,101 @@ describe('Registos separados — estado completo', () => {
     );
     const rebuilt = assembleState(records, state);
     expect(pendingRecordIds(extractRecords(rebuilt), syncedFrom(records))).toEqual([]);
+  });
+});
+
+describe('Definições do clube — dois treinadores ao mesmo tempo', () => {
+  const withTeams = (state: AppState): AppState =>
+    normalizeClubState({
+      ...state,
+      teams: [...state.teams, { id: 'sub13', clubName: 'Dragões', category: 'Sub-13', season: '2026/2027' } as any]
+    });
+  const start = () => withTeams(baseState());
+  const syncedOf = (records: Map<string, LocalRecord>): SyncedHashes => {
+    const synced: SyncedHashes = {};
+    records.forEach((r, id) => setSynced(synced, id, r.data));
+    return synced;
+  };
+  const clubOf = (res: ReturnType<typeof mergeRecords>) => res.records.get(CLUB_DOC_ID)!.data as any;
+  const editTeam = (state: AppState, id: string, patch: Record<string, unknown>): AppState =>
+    normalizeClubState({ ...state, teams: state.teams.map((t) => (t.id === id ? { ...t, ...patch } : t)) });
+  const cloudWith = (state: AppState, updatedAt: number) => {
+    const remote = toCloud(extractRecords(start()));
+    remote.set(CLUB_DOC_ID, {
+      ...remote.get(CLUB_DOC_ID)!,
+      data: extractRecords(state).get(CLUB_DOC_ID)!.data,
+      updatedAt
+    });
+    return remote;
+  };
+  const merge = (localState: AppState, remote: Map<string, CloudRecord>, localMutationAt: number) => {
+    const before = extractRecords(start());
+    return mergeRecords({
+      local: extractRecords(localState),
+      remote,
+      synced: syncedOf(before),
+      knownTeamIds: new Set(['sub11', 'sub13']),
+      localMutationAt
+    });
+  };
+
+  it('different settings: both survive (before, the newer device erased the other change)', () => {
+    const res = merge({ ...start(), lang: 'en' }, cloudWith({ ...start(), theme: 'luzsolar' } as AppState, 9000), 5000);
+    expect(clubOf(res).lang).toBe('en');
+    expect(clubOf(res).theme).toBe('luzsolar');
+    expect(res.toPush).toContain(CLUB_DOC_ID); // the cloud still lacks this device's change
+    expect(res.changedLocally).toBe(true); // and this device gets the other one
+  });
+
+  it('different teams edited: both survive, team order kept', () => {
+    const local = editTeam(start(), 'sub11', { season: '2027/2028' });
+    const remote = cloudWith(editTeam(start(), 'sub13', { category: 'Sub-13 B' }), 9000);
+    const teams = clubOf(merge(local, remote, 5000)).teams;
+    expect(teams.map((t: any) => t.id)).toEqual(['sub11', 'sub13']);
+    expect(teams[0].season).toBe('2027/2028');
+    expect(teams[1].category).toBe('Sub-13 B');
+  });
+
+  it('a team created on each device: both teams kept', () => {
+    const local = normalizeClubState({
+      ...start(),
+      teams: [...start().teams, { id: 'sub9', clubName: 'Dragões', category: 'Sub-9', season: '2026/2027' } as any]
+    });
+    const remoteState = normalizeClubState({
+      ...start(),
+      teams: [...start().teams, { id: 'sub15', clubName: 'Dragões', category: 'Sub-15', season: '2026/2027' } as any]
+    });
+    const teams = clubOf(merge(local, cloudWith(remoteState, 9000), 5000)).teams;
+    expect(teams.map((t: any) => t.id)).toEqual(['sub11', 'sub13', 'sub9', 'sub15']);
+  });
+
+  it('a team deleted on one device and untouched on the other stays deleted', () => {
+    const local = normalizeClubState({
+      ...start(),
+      lang: 'en',
+      teams: start().teams.filter((t) => t.id !== 'sub13')
+    });
+    const remote = cloudWith({ ...start(), theme: 'luzsolar' } as AppState, 9000);
+    const club = clubOf(merge(local, remote, 5000));
+    expect(club.teams.map((t: any) => t.id)).toEqual(['sub11']);
+    expect(club.theme).toBe('luzsolar');
+  });
+
+  it('same setting changed on both: the newer change wins, as for any record', () => {
+    const remote = cloudWith({ ...start(), tacticFormat: 9 } as AppState, 9000);
+    expect(clubOf(merge({ ...start(), tacticFormat: 7 }, remote, 5000)).tacticFormat).toBe(9);
+    expect(clubOf(merge({ ...start(), tacticFormat: 7 }, remote, 9500)).tacticFormat).toBe(7);
+  });
+
+  it('after the merge is applied and saved, nothing is pending', () => {
+    const res = merge(
+      { ...start(), tacticFormat: 7 },
+      cloudWith({ ...start(), theme: 'luzsolar' } as AppState, 9000),
+      5000
+    );
+    const synced = { ...res.synced };
+    setSynced(synced, CLUB_DOC_ID, res.records.get(CLUB_DOC_ID)!.data); // what a confirmed save records
+    expect(pendingRecordIds(res.records, synced)).toEqual([]);
+    expect(Object.keys(synced).some((k) => k.startsWith('club#'))).toBe(true);
   });
 });

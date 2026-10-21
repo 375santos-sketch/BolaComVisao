@@ -48,8 +48,19 @@ export interface CloudRecord extends LocalRecord {
   deleted: boolean;
 }
 
-/** Hash of the last version of each record known to be identical on this device and in the cloud. */
+/**
+ * Hash of the last version of each record known to be identical on this device and in the cloud. For the club
+ * record it also keeps one hash per field and per team (keys starting with "club#"), so that two devices editing
+ * different settings or different teams at the same time are merged instead of one overwriting the other.
+ */
 export type SyncedHashes = Record<string, string>;
+
+const CLUB_PART = 'club#';
+const clubFieldKey = (field: string) => `${CLUB_PART}f:${field}`;
+const clubTeamKey = (teamId: string) => `${CLUB_PART}t:${teamId}`;
+
+/** Whether a synced-hashes key is a record id (and not one of the club's per-field hashes). */
+export const isRecordKey = (key: string) => !key.startsWith(CLUB_PART);
 
 // ---------- Canonical JSON + hashing ----------
 
@@ -188,6 +199,64 @@ function sortKey(d: Record<string, unknown>): string {
   return String(d.name ?? d.id ?? '');
 }
 
+// ---------- Synced versions ----------
+
+type ClubTeam = Record<string, unknown> & { id?: string };
+const clubTeams = (data: Record<string, unknown> | undefined): ClubTeam[] =>
+  Array.isArray(data?.teams) ? (data!.teams as ClubTeam[]).filter((t) => t && t.id) : [];
+
+/** Records `data` (or its absence) as the version of record `id` agreed with the cloud. */
+export function setSynced(synced: SyncedHashes, id: string, data: Record<string, unknown> | null | undefined): void {
+  if (id === CLUB_DOC_ID) {
+    Object.keys(synced)
+      .filter((k) => !isRecordKey(k))
+      .forEach((k) => delete synced[k]);
+    if (data) {
+      Object.entries(data).forEach(([field, value]) => {
+        if (field !== 'teams' && value !== undefined) synced[clubFieldKey(field)] = hashData(value);
+      });
+      clubTeams(data).forEach((t) => (synced[clubTeamKey(String(t.id))] = hashData(t)));
+    }
+  }
+  if (data) synced[id] = hashData(data);
+  else delete synced[id];
+}
+
+/**
+ * Club record changed on both sides: merge it field by field and team by team against the last synced version.
+ * Only a field (or team) changed on both sides is decided by the newer change, as for any other record.
+ */
+export function mergeClubData(
+  local: Record<string, unknown>,
+  remote: Record<string, unknown>,
+  synced: SyncedHashes,
+  remoteIsNewer: boolean
+): Record<string, unknown> {
+  const pick = <T>(l: T | undefined, r: T | undefined, base: string | undefined): T | undefined => {
+    const hl = l === undefined ? ABSENT : hashData(l);
+    const hr = r === undefined ? ABSENT : hashData(r);
+    const hs = base ?? ABSENT;
+    if (hl === hr || hr === hs) return l;
+    if (hl === hs) return r;
+    return remoteIsNewer ? r : l;
+  };
+
+  const merged: Record<string, unknown> = {};
+  new Set([...Object.keys(local), ...Object.keys(remote)]).forEach((field) => {
+    if (field === 'teams') return;
+    const value = pick(local[field], remote[field], synced[clubFieldKey(field)]);
+    if (value !== undefined) merged[field] = value;
+  });
+
+  const localTeams = new Map(clubTeams(local).map((t) => [String(t.id), t]));
+  const remoteTeams = new Map(clubTeams(remote).map((t) => [String(t.id), t]));
+  const order = [...localTeams.keys(), ...[...remoteTeams.keys()].filter((id) => !localTeams.has(id))];
+  merged.teams = order
+    .map((id) => pick(localTeams.get(id), remoteTeams.get(id), synced[clubTeamKey(id)]))
+    .filter((t): t is ClubTeam => t !== undefined);
+  return merged;
+}
+
 // ---------- Three-way merge ----------
 
 export interface MergeResult {
@@ -220,7 +289,7 @@ export function mergeRecords(input: {
   const toPush: string[] = [];
   let changedLocally = false;
 
-  const ids = new Set<string>([...local.keys(), ...remote.keys(), ...Object.keys(input.synced)]);
+  const ids = new Set<string>([...local.keys(), ...remote.keys(), ...Object.keys(input.synced).filter(isRecordKey)]);
   ids.forEach((id) => {
     const L = local.get(id);
     const R = remote.get(id);
@@ -235,8 +304,7 @@ export function mergeRecords(input: {
 
     const takeRemote = () => {
       if (live) records.set(id, { kind: live.kind, teamId: live.teamId, entityId: live.entityId, data: live.data });
-      if (hR === ABSENT) delete synced[id];
-      else synced[id] = hR;
+      setSynced(synced, id, live?.data);
       if (hR !== hL) changedLocally = true;
     };
     const keepLocal = () => {
@@ -246,15 +314,23 @@ export function mergeRecords(input: {
 
     if (hL === hR) {
       if (L) records.set(id, L);
-      if (hL === ABSENT) delete synced[id];
-      else synced[id] = hL;
+      setSynced(synced, id, L?.data);
       return;
     }
     const localChanged = hL !== hS;
     const remoteChanged = hR !== hS;
+    const remoteIsNewer = (R?.updatedAt ?? 0) > localMutationAt;
     if (!localChanged) takeRemote();
     else if (!remoteChanged) keepLocal();
-    else if ((R?.updatedAt ?? 0) > localMutationAt) takeRemote();
+    else if (id === CLUB_DOC_ID && L && live) {
+      // Both devices changed club settings or teams: keep both sets of changes where they don't overlap.
+      const data = mergeClubData(L.data, live.data, synced, remoteIsNewer);
+      const hM = hashData(data);
+      records.set(id, { ...L, data });
+      setSynced(synced, id, live.data);
+      if (hM !== hL) changedLocally = true;
+      if (hM !== hR) toPush.push(id);
+    } else if (remoteIsNewer) takeRemote();
     else keepLocal();
   });
 
@@ -263,7 +339,7 @@ export function mergeRecords(input: {
 
 /** Records of this device that differ from the last synced version (what a save must send). */
 export function pendingRecordIds(local: Map<string, LocalRecord>, synced: SyncedHashes): string[] {
-  const ids = new Set<string>([...local.keys(), ...Object.keys(synced)]);
+  const ids = new Set<string>([...local.keys(), ...Object.keys(synced).filter(isRecordKey)]);
   return [...ids].filter((id) => {
     const L = local.get(id);
     return (L ? hashData(L.data) : ABSENT) !== (synced[id] ?? ABSENT);

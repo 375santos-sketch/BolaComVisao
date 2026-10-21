@@ -73,6 +73,9 @@ Regras importantes (cada uma corrige um problema real que já aconteceu):
 - **Nunca gravar o estado inteiro por cima da nuvem.** Antes, um aparelho com dados antigos apagava o trabalho dos
   outros. Agora só se enviam os registos que mudaram, com uma junção de 3 vias por registo (local / nuvem / última
   versão sincronizada, guardada em `bcv-synced-records-{clube}`).
+- **O registo `club` (definições e lista de equipas) junta-se campo a campo e equipa a equipa.** Guarda-se um hash
+  por campo e por equipa (chaves `club#…` em `bcv-synced-records-{clube}`); só um campo ou equipa alterado nos dois
+  aparelhos é decidido pela alteração mais recente.
 - **Apagar = marcar** (`deleted: true`), guardando a última versão. É isso que permite "Resultados → 🗑️ Jogos
   apagados". Só o Administrador pode apagar documentos de verdade.
 - **Proteção contra apagões:** pedidos para apagar mais de 20 registos e mais de 50% do total são ignorados (sinal
@@ -144,3 +147,4 @@ trocar as regras a meio dos testes.
 | #15 | Todos os testes correm no GitHub em cada Pull Request                                            |
 | #16 | Separadores de Performance: Estatísticas a um toque                                              |
 | #17 | "Quando marcamos": gráfico a zeros corrigido; golos sem minuto já não vão para 0–15'             |
+| #18 | Definições do clube e equipas sem conflitos entre treinadores                                    |
