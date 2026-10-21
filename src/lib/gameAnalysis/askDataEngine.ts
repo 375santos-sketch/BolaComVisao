@@ -1,5 +1,6 @@
 import { AppState } from '../../types';
 import { parseMinuteToNumber } from './timingUtils';
+import { getMatchSetPieces } from '../matchSetPieces';
 
 export interface AskDataResponse {
   query: string;
@@ -105,7 +106,7 @@ export function queryTeamData(queryText: string, state: AppState): AskDataRespon
     let totalCorners = 0;
 
     matches.forEach((m) => {
-      totalCorners += m.cantos || 0;
+      totalCorners += getMatchSetPieces(m).cornersFor || 0;
       (m.goals || []).forEach((g) => {
         const t = (g.goalType || '').toLowerCase();
         const isSetPiece = t.includes('canto') || t.includes('livre') || t.includes('pen') || t.includes('bola parada');

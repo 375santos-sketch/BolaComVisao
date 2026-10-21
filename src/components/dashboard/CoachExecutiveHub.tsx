@@ -5,6 +5,7 @@ import { calculateAttendanceMetrics } from '../../lib/intelligenceEngine';
 import { parseMinuteToNumber } from '../../lib/gameAnalysisUtils';
 import { computeTopScorersAndAssisters } from '../../lib/gameAnalysis';
 import { SquadGoalsAndAssistsModal, GoalsAssistsTab } from '../SquadGoalsAndAssistsModal';
+import { getMatchSetPieces } from '../../lib/matchSetPieces';
 
 interface CoachExecutiveHubProps {
   state: AppState;
@@ -83,7 +84,7 @@ export const CoachExecutiveHub: React.FC<CoachExecutiveHubProps> = ({ state, onN
 
       totalScored += scored.length;
       totalConceded += conceded.length;
-      totalCorners += m.cantos || 0;
+      totalCorners += getMatchSetPieces(m).cornersFor || 0;
 
       if (scored.length > conceded.length) wins++;
       else if (scored.length === conceded.length) draws++;
