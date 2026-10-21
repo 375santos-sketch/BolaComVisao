@@ -1,5 +1,6 @@
 import { Match, Player, GoalEvent, CardEvent, SubEvent, MatchPeriod, ScheduledMatch } from '../types';
-import { uid, formatMinute, seasonFromDate } from './utils';
+import { uid, formatMinute, seasonFromDate, parseMinuteOrder } from './utils';
+import { LINEUP_SIZE } from './constants';
 import { parseMatchType } from './matchExcelImporter';
 
 /**
@@ -248,6 +249,23 @@ export function parseMatchSheetRows(
   const scored = goals.filter((g) => g.type === 'scored').length;
   const conceded = goals.length - scored;
 
+  // Sheets exported before the starters were included have none: without them every player's minutes are wrong.
+  if (lineup.length === 0 && subs.length > 0) {
+    const inferred = startersFromSubs(subs);
+    if (inferred.length === LINEUP_SIZE) {
+      lineup.push(...inferred);
+      warnings.push(
+        `A ficha não tem os titulares: foram deduzidos das substituições (quem saiu sem ter entrado antes): ${inferred
+          .map((id) => options.roster.find((p) => p.id === id)?.name || id)
+          .join(', ')}. Confirme no jogo.`
+      );
+    } else {
+      warnings.push(
+        'A ficha não tem os titulares e não foi possível deduzi-los das substituições: os minutos de jogo deste jogo ficam por calcular até indicar os titulares no jogo.'
+      );
+    }
+  }
+
   const match: Match = {
     id: uid(),
     opponent: scheduled?.opponent || opponent,
@@ -270,6 +288,24 @@ export function parseMatchSheetRows(
   };
 
   return { match, warnings };
+}
+
+/**
+ * Players who left the pitch before ever coming on must have started the game. Only reliable when it yields a
+ * full line-up (a starter who was never substituted would be missing), which the caller checks.
+ */
+function startersFromSubs(subs: SubEvent[]): string[] {
+  const seen = new Set<string>();
+  const starters: string[] = [];
+  [...subs]
+    .map((s, i) => ({ s, i, order: parseMinuteOrder(s.minute) }))
+    .sort((a, b) => a.order - b.order || a.i - b.i)
+    .forEach(({ s }) => {
+      if (!seen.has(s.outId)) starters.push(s.outId);
+      seen.add(s.outId);
+      seen.add(s.inId);
+    });
+  return starters;
 }
 
 export async function readMatchSheetFile(
