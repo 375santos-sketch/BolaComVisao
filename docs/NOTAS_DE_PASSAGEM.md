@@ -84,6 +84,10 @@ Regras importantes (cada uma corrige um problema real que já aconteceu):
   gravarem exatamente o mesmo `club` (senão regravavam-no sem parar).
 - **Abrir um ecrã não pode gravar nada.** O Pré-jogo e o Adversário mostram um rascunho (id estável
   `report-{jogo}` / `scout-{jogo}`) que só é gravado quando o treinador o altera.
+- **Cópia de segurança** (`src/lib/backup.ts`): ficheiro JSON com todas as equipas e os seus registos, sem dados de
+  conta (utilizador, contactos dos treinadores, convites, auditoria). Repor um ficheiro novo repõe o clube todo;
+  ficheiros antigos continuam a repor só a equipa ativa. O Administrador vê no Início um lembrete semanal (data da
+  última cópia guardada por aparelho, `bcv-last-backup-at`).
 - **Apagar = marcar** (`deleted: true`), guardando a última versão. É isso que permite "Resultados → 🗑️ Jogos
   apagados". Só o Administrador pode apagar documentos de verdade.
 - **Proteção contra apagões:** pedidos para apagar mais de 20 registos e mais de 50% do total são ignorados (sinal
@@ -127,7 +131,7 @@ consentimento RGPD dos pais.
 | ----------------------- | ---------------------------------------------------------------------------- | ---------- |
 | `npm run verify`        | Tipos, lint, formatação, testes unitários, build                             | Node       |
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
-| `npm run test:e2e`      | 9 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase   | Java       |
+| `npm run test:e2e`      | 10 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
 
 O GitHub corre os três em cada Pull Request e em cada alteração à `main` (workflow **Testes**). Não fazer merge com
 ❌; se os testes de ecrã falharem, o relatório com capturas fica nos artefactos da execução. Os testes de ecrã correm na base com nome,
@@ -160,3 +164,4 @@ trocar as regras a meio dos testes.
 | #20 | Equipa escolhida por aparelho; Pré-jogo e Adversário deixam de gravar só por abrir                         |
 | #21 | Cantos e faltas a 0 na Análise (dois nomes para o mesmo dado: `src/lib/matchSetPieces.ts`)                 |
 | #22 | Testes no GitHub tolerantes a `bun.lock` reescrito pelo AI Studio                                          |
+| #23 | Remates e eficácia de finalização na Análise; cópia de segurança completa com lembrete semanal             |

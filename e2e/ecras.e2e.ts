@@ -138,6 +138,20 @@ test('pré-jogo: abrir os ecrãs não grava nada; finalizar grava um só plano',
     .toEqual(['scouting__sub11__report-s1']);
 });
 
+test('análise: remates e eficácia de finalização', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /performance/i);
+  await page
+    .getByRole('navigation', { name: 'Performance' })
+    .getByRole('button', { name: /Análise/ })
+    .click();
+  const shots = page.getByRole('region', { name: 'Remates' });
+  await expect(shots).toBeVisible();
+  await expect(shots).toContainText('1 jogo com remates registados');
+  await expect(shots).toContainText('15 dentro · 6 fora da área');
+  await expect(shots).toContainText('10% dos remates deram golo (2 em 21)'); // the Esparteiros game has no shots: left out
+});
+
 test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);

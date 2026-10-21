@@ -8,6 +8,7 @@ import {
   defaultSeason
 } from './utils';
 import { withPlayableDurations } from './playingTime';
+import { buildBackup, setLastBackupAt } from './backup';
 
 /**
  * Lazy loads the XLSX library on demand so it does not inflate the initial bundle.
@@ -927,17 +928,19 @@ export async function exportGameAnalysisExcel(
   XLSX.writeFile(wb, `Analise_Jogos_BolaComVisao_${sanitize(myClub)}_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
+/** Downloads a full club backup (every team, see lib/backup.ts) and remembers when it was made on this device. */
 export function exportJSONBackup(state: AppState) {
-  const data = { ...state, lastBackupDate: Date.now() };
+  const data = buildBackup(state);
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `bolacomvisao-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `bolacomvisao-copia-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+  setLastBackupAt();
 }
 
 export function exportCSVStats(state: AppState, _lang: Language) {

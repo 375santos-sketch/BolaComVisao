@@ -20,6 +20,7 @@ import {
 import { Navbar, TabType } from './components/Navbar';
 import { getActiveCategory } from './components/navCategory';
 import { PerformanceSubNav } from './components/PerformanceSubNav';
+import { BackupReminder } from './components/BackupReminder';
 import { MoreDrawer } from './components/MoreDrawer';
 import { ConfirmModal } from './components/ConfirmModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
@@ -806,6 +807,9 @@ export default function App() {
               />
             )}
 
+            {currentTab === 'home' && isAppAdmin(state.currentUser) && (
+              <BackupReminder state={state} onShowToast={showToast} />
+            )}
             {currentTab === 'home' && (
               <HomeView
                 state={state}
