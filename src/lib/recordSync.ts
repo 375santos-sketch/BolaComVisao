@@ -27,8 +27,36 @@ export const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppSta
 };
 const ENTITY_KINDS = Object.keys(ENTITY_FIELDS) as EntityKind[];
 
-/** Device-only fields that are never stored in the shared club document. */
-const DEVICE_ONLY_FIELDS = ['currentUser', 'syncInfo', 'notifications', 'updatedAt', 'lastLocalMutationAt'] as const;
+/**
+ * Device-only fields that are never stored in the shared club document. The team being worked on (activeTeamId)
+ * is each coach's own choice: sharing it switched every other coach's app to that team.
+ */
+const DEVICE_ONLY_FIELDS = [
+  'currentUser',
+  'syncInfo',
+  'notifications',
+  'updatedAt',
+  'lastLocalMutationAt',
+  'activeTeamId'
+] as const;
+
+/**
+ * Top-level copies of the active team's data (normalizeClubState keeps them in sync with that team). Each team
+ * already stores its own; sharing the copies would hand one coach's team data to a coach working on another team.
+ */
+const ACTIVE_TEAM_COPIES = [
+  'staffMembers',
+  'tactics',
+  'tacticFormat',
+  'exerciseLibrary',
+  'clubEvents',
+  'staffUnavailability',
+  'lastTrainingNumber',
+  'myClubName',
+  'clubLogoUrl',
+  'category',
+  'season'
+] as const;
 
 export const CLUB_DOC_ID = 'club';
 const CLUB_TEAM_ID = '_club';
@@ -137,13 +165,31 @@ export function extractRecords(state: AppState): Map<string, LocalRecord> {
   return records;
 }
 
+const TEAM_DEFAULTS = (): Record<string, unknown> => ({
+  staffMembers: [],
+  exerciseLibrary: [],
+  clubEvents: [],
+  staffUnavailability: [],
+  tacticFormat: 11
+});
+
 /** The shared club document: the state without per-record arrays and without device-only fields. */
 export function clubDataOf(state: AppState): Partial<AppState> {
   const club: Record<string, unknown> = { ...state };
   DEVICE_ONLY_FIELDS.forEach((f) => delete club[f]);
+  ACTIVE_TEAM_COPIES.forEach((f) => delete club[f]);
   ENTITY_KINDS.forEach((kind) => delete club[ENTITY_FIELDS[kind]]);
   club.teams = (state.teams || []).map((t) => {
-    const team: Record<string, unknown> = { ...t };
+    // normalizeClubState fills these defaults only for the active team: fill them for every team, so coaches on
+    // different teams share the same club record (otherwise each would keep re-saving their own version).
+    const team: Record<string, unknown> = { ...TEAM_DEFAULTS(), ...t };
+    Object.entries(TEAM_DEFAULTS()).forEach(([k, v]) => {
+      if (team[k] == null) team[k] = v;
+    });
+    // …and the same clean-up of built-in example exercises that it applies to the active team
+    team.exerciseLibrary = (team.exerciseLibrary as Array<{ id?: string }>).filter(
+      (e) => !(e && typeof e.id === 'string' && e.id.startsWith('ex-'))
+    );
     ENTITY_KINDS.forEach((kind) => delete team[ENTITY_FIELDS[kind]]);
     return team;
   });
@@ -160,6 +206,8 @@ export function assembleState(records: Map<string, LocalRecord>, device: AppStat
   const baseFields = base as unknown as Record<string, unknown>;
   const deviceFields = device as unknown as Record<string, unknown>;
   DEVICE_ONLY_FIELDS.forEach((f) => (baseFields[f] = deviceFields[f]));
+  // Rebuilt from this device's active team below (club records written by older versions still carry them)
+  ACTIVE_TEAM_COPIES.forEach((f) => delete baseFields[f]);
 
   const deviceTeams = new Map((device.teams || []).map((t) => [t.id, t]));
   const teams: SquadProfile[] = (base.teams || []).map((team) => {

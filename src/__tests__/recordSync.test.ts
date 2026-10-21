@@ -91,7 +91,11 @@ describe('Registos separados — conversão', () => {
     expect(club.matches).toBeUndefined();
     expect(club.teams[0].matches).toBeUndefined();
     expect(club.currentUser).toBeUndefined();
-    expect(club.myClubName).toBe('Dragões');
+    expect(club.teams[0].clubName).toBe('Dragões');
+    // Each coach's own team choice and the copies of the active team's data are not shared
+    expect(club.activeTeamId).toBeUndefined();
+    expect(club.myClubName).toBeUndefined();
+    expect(club.tactics).toBeUndefined();
   });
 
   it('rebuilds the same state from its records (round trip is stable)', () => {
@@ -386,14 +390,14 @@ describe('Definições do clube — dois treinadores ao mesmo tempo', () => {
   });
 
   it('same setting changed on both: the newer change wins, as for any record', () => {
-    const remote = cloudWith({ ...start(), tacticFormat: 9 } as AppState, 9000);
-    expect(clubOf(merge({ ...start(), tacticFormat: 7 }, remote, 5000)).tacticFormat).toBe(9);
-    expect(clubOf(merge({ ...start(), tacticFormat: 7 }, remote, 9500)).tacticFormat).toBe(7);
+    const remote = cloudWith({ ...start(), theme: 'oceanonoturno' } as AppState, 9000);
+    expect(clubOf(merge({ ...start(), theme: 'luzsolar' }, remote, 5000)).theme).toBe('oceanonoturno');
+    expect(clubOf(merge({ ...start(), theme: 'luzsolar' }, remote, 9500)).theme).toBe('luzsolar');
   });
 
   it('after the merge is applied and saved, nothing is pending', () => {
     const res = merge(
-      { ...start(), tacticFormat: 7 },
+      { ...start(), theme: 'oceanonoturno' } as AppState,
       cloudWith({ ...start(), theme: 'luzsolar' } as AppState, 9000),
       5000
     );
@@ -401,5 +405,62 @@ describe('Definições do clube — dois treinadores ao mesmo tempo', () => {
     setSynced(synced, CLUB_DOC_ID, res.records.get(CLUB_DOC_ID)!.data); // what a confirmed save records
     expect(pendingRecordIds(res.records, synced)).toEqual([]);
     expect(Object.keys(synced).some((k) => k.startsWith('club#'))).toBe(true);
+  });
+});
+
+describe('Equipa escolhida — cada treinador na sua', () => {
+  const twoTeams = (active: string): AppState =>
+    normalizeClubState({
+      activeTeamId: active,
+      version: 2,
+      teams: [
+        {
+          id: 'sub11',
+          clubName: 'Dragões',
+          category: 'Sub-11',
+          season: '2026/2027',
+          tactics: [{ id: 't11', name: 'Tática Sub-11' }],
+          roster: [player('p1', 'Rui')]
+        } as any,
+        {
+          id: 'sub13',
+          clubName: 'Dragões',
+          category: 'Sub-13',
+          season: '2026/2027',
+          tactics: [{ id: 't13', name: 'Tática Sub-13' }],
+          roster: [player('p9', 'Zé')]
+        } as any
+      ]
+    } as AppState);
+
+  it('another coach switching team does not switch this device, nor hand over their team data', () => {
+    const onSub13 = twoTeams('sub13'); // this coach works on the Sub-13
+    const fromCoachOnSub11 = extractRecords(twoTeams('sub11')); // what a coach on the Sub-11 saves
+    const rebuilt = assembleState(fromCoachOnSub11, onSub13);
+    expect(rebuilt.activeTeamId).toBe('sub13');
+    expect(rebuilt.category).toBe('Sub-13');
+    expect(rebuilt.roster.map((p) => p.id)).toEqual(['p9']);
+    expect((rebuilt.tactics as any[]).map((t) => t.id)).toEqual(['t13']);
+    // and the Sub-11 keeps its own tactics
+    expect((rebuilt.teams.find((t) => t.id === 'sub11')!.tactics as any[]).map((t) => t.id)).toEqual(['t11']);
+  });
+
+  it('two coaches on different teams produce the same shared club record (no endless re-saving)', () => {
+    const a = extractRecords(twoTeams('sub11')).get(CLUB_DOC_ID)!.data;
+    const b = extractRecords(twoTeams('sub13')).get(CLUB_DOC_ID)!.data;
+    expect(hashData(a)).toBe(hashData(b));
+  });
+
+  it('a club record saved by an older version (with active-team copies) does not leak them', () => {
+    const old = extractRecords(twoTeams('sub11'));
+    const clubRec = old.get(CLUB_DOC_ID)!;
+    old.set(CLUB_DOC_ID, {
+      ...clubRec,
+      data: { ...clubRec.data, activeTeamId: 'sub11', tactics: [{ id: 't11' }], category: 'Sub-11' }
+    });
+    const rebuilt = assembleState(old, twoTeams('sub13'));
+    expect(rebuilt.activeTeamId).toBe('sub13');
+    expect((rebuilt.tactics as any[]).map((t) => t.id)).toEqual(['t13']);
+    expect(rebuilt.category).toBe('Sub-13');
   });
 });
