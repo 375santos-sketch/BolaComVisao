@@ -246,7 +246,6 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   (sc.opponentName && sc.opponentName.trim().toLowerCase() === s.opponent.trim().toLowerCase())
               );
               const isPreMatchFin = Boolean(s.preMatchFinalized || linkedScout?.preMatchFinalized);
-              const isScoutingFin = Boolean(s.scoutingFinalized || linkedScout?.scoutingFinalized);
               const isCallupFin = Boolean(s.callupFinalized);
 
               return (
@@ -263,20 +262,6 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   >
                     <span>{isPreMatchFin ? '✓' : '⚡'}</span>
                     <span>A nossa equipa</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => onNavigate('adversario', s.id)}
-                    className={`px-3 py-1.5 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all ${
-                      isScoutingFin
-                        ? 'bg-emerald-950/90 border border-emerald-500/60 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.25)]'
-                        : 'bg-amber-950/80 border border-amber-500/50 hover:bg-amber-900 text-amber-300'
-                    }`}
-                    title={isScoutingFin ? 'Scouting do Adversário Finalizado' : 'Abrir Scouting do Adversário'}
-                  >
-                    <span>{isScoutingFin ? '✓' : '🛡️'}</span>
-                    <span>Adversário</span>
                   </button>
 
                   <button

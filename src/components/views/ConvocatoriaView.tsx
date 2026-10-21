@@ -393,15 +393,6 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             ⚽ {state.myClubName || 'A Minha Equipa'} vs <span className="text-gold">{match.opponent}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => onNavigate('adversario', match.id)}
-              className="text-[11px] px-2.5 py-1 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 hover:border-cyan-300 font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1"
-              title="Ver e Editar Relatório de Scouting do Adversário"
-            >
-              <span>🛡️</span>
-              <span>Scouting</span>
-            </button>
             <span className={`badge-loc ${match.location === 'casa' ? 'casa' : 'fora'}`}>
               {match.location === 'casa' ? t(state.lang, 'match_home') : t(state.lang, 'match_away')}
             </span>
@@ -633,14 +624,6 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           >
             <span>💬</span>
             <span>Copiar para WhatsApp</span>
-          </button>
-
-          <button
-            className="btn bg-slate-900 border border-cyan-500/50 hover:border-cyan-400 text-cyan-300 w-full text-xs font-semibold py-2.5 flex items-center justify-center gap-2"
-            onClick={() => onNavigate('adversario', match.id)}
-          >
-            <span>🛡️</span>
-            <span>Scouting do Adversário</span>
           </button>
         </div>
       </div>

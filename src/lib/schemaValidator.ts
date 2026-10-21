@@ -405,9 +405,7 @@ export function validateAndSanitizeAppState(state: AppState): {
         callupFinalized: typeof s.callupFinalized === 'boolean' ? s.callupFinalized : undefined,
         callupFinalizedAt: typeof s.callupFinalizedAt === 'number' ? s.callupFinalizedAt : undefined,
         preMatchFinalized: typeof s.preMatchFinalized === 'boolean' ? s.preMatchFinalized : undefined,
-        preMatchFinalizedAt: typeof s.preMatchFinalizedAt === 'number' ? s.preMatchFinalizedAt : undefined,
-        scoutingFinalized: typeof s.scoutingFinalized === 'boolean' ? s.scoutingFinalized : undefined,
-        scoutingFinalizedAt: typeof s.scoutingFinalizedAt === 'number' ? s.scoutingFinalizedAt : undefined
+        preMatchFinalizedAt: typeof s.preMatchFinalizedAt === 'number' ? s.preMatchFinalizedAt : undefined
       }))
     : [];
 

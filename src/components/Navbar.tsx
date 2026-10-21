@@ -9,7 +9,6 @@ export type TabType =
   | 'calendario'
   | 'convocatoria'
   | 'prejogo'
-  | 'adversario'
   | 'treinos'
   | 'biblioteca'
   | 'jogos'

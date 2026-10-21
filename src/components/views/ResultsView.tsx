@@ -5,6 +5,8 @@ import { playerLabel, formatMinute, parseMinuteOrder, isSeasonMatching } from '.
 import { Header } from '../Header';
 import { DeletedMatchesSection } from './results/DeletedMatchesSection';
 import { ParentsShareModal } from './results/ParentsShareModal';
+import { OpponentReportModal } from './results/OpponentReportModal';
+import { hasReportNotes } from '../../lib/opponentReport';
 
 interface ResultsViewProps {
   state: AppState;
@@ -30,6 +32,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [seasonFilter, setSeasonFilter] = useState<string>('todas');
   const [shareMatch, setShareMatch] = useState<Match | null>(null);
+  const [reportMatch, setReportMatch] = useState<Match | null>(null);
   const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
   const [isGeneratingPdfId, setIsGeneratingPdfId] = useState<string | null>(null);
 
@@ -201,6 +204,18 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             </div>
           ))}
         </div>
+      )}
+
+      {reportMatch && (
+        <OpponentReportModal
+          match={reportMatch}
+          state={state}
+          onSave={(updated) =>
+            onUpdateState({ matches: state.matches.map((m) => (m.id === updated.id ? updated : m)) })
+          }
+          onClose={() => setReportMatch(null)}
+          onShowToast={onShowToast}
+        />
       )}
 
       {shareMatch && (
@@ -424,6 +439,20 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         }}
                       >
                         📲 Partilhar com os pais
+                      </button>
+                    </div>
+                  )}
+
+                  {m.finished && (
+                    <div className="btn-row mt-2.5">
+                      <button
+                        className="btn btn-outline w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReportMatch(m);
+                        }}
+                      >
+                        🛡️ Relatório do adversário{hasReportNotes(m.opponentReport) ? ' ✓' : ''}
                       </button>
                     </div>
                   )}

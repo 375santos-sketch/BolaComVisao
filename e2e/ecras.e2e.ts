@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { COACH_A, COACH_B } from './seed';
+import { COACH_A, COACH_B, FIRESTORE, owner } from './seed';
 import {
   cloudRecords,
   enterPanel,
@@ -89,8 +89,7 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   const performanceTabs = page.getByRole('navigation', { name: 'Performance' });
   await performanceTabs.getByRole('button', { name: /Estatísticas/ }).click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
-  await performanceTabs.getByRole('button', { name: /Adversário/ }).click();
-  await expect(performanceTabs).toBeVisible();
+  await expect(performanceTabs.getByRole('button', { name: /Adversário/ })).toHaveCount(0); // scouting removed
   await performanceTabs.getByRole('button', { name: /Pré-jogo/ }).click();
   await expect(page.getByText('PLANO ESTRATÉGICO & MODELO DE JOGO')).toBeVisible();
 
@@ -112,15 +111,11 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   }
 });
 
-test('pré-jogo: abrir os ecrãs não grava nada; finalizar grava um só plano', async ({ page }) => {
+test('pré-jogo: abrir o ecrã não grava nada; finalizar grava um só plano', async ({ page }) => {
   const scoutingRecords = async () => [...(await cloudRecords()).entries()].filter(([, r]) => r.kind === 'scouting');
   await signedIn(page);
   await navTo(page, /performance/i);
   await expect(page.getByText('PLANO ESTRATÉGICO & MODELO DE JOGO')).toBeVisible();
-  await page
-    .getByRole('navigation', { name: 'Performance' })
-    .getByRole('button', { name: /Adversário/ })
-    .click();
   await page.waitForTimeout(5000); // longer than the 3.5 s save delay
   expect(await scoutingRecords()).toEqual([]);
   await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced');
@@ -150,6 +145,41 @@ test('análise: remates e eficácia de finalização', async ({ page }) => {
   await expect(shots).toContainText('1 jogo com remates registados');
   await expect(shots).toContainText('15 dentro · 6 fora da área');
   await expect(shots).toContainText('10% dos remates deram golo (2 em 21)'); // the Esparteiros game has no shots: left out
+});
+
+test('relatório do adversário pós-jogo: números do jogo, notas guardadas na nuvem e PDF', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '🏆' }).first().click();
+  await page.getByText('Tramagal SU').click();
+  await page.getByRole('button', { name: /Relatório do adversário/ }).click();
+  const report = page.getByRole('dialog', { name: 'Relatório do adversário' });
+  await expect(report).toBeVisible();
+  const numbers = report.getByRole('region', { name: 'Números do jogo' });
+  await expect(numbers).toContainText('2-1'); // our goals - theirs
+  await expect(numbers).toContainText('5'); // their shots (3 + 2)
+  await expect(numbers).toContainText("30'"); // minute of their goal
+
+  await report.getByPlaceholder('ex.: 2-3-1').fill('3-2-1');
+  await report.getByLabel(/Pontos fracos/).fill('Lentos a recuperar\nSaída de bola fraca');
+  await report.getByLabel(/Para o próximo jogo/).fill('Pressionar a saída de bola');
+  const download = page.waitForEvent('download');
+  await report.getByRole('button', { name: 'PDF' }).click();
+  expect((await download).suggestedFilename()).toBe('Relatorio_Adversario_Tramagal_SU_2026-10-17.pdf');
+  await report.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.getByRole('button', { name: /Relatório do adversário ✓/ })).toBeVisible();
+
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/match__sub11__m2`, { headers: owner });
+        const doc = (await res.json()) as { fields?: any };
+        const r = doc.fields?.data?.mapValue?.fields?.opponentReport?.mapValue?.fields;
+        return r ? [r.system?.stringValue, r.nextTime?.stringValue, r.weaknesses?.arrayValue?.values?.length] : null;
+      },
+      { timeout: 30_000 }
+    )
+    .toEqual(['3-2-1', 'Pressionar a saída de bola', 2]);
 });
 
 test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
