@@ -122,14 +122,12 @@ export function computeGameAnalysis(
 
   // 3. Initialize Dynamic Time Periods for the default half duration (Item 2 & 8)
   const periodList = generateTimePeriodsForDuration(defaultHalfDuration);
+  // The map and the list share the same objects: goals counted through the map must show in the list (chart).
   const timePeriodsMap: Record<string, TimePeriodStat> = {};
   periodList.forEach((p) => {
-    timePeriodsMap[p.key] = {
-      ...p,
-      scoredEvents: [],
-      concededEvents: []
-    };
+    timePeriodsMap[p.key] = p;
   });
+  let goalsWithoutMinuteCount = 0;
 
   // 4. Aggregators
   let wins = 0,
@@ -410,14 +408,14 @@ export function computeGameAnalysis(
         else allConcededMinutes.push(timing.absoluteMinute);
       }
 
-      const pKey = classifyIntoPeriod(
-        timing.absoluteMinute,
-        timing.half === 2 ? 2 : 1,
-        periodList,
-        defaultHalfDuration
-      );
+      // A goal without a recorded minute has no period: never place it in one (that would invent its timing).
+      const pKey =
+        timing.absoluteMinute !== null
+          ? classifyIntoPeriod(timing.absoluteMinute, timing.half === 2 ? 2 : 1, periodList, defaultHalfDuration)
+          : null;
+      if (pKey === null) goalsWithoutMinuteCount++;
 
-      if (timePeriodsMap[pKey]) {
+      if (pKey && timePeriodsMap[pKey]) {
         if (isScored) {
           timePeriodsMap[pKey].scored++;
           timePeriodsMap[pKey].scoredEvents.push({ match: m, goal: g });
@@ -918,6 +916,7 @@ export function computeGameAnalysis(
     configuredHalfDuration: defaultHalfDuration,
     timePeriods: timePeriodsMap,
     timePeriodList: periodList,
+    goalsWithoutMinuteCount,
     goalTypes,
     concededGoalTypes,
     topScorers,

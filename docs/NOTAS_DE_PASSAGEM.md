@@ -114,11 +114,12 @@ consentimento RGPD dos pais.
 
 | Comando                 | O que testa                                                                  | Precisa de |
 | ----------------------- | ---------------------------------------------------------------------------- | ---------- |
-| `npm run verify`        | Tipos, lint, formatação, 171 testes unitários, build                         | Node       |
+| `npm run verify`        | Tipos, lint, formatação, testes unitários, build                             | Node       |
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
 | `npm run test:e2e`      | 8 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase   | Java       |
 
-Correr os três antes de um merge que mexa em sincronização, regras ou login. Os testes de ecrã correm na base com nome,
+O GitHub corre os três em cada Pull Request e em cada alteração à `main` (workflow **Testes**). Não fazer merge com
+❌; se os testes de ecrã falharem, o relatório com capturas fica nos artefactos da execução. Os testes de ecrã correm na base com nome,
 com as regras reais de `firestore.rules`. Os testes de regras usam a `(default)`, porque só nela o emulador aceita
 trocar as regras a meio dos testes.
 
@@ -139,3 +140,7 @@ trocar as regras a meio dos testes.
 | #11 | Testes automáticos aos ecrãs                                                                     |
 | #12 | Notas de passagem                                                                                |
 | #13 | Publicação automática das regras (testadas antes)                                                |
+| #14 | Regras publicadas com o código de acesso da Firebase CLI (o projeto não permite chaves)          |
+| #15 | Todos os testes correm no GitHub em cada Pull Request                                            |
+| #16 | Separadores de Performance: Estatísticas a um toque                                              |
+| #17 | "Quando marcamos": gráfico a zeros corrigido; golos sem minuto já não vão para 0–15'             |

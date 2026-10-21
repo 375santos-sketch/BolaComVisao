@@ -202,6 +202,7 @@ export interface AggregatedAnalysis {
   avgMinuteScored: number | null; // Item 9: ⏱️ Média do minuto dos golos
   avgMinuteConceded: number | null; // Item 9: ⏱️ Média do minuto sofrido
   unclassifiedGoalsCount: number; // Item 5: Golos sem tipo identificado
+  goalsWithoutMinuteCount: number; // Goals (scored + conceded) with no minute: left out of the period chart
   cleanSheets: number;
   failedToScore: number;
 

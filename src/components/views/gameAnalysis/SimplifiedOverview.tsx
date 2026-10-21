@@ -16,6 +16,9 @@ interface SimplifiedOverviewProps {
   onOpenCoachReport?: () => void;
 }
 
+/** "16–30' (1ª Parte)" → "16–30'": the halves are already shown above, and the long label overflowed on phones. */
+const shortPeriodLabel = (label: string) => label.replace(/\s*\(.*\)\s*$/, '');
+
 export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
   analysis,
   players: _players = [],
@@ -515,7 +518,9 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                 key={p.key}
                 className="bg-slate-950/50 p-2 rounded-xl border border-slate-800/60 flex items-center gap-2.5 text-xs"
               >
-                <span className="w-16 shrink-0 font-mono font-bold text-slate-300 text-[11px]">{p.label}</span>
+                <span className="w-14 shrink-0 font-mono font-bold text-slate-300 text-[11px]" title={p.label}>
+                  {shortPeriodLabel(p.label)}
+                </span>
 
                 <div className="flex-1 space-y-1">
                   {/* Scored bar */}
@@ -544,6 +549,14 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
             );
           })}
         </div>
+
+        {analysis.goalsWithoutMinuteCount > 0 && (
+          <p className="text-[11px] text-slate-400 mt-2">
+            {analysis.goalsWithoutMinuteCount === 1
+              ? '1 golo sem minuto registado não entra neste gráfico.'
+              : `${analysis.goalsWithoutMinuteCount} golos sem minuto registado não entram neste gráfico.`}
+          </p>
+        )}
 
         {/* Destaque Pico Ofensivo & Risco */}
         {(timingWindows.mostScoredPeriod || timingWindows.mostConcededPeriod) && (
