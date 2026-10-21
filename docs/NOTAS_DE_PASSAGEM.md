@@ -147,5 +147,5 @@ trocar as regras a meio dos testes.
 | #15 | Todos os testes correm no GitHub em cada Pull Request                                                      |
 | #16 | Separadores de Performance: Estatísticas a um toque                                                        |
 | #17 | "Quando marcamos": gráfico a zeros corrigido; golos sem minuto já não vão para 0–15'                       |
-| #19 | Minutos de jogo certos em jogos importados (substituições da 2.ª parte; titulares deduzidos quando faltam) |
 | #18 | Definições do clube e equipas sem conflitos entre treinadores                                              |
+| #19 | Minutos de jogo certos em jogos importados (substituições da 2.ª parte; titulares deduzidos quando faltam) |
