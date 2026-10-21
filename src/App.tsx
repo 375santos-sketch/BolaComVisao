@@ -8,7 +8,7 @@ import { exportJSONBackup } from './lib/exportUtils';
 import { evaluateSystemNotifications } from './lib/notificationEngine';
 import { syncStateWithCloud, processOfflineMutationsQueue, clearDeviceClubData } from './lib/syncEngine';
 import { recordAuditLog } from './lib/auditEngine';
-import { subscribeToLegacyClubDocument } from './services/firebase';
+import { subscribeToLegacyClubDocument, auth, onAuthStateChanged } from './services/firebase';
 import {
   logoutCoachUser,
   subscribeToAllClubUsers,
@@ -343,9 +343,14 @@ export default function App() {
     }, 3000);
   };
 
+  // Firebase session: the saved user is restored from this device before Firebase confirms the login, and the
+  // cloud listeners only work once it does.
+  const [authUid, setAuthUid] = useState<string | null>(() => auth.currentUser?.uid ?? null);
+  useEffect(() => onAuthStateChanged(auth, (user) => setAuthUid(user?.uid ?? null)), []);
+
   // Real-time cloud sync for multi-device use: the legacy single document or per-record storage (see clubCloud.ts)
   useEffect(() => {
-    if (!state.currentUser || !state.currentUser.id) return;
+    if (!state.currentUser || !state.currentUser.id || !authUid) return;
     const workspaceId = state.currentUser.clubId || 'main';
 
     const applyRemote = (incoming: AppState) => {
@@ -408,7 +413,7 @@ export default function App() {
     };
     // Resubscribe only when the signed-in user/club changes, not on every currentUser object update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentUser?.id, state.currentUser?.clubId]);
+  }, [state.currentUser?.id, state.currentUser?.clubId, authUid]);
 
   // Real-time listener for Coach Registrations requiring Admin Approval (Admin ONLY)
   useEffect(() => {
