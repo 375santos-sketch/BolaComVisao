@@ -44,7 +44,7 @@ const GameAnalysisDashboard = lazyWithRetry(
   'GameAnalysisDashboard'
 );
 const SquadView = lazyWithRetry(() => import('./components/views/SquadView'), 'SquadView');
-const PreMatchPlanView = lazyWithRetry(() => import('./components/views/PreMatchPlanView'), 'PreMatchPlanView');
+const PreMatchView = lazyWithRetry(() => import('./components/views/PreMatchView'), 'PreMatchView');
 const RelatoriosView = lazyWithRetry(() => import('./components/views/RelatoriosView'), 'RelatoriosView');
 
 // Modals
@@ -866,7 +866,7 @@ export default function App() {
             )}
 
             {currentTab === 'prejogo' && (
-              <PreMatchPlanView
+              <PreMatchView
                 state={state}
                 onUpdateState={updateState}
                 onNavigate={handleNavigate}

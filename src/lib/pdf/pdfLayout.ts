@@ -210,3 +210,61 @@ export function addBolaComVisaoPageFooters(doc: jsPDF) {
 export function addBolaComVisaoWatermark(doc: jsPDF) {
   addBolaComVisaoPageFooters(doc);
 }
+
+/**
+ * Simple top-to-bottom writer for text reports (section headings, wrapped paragraphs and bullet lists), with page
+ * breaks. No emojis: the PDF fonts cannot draw them.
+ */
+export function createTextReportWriter(doc: jsPDF, startY: number) {
+  const left = 14;
+  const width = 182;
+  let y = startY;
+  const ensure = (h: number) => {
+    if (y + h > 280) {
+      doc.addPage();
+      y = 18;
+    }
+  };
+  const writer = {
+    get y() {
+      return y;
+    },
+    skip(mm: number) {
+      y += mm;
+    },
+    centered(text: string, opts: { size: number; bold?: boolean; color?: [number, number, number] }) {
+      doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+      doc.setFontSize(opts.size);
+      doc.setTextColor(...(opts.color || [15, 23, 42]));
+      doc.text(text, 105, y, { align: 'center' });
+      y += opts.size * 0.5;
+    },
+    heading(text: string) {
+      ensure(12);
+      doc.setFillColor(10, 25, 42);
+      doc.rect(left, y - 4.5, width, 7, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
+      doc.setTextColor(0, 190, 240);
+      doc.text(text.toUpperCase(), left + 2, y);
+      y += 7;
+    },
+    paragraph(text: string) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(30, 41, 59);
+      (doc.splitTextToSize(text, width - 4) as string[]).forEach((line) => {
+        ensure(5);
+        doc.text(line, left + 2, y);
+        y += 4.8;
+      });
+      y += 2;
+    },
+    list(items?: string[], numbered = false) {
+      const clean = (items || []).filter((s) => s && s.trim());
+      if (clean.length === 0) writer.paragraph('—');
+      else clean.forEach((s, i) => writer.paragraph(`${numbered ? `${i + 1}.` : '•'}  ${s}`));
+    }
+  };
+  return writer;
+}

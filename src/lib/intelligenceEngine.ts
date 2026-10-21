@@ -16,6 +16,7 @@ import {
   SmartPriority
 } from '../types';
 import { calcPlayerMinutes } from './utils';
+import { hasPlan } from './preMatchPlan';
 
 /**
  * Normaliza datas para comparações temporais
@@ -692,13 +693,7 @@ export function generateSmartAlerts(state: AppState): SmartAlert[] {
   // =========================================================================
   if (schedule.length > 0 && roster.length >= 7 && context.featuredMatch && (context.hoursUntilMatch || 99) <= 48) {
     const match = context.featuredMatch;
-    const scoutings = state.opponentScouting || [];
-    const matchScouting = scoutings.find(
-      (s) => s.matchId === match.id || s.opponentName.toLowerCase() === match.opponent.toLowerCase()
-    );
-
-    const hasTacticalPlan =
-      matchScouting && (matchScouting.ourFormation || matchScouting.gamePlan || matchScouting.keyObjectives?.length);
+    const hasTacticalPlan = hasPlan(match.preMatchPlan);
 
     if (!hasTacticalPlan) {
       alerts.push({

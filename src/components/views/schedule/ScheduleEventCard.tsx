@@ -240,12 +240,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             </button>
 
             {(() => {
-              const linkedScout = (state.opponentScouting || []).find(
-                (sc) =>
-                  sc.matchId === s.id ||
-                  (sc.opponentName && sc.opponentName.trim().toLowerCase() === s.opponent.trim().toLowerCase())
-              );
-              const isPreMatchFin = Boolean(s.preMatchFinalized || linkedScout?.preMatchFinalized);
+              const isPreMatchFin = Boolean(s.preMatchFinalized);
               const isCallupFin = Boolean(s.callupFinalized);
 
               return (
@@ -261,7 +256,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                     title={isPreMatchFin ? 'Plano Pré-Jogo Finalizado' : 'Abrir Plano Pré-Jogo'}
                   >
                     <span>{isPreMatchFin ? '✓' : '⚡'}</span>
-                    <span>A nossa equipa</span>
+                    <span>Pré-jogo</span>
                   </button>
 
                   <button

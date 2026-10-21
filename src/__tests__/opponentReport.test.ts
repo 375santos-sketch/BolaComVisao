@@ -98,7 +98,7 @@ describe('Relatório do adversário pós-jogo', () => {
   });
 });
 
-describe('Fim do scouting do adversário', () => {
+describe('Fim do scouting do adversário e do Pré-jogo antigo', () => {
   const state = (): AppState =>
     normalizeClubState({
       activeTeamId: 't',
@@ -128,15 +128,10 @@ describe('Fim do scouting do adversário', () => {
       ]
     } as AppState);
 
-  it('deletes scouting-only reports and the scouting part of the pre-match plans', () => {
+  it('deletes the old pre-match plans and scouting reports (both screens were replaced)', () => {
     const s = state();
-    expect(s.opponentScouting.map((r) => r.id)).toEqual(['report-s1']);
-    const plan = s.opponentScouting[0] as any;
-    expect(plan.teamMotto).toBe('Foco');
-    expect(plan.ourFormation).toBe('2-3-1');
-    expect(plan.strengths).toBeUndefined();
-    expect(plan.keyPlayer).toBeUndefined();
-    expect(plan.formation).toBeUndefined();
+    expect(s.opponentScouting).toEqual([]);
+    expect(s.teams[0].opponentScouting).toEqual([]);
     expect((s.schedule[0] as any).scoutingFinalized).toBeUndefined();
   });
 

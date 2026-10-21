@@ -88,10 +88,15 @@ Regras importantes (cada uma corrige um problema real que já aconteceu):
   conta (utilizador, contactos dos treinadores, convites, auditoria). Repor um ficheiro novo repõe o clube todo;
   ficheiros antigos continuam a repor só a equipa ativa. O Administrador vê no Início um lembrete semanal (data da
   última cópia guardada por aparelho, `bcv-last-backup-at`).
-- **Adversários: só relatório pós-jogo** (`Match.opponentReport`, `src/lib/opponentReport.ts`). O ecrã de scouting
-  pré-jogo foi removido a 21/10/2026; `withoutOpponentScouting` (em `normalizeClubState`) apaga os relatórios
-  `scout-…` e os campos de scouting dos planos pré-jogo (o plano da nossa equipa fica). O "Para o próximo jogo"
-  aparece no Pré-jogo quando o adversário é o mesmo (`isSameOpponent`: "GRD Os Esparteiros" = "Esparteiros").
+- **Pré-jogo** (`ScheduledMatch.preMatchPlan`, `src/lib/preMatchPlan.ts`, `PreMatchView`): um plano simples por jogo
+  da Agenda (sistema, 3 objetivos, com/sem bola, palavra de ordem, notas), "Plano pronto" (`preMatchFinalized`, ✓ na
+  Agenda), PDF e WhatsApp. Abrir o ecrã não grava nada.
+- **Adversários: só relatório pós-jogo** (`Match.opponentReport`, `src/lib/opponentReport.ts`). O "Para o próximo
+  jogo" aparece no Pré-jogo quando o adversário é o mesmo (`isSameOpponent`: "GRD Os Esparteiros" = "Esparteiros").
+- **O Pré-jogo antigo e o scouting do adversário foram removidos a 21/10/2026** (ambos guardados em
+  `opponentScouting`): `withoutOpponentScouting` (em `normalizeClubState`) apaga esses dados sempre que aparecerem;
+  `resetOldPreMatchFlags` (versão de dados 3, corre uma vez) tira o ✓ antigo dos jogos sem plano novo. O campo
+  `opponentScouting` e o tipo de registo `scouting` ficam no código só para a sincronização apagar o que existia.
 - **Apagar = marcar** (`deleted: true`), guardando a última versão. É isso que permite "Resultados → 🗑️ Jogos
   apagados". Só o Administrador pode apagar documentos de verdade.
 - **Proteção contra apagões:** pedidos para apagar mais de 20 registos e mais de 50% do total são ignorados (sinal
@@ -170,3 +175,4 @@ trocar as regras a meio dos testes.
 | #22 | Testes no GitHub tolerantes a `bun.lock` reescrito pelo AI Studio                                             |
 | #23 | Remates e eficácia de finalização na Análise; cópia de segurança completa com lembrete semanal                |
 | #24 | Fim do scouting do adversário; relatório do adversário pós-jogo (números, notas, próximo jogo, PDF, WhatsApp) |
+| #25 | Pré-jogo novo, simples (sistema, objetivos, com/sem bola, palavra de ordem, PDF, WhatsApp); antigo apagado    |

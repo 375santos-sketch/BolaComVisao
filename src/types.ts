@@ -119,12 +119,25 @@ export interface ScheduledMatch {
   callupNotes?: string;
   callupFinalized?: boolean;
   callupFinalizedAt?: number;
-  preMatchFinalized?: boolean;
+  preMatchFinalized?: boolean; // "Plano pronto" no Pré-jogo
   preMatchFinalizedAt?: number;
+  preMatchPlan?: PreMatchPlan;
   scoutingFinalized?: boolean;
   scoutingFinalizedAt?: number;
   teamId?: string;
   teamName?: string;
+}
+
+/** Pré-jogo: the coaching staff's plan for a scheduled game (the game data comes from the Agenda). */
+export interface PreMatchPlan {
+  system?: string; // ex.: 2-3-1
+  objectives?: string[]; // até 3
+  withBall?: string; // Instruções com bola
+  withoutBall?: string; // Instruções sem bola
+  motto?: string; // Palavra de ordem
+  notes?: string;
+  updatedAt?: number;
+  updatedBy?: string;
 }
 
 export type MatchGamePhase = 'nao_iniciado' | 'parte1' | 'intervalo' | 'parte2';
