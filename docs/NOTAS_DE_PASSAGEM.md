@@ -21,7 +21,7 @@ a app ao mesmo tempo, em telemóveis e computadores.
 2. AI Studio → **Pull** (do GitHub) → **Publish**.
 3. Se a alteração mexeu em `firestore.rules`: o GitHub testa as regras no Pull Request e publica-as sozinho
    depois do merge (workflow **Regras do Firestore**, separador **Actions**; precisa do secret
-   `FIREBASE_SERVICE_ACCOUNT`, ver README). Confirmar que ficou com ✅. Se falhar, publicar à mão: Consola Firebase
+   `FIREBASE_TOKEN`, ver README). Confirmar que ficou com ✅. Se falhar, publicar à mão: Consola Firebase
    → Firestore → escolher a base de dados com nome (lista no topo) → **Regras** → colar o ficheiro inteiro →
    **Publicar**.
 4. Nos aparelhos dos treinadores: fechar e voltar a abrir a app (há service worker com rede primeiro).
