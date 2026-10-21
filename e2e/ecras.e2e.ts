@@ -85,9 +85,21 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   await navTo(page, /performance/i);
   await expect(page.getByText('PLANO ESTRATÉGICO & MODELO DE JOGO')).toBeVisible();
 
+  // Performance tabs: Estatísticas (with playing time) is one tap away
+  const performanceTabs = page.getByRole('navigation', { name: 'Performance' });
+  await performanceTabs.getByRole('button', { name: /Estatísticas/ }).click();
+  await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
+  await performanceTabs.getByRole('button', { name: /Adversário/ }).click();
+  await expect(performanceTabs).toBeVisible();
+  await performanceTabs.getByRole('button', { name: /Pré-jogo/ }).click();
+  await expect(page.getByText('PLANO ESTRATÉGICO & MODELO DE JOGO')).toBeVisible();
+
   await navTo(page, /início/i);
+  await expect(performanceTabs).toBeHidden();
   await page.getByText('Eficácia de Vitórias').click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
+  await expect(performanceTabs.getByRole('button', { name: /Estatísticas/ })).toHaveAttribute('aria-current', 'page');
+  await expect(performanceTabs.getByRole('button', { name: /Estatísticas/ })).toBeInViewport();
 
   for (const [item, heading] of [
     [/Chat da Equipa Técnica/, /CHAT/i],
