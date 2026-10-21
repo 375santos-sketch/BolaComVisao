@@ -22,6 +22,7 @@ import {
 import { generateTimePeriodsForDuration, classifyIntoPeriod, normalizeEventTiming } from './timingUtils';
 import { generateGameAnalysisInsights } from './insightsEngine';
 import { parseMinuteOrder } from '../utils';
+import { withUnifiedSetPieces } from '../matchSetPieces';
 
 /**
  * Computes complete game analysis statistics, fully recalculating all KPIs,
@@ -67,7 +68,7 @@ export function computeGameAnalysis(
   };
 
   // 2. Filter Matches based on matchId, month, season, opponent, matchType, location, searchQuery
-  const filteredMatches = matches.filter((m) => {
+  const filteredMatches = matches.map(withUnifiedSetPieces).filter((m) => {
     // Specific match ID
     if (filters.matchId && filters.matchId !== 'todos' && m.id !== filters.matchId) {
       return false;

@@ -156,3 +156,4 @@ trocar as regras a meio dos testes.
 | #18 | Definições do clube e equipas sem conflitos entre treinadores                                              |
 | #19 | Minutos de jogo certos em jogos importados (substituições da 2.ª parte; titulares deduzidos quando faltam) |
 | #20 | Equipa escolhida por aparelho; Pré-jogo e Adversário deixam de gravar só por abrir                         |
+| #21 | Cantos e faltas a 0 na Análise (dois nomes para o mesmo dado: `src/lib/matchSetPieces.ts`)                 |

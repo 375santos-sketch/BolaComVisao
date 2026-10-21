@@ -7,6 +7,7 @@ import {
   FirstGoalDetailedAnalysis,
   CoachReportData
 } from './advancedTacticalTypes';
+import { withUnifiedSetPieces } from '../matchSetPieces';
 
 /**
  * Computes deep first goal metrics with win/draw/loss distribution
@@ -197,7 +198,7 @@ export function computeOutcomeGroupProfile(
   let cleanSheetCount = 0;
   let failedToScoreCount = 0;
 
-  matchesSubset.forEach((m) => {
+  matchesSubset.map(withUnifiedSetPieces).forEach((m) => {
     const halfDur = m.halfDurationMinutes || m.firstHalfDurationMinutes || defaultHalfDuration;
     const lateCutoffMinute = Math.round((halfDur * 2 * 2) / 3 / 5) * 5; // e.g. 60 min for 90m
 
