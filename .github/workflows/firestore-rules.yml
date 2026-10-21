@@ -1,39 +1,74 @@
-name: Deploy Firestore Rules
+name: Regras do Firestore
+
+# Testa as regras em cada Pull Request que as altere e, depois do merge, publica-as na base de dados da app
+# (a base com nome definida em firebase.json, não a "(default)").
 
 on:
-  push:
-    branches:
-      - main
-      - master
+  pull_request:
     paths:
       - 'firestore.rules'
       - 'firebase.json'
-      - 'firestore.indexes.json'
+      - 'src/__emulator__/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'firestore.rules'
+      - 'firebase.json'
   workflow_dispatch:
 
+concurrency:
+  group: firestore-rules-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  deploy-rules:
-    name: Validate and Deploy Firestore Rules
+  test:
+    name: Testar regras (emuladores)
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
 
-      - name: Deploy Firestore Rules to Firebase
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
+
+      - name: Testes de regras e sincronização
+        run: npm run test:emulator
+
+  deploy:
+    name: Publicar regras no Firebase
+    needs: test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar credenciais
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          if [ -z "$FIREBASE_TOKEN" ]; then
-            echo "::error::Secret FIREBASE_TOKEN não configurado nos Secrets do repositório GitHub. Consulte o README.md para obter instruções de configuração."
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::Falta o secret FIREBASE_SERVICE_ACCOUNT (chave da conta de serviço do Firebase). Ver docs/NOTAS_DE_PASSAGEM.md, secção 2."
             exit 1
           fi
-          firebase deploy --only firestore:rules --token "$FIREBASE_TOKEN" --non-interactive
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Publicar firestore.rules
+        run: npx -y firebase-tools@13.35.1 deploy --only firestore:rules --project glowing-orbit-vk8sk --non-interactive

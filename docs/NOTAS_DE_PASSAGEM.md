@@ -19,13 +19,16 @@ a app ao mesmo tempo, em telemóveis e computadores.
 
 1. Alteração feita num ramo, com Pull Request no GitHub; merge para `main`.
 2. AI Studio → **Pull** (do GitHub) → **Publish**.
-3. Se a alteração mexeu em `firestore.rules`: publicar as regras **à mão**. Consola Firebase → Firestore → escolher
-   a base de dados com nome (lista no topo) → **Regras** → colar o ficheiro inteiro → **Publicar**.
+3. Se a alteração mexeu em `firestore.rules`: o GitHub testa as regras no Pull Request e publica-as sozinho
+   depois do merge (workflow **Regras do Firestore**, separador **Actions**; precisa do secret
+   `FIREBASE_SERVICE_ACCOUNT`, ver README). Confirmar que ficou com ✅. Se falhar, publicar à mão: Consola Firebase
+   → Firestore → escolher a base de dados com nome (lista no topo) → **Regras** → colar o ficheiro inteiro →
+   **Publicar**.
 4. Nos aparelhos dos treinadores: fechar e voltar a abrir a app (há service worker com rede primeiro).
 
-⚠️ O workflow `.github/workflows/firestore-rules.yml` corre `firebase deploy --only firestore:rules`, mas o
-`firebase.json` não indica a base de dados com nome. Se for ativado (secret `FIREBASE_TOKEN`), publica na
-`(default)`, que a app **não usa**. Corrigir o `firebase.json` antes de confiar nele.
+O `firebase.json` indica a base de dados com nome: `firebase deploy --only firestore:rules --project
+glowing-orbit-vk8sk` publica na base certa. Não remover o campo `database`, senão as regras vão para a `(default)`,
+que a app não usa.
 
 ⚠️ O AI Studio às vezes faz commits sozinho (por exemplo, apagou o `package-lock.json`; o projeto usa `bun.lock`).
 Fazer sempre `git pull` antes de começar.
@@ -115,8 +118,9 @@ consentimento RGPD dos pais.
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
 | `npm run test:e2e`      | 8 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase   | Java       |
 
-Correr os três antes de um merge que mexa em sincronização, regras ou login. Os emuladores só aplicam as regras à
-base `(default)`; por isso os testes de regras apontam para ela, e os testes de ecrã correm sem regras.
+Correr os três antes de um merge que mexa em sincronização, regras ou login. Os testes de ecrã correm na base com nome,
+com as regras reais de `firestore.rules`. Os testes de regras usam a `(default)`, porque só nela o emulador aceita
+trocar as regras a meio dos testes.
 
 ## 8. Histórico (outubro 2026)
 
@@ -133,3 +137,5 @@ base `(default)`; por isso os testes de regras apontam para ela, e os testes de 
 | #9  | Mensagens de diagnóstico da migração                                                             |
 | #10 | Sincronização espera pelo login (a migração passou a acontecer)                                  |
 | #11 | Testes automáticos aos ecrãs                                                                     |
+| #12 | Notas de passagem                                                                                |
+| #13 | Publicação automática das regras (testadas antes)                                                |
