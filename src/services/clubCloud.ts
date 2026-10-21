@@ -14,8 +14,9 @@ import {
   mergeRecords,
   pendingRecordIds,
   buildCloudWrite,
-  hashData,
-  toPlainData
+  toPlainData,
+  setSynced,
+  isRecordKey
 } from '../lib/recordSync';
 
 /**
@@ -159,7 +160,7 @@ export async function pushClubRecords(
 
   let pending = pendingRecordIds(local, synced);
   const deletions = pending.filter((id) => !local.has(id));
-  const entityCount = Object.keys(synced).filter((id) => id !== CLUB_DOC_ID).length;
+  const entityCount = Object.keys(synced).filter((id) => isRecordKey(id) && id !== CLUB_DOC_ID).length;
   if (!options.allowMassDelete && deletions.length > 20 && deletions.length > entityCount * MASS_DELETE_GUARD) {
     console.warn(`Proteção de dados: ${deletions.length} registos por apagar ignorados (carregamento incompleto?).`);
     pending = pending.filter((id) => local.has(id));
@@ -183,8 +184,7 @@ export async function pushClubRecords(
       const confirmed = remoteByWorkspace.get(ws) || new Map<string, CloudRecord>();
       inBatch.forEach(([id, rec]) => {
         confirmed.set(id, rec);
-        if (rec.deleted) delete nextSynced[id];
-        else nextSynced[id] = hashData(rec.data);
+        setSynced(nextSynced, id, rec.deleted ? null : rec.data);
       });
       remoteByWorkspace.set(ws, confirmed);
       if (!options.migrating) saveSyncedHashes(ws, nextSynced);
@@ -321,9 +321,9 @@ export function subscribeToClubCloud(
       if (legacy && (legacy.updatedAt || 0) >= (local.lastLocalMutationAt || 0)) {
         local = { ...legacy.state, currentUser: local.currentUser, lastLocalMutationAt: local.lastLocalMutationAt };
       }
-      synced = legacy
-        ? Object.fromEntries([...extractRecords(legacy.state)].map(([id, r]) => [id, hashData(r.data)]))
-        : {};
+      const baseline: SyncedHashes = {};
+      if (legacy) extractRecords(legacy.state).forEach((r, id) => setSynced(baseline, id, r.data));
+      synced = baseline;
     }
 
     const club = remote.get(CLUB_DOC_ID);

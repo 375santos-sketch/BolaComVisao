@@ -332,6 +332,39 @@ describe('Migração e utilização', () => {
     expect(m1?.data.notes).toBe('A: guardado');
   });
 
+  it('two coaches changing different club settings at the same time: both changes survive', async () => {
+    let local: any = await fb.loadMasterClubState(CLUB);
+    let pushRequested = 0;
+    const unsub = cloud.subscribeToClubCloud(
+      CLUB,
+      (onSnap, onErr) => fb.subscribeToLegacyClubDocument(CLUB, onSnap, onErr),
+      {
+        getLocal: () => local,
+        applyRemote: (st) => (local = { ...st, lastLocalMutationAt: local.lastLocalMutationAt }),
+        requestPush: () => pushRequested++,
+        onInSync: () => {},
+        requestMigration: () => {}
+      }
+    );
+    await new Promise((r) => setTimeout(r, 1000));
+
+    // A changes the language here (not saved yet)…
+    local = { ...local, lang: 'en', lastLocalMutationAt: Date.now() };
+    // …while B saves another setting (the newer save)
+    const clubDoc = fs.doc(recordsCol(), CLUB_DOC_ID);
+    const club = (await fs.getDoc(clubDoc)).data()!;
+    await fs.setDoc(clubDoc, { ...club, updatedAt: Date.now() + 5000, data: { ...club.data, theme: 'luzsolar' } });
+    await waitFor(() => local.theme === 'luzsolar');
+    expect(local.lang).toBe('en'); // A's change kept
+    await waitFor(() => pushRequested > 0);
+
+    expect((await fb.saveMasterClubState(CLUB, local, uid, 'Treinador')).success).toBe(true);
+    unsub();
+    const saved = (await fs.getDoc(clubDoc)).data()!;
+    expect(saved.data.lang).toBe('en');
+    expect(saved.data.theme).toBe('luzsolar');
+  });
+
   it('a match deleted on this device is removed for everyone (tombstone), and comes back to nobody', async () => {
     const current = await fb.loadMasterClubState(CLUB);
     const without = withMatches(
