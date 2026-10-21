@@ -21,6 +21,7 @@ import { Navbar, TabType } from './components/Navbar';
 import { getActiveCategory } from './components/navCategory';
 import { PerformanceSubNav } from './components/PerformanceSubNav';
 import { BackupReminder } from './components/BackupReminder';
+import { getSyncView } from './lib/syncView';
 import { SessionExpiredBanner } from './components/SessionExpiredBanner';
 import { MoreDrawer } from './components/MoreDrawer';
 import { ConfirmModal } from './components/ConfirmModal';
@@ -46,13 +47,10 @@ const GameAnalysisDashboard = lazyWithRetry(
 );
 const SquadView = lazyWithRetry(() => import('./components/views/SquadView'), 'SquadView');
 const PreMatchView = lazyWithRetry(() => import('./components/views/PreMatchView'), 'PreMatchView');
-const RelatoriosView = lazyWithRetry(() => import('./components/views/RelatoriosView'), 'RelatoriosView');
 
 // Modals
 import { AdminUsersModal } from './components/AdminUsersModal';
-import { AuditLogModal } from './components/AuditLogModal';
 import { SettingsModal } from './components/SettingsModal';
-import { SyncModal } from './components/SyncModal';
 import { TeamInviteModal } from './components/TeamInviteModal';
 import { SeasonSelectorModal } from './components/SeasonSelectorModal';
 import { NotificationModal } from './components/NotificationModal';
@@ -123,9 +121,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showDatabase, setShowDatabase] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
-  const [showSyncModal, setShowSyncModal] = useState<boolean>(false);
   const [showAdminUsers, setShowAdminUsers] = useState<boolean>(false);
-  const [showAuditLogs, setShowAuditLogs] = useState<boolean>(false);
   const [showInviteStaff, setShowInviteStaff] = useState<boolean>(false);
   const [showSeasonSelector, setShowSeasonSelector] = useState<boolean>(false);
   const [showMoreDrawer, setShowMoreDrawer] = useState<boolean>(false);
@@ -342,6 +338,9 @@ export default function App() {
       setToastMessage(null);
     }, 3000);
   };
+
+  // Tapping the save indicator explains it (including why saving failed), instead of opening a technical screen.
+  const showSyncStatus = () => showToast(getSyncView(cloudSync).title);
 
   // Firebase session: the saved user is restored from this device before Firebase confirms the login, and the
   // cloud listeners only work once it does.
@@ -809,7 +808,7 @@ export default function App() {
                   setCurrentTab('home');
                 }}
                 onOpenSettings={() => setShowSettings(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onOpenAdminUsers={() => setShowAdminUsers(true)}
                 pendingUsersCount={pendingUsersCount}
                 onLogout={handleLogout}
@@ -829,7 +828,7 @@ export default function App() {
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenDatabase={() => setShowDatabase(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onOpenAdminUsers={() => setShowAdminUsers(true)}
                 pendingUsersCount={pendingUsersCount}
                 latestPendingUser={latestPendingUser}
@@ -848,7 +847,7 @@ export default function App() {
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
                 onShowToast={showToast}
               />
@@ -861,7 +860,7 @@ export default function App() {
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
                 onShowToast={showToast}
               />
@@ -874,7 +873,7 @@ export default function App() {
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onShowToast={showToast}
                 initialMatchId={targetOpponentId}
               />
@@ -887,7 +886,7 @@ export default function App() {
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onShowToast={showToast}
                 targetOpponentId={targetOpponentId}
               />
@@ -900,24 +899,10 @@ export default function App() {
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
                 onShowToast={showToast}
                 initialTab="list"
-              />
-            )}
-
-            {currentTab === 'biblioteca' && (
-              <TrainingsView
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
-                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-                onShowToast={showToast}
-                initialTab="library"
               />
             )}
 
@@ -928,7 +913,7 @@ export default function App() {
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
                 onShowToast={showToast}
               />
@@ -940,7 +925,7 @@ export default function App() {
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onShowToast={showToast}
               />
             )}
@@ -951,12 +936,12 @@ export default function App() {
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onShowToast={showToast}
               />
             )}
 
-            {(currentTab === 'plantel' || currentTab === 'chat_staff') && (
+            {currentTab === 'plantel' && (
               <SquadView
                 key={currentTab}
                 state={state}
@@ -964,23 +949,8 @@ export default function App() {
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
+                onOpenSync={() => showSyncStatus()}
                 onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
-                onShowToast={showToast}
-                initialSquadTab={currentTab === 'chat_staff' ? 'chat_staff' : 'jogadores'}
-              />
-            )}
-
-            {currentTab === 'relatorios' && (
-              <RelatoriosView
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => setShowSyncModal(true)}
-                onOpenAdminUsers={() => setShowAdminUsers(true)}
-                pendingUsersCount={pendingUsersCount}
                 onShowToast={showToast}
               />
             )}
@@ -1008,10 +978,7 @@ export default function App() {
           }}
           onOpenSettings={() => setShowSettings(true)}
           onOpenDatabase={() => setShowDatabase(true)}
-          onOpenNotifications={() => setShowNotifications(true)}
-          onOpenSync={() => setShowSyncModal(true)}
           onOpenAdminUsers={() => setShowAdminUsers(true)}
-          onOpenAuditLogs={() => setShowAuditLogs(true)}
           onOpenInviteStaff={() => setShowInviteStaff(true)}
           onOpenSeasons={() => setShowSeasonSelector(true)}
           pendingUsersCount={pendingUsersCount}
@@ -1056,10 +1023,6 @@ export default function App() {
         )}
 
         {/* Audit Log Modal */}
-        {showAuditLogs && (
-          <AuditLogModal state={state} onClose={() => setShowAuditLogs(false)} onShowToast={showToast} />
-        )}
-
         {/* Team Invite Modal */}
         {showInviteStaff && (
           <TeamInviteModal
@@ -1091,16 +1054,6 @@ export default function App() {
               setShowNotifications(false);
             }}
             onOpenAdminUsers={() => setShowAdminUsers(true)}
-            onShowToast={showToast}
-          />
-        )}
-
-        {/* Sync Status Modal */}
-        {showSyncModal && (
-          <SyncModal
-            state={state}
-            onUpdateState={updateState}
-            onClose={() => setShowSyncModal(false)}
             onShowToast={showToast}
           />
         )}

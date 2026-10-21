@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { AppState, Exercise, ExerciseCategory, Player, SessionBlock, Training } from '../../../types';
+import React, { useState } from 'react';
+import { AppState, ExerciseCategory, Player, SessionBlock, Training } from '../../../types';
 import { t } from '../../../i18n/dict';
 import { uid } from '../../../lib/utils';
 import { Header } from '../../Header';
-import { ExerciseLibraryModal } from '../../ExerciseLibraryModal';
 import { BatchTrainingSection } from './BatchTrainingSection';
-import { getAllPDFDocuments, getPDFDocumentById, PDFDocumentItem } from '../../../lib/pdfLibraryDB';
-import { PDFPickerModal } from './PDFPickerModal';
+import { getPDFDocumentById, PDFDocumentItem } from '../../../lib/pdfLibraryDB';
 import { PDFViewerModal } from './PDFViewerModal';
 import { TrainingFormData, TRAINING_TYPES } from './types';
 
@@ -31,7 +29,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
   trainingForm,
   setTrainingForm,
   state,
-  onUpdateState,
+  onUpdateState: _onUpdateState,
   onNavigate,
   onOpenSettings,
   onOpenNotifications,
@@ -43,17 +41,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
   onSaveTraining,
   onBatchGenerated
 }) => {
-  const [libraryModalMode, setLibraryModalMode] = useState<'closed' | 'manage' | 'pick'>('closed');
-  const [showPDFPicker, setShowPDFPicker] = useState<boolean>(false);
   const [viewerDoc, setViewerDoc] = useState<PDFDocumentItem | null>(null);
-  const [pdfLibraryCount, setPdfLibraryCount] = useState<number>(0);
-  const exerciseLibrary = state.exerciseLibrary || [];
-
-  useEffect(() => {
-    getAllPDFDocuments()
-      .then((docs) => setPdfLibraryCount(docs.length))
-      .catch(() => {});
-  }, []);
 
   const isEdit = !!trainingForm.id;
   const plannedMinutes = (trainingForm.sessionBlocks || []).reduce((sum, b) => sum + (b.durationMinutes || 0), 0);
@@ -69,37 +57,6 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
   const handleAddCustomBlock = () => {
     const newBlock: SessionBlock = { id: uid(), title: '', durationMinutes: 10 };
     setTrainingForm({ ...trainingForm, sessionBlocks: [...trainingForm.sessionBlocks, newBlock] });
-  };
-
-  const handleAddBlockFromExercise = (exercise: Exercise) => {
-    const newBlock: SessionBlock = {
-      id: uid(),
-      exerciseId: exercise.id,
-      title: exercise.name,
-      category: exercise.category,
-      durationMinutes: exercise.durationMinutes,
-      notes: exercise.description
-    };
-    setTrainingForm({ ...trainingForm, sessionBlocks: [...trainingForm.sessionBlocks, newBlock] });
-    setLibraryModalMode('closed');
-    onShowToast(`"${exercise.name}" adicionado à sessão! ➕`);
-  };
-
-  const handleAddBlockFromPDF = (doc: PDFDocumentItem) => {
-    const cat = doc.category && doc.category !== 'geral' ? (doc.category as ExerciseCategory) : undefined;
-    const newBlock: SessionBlock = {
-      id: uid(),
-      pdfId: doc.id,
-      pdfTitle: doc.title,
-      pdfFileName: doc.fileName,
-      title: doc.title,
-      category: cat,
-      durationMinutes: 15,
-      notes: doc.description || `Ficha de Treino em PDF: ${doc.fileName}`
-    };
-    setTrainingForm({ ...trainingForm, sessionBlocks: [...trainingForm.sessionBlocks, newBlock] });
-    setShowPDFPicker(false);
-    onShowToast(`"${doc.title}" adicionado da biblioteca de PDFs! 📄`);
   };
 
   const handleOpenBlockPDF = async (pdfId: string) => {
@@ -441,48 +398,14 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                 />
               </div>
 
-              {/* Action Buttons: Add Custom / Pick from Library / Pick from PDF / Manage Library */}
               <div className="flex items-center gap-2 mb-3 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => setLibraryModalMode('pick')}
+                  onClick={handleAddCustomBlock}
                   className="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
                 >
-                  <span>📚</span>
-                  <span>Escolher da Biblioteca</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowPDFPicker(true)}
-                  className="px-3 py-2 rounded-xl bg-slate-900 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/60 text-xs font-mono font-bold transition-all flex items-center gap-1.5 shadow-sm"
-                >
-                  <span>📄</span>
-                  <span>Ficha PDF</span>
-                  {pdfLibraryCount > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.2 bg-cyan-950 rounded-full border border-cyan-500/40">
-                      {pdfLibraryCount}
-                    </span>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleAddCustomBlock}
-                  className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 hover:bg-slate-900 text-xs font-mono font-bold transition-all flex items-center gap-1.5"
-                >
                   <span>➕</span>
-                  <span>Bloco Personalizado</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setLibraryModalMode('manage')}
-                  className="ml-auto px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white text-xs font-mono transition-all flex items-center gap-1"
-                  title="Gerir Biblioteca de Exercícios Reutilizáveis"
-                >
-                  <span>⚙️</span>
-                  <span className="hidden sm:inline">Gerir Biblioteca ({exerciseLibrary.length})</span>
+                  <span>Adicionar exercício</span>
                 </button>
               </div>
 
@@ -494,7 +417,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                     Nenhum bloco ou exercício adicionado a esta sessão.
                   </div>
                   <div className="text-[11px] font-mono text-slate-500">
-                    Podes adicionar exercícios da biblioteca ou criar blocos livres para estruturar o tempo do treino.
+                    Adicione os exercícios do treino, com a duração de cada um.
                   </div>
                 </div>
               ) : (
@@ -712,25 +635,6 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
           </>
         )}
       </div>
-
-      {/* Exercise Library Modal (Manage or Pick) */}
-      <ExerciseLibraryModal
-        isOpen={libraryModalMode !== 'closed'}
-        onClose={() => setLibraryModalMode('closed')}
-        exercises={exerciseLibrary}
-        onSaveLibrary={(updatedLib) => onUpdateState({ exerciseLibrary: updatedLib })}
-        onShowToast={onShowToast}
-        pickerMode={libraryModalMode === 'pick'}
-        onPick={handleAddBlockFromExercise}
-      />
-
-      {/* PDF Picker Modal */}
-      <PDFPickerModal
-        isOpen={showPDFPicker}
-        onClose={() => setShowPDFPicker(false)}
-        onSelectPDF={handleAddBlockFromPDF}
-        onShowToast={onShowToast}
-      />
 
       {/* PDF Viewer Modal */}
       {viewerDoc && <PDFViewerModal document={viewerDoc} onClose={() => setViewerDoc(null)} />}

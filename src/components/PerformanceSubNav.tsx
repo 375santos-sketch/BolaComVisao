@@ -6,8 +6,7 @@ const TABS: TabItem[] = [
   { id: 'prejogo', label: 'Pré-jogo', icon: '⚡' },
   { id: 'jogo', label: 'Jogo', icon: '⏱️' },
   { id: 'stats', label: 'Estatísticas', icon: '📈' },
-  { id: 'analise_jogos', label: 'Análise', icon: '📊' },
-  { id: 'relatorios', label: 'Relatórios', icon: '📑' }
+  { id: 'analise_jogos', label: 'Análise', icon: '📊' }
 ];
 
 interface PerformanceSubNavProps {

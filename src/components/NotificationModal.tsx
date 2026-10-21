@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppNotification, AppState, NotificationType } from '../types';
 import { TabType } from './Navbar';
-import { requestBrowserNotificationPermission, generateTestNotifications } from '../lib/notificationEngine';
+import { requestBrowserNotificationPermission } from '../lib/notificationEngine';
 
 interface NotificationModalProps {
   state: AppState;
@@ -100,15 +100,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     }
   };
 
-  const handleTestAlerts = () => {
-    const testList = generateTestNotifications(state);
-    const existing = state.notifications || [];
-    // Prepend test notifications avoiding duplicates
-    const combined = [...testList, ...existing.filter((e) => !testList.some((t) => t.id === e.id))];
-    onUpdateState({ notifications: combined });
-    onShowToast('⚡ 3 Notificações de teste geradas (Treino 24h, Convocatória 18h Quinta, Assiduidade <50%)!');
-  };
-
   const handleActionClick = (notif: AppNotification) => {
     handleMarkAsRead(notif.id);
     onClose();
@@ -195,15 +186,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 <span>✓</span> Notificações do Navegador Ativas
               </span>
             )}
-
-            <button
-              onClick={handleTestAlerts}
-              className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 hover:border-cyan-400 text-slate-300 hover:text-white transition-all flex items-center gap-1 text-[11px]"
-              title="Testar o disparo dos 3 tipos de alertas"
-            >
-              <span>⚡</span>
-              <span>Testar Alertas</span>
-            </button>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -341,13 +323,6 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                   ? 'A aplicação monitoriza os teus treinos a 24h, o fecho de convocatórias às quintas-feiras, a assiduidade dos atletas e novos pedidos de registo.'
                   : 'Nenhum alerta nesta categoria no momento.'}
               </p>
-              <button
-                onClick={handleTestAlerts}
-                className="mt-4 px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-mono text-xs font-bold hover:bg-cyan-500/30 transition-all inline-flex items-center gap-1.5"
-              >
-                <span>⚡</span>
-                <span>Gerar Notificações de Teste</span>
-              </button>
             </div>
           ) : (
             filteredNotifications.map((notif) => {

@@ -7,7 +7,6 @@ interface SquadTabsNavProps {
   setActiveSquadTab: (tab: SquadTab) => void;
   activeRosterCount: number;
   staffCount: number;
-  staffMessagesCount?: number;
   allBirthdaysList: BirthdayPerson[];
   todayBirthdaysCount: number;
 }
@@ -17,7 +16,6 @@ export const SquadTabsNav: React.FC<SquadTabsNavProps> = ({
   setActiveSquadTab,
   activeRosterCount,
   staffCount,
-  staffMessagesCount = 0,
   allBirthdaysList,
   todayBirthdaysCount
 }) => {
@@ -72,28 +70,6 @@ export const SquadTabsNav: React.FC<SquadTabsNavProps> = ({
         >
           {staffCount}
         </span>
-      </button>
-
-      <button
-        onClick={() => setActiveSquadTab('chat_staff')}
-        className={`shrink-0 min-h-[42px] py-2 sm:py-2.5 px-3 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 ${
-          activeSquadTab === 'chat_staff'
-            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-[0_0_15px_rgba(0,210,255,0.3)]'
-            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-        }`}
-      >
-        <span>💬 Chat & Recados</span>
-        {staffMessagesCount > 0 && (
-          <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-              activeSquadTab === 'chat_staff'
-                ? 'bg-slate-950/40 text-slate-950'
-                : 'bg-cyan-950 text-cyan-300 border border-cyan-500/30'
-            }`}
-          >
-            {staffMessagesCount}
-          </span>
-        )}
       </button>
 
       <button

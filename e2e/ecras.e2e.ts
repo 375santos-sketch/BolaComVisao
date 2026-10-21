@@ -100,15 +100,34 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   await expect(performanceTabs.getByRole('button', { name: /Estatísticas/ })).toHaveAttribute('aria-current', 'page');
   await expect(performanceTabs.getByRole('button', { name: /Estatísticas/ })).toBeInViewport();
 
-  for (const [item, heading] of [
-    [/Chat da Equipa Técnica/, /CHAT/i],
-    [/Análise dos Jogos/, /ANÁLISE/i],
-    [/Biblioteca de Exercícios/, /BIBLIOTECA/i],
-    [/Relatórios da Direção/, /RELATÓRIO/i]
-  ] as const) {
-    await openMore(page, item);
-    await expect(page.getByText(heading).first()).toBeVisible();
+  await openMore(page, /Análise dos Jogos/);
+  await expect(page.getByText(/ANÁLISE/i).first()).toBeVisible();
+
+  // Simplified "Mais" menu: these were removed (21/10/2026)
+  await navTo(page, /mais/i);
+  for (const removed of [
+    /Módulos & Funcionalidades/,
+    /Chat da Equipa Técnica/,
+    /Biblioteca de Exercícios/,
+    /Relatórios da Direção/,
+    /Registo de Auditoria/,
+    /Sincronização & Nuvem/,
+    /Alertas & Notificações/
+  ]) {
+    await expect(page.getByRole('button', { name: removed })).toHaveCount(0);
   }
+  for (const kept of [/Definições do Clube/, /Base de Dados & Backup/, /Trocar de Equipa/]) {
+    await expect(page.getByRole('button', { name: kept })).toBeVisible();
+  }
+  await page.keyboard.press('Escape');
+});
+
+test('tocar no indicador de gravação mostra o estado', async ({ page }) => {
+  await signedIn(page);
+  await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
+  await page.waitForTimeout(4000); // let the welcome message (same toast area) go away
+  await syncBadge(page).click();
+  await expect(page.getByText(/Tudo guardado na nuvem/).last()).toBeVisible();
 });
 
 test('pré-jogo: abrir não grava nada; plano guardado no jogo da Agenda, PDF e plano pronto', async ({ page }) => {

@@ -292,7 +292,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
       />
 
       {/* Sub-Navigation: Planeamento & Treino */}
-      <div className="grid grid-cols-4 gap-1 p-1 bg-slate-900/90 border border-cyan-500/20 rounded-2xl shadow-sm text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
+      <div className="grid grid-cols-3 gap-1 p-1 bg-slate-900/90 border border-cyan-500/20 rounded-2xl shadow-sm text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
         <button
           type="button"
           className="py-2 px-1 rounded-xl bg-cyan-500 text-slate-950 font-black flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(0,210,255,0.4)]"
@@ -308,15 +308,6 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         >
           <span>⚡</span>
           <span className="hidden sm:inline">Treinos</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onNavigate('biblioteca')}
-          className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
-        >
-          <span>📚</span>
-          <span className="hidden sm:inline">Biblioteca</span>
         </button>
 
         <button

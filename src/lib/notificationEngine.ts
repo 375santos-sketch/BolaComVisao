@@ -1,5 +1,4 @@
-import { AppNotification, AppState, NotificationSettings, Player, WeeklyTrainingSlot, UserAccount } from '../types';
-import { uid } from './utils';
+import { AppNotification, AppState, NotificationSettings, WeeklyTrainingSlot, UserAccount } from '../types';
 import { MASTER_ADMIN_EMAIL } from './constants';
 import {
   ABSENCE_STREAK_ALERT,
@@ -432,89 +431,6 @@ export function evaluateSystemNotifications(state: AppState): {
     notifications: generatedNotifications,
     newTriggers: newlyCreated
   };
-}
-
-/**
- * Generate test notifications for instant testing / demonstration of all 3 rules
- */
-export function generateTestNotifications(state: AppState): AppNotification[] {
-  const samplePlayer: Player = state.roster[0] || {
-    id: 'sample-p1',
-    name: 'João Silva',
-    number: 10,
-    positions: 'MC',
-    active: true,
-    birthDate: '2005-05-12'
-  };
-
-  const sampleMatch = state.schedule[0] || {
-    id: 'sample-m1',
-    opponent: 'FC Porto Sub-19',
-    date: new Date().toISOString().slice(0, 10),
-    time: '11:00',
-    type: 'campeonato',
-    location: 'casa',
-    callup: []
-  };
-
-  const now = Date.now();
-
-  const testList: AppNotification[] = [
-    {
-      id: `test-tr-24h-${uid()}`,
-      type: 'treino_24h',
-      title: '⚽ Treino nas próximas 24h!',
-      message:
-        'Aviso de Teste: Sessão de treino marcada para amanhã às 18:15. Não te esqueças de preparar os exercícios e as bolas!',
-      timestamp: now,
-      read: false,
-      priority: 'media',
-      targetTab: 'treinos',
-      category: 'Treinos',
-      details: 'Demonstração do aviso de treino 24h antes'
-    },
-    {
-      id: `test-callup-thu-${uid()}`,
-      type: 'convocatoria_quinta',
-      title: '📋 Convocatória Pendente (Quinta-feira 18h)',
-      message: `Aviso das 18h: É quinta-feira e a convocatória para o jogo contra "${sampleMatch.opponent}" ainda não foi fechada!`,
-      timestamp: now - 1000 * 60 * 5,
-      read: false,
-      priority: 'alta',
-      targetTab: 'convocatoria',
-      targetId: sampleMatch.id,
-      category: 'Convocatória',
-      details: 'Demonstração do alerta automático de quinta-feira às 18h'
-    },
-    {
-      id: `test-att-low-${uid()}`,
-      type: 'assiduidade_baixa',
-      title: `🚨 Assiduidade Crítica: ${samplePlayer.name} (33%)`,
-      message: `O atleta ${samplePlayer.name} (#${samplePlayer.number || '10'}) tem apenas 33% de presenças nos treinos (1 presença em 3 sessões realizadas).`,
-      timestamp: now - 1000 * 60 * 15,
-      read: false,
-      priority: 'alta',
-      targetTab: 'plantel',
-      targetId: samplePlayer.id,
-      category: 'Assiduidade',
-      details: 'Demonstração do alerta para jogadores com < 50% de presenças'
-    },
-    {
-      id: `test-bday-${uid()}`,
-      type: 'aniversario',
-      title: `🎉 Hoje é o aniversário de ${samplePlayer.name}!`,
-      message: `🎉 Hoje é o aniversário do atleta ${samplePlayer.name}! Jogador — 20 anos. Dá-lhe os parabéns!`,
-      timestamp: now - 1000 * 60 * 2,
-      read: false,
-      priority: 'alta',
-      targetTab: 'plantel',
-      targetId: samplePlayer.id,
-      category: 'Aniversários',
-      details: 'Demonstração de alerta automático de aniversário'
-    }
-  ];
-
-  return testList;
 }
 
 /**

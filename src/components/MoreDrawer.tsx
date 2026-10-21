@@ -13,13 +13,9 @@ export interface MoreDrawerProps {
   onNavigate: (tab: any) => void;
   onOpenSettings: () => void;
   onOpenDatabase: () => void;
-  onOpenNotifications: () => void;
-  onOpenSync: () => void;
   onOpenAdminUsers?: () => void;
-  onOpenAuditLogs?: () => void;
   onOpenInviteStaff?: () => void;
   onOpenSeasons?: () => void;
-  onOpenCommercialPlans?: () => void;
   pendingUsersCount?: number;
   onLogout?: () => void;
 }
@@ -31,21 +27,15 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onNavigate,
   onOpenSettings,
   onOpenDatabase,
-  onOpenNotifications,
-  onOpenSync,
   onOpenAdminUsers,
-  onOpenAuditLogs,
   onOpenInviteStaff,
   onOpenSeasons,
-  onOpenCommercialPlans,
   pendingUsersCount = 0,
   onLogout
 }) => {
   if (!isOpen) return null;
 
   const isAdmin = isAppAdmin(state.currentUser);
-  const unreadNotifs = (state.notifications || []).filter((n) => !n.read).length;
-  const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
 
   const handleAction = (cb: () => void) => {
     onClose();
@@ -89,60 +79,6 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
 
         {/* Menu Options Grid */}
         <div className="py-3 space-y-1.5 font-mono text-xs">
-          {/* Planos Comerciais & Licença (SaaS) */}
-          {onOpenCommercialPlans && (
-            <button
-              type="button"
-              onClick={() => handleAction(onOpenCommercialPlans)}
-              className="w-full p-3 rounded-xl bg-gradient-to-r from-emerald-950/90 via-slate-900 to-teal-950/90 hover:from-emerald-900/90 hover:to-teal-900/90 border border-emerald-400/80 flex items-center justify-between gap-3 transition-all text-left shadow-lg group"
-              id="more-drawer-commercial-plans-btn"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 text-base group-hover:scale-110 transition-transform">
-                  💎
-                </span>
-                <div>
-                  <div className="font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5 text-xs sm:text-sm">
-                    <span>Módulos & Funcionalidades</span>
-                    <Badge variant="emerald" size="xs">
-                      100% GRATUITO
-                    </Badge>
-                  </div>
-                  <div className="text-[11px] text-emerald-200/90 font-sans">
-                    Acesso livre para testes, adaptações e partilha de feedback
-                  </div>
-                </div>
-              </div>
-              <span className="text-emerald-400 font-bold group-hover:translate-x-1 transition-transform">➔</span>
-            </button>
-          )}
-
-          {/* Chat da Equipa Técnica (Recados, Reuniões e Alertas Móveis) */}
-          <button
-            type="button"
-            onClick={() => handleAction(() => onNavigate('chat_staff'))}
-            className="w-full p-3 rounded-xl bg-gradient-to-r from-cyan-950/90 to-blue-950/90 hover:from-cyan-900/90 hover:to-blue-900/90 border border-cyan-400/80 flex items-center justify-between gap-3 transition-all text-left shadow-lg group"
-            id="more-drawer-chat-staff-btn"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-base group-hover:scale-110 transition-transform">
-                💬
-              </span>
-              <div>
-                <div className="font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5 text-xs sm:text-sm">
-                  <span>Chat da Equipa Técnica</span>
-                  <Badge variant="cyan" size="xs">
-                    {(state.staffMessages || []).length} RECADOS
-                  </Badge>
-                </div>
-                <div className="text-[11px] text-cyan-200/90 font-sans">
-                  Recados, reuniões e envio de alertas diretos para o telemóvel
-                </div>
-              </div>
-            </div>
-            <span className="text-cyan-400 font-bold group-hover:translate-x-1 transition-transform">➔</span>
-          </button>
-
           {/* Análise dos Jogos (Dashboard Estatístico) */}
           <button
             type="button"
@@ -167,58 +103,6 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
               </div>
             </div>
             <span className="text-cyan-400 font-bold group-hover:translate-x-1 transition-transform">➔</span>
-          </button>
-
-          {/* Biblioteca de Exercícios & Dinâmicas */}
-          <button
-            type="button"
-            onClick={() => handleAction(() => onNavigate('biblioteca'))}
-            className="w-full p-3 rounded-xl bg-gradient-to-r from-cyan-950/70 to-blue-950/70 hover:from-cyan-900/80 hover:to-blue-900/80 border border-cyan-400/60 flex items-center justify-between gap-3 transition-all text-left shadow-lg group"
-            id="more-drawer-biblioteca-btn"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-base group-hover:scale-110 transition-transform">
-                📚
-              </span>
-              <div>
-                <div className="font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5 text-xs sm:text-sm">
-                  <span>Biblioteca de Exercícios</span>
-                  <Badge variant="cyan" size="xs">
-                    {state.exerciseLibrary && state.exerciseLibrary.length > 0 ? state.exerciseLibrary.length : 10}{' '}
-                    MODELOS
-                  </Badge>
-                </div>
-                <div className="text-[11px] text-cyan-200/90 font-sans">
-                  Catálogo de dinâmicas, rondos, posse, tática e criação de treinos
-                </div>
-              </div>
-            </div>
-            <span className="text-cyan-400 font-bold group-hover:translate-x-1 transition-transform">➔</span>
-          </button>
-
-          {/* Relatórios & Direção */}
-          <button
-            type="button"
-            onClick={() => handleAction(() => onNavigate('relatorios'))}
-            className="w-full p-3 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/40 flex items-center justify-between gap-3 transition-colors text-left"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-base">
-                📊
-              </span>
-              <div>
-                <div className="font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5">
-                  <span>Relatórios da Direção</span>
-                  <Badge variant="cyan" size="xs">
-                    FASE 4
-                  </Badge>
-                </div>
-                <div className="text-[11px] text-cyan-200/80">
-                  Dashboard executivo, relatórios por escalão e exportação PDF/Excel
-                </div>
-              </div>
-            </div>
-            <span className="text-cyan-400">➔</span>
           </button>
 
           {/* Trocar de Equipa */}
@@ -284,26 +168,6 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
             </button>
           )}
 
-          {/* Auditoria & Segurança */}
-          {isAdmin && onOpenAuditLogs && (
-            <button
-              type="button"
-              onClick={() => handleAction(onOpenAuditLogs)}
-              className="w-full p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-3 transition-colors text-left"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 text-base">
-                  🔐
-                </span>
-                <div>
-                  <div className="font-bold text-white font-['Chakra_Petch'] uppercase">Registo de Auditoria</div>
-                  <div className="text-[11px] text-slate-400">Histórico cronológico imutável de ações e segurança</div>
-                </div>
-              </div>
-              <span className="text-slate-400">➔</span>
-            </button>
-          )}
-
           {/* Admin Utilizadores & Acessos */}
           {isAdmin && onOpenAdminUsers && (
             <button
@@ -330,56 +194,6 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
               <span className="text-slate-400">➔</span>
             </button>
           )}
-
-          {/* Sincronização Nuvem */}
-          <button
-            type="button"
-            onClick={() => handleAction(onOpenSync)}
-            className="w-full p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-3 transition-colors text-left"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-base">
-                ☁️
-              </span>
-              <div>
-                <div className="font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5">
-                  <span>Sincronização & Nuvem</span>
-                  <Badge variant={!isOnline ? 'amber' : 'emerald'} size="xs">
-                    {!isOnline ? 'Offline' : 'Online'}
-                  </Badge>
-                </div>
-                <div className="text-[11px] text-slate-400">Fila offline e persistência em tempo real</div>
-              </div>
-            </div>
-            <span className="text-slate-400">➔</span>
-          </button>
-
-          {/* Notificações */}
-          <button
-            type="button"
-            onClick={() => handleAction(onOpenNotifications)}
-            className="w-full p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-3 transition-colors text-left"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-base">
-                🔔
-              </span>
-              <div>
-                <div className="font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5">
-                  <span>Alertas & Notificações</span>
-                  {unreadNotifs > 0 && (
-                    <Badge variant="rose" size="xs">
-                      {unreadNotifs} novos
-                    </Badge>
-                  )}
-                </div>
-                <div className="text-[11px] text-slate-400">
-                  Lembretes automáticos de treinos, convocatórias e jogos
-                </div>
-              </div>
-            </div>
-            <span className="text-slate-400">➔</span>
-          </button>
 
           {/* Base de Dados & Backup */}
           <button

@@ -10,13 +10,10 @@ export type TabType =
   | 'convocatoria'
   | 'prejogo'
   | 'treinos'
-  | 'biblioteca'
   | 'jogos'
   | 'stats'
   | 'analise_jogos'
-  | 'plantel'
-  | 'chat_staff'
-  | 'relatorios';
+  | 'plantel';
 
 export type MainCategory = 'home' | 'equipa' | 'planeamento' | 'performance' | 'mais';
 

@@ -62,7 +62,7 @@ export const STATUS_CONFIG: Record<
   }
 };
 
-export type SquadTab = 'jogadores' | 'assiduidade' | 'equipa_tecnica' | 'chat_staff' | 'aniversarios';
+export type SquadTab = 'jogadores' | 'assiduidade' | 'equipa_tecnica' | 'aniversarios';
 export type SquadViewMode = 'lista' | 'grelha';
 export type SquadSortBy = 'posicao' | 'numero' | 'nome';
 export type SquadSortDirection = 'asc' | 'desc';
