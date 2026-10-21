@@ -1,5 +1,7 @@
 # BolaComVisão — Registo de Jogos e Gestão de Equipas
 
+> **Antes de alterar código, ler [docs/NOTAS_DE_PASSAGEM.md](docs/NOTAS_DE_PASSAGEM.md)** (como a app guarda os dados, como se publica, armadilhas conhecidas).
+
 Aplicação de gestão tática, registo de jogos e coordenação de equipas técnicas com sincronização em tempo real na Cloud (Firebase Firestore & Firebase Authentication).
 
 ---
@@ -43,8 +45,8 @@ Para ativar o deploy automático:
 ### Opção 2: Fallback Manual via Consola Firebase
 
 1. Aceda à [Consola do Firebase](https://console.firebase.google.com/).
-2. Selecione o seu projeto (**ai-studio-registodejogosge-...**).
-3. No menu lateral esquerdo, clique em **Firestore Database** e selecione o separador **Regras** (_Rules_).
+2. Selecione o projeto **ai-builder-project** (`glowing-orbit-vk8sk`).
+3. No menu lateral esquerdo, clique em **Firestore Database**, escolha no topo a base de dados **ai-studio-registodejogosge-…** (não a `(default)`) e selecione o separador **Regras** (_Rules_).
 4. Abra o ficheiro `firestore.rules` deste projeto, copie todo o seu conteúdo e cole-o no editor de regras da consola.
 5. Clique no botão **Publicar** (_Publish_).
 
