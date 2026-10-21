@@ -27,8 +27,10 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
+      # Not --frozen-lockfile: the AI Studio sometimes rewrites bun.lock out of step with package.json, and the
+      # tests must still run (package.json is the source of truth).
       - name: Instalar dependências
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Verificar
         run: npm run verify
@@ -50,8 +52,10 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
+      # Not --frozen-lockfile: the AI Studio sometimes rewrites bun.lock out of step with package.json, and the
+      # tests must still run (package.json is the source of truth).
       - name: Instalar dependências
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Instalar o navegador dos testes
         run: npx playwright install --with-deps chromium

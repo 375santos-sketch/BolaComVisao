@@ -30,8 +30,10 @@ O `firebase.json` indica a base de dados com nome: `firebase deploy --only fires
 glowing-orbit-vk8sk` publica na base certa. Não remover o campo `database`, senão as regras vão para a `(default)`,
 que a app não usa.
 
-⚠️ O AI Studio às vezes faz commits sozinho (por exemplo, apagou o `package-lock.json`; o projeto usa `bun.lock`).
-Fazer sempre `git pull` antes de começar.
+⚠️ O AI Studio às vezes faz commits sozinho (por exemplo, apagou o `package-lock.json` e, a 21/10, tirou o
+`@playwright/test` do `bun.lock` sem o tirar do `package.json`). O projeto usa `bun.lock`; os testes no GitHub
+instalam com `bun install` (sem `--frozen-lockfile`) para não pararem por isso. Fazer sempre `git pull` antes de
+começar, e repor o `bun.lock` com `bun install --lockfile-only` se ficar desalinhado.
 
 ## 3. Tecnologia
 
@@ -157,3 +159,4 @@ trocar as regras a meio dos testes.
 | #19 | Minutos de jogo certos em jogos importados (substituições da 2.ª parte; titulares deduzidos quando faltam) |
 | #20 | Equipa escolhida por aparelho; Pré-jogo e Adversário deixam de gravar só por abrir                         |
 | #21 | Cantos e faltas a 0 na Análise (dois nomes para o mesmo dado: `src/lib/matchSetPieces.ts`)                 |
+| #22 | Testes no GitHub tolerantes a `bun.lock` reescrito pelo AI Studio                                          |
