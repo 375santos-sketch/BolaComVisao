@@ -6,7 +6,6 @@ import { Header } from '../Header';
 import { AttendanceSection } from '../AttendanceSection';
 import { BirthdaySection } from '../BirthdaySection';
 import { StaffSection } from '../StaffSection';
-import { StaffChatSection } from './StaffChatSection';
 import { StaffHighlightSection } from '../StaffHighlightSection';
 import { StaffModal } from '../StaffModal';
 import { ImportExcelPlayersModal } from '../ImportExcelPlayersModal';
@@ -79,7 +78,6 @@ export const SquadView: React.FC<SquadViewProps> = ({
         setActiveSquadTab={squad.setActiveSquadTab}
         activeRosterCount={squad.activeRoster.length}
         staffCount={(state.staffMembers || []).length}
-        staffMessagesCount={(state.staffMessages || []).length}
         allBirthdaysList={squad.allBirthdaysList}
         todayBirthdaysCount={squad.todayBirthdaysCount}
       />
@@ -117,18 +115,6 @@ export const SquadView: React.FC<SquadViewProps> = ({
           onUpdateState={onUpdateState}
           onShowConfirm={onShowConfirm}
           onShowToast={onShowToast}
-          onNavigateToChat={() => squad.setActiveSquadTab('chat_staff')}
-        />
-      )}
-
-      {/* STAFF CHAT & RECADOS SECTION (SUBMENU) */}
-      {squad.activeSquadTab === 'chat_staff' && (
-        <StaffChatSection
-          state={state}
-          onUpdateState={onUpdateState}
-          onShowConfirm={onShowConfirm}
-          onShowToast={onShowToast}
-          onNavigateToCalendar={() => onNavigate('calendario')}
         />
       )}
 

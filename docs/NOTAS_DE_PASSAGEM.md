@@ -97,6 +97,12 @@ Regras importantes (cada uma corrige um problema real que já aconteceu):
   `opponentScouting`): `withoutOpponentScouting` (em `normalizeClubState`) apaga esses dados sempre que aparecerem;
   `resetOldPreMatchFlags` (versão de dados 3, corre uma vez) tira o ✓ antigo dos jogos sem plano novo. O campo
   `opponentScouting` e o tipo de registo `scouting` ficam no código só para a sincronização apagar o que existia.
+- **Removidos a 21/10/2026 a pedido do Administrador** (não voltar a pôr sem pedido): Módulos & Funcionalidades
+  (planos comerciais; `licensingEngine` fica só para o registo de clubes), Chat da Equipa Técnica (as mensagens
+  `staffMessages` ficam guardadas, sem ecrã), Biblioteca de Exercícios (e as Fichas PDF dos treinos), Relatórios da
+  Direção, ecrã do Registo de Auditoria (o registo continua a ser gravado em `audit_logs`), ecrã Sincronização &
+  Nuvem (tocar no indicador mostra o estado: `src/lib/syncView.ts`) e as definições dos alertas (os avisos do 🔔
+  continuam com os valores atuais).
 - **Apagar = marcar** (`deleted: true`), guardando a última versão. É isso que permite "Resultados → 🗑️ Jogos
   apagados". Só o Administrador pode apagar documentos de verdade.
 - **Proteção contra apagões:** pedidos para apagar mais de 20 registos e mais de 50% do total são ignorados (sinal
@@ -143,7 +149,7 @@ consentimento RGPD dos pais.
 | ----------------------- | ---------------------------------------------------------------------------- | ---------- |
 | `npm run verify`        | Tipos, lint, formatação, testes unitários, build                             | Node       |
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
-| `npm run test:e2e`      | 12 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
+| `npm run test:e2e`      | 13 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
 
 O GitHub corre os três em cada Pull Request e em cada alteração à `main` (workflow **Testes**). Não fazer merge com
 ❌; se os testes de ecrã falharem, o relatório com capturas fica nos artefactos da execução. Os testes de ecrã correm na base com nome,
@@ -152,31 +158,32 @@ trocar as regras a meio dos testes.
 
 ## 8. Histórico (outubro 2026)
 
-| PR  | O quê                                                                                                         |
-| --- | ------------------------------------------------------------------------------------------------------------- |
-| #1  | Erros técnicos, jogo do Tramagal SU recuperado, importação da Ficha de Jogo                                   |
-| #2  | Jogos separados por equipa, épocas pela data, indicador de gravação verdadeiro                                |
-| #3  | Minutos de jogo por atleta (ao vivo e resumo da época)                                                        |
-| #4  | Armazenamento por registos (um documento por atleta, jogo e treino)                                           |
-| #5  | Importação sem dados inventados, sem dados de demonstração, jogos apagados, partilha com os pais              |
-| #6  | Segurança: acessos entre clubes fechados, dados apagados ao terminar sessão                                   |
-| #7  | Convites seguros, verificados pelas regras                                                                    |
-| #8  | Alertas de assiduidade, limpeza de dados inventados, app mais leve                                            |
-| #9  | Mensagens de diagnóstico da migração                                                                          |
-| #10 | Sincronização espera pelo login (a migração passou a acontecer)                                               |
-| #11 | Testes automáticos aos ecrãs                                                                                  |
-| #12 | Notas de passagem                                                                                             |
-| #13 | Publicação automática das regras (testadas antes)                                                             |
-| #14 | Regras publicadas com o código de acesso da Firebase CLI (o projeto não permite chaves)                       |
-| #15 | Todos os testes correm no GitHub em cada Pull Request                                                         |
-| #16 | Separadores de Performance: Estatísticas a um toque                                                           |
-| #17 | "Quando marcamos": gráfico a zeros corrigido; golos sem minuto já não vão para 0–15'                          |
-| #18 | Definições do clube e equipas sem conflitos entre treinadores                                                 |
-| #19 | Minutos de jogo certos em jogos importados (substituições da 2.ª parte; titulares deduzidos quando faltam)    |
-| #20 | Equipa escolhida por aparelho; Pré-jogo e Adversário deixam de gravar só por abrir                            |
-| #21 | Cantos e faltas a 0 na Análise (dois nomes para o mesmo dado: `src/lib/matchSetPieces.ts`)                    |
-| #22 | Testes no GitHub tolerantes a `bun.lock` reescrito pelo AI Studio                                             |
-| #23 | Remates e eficácia de finalização na Análise; cópia de segurança completa com lembrete semanal                |
-| #24 | Fim do scouting do adversário; relatório do adversário pós-jogo (números, notas, próximo jogo, PDF, WhatsApp) |
-| #25 | Pré-jogo novo, simples (sistema, objetivos, com/sem bola, palavra de ordem, PDF, WhatsApp); antigo apagado    |
-| #26 | Aviso para entrar de novo quando a sessão na nuvem termina (sem perder os dados do aparelho)                  |
+| PR  | O quê                                                                                                                                     |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| #1  | Erros técnicos, jogo do Tramagal SU recuperado, importação da Ficha de Jogo                                                               |
+| #2  | Jogos separados por equipa, épocas pela data, indicador de gravação verdadeiro                                                            |
+| #3  | Minutos de jogo por atleta (ao vivo e resumo da época)                                                                                    |
+| #4  | Armazenamento por registos (um documento por atleta, jogo e treino)                                                                       |
+| #5  | Importação sem dados inventados, sem dados de demonstração, jogos apagados, partilha com os pais                                          |
+| #6  | Segurança: acessos entre clubes fechados, dados apagados ao terminar sessão                                                               |
+| #7  | Convites seguros, verificados pelas regras                                                                                                |
+| #8  | Alertas de assiduidade, limpeza de dados inventados, app mais leve                                                                        |
+| #9  | Mensagens de diagnóstico da migração                                                                                                      |
+| #10 | Sincronização espera pelo login (a migração passou a acontecer)                                                                           |
+| #11 | Testes automáticos aos ecrãs                                                                                                              |
+| #12 | Notas de passagem                                                                                                                         |
+| #13 | Publicação automática das regras (testadas antes)                                                                                         |
+| #14 | Regras publicadas com o código de acesso da Firebase CLI (o projeto não permite chaves)                                                   |
+| #15 | Todos os testes correm no GitHub em cada Pull Request                                                                                     |
+| #16 | Separadores de Performance: Estatísticas a um toque                                                                                       |
+| #17 | "Quando marcamos": gráfico a zeros corrigido; golos sem minuto já não vão para 0–15'                                                      |
+| #18 | Definições do clube e equipas sem conflitos entre treinadores                                                                             |
+| #19 | Minutos de jogo certos em jogos importados (substituições da 2.ª parte; titulares deduzidos quando faltam)                                |
+| #20 | Equipa escolhida por aparelho; Pré-jogo e Adversário deixam de gravar só por abrir                                                        |
+| #21 | Cantos e faltas a 0 na Análise (dois nomes para o mesmo dado: `src/lib/matchSetPieces.ts`)                                                |
+| #22 | Testes no GitHub tolerantes a `bun.lock` reescrito pelo AI Studio                                                                         |
+| #23 | Remates e eficácia de finalização na Análise; cópia de segurança completa com lembrete semanal                                            |
+| #24 | Fim do scouting do adversário; relatório do adversário pós-jogo (números, notas, próximo jogo, PDF, WhatsApp)                             |
+| #25 | Pré-jogo novo, simples (sistema, objetivos, com/sem bola, palavra de ordem, PDF, WhatsApp); antigo apagado                                |
+| #26 | Aviso para entrar de novo quando a sessão na nuvem termina (sem perder os dados do aparelho)                                              |
+| #27 | Simplificação: saem planos comerciais, chat, biblioteca, relatórios da direção, auditoria, ecrã de sincronização e definições dos alertas |

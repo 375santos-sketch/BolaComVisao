@@ -55,7 +55,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         />
 
         {/* Sub-Navigation: Planeamento & Jogos */}
-        <div className="grid grid-cols-4 gap-1 mb-4 p-1 bg-slate-900/90 border border-cyan-500/20 rounded-2xl shadow-sm text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
+        <div className="grid grid-cols-3 gap-1 mb-4 p-1 bg-slate-900/90 border border-cyan-500/20 rounded-2xl shadow-sm text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
           <button
             type="button"
             onClick={() => onNavigate('calendario')}
@@ -72,15 +72,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           >
             <span>⚡</span>
             <span className="hidden sm:inline">Treinos</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onNavigate('biblioteca')}
-            className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
-          >
-            <span>📚</span>
-            <span className="hidden sm:inline">Biblioteca</span>
           </button>
 
           <button
@@ -144,7 +135,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       />
 
       {/* Sub-Navigation: Planeamento & Jogos */}
-      <div className="grid grid-cols-4 gap-1 mb-4 p-1 bg-slate-900/90 border border-cyan-500/20 rounded-2xl shadow-sm text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
+      <div className="grid grid-cols-3 gap-1 mb-4 p-1 bg-slate-900/90 border border-cyan-500/20 rounded-2xl shadow-sm text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
         <button
           type="button"
           onClick={() => onNavigate('calendario')}
@@ -161,15 +152,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         >
           <span>⚡</span>
           <span className="hidden sm:inline">Treinos</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onNavigate('biblioteca')}
-          className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
-        >
-          <span>📚</span>
-          <span className="hidden sm:inline">Biblioteca</span>
         </button>
 
         <button

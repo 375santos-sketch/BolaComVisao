@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { AppState, Exercise, Training } from '../../types';
+import React, { useState } from 'react';
+import { AppState, Training } from '../../types';
 import { t } from '../../i18n/dict';
 import { playerLabel, uid } from '../../lib/utils';
 import { Header } from '../Header';
 import { generateTrainingsStatsPDF } from '../../lib/pdfUtils';
 import { exportSeasonStatsExcel } from '../../lib/exportUtils';
-import { ExerciseLibrarySection } from './trainings/ExerciseLibrarySection';
-import { getAllPDFDocuments } from '../../lib/pdfLibraryDB';
 import { getNextTrainingNumber } from '../../lib/trainingNumbering';
 import { TrainingFormData, TrainingsTab } from './trainings/types';
 import { useTrainings } from './trainings/hooks/useTrainings';
@@ -52,13 +50,6 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   const [creationMode, setCreationMode] = useState<'single' | 'batch'>('single');
   const [expandedTraining, setExpandedTraining] = useState<string | null>(null);
   const [showBatchModal, setShowBatchModal] = useState<boolean>(false);
-  const [pdfLibraryCount, setPdfLibraryCount] = useState<number>(0);
-
-  useEffect(() => {
-    getAllPDFDocuments()
-      .then((docs) => setPdfLibraryCount(docs.length))
-      .catch(() => {});
-  }, [activeTab]);
 
   const {
     eligiblePlayers,
@@ -85,40 +76,6 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   };
 
   // Pre-load training with an exercise drill from Library
-  const handleCreateTrainingWithExercise = (exercise: Exercise) => {
-    const block = {
-      id: uid(),
-      exerciseId: exercise.id,
-      title: exercise.name,
-      category: exercise.category,
-      durationMinutes: exercise.durationMinutes || 15,
-      notes: exercise.description || exercise.tacticalObjectives || ''
-    };
-
-    const today = new Date().toISOString().split('T')[0];
-    const typeMap: Record<string, string> = {
-      aquecimento: '🎯 Geral',
-      tecnica: '⚽ Técnico / Finalização',
-      tatica: '⚡ Tático',
-      jogo: '🏆 Jogo-Treino',
-      bolas_paradas: '🛡️ Bolas Paradas',
-      fisico: '🏃 Físico / Condição'
-    };
-
-    setCreationMode('single');
-    setTrainingForm({
-      date: today,
-      time: '19:00',
-      location: '',
-      type: (exercise.category && typeMap[exercise.category]) || '⚡ Tático',
-      notes: exercise.description ? `Foco: ${exercise.name}\n${exercise.description}` : `Foco: ${exercise.name}`,
-      absences: [],
-      completed: false,
-      durationMinutes: 90,
-      sessionObjective: exercise.tacticalObjectives || `Trabalho de ${exercise.name}`,
-      sessionBlocks: [block]
-    });
-  };
 
   const handleOpenCreateForm = (mode: 'single' | 'batch') => {
     if (mode === 'batch') {
@@ -283,9 +240,9 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   return (
     <div className="max-w-5xl mx-auto pb-28">
       <Header
-        title={activeTab === 'library' ? 'Biblioteca de Exercícios' : t(state.lang, 'tr_title')}
+        title={t(state.lang, 'tr_title')}
         lang={state.lang}
-        currentTab={activeTab === 'library' ? 'biblioteca' : 'treinos'}
+        currentTab="treinos"
         onNavigate={onNavigate}
         onGoHome={() => onNavigate('home')}
         onOpenSettings={onOpenSettings}
@@ -302,19 +259,10 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         totalTrainings={totalTrainings}
-        pdfLibraryCount={pdfLibraryCount}
         completedCount={completedCount}
       />
 
-      {activeTab === 'library' ? (
-        <ExerciseLibrarySection
-          state={state}
-          onUpdateState={onUpdateState}
-          onShowToast={onShowToast}
-          onShowConfirm={onShowConfirm}
-          onCreateTrainingWithExercise={handleCreateTrainingWithExercise}
-        />
-      ) : activeTab === 'stats' ? (
+      {activeTab === 'stats' ? (
         <TrainingAttendance
           state={state}
           completedCount={completedCount}

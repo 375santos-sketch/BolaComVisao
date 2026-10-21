@@ -212,33 +212,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
         onShowToast={onShowToast}
       />
 
-      {/* 5.1 Quick Access Hub (Biblioteca de Exercícios & Módulos Rápidos) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div
-          onClick={() => onNavigate('biblioteca')}
-          className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/60 via-slate-900 to-blue-950/60 border border-cyan-500/40 hover:border-cyan-400/80 shadow-lg hover:shadow-[0_0_20px_rgba(0,210,255,0.2)] transition-all cursor-pointer group flex items-center justify-between gap-3"
-          id="home-quick-biblioteca-btn"
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">
-              📚
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-white font-['Chakra_Petch'] uppercase text-xs sm:text-sm truncate flex items-center gap-1.5">
-                <span>Biblioteca</span>
-                <Badge variant="cyan" size="xs">
-                  {state.exerciseLibrary && state.exerciseLibrary.length > 0 ? state.exerciseLibrary.length : 10}{' '}
-                  Modelos
-                </Badge>
-              </div>
-              <div className="text-[11px] text-cyan-200/70 truncate">Dinâmicas, Rondos e Tática</div>
-            </div>
-          </div>
-          <span className="text-cyan-400 font-bold text-xs group-hover:translate-x-1 transition-transform shrink-0">
-            ➔
-          </span>
-        </div>
-
+      {/* 5.1 Quick Access Hub */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div
           onClick={() => onNavigate('treinos')}
           className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/20 border border-amber-500/30 hover:border-amber-400/70 shadow-lg transition-all cursor-pointer group flex items-center justify-between gap-3"

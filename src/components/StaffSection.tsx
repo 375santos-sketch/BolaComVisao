@@ -8,7 +8,6 @@ interface StaffSectionProps {
   onUpdateState: (updates: Partial<AppState>) => void;
   onShowConfirm: (msg: string, cb: () => void) => void;
   onShowToast: (msg: string) => void;
-  onNavigateToChat?: () => void;
 }
 
 const ROLE_CONFIG: Record<string, { icon: string; badgeClass: string; order: number }> = {
@@ -34,20 +33,12 @@ const ROLE_CONFIG: Record<string, { icon: string; badgeClass: string; order: num
   }
 };
 
-export const StaffSection: React.FC<StaffSectionProps> = ({
-  state,
-  onUpdateState,
-  onShowConfirm,
-  onShowToast,
-  onNavigateToChat
-}) => {
+export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState, onShowConfirm, onShowToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [roleFilter, setRoleFilter] = useState<string>('todos');
 
   const staffMembers: StaffMember[] = state.staffMembers || [];
-  const staffMessages = state.staffMessages || [];
-  const urgentCount = staffMessages.filter((m) => m.priority === 'urgente' || m.type === 'urgente').length;
 
   // Sort staff members logically by hierarchy
   const sortedStaff = [...staffMembers].sort((a, b) => {
@@ -137,23 +128,6 @@ export const StaffSection: React.FC<StaffSectionProps> = ({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {onNavigateToChat && (
-              <button
-                type="button"
-                onClick={onNavigateToChat}
-                className="px-3.5 py-2 rounded-xl bg-slate-950 border border-cyan-500/50 hover:border-cyan-400 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
-              >
-                <span>💬</span>
-                <span>Chat & Recados</span>
-                {staffMessages.length > 0 && (
-                  <span className="px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-200 border border-cyan-400/40 text-[10px] font-mono">
-                    {staffMessages.length}
-                  </span>
-                )}
-                {urgentCount > 0 && <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />}
-              </button>
-            )}
-
             <button
               onClick={handleOpenAddModal}
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5"
