@@ -112,6 +112,32 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   }
 });
 
+test('pré-jogo: abrir os ecrãs não grava nada; finalizar grava um só plano', async ({ page }) => {
+  const scoutingRecords = async () => [...(await cloudRecords()).entries()].filter(([, r]) => r.kind === 'scouting');
+  await signedIn(page);
+  await navTo(page, /performance/i);
+  await expect(page.getByText('PLANO ESTRATÉGICO & MODELO DE JOGO')).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Performance' })
+    .getByRole('button', { name: /Adversário/ })
+    .click();
+  await page.waitForTimeout(5000); // longer than the 3.5 s save delay
+  expect(await scoutingRecords()).toEqual([]);
+  await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced');
+
+  await page
+    .getByRole('navigation', { name: 'Performance' })
+    .getByRole('button', { name: /Pré-jogo/ })
+    .click();
+  await page
+    .getByRole('button', { name: /FINALIZAR PRÉ-JOGO/i })
+    .first()
+    .click();
+  await expect
+    .poll(async () => (await scoutingRecords()).map(([id]) => id), { timeout: 30_000 })
+    .toEqual(['scouting__sub11__report-s1']);
+});
+
 test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);

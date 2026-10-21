@@ -153,10 +153,15 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
   const [editingReportId, setEditingReportId] = useState<string | null>(null);
   const isEditing = Boolean(currentScout && editingReportId === currentScout.id);
 
+  // The report on screen may be a draft built from the next game: it is saved only when the coach changes it
+  // (before, opening this screen saved a new copy every time, and each coach created their own duplicate).
+  const withCurrentReport = (list: OpponentScouting[]) =>
+    currentScout && !list.some((s) => s.id === currentScout.id) ? [currentScout, ...list] : list;
+
   const handleFinalizePreMatch = () => {
     if (!currentScout) return;
     const now = Date.now();
-    const updatedScouting = scoutingList.map((s) => {
+    const updatedScouting = withCurrentReport(scoutingList).map((s) => {
       if (s.id === currentScout.id) {
         return {
           ...s,
@@ -197,35 +202,17 @@ export const PreMatchPlanView: React.FC<PreMatchPlanViewProps> = ({
     onShowToast('Modo de edição do Pré-Jogo ativado ✓');
   };
 
-  // Ensure default report exists if empty and cleanup dummy 'Adversário 1'
+  // Clean up the old placeholder report 'Adversário 1' (only when there is one: opening the screen writes nothing)
   useEffect(() => {
     if (state.opponentScouting && state.opponentScouting.some((s) => s.opponentName === 'Adversário 1')) {
-      const cleaned = state.opponentScouting.filter((s) => s.opponentName !== 'Adversário 1');
-      if (cleaned.length === 0 && scheduleList.length > 0) {
-        const initialReport = {
-          ...createDefaultPreMatchReport(scheduleList[0], state.myClubStadium, rosterNames),
-          id: uid(),
-          updatedAt: Date.now()
-        };
-        onUpdateState({ opponentScouting: [initialReport] });
-      } else {
-        onUpdateState({ opponentScouting: cleaned });
-      }
-    } else if (!state.opponentScouting || state.opponentScouting.length === 0) {
-      const nextMatch = scheduleList[0];
-      const initialReport = {
-        ...createDefaultPreMatchReport(nextMatch, state.myClubStadium, rosterNames),
-        id: uid(),
-        updatedAt: Date.now()
-      };
-      onUpdateState({ opponentScouting: [initialReport] });
+      onUpdateState({ opponentScouting: state.opponentScouting.filter((s) => s.opponentName !== 'Adversário 1') });
     }
-  }, [state.opponentScouting, scheduleList, state.myClubStadium, rosterNames, onUpdateState]);
+  }, [state.opponentScouting, onUpdateState]);
 
   // Update current active report helper
   const handleUpdateCurrentReport = (fields: Partial<OpponentScouting>) => {
     if (!currentScout) return;
-    const updated = scoutingList.map((s) => {
+    const updated = withCurrentReport(scoutingList).map((s) => {
       if (s.id === currentScout.id) {
         return { ...s, ...fields, updatedAt: Date.now() };
       }

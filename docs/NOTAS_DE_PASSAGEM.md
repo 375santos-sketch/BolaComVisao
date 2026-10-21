@@ -76,6 +76,12 @@ Regras importantes (cada uma corrige um problema real que já aconteceu):
 - **O registo `club` (definições e lista de equipas) junta-se campo a campo e equipa a equipa.** Guarda-se um hash
   por campo e por equipa (chaves `club#…` em `bcv-synced-records-{clube}`); só um campo ou equipa alterado nos dois
   aparelhos é decidido pela alteração mais recente.
+- **A equipa escolhida (`activeTeamId`) é de cada aparelho** e as cópias de topo da equipa ativa (táticas, equipa
+  técnica, escalão, época…) não vão para o registo `club`: cada equipa guarda as suas em `teams[]`. Os valores por
+  defeito das equipas são preenchidos para todas antes de partilhar, para dois treinadores em equipas diferentes
+  gravarem exatamente o mesmo `club` (senão regravavam-no sem parar).
+- **Abrir um ecrã não pode gravar nada.** O Pré-jogo e o Adversário mostram um rascunho (id estável
+  `report-{jogo}` / `scout-{jogo}`) que só é gravado quando o treinador o altera.
 - **Apagar = marcar** (`deleted: true`), guardando a última versão. É isso que permite "Resultados → 🗑️ Jogos
   apagados". Só o Administrador pode apagar documentos de verdade.
 - **Proteção contra apagões:** pedidos para apagar mais de 20 registos e mais de 50% do total são ignorados (sinal
@@ -119,7 +125,7 @@ consentimento RGPD dos pais.
 | ----------------------- | ---------------------------------------------------------------------------- | ---------- |
 | `npm run verify`        | Tipos, lint, formatação, testes unitários, build                             | Node       |
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
-| `npm run test:e2e`      | 8 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase   | Java       |
+| `npm run test:e2e`      | 9 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase   | Java       |
 
 O GitHub corre os três em cada Pull Request e em cada alteração à `main` (workflow **Testes**). Não fazer merge com
 ❌; se os testes de ecrã falharem, o relatório com capturas fica nos artefactos da execução. Os testes de ecrã correm na base com nome,
@@ -149,3 +155,4 @@ trocar as regras a meio dos testes.
 | #17 | "Quando marcamos": gráfico a zeros corrigido; golos sem minuto já não vão para 0–15'                       |
 | #18 | Definições do clube e equipas sem conflitos entre treinadores                                              |
 | #19 | Minutos de jogo certos em jogos importados (substituições da 2.ª parte; titulares deduzidos quando faltam) |
+| #20 | Equipa escolhida por aparelho; Pré-jogo e Adversário deixam de gravar só por abrir                         |
