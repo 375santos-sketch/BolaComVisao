@@ -1,0 +1,75 @@
+name: Testes
+
+# Em cada Pull Request e em cada alteração à main: verificação completa, testes de integração (regras e
+# sincronização) e testes de ecrã, contra os emuladores do Firebase. Nunca toca na base de dados real.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: testes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Tipos, lint, formatação, testes unitários e build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
+
+      - name: Verificar
+        run: npm run verify
+
+  ecras:
+    name: Testes de ecrã e de integração (emuladores)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
+
+      - name: Instalar o navegador dos testes
+        run: npx playwright install --with-deps chromium
+
+      - name: Testes de integração (regras e sincronização)
+        run: npm run test:emulator
+
+      - name: Testes de ecrã
+        run: npm run test:e2e
+        env:
+          CI: 'true'
+
+      - name: Relatório dos testes de ecrã
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes-de-ecra
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
