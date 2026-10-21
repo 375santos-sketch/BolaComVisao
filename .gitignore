@@ -9,3 +9,7 @@ coverage/
 
 # Fichas de jogo exportadas (podem conter dados de jogadores)
 /*.xlsx
+
+# Testes de ecrã (Playwright)
+/test-results/
+/playwright-report/

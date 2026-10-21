@@ -105,3 +105,15 @@ grantAdminPrivileges('UID_DO_UTILIZADOR_AQUI');
    - `grantedAt` (number): `1740398400000` (timestamp atual em ms)
 5. No documento `/users/{UID_DO_UTILIZADOR}`, defina `account.role = "Administrador"` e `account.status = "approved"`.
 6. O utilizador terá imediatamente acesso irrestrito de Administrador Mestre ao iniciar sessão.
+
+## Testes
+
+| Comando                 | O que testa                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| `npm test`              | Regras de cálculo (minutos de jogo, épocas, sincronização…), sem navegador nem Firebase.      |
+| `npm run test:emulator` | Sincronização e regras de segurança contra os emuladores do Firebase.                         |
+| `npm run test:e2e`      | Ecrãs da app num navegador (tamanho de telemóvel) com dois treinadores, contra os emuladores. |
+
+Os dois últimos precisam de Java (emuladores do Firebase). Os testes de ecrã usam dados fictícios (`e2e/seed.ts`)
+e nunca tocam na base de dados real. Se um teste falhar, `npx playwright show-report` mostra o ecrã e o
+passo onde falhou.
