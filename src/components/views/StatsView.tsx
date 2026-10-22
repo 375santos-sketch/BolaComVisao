@@ -14,6 +14,7 @@ interface StatsViewProps {
   onOpenNotifications?: () => void;
   onOpenSync?: () => void;
   onShowToast: (msg: string) => void;
+  onUpdateState?: (patch: Partial<AppState>) => void;
 }
 
 export const StatsView: React.FC<StatsViewProps> = ({
@@ -22,7 +23,8 @@ export const StatsView: React.FC<StatsViewProps> = ({
   onOpenSettings,
   onOpenNotifications,
   onOpenSync,
-  onShowToast
+  onShowToast,
+  onUpdateState
 }) => {
   const [statsFilter, setStatsFilter] = useState<MatchType | 'todos'>('todos');
   const [seasonFilter, setSeasonFilter] = useState<string>('todas');
@@ -578,6 +580,16 @@ export const StatsView: React.FC<StatsViewProps> = ({
         )}
         roster={state.roster || []}
         category={state.category}
+        onSetStarters={
+          onUpdateState
+            ? (matchId, lineup) => {
+                onUpdateState({
+                  matches: state.matches.map((m) => (m.id === matchId ? { ...m, lineup } : m))
+                });
+                onShowToast('Titulares da 1.ª parte guardados: minutos recalculados ✓');
+              }
+            : undefined
+        }
       />
 
       {/* Modal de Lista Completa de Marcadores e Assistências */}

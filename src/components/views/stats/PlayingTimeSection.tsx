@@ -1,17 +1,28 @@
 import React, { useMemo, useState } from 'react';
 import { Match, Player } from '../../../types';
-import { computeSeasonPlayingTime, PLAYING_TIME_TARGET } from '../../../lib/playingTime';
+import {
+  computeSeasonPlayingTime,
+  gamesMissingStarters,
+  getCalledUpPlayers,
+  PLAYING_TIME_TARGET
+} from '../../../lib/playingTime';
+import { getLineupSize } from '../../../lib/constants';
+import { LineupModal } from '../liveMatch/components/LineupModal';
 
 interface PlayingTimeSectionProps {
   matches: Match[];
   roster: Player[];
   category?: string;
+  /** Saves the first-half starters of a finished game that has none (without them its minutes come out short). */
+  onSetStarters?: (matchId: string, lineup: string[]) => void;
 }
 
 /** Season playing time per player, players below the target first. */
-export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches, roster, category }) => {
+export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches, roster, category, onSetStarters }) => {
   const [showAll, setShowAll] = useState(false);
+  const [fixing, setFixing] = useState<Match | null>(null);
   const rows = useMemo(() => computeSeasonPlayingTime(matches, roster, category), [matches, roster, category]);
+  const missing = useMemo(() => gamesMissingStarters(matches, roster), [matches, roster]);
   const withGames = rows.filter((r) => r.matchesCalledUp > 0);
   if (withGames.length === 0) return null;
 
@@ -36,6 +47,36 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
       ) : (
         <div className="mb-3 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-200">
           Todos os atletas convocados jogaram pelo menos {targetPct}% dos minutos possíveis. 👏
+        </div>
+      )}
+
+      {missing.length > 0 && (
+        <div
+          className="mb-3 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-[11px] text-rose-200 space-y-2"
+          data-testid="missing-starters"
+        >
+          <p>
+            ⚠️ Os minutos não estão completos: {missing.length === 1 ? 'este jogo não tem' : 'estes jogos não têm'} os
+            titulares da 1.ª parte registados (por exemplo, jogos importados de uma ficha sem titulares). Sem eles, quem
+            começou o jogo perde os minutos até ser substituído.
+          </p>
+          {missing.map((m) => (
+            <div key={m.id} className="flex items-center justify-between gap-2">
+              <span>
+                {m.date.split('-').reverse().join('/')} vs {m.opponent} · {(m.lineup || []).length}/{getLineupSize(m)}{' '}
+                titulares
+              </span>
+              {onSetStarters && (
+                <button
+                  type="button"
+                  onClick={() => setFixing(m)}
+                  className="shrink-0 px-2.5 py-1 rounded-lg bg-rose-500/20 border border-rose-400/50 text-rose-100 font-bold"
+                >
+                  Indicar titulares
+                </button>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -90,6 +131,24 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
         >
           {showAll ? 'Mostrar menos' : `Ver todos (${withGames.length})`}
         </button>
+      )}
+
+      {fixing && onSetStarters && (
+        <LineupModal
+          isOpen
+          half={1}
+          onClose={() => setFixing(null)}
+          availablePlayers={roster.filter(
+            (p) => p && (p.active !== false || getCalledUpPlayers(fixing).includes(p.id))
+          )}
+          convocadosIds={getCalledUpPlayers(fixing)}
+          lineupSize={getLineupSize(fixing)}
+          initialSelection={fixing.lineup || []}
+          onConfirm={(ids) => {
+            onSetStarters(fixing.id, ids);
+            setFixing(null);
+          }}
+        />
       )}
     </div>
   );

@@ -1,8 +1,8 @@
 import { Match, Player } from '../types';
 
 /**
- * Goals and cards from older versions and from imports may name the athlete instead of pointing to the athlete's id
- * (scorerId holding "Rui", or only `scorer`/`player`/`assist` filled). These helpers turn every such reference into the
+ * Events from older versions and from imports may name the athlete instead of pointing to the athlete's id
+ * (scorerId holding "Rui", or only `scorer`/`player`/`assist`/`playerIn` filled). These helpers turn every such reference into the
  * roster id, so per-athlete goals, assists and cards add up the same everywhere.
  */
 
@@ -41,7 +41,10 @@ export function playerResolver(roster: Player[]): (...refs: unknown[]) => string
   };
 }
 
-/** Same games with goal scorers/assists and card players pointing to roster ids (unknown names are left as they were). */
+/**
+ * Same games with every athlete reference (goals, cards, substitutions, starters, call-up) pointing to roster ids;
+ * unknown names are left as they were.
+ */
 export function withRosterIds(matches: Match[], roster: Player[]): Match[] {
   const resolve = playerResolver(roster);
   return (matches || []).map((m) => {
@@ -56,6 +59,20 @@ export function withRosterIds(matches: Match[], roster: Player[]): Match[] {
       const playerId = resolve(c.playerId, c.player) ?? c.playerId;
       return playerId === c.playerId ? c : { ...c, playerId };
     });
-    return { ...m, goals, ...(cards ? { cards } : {}) };
+    const subs = m.subs?.map((s) => {
+      const outId = resolve(s.outId, s.playerOut) ?? s.outId;
+      const inId = resolve(s.inId, s.playerIn) ?? s.inId;
+      return outId === s.outId && inId === s.inId ? s : { ...s, outId, inId };
+    });
+    const ids = (list?: string[]) => list?.map((id) => resolve(id) ?? id);
+    return {
+      ...m,
+      goals,
+      ...(cards ? { cards } : {}),
+      ...(subs ? { subs } : {}),
+      ...(m.lineup ? { lineup: ids(m.lineup) } : {}),
+      ...(m.lineupSecondHalf ? { lineupSecondHalf: ids(m.lineupSecondHalf) } : {}),
+      ...(m.convocados ? { convocados: ids(m.convocados) } : {})
+    };
   });
 }

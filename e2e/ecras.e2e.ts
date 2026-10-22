@@ -105,6 +105,16 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   const performanceTabs = page.getByRole('navigation', { name: 'Performance' });
   await performanceTabs.getByRole('button', { name: /Estatísticas/ }).click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
+  // Games without the 7 first-half starters are flagged (their minutes come out short) and can be fixed here
+  const missing = page.getByTestId('missing-starters');
+  await expect(missing).toContainText('Esparteiros');
+  await missing.locator('div', { hasText: 'Esparteiros' }).getByRole('button', { name: 'Indicar titulares' }).click();
+  for (const name of ['Duarte Matos', 'Martim Costa', 'Lucas Pereira', 'Gabriel Sousa']) {
+    await page.getByText(new RegExp(`^\\d+ - ${name}$`)).click();
+  }
+  await page.getByRole('button', { name: 'Confirmar 7 Titulares' }).click();
+  await expect(missing).not.toContainText('Esparteiros');
+  await expect(missing).toContainText('Tramagal');
   await expect(performanceTabs.getByRole('button', { name: /Adversário/ })).toHaveCount(0); // scouting removed
   await performanceTabs.getByRole('button', { name: /Pré-jogo/ }).click();
   await expect(page.getByRole('region', { name: 'Plano' })).toBeVisible();
