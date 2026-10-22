@@ -636,8 +636,9 @@ export default function App() {
   }, [state.trainings, state.matches, state.schedule, state.roster]);
 
   const handleNavigate = (tab: string, targetId?: string) => {
-    if (tab === 'prejogo') {
-      if (targetId) setTargetOpponentId(targetId);
+    // Screens about one scheduled game open the game that was tapped (or, without one, the next game).
+    if (tab === 'prejogo' || tab === 'convocatoria') {
+      setTargetOpponentId(targetId);
     }
     setCurrentTab(tab as TabType);
     window.scrollTo({ top: 0, behavior: 'smooth' });

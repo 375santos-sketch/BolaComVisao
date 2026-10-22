@@ -123,13 +123,20 @@ export function useScheduleModals(
   const [quickAddDropdownOpen, setQuickAddDropdownOpen] = useState<boolean>(false);
 
   // MATCH HANDLERS
+  const lastGameType = (): MatchType => {
+    const games = [...(state.schedule || []), ...(state.matches || [])].filter((g) => g && g.date && g.type);
+    games.sort((a, b) => b.date.localeCompare(a.date));
+    return games[0]?.type || 'amigavel';
+  };
+
   const handleOpenScheduleMatch = (presetDate?: string) => {
     setMatchForm({
       isBatch: false,
       opp: '',
       date: presetDate || selectedDate || todayStr,
       time: '09:00',
-      type: 'amigavel',
+      // Most games are of the same kind as the last one (usually the league): suggest it.
+      type: lastGameType(),
       loc: 'casa',
       phase: '',
       tournamentName: '',

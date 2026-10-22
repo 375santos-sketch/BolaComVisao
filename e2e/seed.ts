@@ -125,7 +125,10 @@ export default async function seed() {
     { id: 'g2', type: 'conceded', scorerId: null, assistId: null, minute: "30'" },
     { id: 'g3', type: 'scored', scorerId: 'p1', assistId: null, minute: "40'" }
   ];
+  // Called up 5, one came on late (few minutes) and one did not play: the call-up shows who needs minutes.
   Object.assign(tramagal, {
+    convocados: ['p1', 'p2', 'p3', 'p4', 'p5'],
+    subs: [{ id: 'sb1', outId: 'p3', inId: 'p4', minute: "40'", half: 2, minuteInHalf: 15 }],
     rematesDentroArea: 15,
     rematesForaArea: 6,
     rematesDentroAreaAdv: 3,

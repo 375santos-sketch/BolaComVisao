@@ -20,7 +20,7 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
   onOpenScheduleStaff
 }) => {
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2.5 pointer-events-auto">
+    <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 sm:right-6 z-40 flex flex-col items-end gap-2.5 pointer-events-auto">
       {showFabMenu && (
         <div className="flex flex-col items-end gap-2 mb-1 animate-fadeIn">
           {/* Action 1: Match */}
