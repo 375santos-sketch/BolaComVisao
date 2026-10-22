@@ -1,6 +1,7 @@
 import React from 'react';
-import { AppState, Player, Training } from '../../../types';
+import { AbsenceReason, AppState, Player, Training } from '../../../types';
 import { generateTrainingSessionPDF } from '../../../lib/pdfUtils';
+import { AttendanceGrid } from './AttendanceGrid';
 
 interface TrainingCardProps {
   training: Training;
@@ -12,6 +13,8 @@ interface TrainingCardProps {
   onSetStatus: (trainingId: string, completed: boolean) => void;
   onToggleComplete: (trainingId: string, currentCompleted: boolean) => void;
   onQuickToggleAbsence: (trainingId: string, playerId: string) => void;
+  onSetAbsenceReason: (trainingId: string, playerId: string, reason: AbsenceReason | undefined) => void;
+  onRepeatTraining: (trainingId: string) => void;
   onOpenEditForm: (training: Training) => void;
   onDeleteTraining: (trainingId: string) => void;
   onShowToast: (msg: string) => void;
@@ -27,6 +30,8 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
   onSetStatus,
   onToggleComplete,
   onQuickToggleAbsence,
+  onSetAbsenceReason,
+  onRepeatTraining,
   onOpenEditForm,
   onDeleteTraining,
   onShowToast
@@ -134,6 +139,16 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
 
           <button
             type="button"
+            onClick={() => onRepeatTraining(tr.id)}
+            className="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1 shadow-sm"
+            title="Repetir este treino na semana seguinte"
+          >
+            <span>🔁</span>
+            <span>Repetir</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => onOpenEditForm(tr)}
             className="px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/50 hover:bg-cyan-500/30 text-cyan-200 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1.5 shadow-sm"
             title="Editar Treino (Data, Hora, Local, Notas, Faltas)"
@@ -180,37 +195,20 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
               <span className="text-cyan-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs flex items-center gap-1.5">
                 <span>👥</span>
-                <span>Registo Rápido de Presenças (Clica para alterar falta):</span>
+                <span>Presenças (toca em quem faltou):</span>
               </span>
               <span className="font-mono text-[11px] text-slate-400">
                 {absNames.length === 0 ? '✓ 100% Presentes' : `${absNames.length} faltas registadas`}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
-              {eligiblePlayers.map((p) => {
-                const isAbs = (tr.absences || []).includes(p.id);
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => onQuickToggleAbsence(tr.id, p.id)}
-                    className={`p-1.5 px-2 rounded-lg border text-left flex items-center justify-between gap-1.5 transition-all text-xs ${
-                      isAbs
-                        ? 'bg-red-950/80 border-red-500 text-red-200 shadow-[0_0_8px_rgba(239,68,68,0.3)] font-bold'
-                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-cyan-500/50'
-                    }`}
-                    title={`Alternar falta/presença de ${p.name}`}
-                  >
-                    <span className="truncate">
-                      {p.number !== null ? `#${p.number} ` : ''}
-                      {p.name}
-                    </span>
-                    <span className="text-[10px] shrink-0">{isAbs ? '❌ Falta' : '🟢 Pres.'}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <AttendanceGrid
+              players={eligiblePlayers}
+              absences={tr.absences || []}
+              reasons={tr.absenceReasons}
+              onToggle={(playerId) => onQuickToggleAbsence(tr.id, playerId)}
+              onReason={(playerId, reason) => onSetAbsenceReason(tr.id, playerId, reason)}
+            />
           </div>
 
           {/* Session Plan Blocks Drawer Section */}

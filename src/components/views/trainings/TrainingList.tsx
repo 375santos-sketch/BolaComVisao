@@ -1,16 +1,17 @@
 import React from 'react';
-import { AppState, Player, Training } from '../../../types';
+import { AbsenceReason, AppState, Player, Training } from '../../../types';
 import { t } from '../../../i18n/dict';
 import { TrainingCard } from './TrainingCard';
 import { TrainingFilters } from './TrainingFilters';
+import { TrainingListFilter } from './hooks/useTrainingFilters';
 
 interface TrainingListProps {
   state: AppState;
   trainings: Training[];
   eligiblePlayers: Player[];
   getPlayerName: (id: string) => string;
-  listFilter: 'scheduled' | 'completed';
-  setListFilter: (filter: 'scheduled' | 'completed') => void;
+  listFilter: TrainingListFilter;
+  setListFilter: (filter: TrainingListFilter) => void;
   listSearch: string;
   setListSearch: (search: string) => void;
   scheduledCount: number;
@@ -23,6 +24,9 @@ interface TrainingListProps {
   onSetStatus: (trainingId: string, completed: boolean) => void;
   onToggleComplete: (trainingId: string, currentCompleted: boolean) => void;
   onQuickToggleAbsence: (trainingId: string, playerId: string) => void;
+  onSetAbsenceReason: (trainingId: string, playerId: string, reason: AbsenceReason | undefined) => void;
+  onRepeatTraining: (trainingId: string) => void;
+  onOpenToday: () => void;
   onDeleteTraining: (trainingId: string) => void;
   onClearAllTrainings: () => void;
   onShowToast: (msg: string) => void;
@@ -47,17 +51,30 @@ export const TrainingList: React.FC<TrainingListProps> = ({
   onSetStatus,
   onToggleComplete,
   onQuickToggleAbsence,
+  onSetAbsenceReason,
+  onRepeatTraining,
+  onOpenToday,
   onDeleteTraining,
   onClearAllTrainings,
   onShowToast
 }) => {
   return (
     <div className="space-y-3.5 text-left">
+      {/* Today's training: attendance in a few taps */}
+      <button
+        type="button"
+        onClick={onOpenToday}
+        className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-['Chakra_Petch'] font-black text-base uppercase tracking-wide shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-[0.99]"
+      >
+        <span>✅</span>
+        <span>Treino de hoje</span>
+      </button>
+
       {/* Top Action Bar: Add Single Training + Batch Season Planner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <button
           type="button"
-          className="btn btn-gold w-full py-3 flex items-center justify-center gap-2"
+          className="py-3 px-4 rounded-xl bg-slate-900 border border-amber-500/40 hover:border-amber-400 text-amber-300 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
           onClick={() => onOpenCreateForm('single')}
         >
           <span>+</span>
@@ -102,6 +119,8 @@ export const TrainingList: React.FC<TrainingListProps> = ({
               onSetStatus={onSetStatus}
               onToggleComplete={onToggleComplete}
               onQuickToggleAbsence={onQuickToggleAbsence}
+              onSetAbsenceReason={onSetAbsenceReason}
+              onRepeatTraining={onRepeatTraining}
               onOpenEditForm={onOpenEditForm}
               onDeleteTraining={onDeleteTraining}
               onShowToast={onShowToast}

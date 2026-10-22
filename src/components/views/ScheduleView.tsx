@@ -298,7 +298,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
           className="py-2 px-1 rounded-xl bg-cyan-500 text-slate-950 font-black flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(0,210,255,0.4)]"
         >
           <span>📅</span>
-          <span className="hidden sm:inline">Agenda</span>
+          <span>Agenda</span>
         </button>
 
         <button
@@ -307,7 +307,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
           className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
         >
           <span>⚡</span>
-          <span className="hidden sm:inline">Treinos</span>
+          <span>Treinos</span>
         </button>
 
         <button
@@ -316,7 +316,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
           className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
         >
           <span>🏆</span>
-          <span className="hidden sm:inline">Resultados</span>
+          <span>Resultados</span>
         </button>
       </div>
 

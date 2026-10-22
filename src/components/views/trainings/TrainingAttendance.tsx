@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { AppState, Player } from '../../../types';
 import { t } from '../../../i18n/dict';
+import { absenceReasonLabel, playerAbsences } from '../../../lib/trainingQuick';
 
 interface PlayerAttendanceItem {
   player: Player;
@@ -36,6 +37,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortMode, setSortMode] = useState<'pct' | 'num' | 'name'>('pct');
   const [filterMode, setFilterMode] = useState<'all' | 'high' | 'low'>('all');
+  const [openPlayerId, setOpenPlayerId] = useState<string | null>(null);
 
   const processedPlayerStats = useMemo(() => {
     return playerStats
@@ -211,8 +213,13 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
                   key={p.id}
                   className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-cyan-500/40 transition-colors"
                 >
-                  {/* Player Info Row */}
-                  <div className="flex items-center justify-between mb-1.5">
+                  {/* Player Info Row: tap to see the trainings missed */}
+                  <button
+                    type="button"
+                    onClick={() => setOpenPlayerId(openPlayerId === p.id ? null : p.id)}
+                    aria-expanded={openPlayerId === p.id}
+                    className="w-full text-left flex items-center justify-between mb-1.5"
+                  >
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono font-bold text-[11px] flex items-center justify-center">
                         {p.number !== null ? p.number : '—'}
@@ -228,10 +235,11 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
                         {st.presences} / {completedCount}
                       </span>
                       <span className="text-[10px] text-slate-400 block font-mono">
-                        ({st.absences} {t(state.lang, 'tr_abss')})
+                        ({st.absences} {t(state.lang, 'tr_abss')}){' '}
+                        {st.absences > 0 ? (openPlayerId === p.id ? '▲' : '▼') : ''}
                       </span>
                     </div>
-                  </div>
+                  </button>
 
                   {/* Visual Percentage Progress Bar */}
                   <div className="flex items-center gap-2">
@@ -256,6 +264,28 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
                       {st.pct}%
                     </span>
                   </div>
+
+                  {openPlayerId === p.id && st.absences > 0 && (
+                    <ul aria-label={`Faltas de ${p.name}`} className="mt-2 space-y-1 text-[11px] font-mono">
+                      {playerAbsences(state.trainings || [], p.id).map((a) => {
+                        const [y, m, d] = a.date.split('-');
+                        return (
+                          <li
+                            key={a.trainingId}
+                            className="flex items-center justify-between gap-2 px-2 py-1 rounded-lg bg-slate-900 border border-slate-800"
+                          >
+                            <span className="text-slate-300">
+                              {d}/{m}/{y}
+                              {a.trainingNumber ? ` · Treino ${a.trainingNumber}` : ''}
+                            </span>
+                            <span className={a.reason ? 'text-amber-300' : 'text-slate-500'}>
+                              {absenceReasonLabel(a.reason)}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </div>
               );
             })}

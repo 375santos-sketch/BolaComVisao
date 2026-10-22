@@ -143,13 +143,16 @@ consentimento RGPD dos pais.
   Base de Dados → Equipas & Épocas (`inventedImportCleanup.ts`). Rever antes de limpar.
 - Os jogos do Ouriense e o "Tramagal 1-0" com "Atleta Dragão" eram dados falsos e foram removidos.
 
+- **Treinos**: `absences` (ids de quem faltou) continua a ser o dado principal; `absenceReasons` guarda o motivo só
+  de quem faltou (`withAttendance` em `src/lib/trainingQuick.ts` mantém os dois coerentes).
+
 ## 7. Testes
 
 | Comando                 | O que testa                                                                  | Precisa de |
 | ----------------------- | ---------------------------------------------------------------------------- | ---------- |
 | `npm run verify`        | Tipos, lint, formatação, testes unitários, build                             | Node       |
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
-| `npm run test:e2e`      | 13 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
+| `npm run test:e2e`      | 14 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
 
 O GitHub corre os três em cada Pull Request e em cada alteração à `main` (workflow **Testes**). Não fazer merge com
 ❌; se os testes de ecrã falharem, o relatório com capturas fica nos artefactos da execução. Os testes de ecrã correm na base com nome,
@@ -187,3 +190,4 @@ trocar as regras a meio dos testes.
 | #25 | Pré-jogo novo, simples (sistema, objetivos, com/sem bola, palavra de ordem, PDF, WhatsApp); antigo apagado                                |
 | #26 | Aviso para entrar de novo quando a sessão na nuvem termina (sem perder os dados do aparelho)                                              |
 | #27 | Simplificação: saem planos comerciais, chat, biblioteca, relatórios da direção, auditoria, ecrã de sincronização e definições dos alertas |
+| #29 | Treinos: "Treino de hoje" em poucos toques, repetir treino, motivo das faltas e faltas por atleta, lista abre em "Todos"                  |

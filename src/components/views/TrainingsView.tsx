@@ -14,6 +14,8 @@ import { TrainingList } from './trainings/TrainingList';
 import { TrainingAttendance } from './trainings/TrainingAttendance';
 import { TrainingEditor } from './trainings/TrainingEditor';
 import { TrainingBatchModal } from './trainings/TrainingBatchModal';
+import { TodayTrainingModal } from './trainings/TodayTrainingModal';
+import { trainingForToday, withAttendance } from '../../lib/trainingQuick';
 
 interface TrainingsViewProps {
   state: AppState;
@@ -50,6 +52,7 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   const [creationMode, setCreationMode] = useState<'single' | 'batch'>('single');
   const [expandedTraining, setExpandedTraining] = useState<string | null>(null);
   const [showBatchModal, setShowBatchModal] = useState<boolean>(false);
+  const [todayTraining, setTodayTraining] = useState<{ training: Training; isNew: boolean } | null>(null);
 
   const {
     eligiblePlayers,
@@ -60,6 +63,9 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
     teamAvgPct,
     topAttendant,
     handleQuickToggleAbsence,
+    handleSetAbsenceReason,
+    handleSaveTodayTraining,
+    handleRepeatTraining,
     handleSetStatus,
     handleToggleComplete,
     handleDeleteTraining,
@@ -146,7 +152,8 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
       newMaxNumber = Math.max(newMaxNumber, finalTrainingNumber);
     }
 
-    const newTraining: Training = {
+    const previous = trainingForm.id ? (state.trainings || []).find((t) => t.id === trainingForm.id) : undefined;
+    const draft: Training = {
       id: trainingForm.id || uid(),
       trainingNumber: finalTrainingNumber,
       date: trainingForm.date,
@@ -165,6 +172,8 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
             }
           : undefined
     };
+    // Absence reasons are set on the attendance grid: keep those of players still absent.
+    const newTraining = withAttendance(draft, draft.absences, previous?.absenceReasons);
 
     let updated: Training[];
     if (trainingForm.id) {
@@ -294,6 +303,9 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
           onSetStatus={handleSetStatus}
           onToggleComplete={handleToggleComplete}
           onQuickToggleAbsence={handleQuickToggleAbsence}
+          onSetAbsenceReason={handleSetAbsenceReason}
+          onRepeatTraining={handleRepeatTraining}
+          onOpenToday={() => setTodayTraining(trainingForToday(state.trainings || [], state.lastTrainingNumber))}
           onDeleteTraining={(id) => {
             onShowConfirm('Tens a certeza que queres eliminar este treino?', () => handleDeleteTraining(id));
           }}
@@ -304,6 +316,19 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
             });
           }}
           onShowToast={onShowToast}
+        />
+      )}
+
+      {todayTraining && (
+        <TodayTrainingModal
+          training={todayTraining.training}
+          isNew={todayTraining.isNew}
+          players={eligiblePlayers}
+          onClose={() => setTodayTraining(null)}
+          onSave={(training) => {
+            handleSaveTodayTraining(training);
+            setTodayTraining(null);
+          }}
         />
       )}
 

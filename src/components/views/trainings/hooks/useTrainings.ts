@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { AppState, Training } from '../../../../types';
+import { AbsenceReason, AppState, Training } from '../../../../types';
 import { sortPlayerObjs } from '../../../../lib/utils';
 import { allocateBatchTrainingNumbers } from '../../../../lib/trainingNumbering';
+import { addDaysISO, localDateISO, repeatTraining, withAttendance } from '../../../../lib/trainingQuick';
 
 export function useTrainings(
   state: AppState,
@@ -57,11 +58,52 @@ export function useTrainings(
         const currentAbs = tr.absences || [];
         const isAbs = currentAbs.includes(playerId);
         const newAbs = isAbs ? currentAbs.filter((id) => id !== playerId) : [...currentAbs, playerId];
-        return { ...tr, absences: newAbs };
+        return withAttendance(tr, newAbs, tr.absenceReasons);
       }
       return tr;
     });
     onUpdateState({ trainings: updated });
+  };
+
+  const handleSetAbsenceReason = (trainingId: string, playerId: string, reason: AbsenceReason | undefined) => {
+    const updated = (state.trainings || []).map((tr) =>
+      tr.id === trainingId ? withAttendance(tr, tr.absences || [], { ...tr.absenceReasons, [playerId]: reason }) : tr
+    );
+    onUpdateState({ trainings: updated });
+  };
+
+  // "Treino de hoje": adds the training or updates the one already planned for today.
+  const handleSaveTodayTraining = (training: Training) => {
+    const list = state.trainings || [];
+    const exists = list.some((tr) => tr.id === training.id);
+    onUpdateState({
+      trainings: exists ? list.map((tr) => (tr.id === training.id ? training : tr)) : [training, ...list],
+      lastTrainingNumber: Math.max(state.lastTrainingNumber || 0, training.trainingNumber || 0)
+    });
+    const absent = training.absences.length;
+    onShowToast(
+      `✅ Treino de hoje guardado: ${absent === 0 ? 'todos presentes' : `${absent} falta${absent > 1 ? 's' : ''}`}`
+    );
+  };
+
+  const handleRepeatTraining = (trainingId: string) => {
+    const list = state.trainings || [];
+    const source = list.find((tr) => tr.id === trainingId);
+    if (!source) return;
+    // Next week; a training repeated from long ago goes to the next same weekday from today.
+    let date = addDaysISO(source.date, 7);
+    while (date < localDateISO()) date = addDaysISO(date, 7);
+    const copy = repeatTraining(source, list, state.lastTrainingNumber, date);
+    const [y, m, d] = copy.date.split('-');
+    if (list.some((tr) => tr.date === copy.date)) {
+      onShowToast(`Já existe um treino em ${d}/${m}/${y}.`);
+      return;
+    }
+    onUpdateState({
+      trainings: [copy, ...list],
+      lastTrainingNumber: Math.max(state.lastTrainingNumber || 0, copy.trainingNumber || 0)
+    });
+    onShowToast(`🔁 Treino repetido para ${d}/${m}/${y} (agendado).`);
   };
 
   // Quick Direct Set Status on Card
@@ -127,6 +169,9 @@ export function useTrainings(
     teamAvgPct,
     topAttendant,
     handleQuickToggleAbsence,
+    handleSetAbsenceReason,
+    handleSaveTodayTraining,
+    handleRepeatTraining,
     handleSetStatus,
     handleToggleComplete,
     handleDeleteTraining,

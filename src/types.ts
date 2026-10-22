@@ -208,6 +208,8 @@ export interface OpponentReport {
   updatedBy?: string;
 }
 
+export type AbsenceReason = 'doente' | 'lesionado' | 'escola' | 'familia' | 'injustificada';
+
 export interface Training {
   id: string;
   trainingNumber?: number; // Sequential permanent number within team & season (e.g. 1, 2, 3...)
@@ -217,6 +219,7 @@ export interface Training {
   type?: string;
   notes: string;
   absences: string[]; // Player IDs who missed
+  absenceReasons?: Record<string, AbsenceReason>; // playerId -> why they missed (only absent players)
   completed?: boolean; // true = Concluído/Fechado (Entra nas estatísticas), false = Agendado/Planeado
   durationMinutes?: number;
   season?: string;

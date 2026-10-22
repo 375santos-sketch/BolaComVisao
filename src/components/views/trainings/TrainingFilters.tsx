@@ -1,8 +1,9 @@
 import React from 'react';
+import { TrainingListFilter } from './hooks/useTrainingFilters';
 
 interface TrainingFiltersProps {
-  listFilter: 'scheduled' | 'completed';
-  setListFilter: (filter: 'scheduled' | 'completed') => void;
+  listFilter: TrainingListFilter;
+  setListFilter: (filter: TrainingListFilter) => void;
   listSearch: string;
   setListSearch: (search: string) => void;
   scheduledCount: number;
@@ -27,6 +28,19 @@ export const TrainingFilters: React.FC<TrainingFiltersProps> = ({
     <div className="p-3 rounded-2xl bg-slate-900/90 border border-cyan-500/20 space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setListFilter('all')}
+            className={`px-3 py-1.5 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase border transition-all flex items-center gap-1.5 ${
+              listFilter === 'all'
+                ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-sm'
+                : 'bg-slate-950 text-cyan-300/80 border-slate-800 hover:border-cyan-500/40'
+            }`}
+          >
+            <span>Todos</span>
+            <span className="font-mono text-[10px] bg-slate-950/40 px-1.5 rounded-full">{totalTrainings}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setListFilter('scheduled')}
@@ -67,7 +81,11 @@ export const TrainingFilters: React.FC<TrainingFiltersProps> = ({
 
         <div className="text-[11px] font-mono text-slate-400">
           A exibir {displayedCount}{' '}
-          {listFilter === 'scheduled' ? `de ${scheduledCount} agendados` : `de ${completedCount} concluídos`}
+          {listFilter === 'all'
+            ? `de ${totalTrainings} · próximos primeiro`
+            : listFilter === 'scheduled'
+              ? `de ${scheduledCount} agendados`
+              : `de ${completedCount} concluídos`}
         </div>
       </div>
 
