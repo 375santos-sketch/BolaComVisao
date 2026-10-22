@@ -27,6 +27,8 @@ interface TrainingsViewProps {
   onShowConfirm: (msg: string, cb: () => void) => void;
   onShowToast: (msg: string) => void;
   initialTab?: TrainingsTab;
+  /** Opens "Treino de hoje" straight away (shortcut on the home screen). */
+  openToday?: boolean;
 }
 
 export const TrainingsView: React.FC<TrainingsViewProps> = ({
@@ -38,7 +40,8 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   onOpenSync,
   onShowConfirm,
   onShowToast,
-  initialTab = 'list'
+  initialTab = 'list',
+  openToday = false
 }) => {
   const [activeTab, setActiveTab] = useState<TrainingsTab>(initialTab);
   const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
@@ -52,7 +55,9 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   const [creationMode, setCreationMode] = useState<'single' | 'batch'>('single');
   const [expandedTraining, setExpandedTraining] = useState<string | null>(null);
   const [showBatchModal, setShowBatchModal] = useState<boolean>(false);
-  const [todayTraining, setTodayTraining] = useState<{ training: Training; isNew: boolean } | null>(null);
+  const [todayTraining, setTodayTraining] = useState<{ training: Training; isNew: boolean } | null>(() =>
+    openToday ? trainingForToday(state.trainings || [], state.lastTrainingNumber) : null
+  );
 
   const {
     eligiblePlayers,

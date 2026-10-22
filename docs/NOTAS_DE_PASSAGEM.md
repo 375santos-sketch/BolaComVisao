@@ -155,6 +155,9 @@ consentimento RGPD dos pais.
 - **Ficha do atleta**: os números saem de `buildPlayerSeason` (`src/lib/playerSeason.ts`), só da época ativa. O PDF
   é para mostrar (pais, coordenador): não leva contactos nem as notas confidenciais do treinador.
 
+- **Início**: os avisos e o resumo da época saem de `homeNotices` e `seasonSummary` (`src/lib/homeSummary.ts`), no
+  máximo 3 avisos, por ordem de urgência. Os detalhes (marcadores, cantos, etc.) ficam nas Estatísticas.
+
 ## 7. Testes
 
 | Comando                 | O que testa                                                                  | Precisa de |
@@ -208,3 +211,4 @@ trocar as regras a meio dos testes.
 | #29 | Treinos: "Treino de hoje" em poucos toques, repetir treino, motivo das faltas e faltas por atleta, lista abre em "Todos"                        |
 | #30 | Ensaio da semana: Convocatória abre o jogo tocado, mensagem única de convocatória (WhatsApp/Partilhar/Copiar), minutos da época na Convocatória |
 | #31 | Ficha do atleta por época (jogos, minutos, golos, assiduidade, faltas com motivo, últimos jogos) e PDF para pais/coordenador                    |
+| #32 | Início simplificado: hoje/próximo jogo, 4 atalhos, avisos (máx. 3), resumo da época numa linha, próximos 7 dias                                 |

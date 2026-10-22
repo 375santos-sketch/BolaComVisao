@@ -40,8 +40,24 @@ test('entrar: escolha da equipa e painel inicial', async ({ page }) => {
   await expect(page.getByText('DRAGÕES')).toBeVisible();
   await expect(page.getByText('Sub-11').first()).toBeVisible();
   await enterPanel(page);
-  await expect(page.getByText('VISÃO DO TREINADOR')).toBeVisible();
   await expect(page.getByText('Treinador A', { exact: true })).toBeVisible();
+
+  // Simple home: shortcuts, what needs attention, the season in one line, the next 7 days.
+  const notices = page.getByRole('region', { name: 'Avisos' });
+  await expect(notices).toContainText('Convocatória por fechar: vs Abrantes');
+  await expect(notices).toContainText('Precisam de minutos: Martim Costa (0%), Duarte Matos (20%)');
+  await expect(page.getByRole('region', { name: 'Resumo da época' })).toContainText('2 jogos · 1V 1E 0D · golos 2-1');
+  await expect(page.getByText('VISÃO DO TREINADOR')).toHaveCount(0);
+
+  // "Treino de hoje" opens today's attendance straight away (closed without saving).
+  await page
+    .getByRole('navigation', { name: 'Atalhos' })
+    .getByRole('button', { name: /Treino de hoje/ })
+    .click();
+  const today = page.getByRole('dialog', { name: 'Treino de hoje' });
+  await expect(today).toBeVisible();
+  await today.getByRole('button', { name: 'Fechar' }).click();
+  await expect(today).toBeHidden();
 });
 
 test('primeira utilização: o clube passa para registos separados e fica guardado', async ({ page }) => {
@@ -95,7 +111,10 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
 
   await navTo(page, /início/i);
   await expect(performanceTabs).toBeHidden();
-  await page.getByText('Eficácia de Vitórias').click();
+  await page
+    .getByRole('region', { name: 'Resumo da época' })
+    .getByRole('button', { name: /Ver estatísticas/ })
+    .click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
   await expect(performanceTabs.getByRole('button', { name: /Estatísticas/ })).toHaveAttribute('aria-current', 'page');
   await expect(performanceTabs.getByRole('button', { name: /Estatísticas/ })).toBeInViewport();

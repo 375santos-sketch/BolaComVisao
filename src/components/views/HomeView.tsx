@@ -1,17 +1,12 @@
 import React from 'react';
 import { AppState, ScheduledMatch, Training, UserAccount, ClubEvent } from '../../types';
 import { TabType } from '../Navbar';
-import { getAllBirthdays } from '../../lib/birthdayUtils';
-import { generateSmartAlerts, generateSmartRecommendations } from '../../lib/intelligenceEngine';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
-import { DashboardBirthdays } from '../dashboard/DashboardBirthdays';
 import { UnifiedEvent } from '../dashboard/DashboardNextEvent';
 import { TodayFocusCard } from '../dashboard/TodayFocusCard';
-import { CoachExecutiveHub } from '../dashboard/CoachExecutiveHub';
-import { DashboardStatsGrid } from '../dashboard/DashboardStatsGrid';
-import { DashboardSmartInsights } from '../dashboard/DashboardSmartInsights';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
+import { homeNotices, seasonSummary } from '../../lib/homeSummary';
 
 interface HomeViewProps {
   state: AppState;
@@ -39,8 +34,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenAdminUsers,
   pendingUsersCount = 0,
   latestPendingUser,
-  onExportBackup,
-  onShowToast
+  onExportBackup
 }) => {
   const activeMatch = (state.matches || []).find((m) => !m.finished);
 
@@ -157,14 +151,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   unifiedEvents.sort((a, b) => a.rawDate.getTime() - b.rawDate.getTime());
 
-  // Intelligence & Alerts
-  const smartAlerts = generateSmartAlerts(state);
-  const smartRecommendations = generateSmartRecommendations(state);
+  // What needs attention and the season at a glance (details live in Estatísticas).
+  const notices = homeNotices(state);
+  const summary = seasonSummary(state);
+  const nextDays = unifiedEvents.filter((e) => e.daysUntil <= 7);
 
-  // Birthdays
-  const birthdaysList = getAllBirthdays(state.roster || [], state.staffMembers || []);
-  const todayBirthdays = birthdaysList.filter((b) => b.isToday);
-  const upcomingBirthdays = birthdaysList.filter((b) => !b.isToday).slice(0, 2);
+  const shortcuts: { icon: string; label: string; tab: TabType; targetId?: string; tone: string }[] = [
+    {
+      icon: '✅',
+      label: 'Treino de hoje',
+      tab: 'treinos',
+      targetId: 'hoje',
+      tone: 'border-emerald-500/40 text-emerald-300'
+    },
+    { icon: '📋', label: 'Convocatória', tab: 'convocatoria', tone: 'border-purple-500/40 text-purple-300' },
+    { icon: '⏱️', label: 'Modo Jogo', tab: 'jogo', tone: 'border-cyan-500/40 text-cyan-300' },
+    { icon: '👥', label: 'Plantel', tab: 'plantel', tone: 'border-amber-500/40 text-amber-300' }
+  ];
 
   return (
     <div className="flex flex-col gap-5 sm:gap-6 max-w-7xl mx-auto pb-6">
@@ -189,90 +192,76 @@ export const HomeView: React.FC<HomeViewProps> = ({
         onNavigate={onNavigate}
       />
 
-      {/* 3. VISÃO DO TREINADOR: Executive Hub with 5 Key Metrics, Strong Point & Attention */}
-      <CoachExecutiveHub state={state} onNavigate={onNavigate} />
+      {/* 2. Shortcuts */}
+      <nav aria-label="Atalhos" className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        {shortcuts.map((sc) => (
+          <button
+            key={sc.label}
+            type="button"
+            onClick={() => onNavigate(sc.tab, sc.targetId)}
+            className={`py-3.5 px-3 rounded-2xl bg-slate-900/90 border ${sc.tone} hover:bg-slate-800 font-['Chakra_Petch'] font-bold text-sm uppercase flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all`}
+          >
+            <span className="text-lg">{sc.icon}</span>
+            <span>{sc.label}</span>
+          </button>
+        ))}
+      </nav>
 
-      {/* 4. Birthday Celebrations (if any today/upcoming) */}
-      {(todayBirthdays.length > 0 || upcomingBirthdays.length > 0) && (
-        <DashboardBirthdays
-          todayBirthdays={todayBirthdays}
-          upcomingBirthdays={upcomingBirthdays}
-          myClubName={state.myClubName || 'BolaComVisão Clube'}
-        />
+      {/* 3. What needs attention (only when there is something) */}
+      {notices.length > 0 && (
+        <section aria-label="Avisos" className="space-y-2">
+          {notices.map((n) => (
+            <button
+              key={n.id}
+              type="button"
+              onClick={() => onNavigate(n.tab, n.targetId)}
+              className="w-full text-left p-3 rounded-2xl bg-amber-950/40 border border-amber-500/30 hover:border-amber-400/70 text-sm text-amber-100 flex items-center justify-between gap-3 transition-all"
+            >
+              <span className="flex items-center gap-2.5 min-w-0">
+                <span className="text-lg shrink-0">{n.icon}</span>
+                <span className="leading-snug">{n.text}</span>
+              </span>
+              <span className="text-amber-400 text-xs shrink-0">➔</span>
+            </button>
+          ))}
+        </section>
       )}
 
-      {/* 5. Global Performance Statistics Grid */}
-      <DashboardStatsGrid state={state} onNavigate={onNavigate} />
-
-      {/* 5. Smart AI Alerts & Strategic Recommendations */}
-      <DashboardSmartInsights
-        smartAlerts={smartAlerts}
-        smartRecommendations={smartRecommendations}
-        onNavigate={onNavigate}
-        onShowToast={onShowToast}
-      />
-
-      {/* 5.1 Quick Access Hub */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div
-          onClick={() => onNavigate('treinos')}
-          className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-amber-950/20 border border-amber-500/30 hover:border-amber-400/70 shadow-lg transition-all cursor-pointer group flex items-center justify-between gap-3"
-          id="home-quick-treinos-btn"
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">
-              ⚡
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-white font-['Chakra_Petch'] uppercase text-xs sm:text-sm truncate flex items-center gap-1.5">
-                <span>Treinos</span>
-                <Badge variant="amber" size="xs">
-                  {(state.trainings || []).length} Sessões
-                </Badge>
-              </div>
-              <div className="text-[11px] text-amber-200/70 truncate">Planos e Assiduidade</div>
-            </div>
-          </div>
-          <span className="text-amber-400 font-bold text-xs group-hover:translate-x-1 transition-transform shrink-0">
-            ➔
-          </span>
+      {/* 4. Season at a glance */}
+      <section
+        aria-label="Resumo da época"
+        className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-3"
+      >
+        <div className="text-sm text-slate-200 font-mono">
+          <span className="text-xs uppercase text-cyan-400 font-bold font-sans mr-2">Época {state.season}</span>
+          {summary.played === 0 ? (
+            <span className="text-slate-400">Ainda sem jogos</span>
+          ) : (
+            <span>
+              {summary.played} jogos · <b className="text-emerald-400">{summary.wins}V</b>{' '}
+              <b className="text-slate-300">{summary.draws}E</b> <b className="text-rose-400">{summary.losses}D</b> ·
+              golos {summary.scored}-{summary.conceded}
+            </span>
+          )}
+          {summary.attendance !== null && <span> · assiduidade {summary.attendance}%</span>}
         </div>
-
-        <div
-          onClick={() => onNavigate('convocatoria')}
-          className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-950/40 via-slate-900 to-purple-950/20 border border-purple-500/30 hover:border-purple-400/70 shadow-lg transition-all cursor-pointer group flex items-center justify-between gap-3"
-          id="home-quick-convocatoria-btn"
+        <button
+          type="button"
+          onClick={() => onNavigate('stats')}
+          className="text-xs font-bold text-cyan-300 hover:text-cyan-200"
         >
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">
-              📋
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-white font-['Chakra_Petch'] uppercase text-xs sm:text-sm truncate flex items-center gap-1.5">
-                <span>Convocatórias</span>
-                <Badge variant="purple" size="xs">
-                  Oficial
-                </Badge>
-              </div>
-              <div className="text-[11px] text-purple-200/70 truncate">Logística e Lista de Jogo</div>
-            </div>
-          </div>
-          <span className="text-purple-400 font-bold text-xs group-hover:translate-x-1 transition-transform shrink-0">
-            ➔
-          </span>
-        </div>
-      </div>
+          Ver estatísticas ➔
+        </button>
+      </section>
 
-      {/* 6. Upcoming Calendar List & Opponent Scouting */}
+      {/* 5. Next 7 days */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
         {/* Next 4 Scheduled Events Agenda */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="text-xl">📅</span>
-              <h2 className="text-base font-bold text-white font-sans uppercase tracking-tight">
-                Agenda de Compromissos
-              </h2>
+              <h2 className="text-base font-bold text-white font-sans uppercase tracking-tight">Próximos 7 dias</h2>
             </div>
             <button
               onClick={() => onNavigate('calendario')}
@@ -283,12 +272,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <Card className="bg-slate-900/90 border-slate-800 p-3 sm:p-4 divide-y divide-slate-800/80 shadow-xl">
-            {unifiedEvents.length > 0 ? (
-              unifiedEvents.slice(0, 4).map((evt) => (
+            {nextDays.length > 0 ? (
+              nextDays.map((evt) => (
                 <div
                   key={evt.id}
                   onClick={() =>
-                    onNavigate(evt.kind === 'jogo' ? 'convocatoria' : evt.kind === 'treino' ? 'treinos' : 'calendario')
+                    onNavigate(
+                      evt.kind === 'jogo' ? 'convocatoria' : evt.kind === 'treino' ? 'treinos' : 'calendario',
+                      evt.kind === 'jogo' ? evt.id : undefined
+                    )
                   }
                   className="py-3 px-2 hover:bg-slate-800/50 rounded-xl transition-colors cursor-pointer flex items-center justify-between gap-3"
                 >
@@ -330,7 +322,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
               ))
             ) : (
-              <div className="py-6 text-center text-xs font-mono text-slate-500">Nenhum compromisso agendado.</div>
+              <div className="py-6 text-center text-xs font-mono text-slate-500">
+                Nada marcado para os próximos 7 dias.
+              </div>
             )}
           </Card>
         </div>
