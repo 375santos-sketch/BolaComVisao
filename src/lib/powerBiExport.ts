@@ -1,3 +1,4 @@
+import { withRosterIds } from './eventPlayers';
 import { AppState, Match } from '../types';
 import { getCalledUpPlayers, getMatchTotalMinutes, withPlayableDurations } from './playingTime';
 import { teamGameRow } from './statsPanel';
@@ -19,7 +20,10 @@ export function buildPowerBiTables(
   state: Pick<AppState, 'roster' | 'matches' | 'trainings' | 'category'>
 ): PowerBiTables {
   const roster = state.roster || [];
-  const games: Match[] = (state.matches || []).filter((m) => m && m.finished);
+  const games: Match[] = withRosterIds(
+    (state.matches || []).filter((m) => m && m.finished),
+    roster
+  );
 
   const atletas = [
     ['AtletaId', 'Numero', 'Nome', 'Posicao', 'Ativo'],

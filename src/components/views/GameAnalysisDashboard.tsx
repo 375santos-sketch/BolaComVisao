@@ -29,8 +29,7 @@ import {
   CoachReportModal,
   AskDataSection
 } from './gameAnalysis';
-import { generateGameAnalysisPDF } from '../../lib/pdfUtils';
-import { exportGameAnalysisExcel } from '../../lib/exportUtils';
+import { withRosterIds } from '../../lib/eventPlayers';
 import { CoachDashboardView } from './coach/CoachDashboardView';
 
 interface GameAnalysisDashboardProps {
@@ -128,7 +127,12 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
 
   // Aggregated calculations computed with modular engine
   const analysis: AggregatedAnalysis = useMemo(() => {
-    return computeGameAnalysis(state.matches || [], filters, state.category, state.roster || []);
+    return computeGameAnalysis(
+      withRosterIds(state.matches || [], state.roster || []),
+      filters,
+      state.category,
+      state.roster || []
+    );
   }, [state.matches, filters, state.category, state.roster]);
 
   // Coach Report data model
@@ -179,11 +183,26 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
     onShowToast('Filtros repostos para todos os jogos ✓');
   };
 
-  // Export handlers
+  // Export handlers: the "Painel de jogos" (PDF and Excel with native charts) for the games of the current filters.
+  const selection = () => {
+    const d = (iso: string) => iso.split('-').reverse().join('/');
+    const parts: string[] = [];
+    const m = filters.matchId !== 'todos' ? (state.matches || []).find((x) => x.id === filters.matchId) : undefined;
+    if (m) parts.push(`Jogo: ${d(m.date)} vs ${m.opponent}`);
+    if (filters.opponent !== 'todos') parts.push(`Confronto: ${filters.opponent}`);
+    if (filters.season && filters.season !== 'todas') parts.push(`Época ${filters.season}`);
+    if (filters.month !== 'todos') parts.push(`Mês ${filters.month.split('-').reverse().join('/')}`);
+    if (filters.matchType !== 'todos')
+      parts.push(filters.matchType.charAt(0).toUpperCase() + filters.matchType.slice(1));
+    if (filters.location !== 'todos') parts.push(filters.location === 'fora' ? 'Fora' : 'Casa');
+    return { games: analysis.filteredMatches, label: parts.length ? parts.join(' · ') : 'Todos os jogos' };
+  };
+
   const handleExportPDF = async () => {
     try {
       setExporting(true);
-      await generateGameAnalysisPDF(analysis, filters, state);
+      const { generateGamesDashboardPDF } = await import('../../lib/pdf/createGamesDashboard');
+      await generateGamesDashboardPDF(state, selection());
       onShowToast('Relatório de Análise exportado em PDF (BolaComVisao)! 📄✓');
     } catch (err) {
       console.error(err);
@@ -196,8 +215,9 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
   const handleExportExcel = async () => {
     try {
       setExporting(true);
-      await exportGameAnalysisExcel(analysis, filters, state);
-      onShowToast('Estatísticas exportadas em Excel (.xlsx)! 📊✓');
+      const { exportGamesDashboardExcel } = await import('../../lib/gamesDashboardExcel');
+      const name = exportGamesDashboardExcel(state, selection());
+      onShowToast(`Excel com gráficos gerado: ${name} 📊✓`);
     } catch (err) {
       console.error(err);
       onShowToast('Erro ao exportar Excel de Análise.');

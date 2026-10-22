@@ -1,9 +1,8 @@
 import { AppState } from '../types';
 import { buildXlsx, Cell, ChartSpec, SheetSpec } from './excel/xlsxWriter';
 import { buildGamesDashboard, RankRow } from './gamesDashboard';
-import { describePanelFilter } from './pdf/createSeasonReport';
+import { DashboardSelection, selectDashboardGames } from './pdf/createSeasonReport';
 import { buildPowerBiTables } from './powerBiExport';
-import { PanelFilter, panelMatches } from './statsPanel';
 
 // Light-surface steps of the validated categorical palette (same as the PDF) and a neutral.
 const BLUE = '2A78D6';
@@ -17,9 +16,8 @@ const pct = (v: number) => Math.round(v * 100) / 100;
  * Excel for the chosen games: sheet "Painel" with the headline figures and native charts (minutes per athlete,
  * goals per game, how and when we score, goals and assists), the charts' data, and the Power BI tables.
  */
-export function buildGamesDashboardWorkbook(state: AppState, filter?: PanelFilter): Uint8Array {
-  const f: PanelFilter = filter || { scope: 'epoca', season: state.season };
-  const games = panelMatches(state.matches || [], f);
+export function buildGamesDashboardWorkbook(state: AppState, selection?: DashboardSelection): Uint8Array {
+  const { games, label } = selectDashboardGames(state, selection);
   const d = buildGamesDashboard(games, state);
   const club = (state.myClubName || '').trim() || 'A nossa equipa';
 
@@ -163,7 +161,7 @@ export function buildGamesDashboardWorkbook(state: AppState, filter?: PanelFilte
     [{ v: `${club} · Painel de jogos`, s: 'title' }],
     [
       {
-        v: `${describePanelFilter(f, state)} · BolaComVisão · emitido em ${new Date().toLocaleDateString('pt-PT')}`,
+        v: `${label} · BolaComVisão · emitido em ${new Date().toLocaleDateString('pt-PT')}`,
         s: 'subtitle'
       }
     ],
@@ -232,8 +230,8 @@ export function buildGamesDashboardWorkbook(state: AppState, filter?: PanelFilte
 }
 
 /** Downloads the Excel (Painel with charts + Power BI tables). */
-export function exportGamesDashboardExcel(state: AppState, filter?: PanelFilter): string {
-  const bytes = buildGamesDashboardWorkbook(state, filter);
+export function exportGamesDashboardExcel(state: AppState, selection?: DashboardSelection): string {
+  const bytes = buildGamesDashboardWorkbook(state, selection);
   const club = (state.myClubName || 'Clube').replace(/[^a-zA-Z0-9]/g, '_');
   const name = `Painel_Jogos_${club}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });

@@ -1,3 +1,4 @@
+import { withRosterIds } from './eventPlayers';
 import { AbsenceReason, AppState, Match } from '../types';
 import {
   computeSeasonPlayingTime,
@@ -51,7 +52,10 @@ export function buildPlayerSeason(
   playerId: string,
   season?: string
 ): PlayerSeason {
-  const games = (state.matches || []).filter((m) => m && m.finished && inSeason(m.date, m.season, season));
+  const games = withRosterIds(
+    (state.matches || []).filter((m) => m && m.finished && inSeason(m.date, m.season, season)),
+    state.roster || []
+  );
   const player = (state.roster || []).find((p) => p.id === playerId);
   const time = player ? computeSeasonPlayingTime(games, [player], state.category)[0] : undefined;
 
