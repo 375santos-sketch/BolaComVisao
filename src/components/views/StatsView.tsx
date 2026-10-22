@@ -5,6 +5,7 @@ import { playerLabel, isSeasonMatching } from '../../lib/utils';
 import { Header } from '../Header';
 import { SquadGoalsAndAssistsModal, GoalsAssistsTab } from '../SquadGoalsAndAssistsModal';
 import { PlayingTimeSection } from './stats/PlayingTimeSection';
+import { StatsPanel } from '../stats/StatsPanel';
 
 interface StatsViewProps {
   state: AppState;
@@ -26,6 +27,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
   const [statsFilter, setStatsFilter] = useState<MatchType | 'todos'>('todos');
   const [seasonFilter, setSeasonFilter] = useState<string>('todas');
   const [showGoalsAssistsModal, setShowGoalsAssistsModal] = useState(false);
+  const [showPanel, setShowPanel] = useState(false);
   const [goalsAssistsTab, setGoalsAssistsTab] = useState<GoalsAssistsTab>('marcadores');
 
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
@@ -223,6 +225,16 @@ export const StatsView: React.FC<StatsViewProps> = ({
         syncInfo={state.syncInfo}
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
+
+      {/* Interactive panel (by game, head-to-head, phase, season or period) + export for Power BI */}
+      <button
+        type="button"
+        onClick={() => setShowPanel(true)}
+        className="w-full mb-3 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wide shadow-lg"
+      >
+        📊 Abrir painel (jogo, confronto, fase, época, período)
+      </button>
+      {showPanel && <StatsPanel state={state} onClose={() => setShowPanel(false)} onShowToast={onShowToast} />}
 
       <div className="seg mb-3">
         <div className={`seg-btn ${statsFilter === 'todos' ? 'active' : ''}`} onClick={() => setStatsFilter('todos')}>
