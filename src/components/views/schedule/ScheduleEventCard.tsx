@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CalendarEvent } from './types';
 import { AppState, ScheduledMatch, Training, StaffUnavailability, ClubEvent } from '../../../types';
-import { playerLabel } from '../../../lib/utils';
+import { CallupShareModal } from '../../CallupShareModal';
 
 interface ScheduleEventCardProps {
   ev: CalendarEvent;
@@ -53,31 +53,11 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
     }
   };
 
-  // WhatsApp Callup Share
-  const handleCopyCallupWhatsApp = (s: ScheduledMatch) => {
-    if (!state) return;
-    const callupList = (s.callup || [])
-      .map((id) => {
-        const pl = (state.roster || []).find((p) => p.id === id);
-        return pl ? `• #${pl.number || '-'} ${playerLabel(pl, state.lang)}` : null;
-      })
-      .filter(Boolean)
-      .join('\n');
-
-    const msg =
-      `📋 *CONVOCATÓRIA — ${state.myClubName || 'BOLA COM VISÃO'}*\n` +
-      `⚽ *Jogo:* ${s.location === 'casa' ? state.myClubName || 'Nossa Equipa' : s.opponent} vs ${s.location === 'casa' ? s.opponent : state.myClubName || 'Nossa Equipa'}\n` +
-      `📅 *Data:* ${s.date.split('-').reverse().join('/')}\n` +
-      `⏰ *Hora do Jogo:* ${s.time}h\n` +
-      (s.meetingTime ? `📍 *Concentração:* ${s.meetingTime}h\n` : '') +
-      (s.venue ? `🏟️ *Campo / Estádio:* ${s.venue}\n` : '') +
-      `\n*Atletas Convocados (${(s.callup || []).length}):*\n${callupList || 'Nenhum atleta selecionado'}\n\n` +
-      `_Enviado via BolaComVisão_`;
-
-    navigator.clipboard?.writeText(msg);
-    const encoded = encodeURIComponent(msg);
-    window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
-  };
+  // WhatsApp call-up: the same message as the Convocatória screen, editable before sending.
+  const [shareCallup, setShareCallup] = useState<ScheduledMatch | null>(null);
+  const callupShareModal = shareCallup && state && (
+    <CallupShareModal match={shareCallup} state={state} onClose={() => setShareCallup(null)} />
+  );
 
   if (isMatch) {
     const s = ev.rawScheduledMatch;
@@ -113,6 +93,11 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             {ev.tournamentName && (
               <span className="text-[10px] font-mono text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30">
                 🏆 {ev.tournamentName} {ev.phase ? `(${ev.phase})` : ''}
+              </span>
+            )}
+            {!ev.tournamentName && ev.phase && (
+              <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">
+                🏆 {ev.phase}
               </span>
             )}
           </div>
@@ -278,7 +263,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
             <button
               type="button"
-              onClick={() => handleCopyCallupWhatsApp(s)}
+              onClick={() => setShareCallup(s)}
               className="px-3 py-1.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 hover:bg-emerald-900 text-emerald-300 font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1"
             >
               <span>💬</span>
@@ -300,6 +285,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             </button>
           </div>
         )}
+        {callupShareModal}
       </div>
     );
   }

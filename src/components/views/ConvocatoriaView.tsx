@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AppState, ScheduledMatch } from '../../types';
 import { t } from '../../i18n/dict';
-import { playerLabel, sortPlayerObjs } from '../../lib/utils';
+import { sortPlayerObjs } from '../../lib/utils';
 import { getPlayerQuickAttendance } from '../../lib/intelligenceEngine';
 import { Header } from '../Header';
+import { CallupShareModal } from '../CallupShareModal';
+import { upcomingGames } from '../../lib/preMatchPlan';
+import { callupPlayingTime, playersNeedingMinutes, RECENT_GAMES } from '../../lib/callupPlayingTime';
 
 interface ConvocatoriaViewProps {
   state: AppState;
@@ -26,9 +29,11 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
   onShowToast,
   initialMatchId
 }) => {
+  // The game tapped in the Agenda, otherwise the next game.
   const [selectedMatchId, setSelectedMatchId] = useState<string>(
-    initialMatchId || (state.schedule.length > 0 ? state.schedule[0].id : '')
+    initialMatchId || upcomingGames(state.schedule || [])[0]?.id || state.schedule[0]?.id || ''
   );
+  const [showShare, setShowShare] = useState(false);
 
   const match = state.schedule.find((s) => s.id === selectedMatchId) || state.schedule[0];
   const isFinalized = Boolean(match?.callupFinalized);
@@ -68,7 +73,22 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
     onShowToast('Modo de edição da Convocatória ativado ✓');
   };
 
-  const eligiblePlayers = sortPlayerObjs(state.roster.filter((p) => p.active !== false));
+  const squad = sortPlayerObjs(state.roster.filter((p) => p.active !== false));
+
+  // Minutes of the season, to share playing time fairly when choosing who goes.
+  const minutesById = useMemo(
+    () => callupPlayingTime(state.matches || [], state.roster || [], state.season, state.category),
+    [state.matches, state.roster, state.season, state.category]
+  );
+  const needMinutes = playersNeedingMinutes(minutesById);
+  const [sortByMinutes, setSortByMinutes] = useState(false);
+  const eligiblePlayers = sortByMinutes
+    ? [...squad].sort(
+        (a, b) =>
+          (minutesById.get(a.id)?.share ?? 1) - (minutesById.get(b.id)?.share ?? 1) ||
+          (minutesById.get(a.id)?.minutes ?? 0) - (minutesById.get(b.id)?.minutes ?? 0)
+      )
+    : squad;
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -146,7 +166,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
 
   const handleGeneratePDF = async () => {
     if (!match) return;
-    const calledPlayers = eligiblePlayers.filter((p) => match.callup.includes(p.id));
+    const calledPlayers = squad.filter((p) => match.callup.includes(p.id));
     const { generateConvocatoriaPDF } = await import('../../lib/pdfUtils');
     generateConvocatoriaPDF(match, calledPlayers, state);
     onShowToast('PDF da Convocatória gerado com marca de água BolaComVisao ✓');
@@ -154,50 +174,10 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
 
   const handleGenerateExcel = async () => {
     if (!match) return;
-    const calledPlayers = eligiblePlayers.filter((p) => match.callup.includes(p.id));
+    const calledPlayers = squad.filter((p) => match.callup.includes(p.id));
     const { exportConvocatoriaExcel } = await import('../../lib/exportUtils');
     exportConvocatoriaExcel(match, calledPlayers, state);
     onShowToast('Excel da Convocatória gerado com marca de água BolaComVisao ✓');
-  };
-
-  const handleCopyWhatsApp = () => {
-    if (!match) return;
-    const dateStr = match.date.split('-').reverse().join('/');
-    const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
-    const locLabel = match.location === 'casa' ? t(state.lang, 'match_home') : t(state.lang, 'match_away');
-    const compLabel =
-      match.type === 'torneio'
-        ? `${t(state.lang, 'sch_tour')}: ${match.tournamentName || ''}${match.phase ? ' - ' + match.phase : ''}`
-        : match.type === 'campeonato'
-          ? `${t(state.lang, 'sch_champ')}${match.phase ? ' - ' + match.phase : ''}`
-          : t(state.lang, 'sch_friendly');
-
-    const matchTitle = match.location === 'casa' ? `${myClub} 🆚 ${match.opponent}` : `${match.opponent} 🆚 ${myClub}`;
-
-    let text = `📋 *CONVOCATÓRIA OFICIAL*\n🛡️ *${myClub.toUpperCase()}*\n\n⚽ *${matchTitle}*\n📅 *Data:* ${dateStr} às ${match.time}h\n⏰ *Concentração:* ${match.meetingTime ? match.meetingTime + 'h' : '--:--'}\n🏟️ *Local:* ${match.venue || locLabel}\n🏆 *Competição:* ${compLabel}\n`;
-
-    if (match.meetingPoint) {
-      text += `📍 *Ponto Encontro:* ${match.meetingPoint}\n`;
-    }
-
-    if (match.callupNotes) {
-      text += `📝 *Avisos:* ${match.callupNotes}\n`;
-    }
-
-    text += `\n👥 *JOGADORES CONVOCADOS (${match.callup.length}):*\n`;
-    const called = sortPlayerObjs(eligiblePlayers.filter((p) => match.callup.includes(p.id)));
-    if (called.length === 0) {
-      text += '- (Nenhum convocado)\n';
-    } else {
-      called.forEach((p, idx) => {
-        text += `${idx + 1}. ${playerLabel(p)}\n`;
-      });
-    }
-
-    navigator.clipboard
-      .writeText(text)
-      .then(() => onShowToast(t(state.lang, 'msg_copied')))
-      .catch(() => onShowToast(t(state.lang, 'msg_copy_err')));
   };
 
   if (!match || state.schedule.length === 0) {
@@ -410,7 +390,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             <label className="text-[11px]">⏰ Hora Concentração</label>
             <input
               type="time"
-              value={match.meetingTime || match.time}
+              value={match.meetingTime || ''}
               onChange={(e) => handleUpdateMatchField('meetingTime', e.target.value)}
             />
           </div>
@@ -489,90 +469,142 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {eligiblePlayers.map((p) => {
-              const isCalled = match.callup.includes(p.id);
-              const att = getPlayerQuickAttendance(p.id, state);
-
-              const attBadgeColor =
-                att.totalTrainings === 0
-                  ? 'text-slate-500'
-                  : att.rate >= 80
-                    ? 'text-emerald-400 font-bold'
-                    : att.rate >= 60
-                      ? 'text-amber-400 font-bold'
-                      : 'text-rose-400 font-bold';
-
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => handleTogglePlayer(p.id)}
-                  className={`p-2.5 min-h-[48px] rounded-xl border text-left cursor-pointer transition-all active:scale-[0.98] touch-manipulation flex items-center justify-between gap-2.5 select-none ${
-                    isCalled
-                      ? 'bg-gold-dim border-gold text-gold font-bold shadow-sm'
-                      : 'bg-surface border-line text-muted hover:border-line-bright'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0 truncate">
-                    {/* Player Photo / Avatar */}
-                    <div
-                      className={`w-9 h-9 rounded-lg overflow-hidden shrink-0 border flex items-center justify-center ${
-                        isCalled ? 'border-gold/60 bg-gold/10' : 'border-line bg-surface-2'
-                      }`}
+          <>
+            {needMinutes.length > 0 && (
+              <div
+                role="note"
+                aria-label="Precisam de minutos"
+                className="mb-2.5 p-2.5 rounded-xl bg-amber-950/50 border border-amber-500/40 text-[11px] text-amber-100 space-y-1"
+              >
+                <div className="font-bold text-amber-300">⚖️ Precisam de minutos</div>
+                <div className="flex flex-wrap gap-1">
+                  {needMinutes.map((r) => (
+                    <span
+                      key={r.playerId}
+                      className="px-2 py-0.5 rounded-full bg-amber-900/50 border border-amber-500/30"
                     >
-                      {p.photoUrl ? (
-                        <img
-                          src={p.photoUrl}
-                          alt={p.name}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <span className={`text-[10px] font-bold ${isCalled ? 'text-gold' : 'text-cyan-400'}`}>
-                          {p.number !== null && p.number !== undefined
-                            ? `#${p.number}`
-                            : p.name.slice(0, 2).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
+                      {r.name}{' '}
+                      <b>
+                        {r.matchesCalledUp > 0 ? `${Math.round(r.share * 100)}%` : 'sem jogos'}
+                        {r.leftOutRecently >= 2 ? ` · fora ${r.leftOutRecently}/${RECENT_GAMES}` : ''}
+                      </b>
+                    </span>
+                  ))}
+                </div>
+                <div className="text-amber-200/70">
+                  % = minutos jogados dos possíveis quando convocado · fora = não convocado nos últimos jogos
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end mb-2">
+              <button
+                type="button"
+                onClick={() => setSortByMinutes((v) => !v)}
+                className="text-[11px] font-bold text-cyan-300 bg-slate-950 border border-slate-700 px-2.5 py-1 rounded-lg"
+              >
+                {sortByMinutes ? '↕ Ordenar por número' : '↕ Quem jogou menos primeiro'}
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {eligiblePlayers.map((p) => {
+                const isCalled = match.callup.includes(p.id);
+                const att = getPlayerQuickAttendance(p.id, state);
+                const mins = minutesById.get(p.id);
 
-                    <div className="truncate">
-                      <div className="text-xs truncate flex items-center gap-1.5">
-                        <span className="font-mono text-[11px] opacity-80 shrink-0">
-                          {p.number !== null ? `#${p.number}` : '-'}
-                        </span>
-                        <span className="truncate">{p.name}</span>
-                      </div>
+                const attBadgeColor =
+                  att.totalTrainings === 0
+                    ? 'text-slate-500'
+                    : att.rate >= 80
+                      ? 'text-emerald-400 font-bold'
+                      : att.rate >= 60
+                        ? 'text-amber-400 font-bold'
+                        : 'text-rose-400 font-bold';
 
-                      <div className="flex items-center gap-2 text-[10px] font-mono mt-0.5">
-                        {/* Assiduidade aos treinos */}
-                        <span className={attBadgeColor}>
-                          {att.totalTrainings > 0 ? `${att.rate}% assid.` : 'Sem treinos'}
-                        </span>
-
-                        {/* Alerta de faltas consecutivas */}
-                        {att.consecutiveAbsences >= 2 && (
-                          <span className="text-rose-400 font-bold bg-rose-950/60 px-1 rounded">
-                            ⚠️ {att.consecutiveAbsences} faltas
-                          </span>
-                        )}
-
-                        {p.positions && <span className="opacity-60 truncate font-normal">{p.positions}</span>}
-                      </div>
-                    </div>
-                  </div>
-
+                return (
                   <div
-                    className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${
-                      isCalled ? 'bg-gold text-black' : 'border border-line text-transparent'
+                    key={p.id}
+                    onClick={() => handleTogglePlayer(p.id)}
+                    className={`p-2.5 min-h-[48px] rounded-xl border text-left cursor-pointer transition-all active:scale-[0.98] touch-manipulation flex items-center justify-between gap-2.5 select-none ${
+                      isCalled
+                        ? 'bg-gold-dim border-gold text-gold font-bold shadow-sm'
+                        : 'bg-surface border-line text-muted hover:border-line-bright'
                     }`}
                   >
-                    ✓
+                    <div className="flex items-center gap-2.5 min-w-0 truncate">
+                      {/* Player Photo / Avatar */}
+                      <div
+                        className={`w-9 h-9 rounded-lg overflow-hidden shrink-0 border flex items-center justify-center ${
+                          isCalled ? 'border-gold/60 bg-gold/10' : 'border-line bg-surface-2'
+                        }`}
+                      >
+                        {p.photoUrl ? (
+                          <img
+                            src={p.photoUrl}
+                            alt={p.name}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <span className={`text-[10px] font-bold ${isCalled ? 'text-gold' : 'text-cyan-400'}`}>
+                            {p.number !== null && p.number !== undefined
+                              ? `#${p.number}`
+                              : p.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="truncate">
+                        <div className="text-xs truncate flex items-center gap-1.5">
+                          <span className="font-mono text-[11px] opacity-80 shrink-0">
+                            {p.number !== null ? `#${p.number}` : '-'}
+                          </span>
+                          <span className="truncate">{p.name}</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[10px] font-mono mt-0.5">
+                          {/* Assiduidade aos treinos */}
+                          <span className={attBadgeColor}>
+                            {att.totalTrainings > 0 ? `${att.rate}% assid.` : 'Sem treinos'}
+                          </span>
+
+                          {/* Alerta de faltas consecutivas */}
+                          {att.consecutiveAbsences >= 2 && (
+                            <span className="text-rose-400 font-bold bg-rose-950/60 px-1 rounded">
+                              ⚠️ {att.consecutiveAbsences} faltas
+                            </span>
+                          )}
+
+                          {p.positions && <span className="opacity-60 truncate font-normal">{p.positions}</span>}
+                        </div>
+
+                        {/* Minutos da época */}
+                        {mins && mins.matchesCalledUp === 0 && (
+                          <div className="text-[10px] font-mono mt-0.5 text-amber-300">⏱ sem jogos esta época</div>
+                        )}
+                        {mins && mins.matchesCalledUp > 0 && (
+                          <div
+                            className={`text-[10px] font-mono mt-0.5 ${mins.belowTarget ? 'text-amber-300 font-bold' : 'text-slate-400'}`}
+                          >
+                            ⏱ {mins.minutes}' · {Math.round(mins.share * 100)}% · {mins.matchesPlayed}/
+                            {mins.matchesCalledUp} jogos
+                            {mins.leftOutRecently >= 2 ? ` · fora ${mins.leftOutRecently}/${RECENT_GAMES}` : ''}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${
+                        isCalled ? 'bg-gold text-black' : 'border border-line text-transparent'
+                      }`}
+                    >
+                      ✓
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 
@@ -620,13 +652,16 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <button
             className="btn btn-green w-full text-xs font-semibold py-2.5 flex items-center justify-center gap-2"
-            onClick={handleCopyWhatsApp}
+            onClick={() => setShowShare(true)}
           >
             <span>💬</span>
-            <span>Copiar para WhatsApp</span>
+            <span>Enviar por WhatsApp</span>
           </button>
         </div>
       </div>
+      {showShare && (
+        <CallupShareModal match={match} state={state} onClose={() => setShowShare(false)} onShowToast={onShowToast} />
+      )}
     </div>
   );
 };

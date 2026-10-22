@@ -166,6 +166,66 @@ test('pré-jogo: abrir não grava nada; plano guardado no jogo da Agenda, PDF e 
     .toEqual([true, '2-3-1', 'Juntos até ao fim!']);
 });
 
+test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '⚽ ＋ Jogo' }).first().click();
+  await page.getByPlaceholder('Nome da equipa adversária').fill('Constância');
+  await page.locator('input[type=date]').first().fill('2026-12-05');
+  await page.locator('input[type=time]').first().fill('11:00');
+  await page.getByRole('button', { name: 'Fora', exact: true }).click();
+  // The type of the last game (league) is suggested.
+  await expect(page.locator('select').filter({ has: page.locator('option[value=campeonato]') })).toHaveValue(
+    'campeonato'
+  );
+  await page.getByPlaceholder('Ex: Jornada 4 ou Quartos de Final').fill('Jornada 6');
+  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+
+  await page.getByRole('button', { name: /Lista/i }).click();
+  await expect(page.getByText('🏆 Jornada 6')).toBeVisible();
+  // The call-up of the game that was tapped (not the first game of the list).
+  await page.getByTitle('Abrir Convocatória').nth(1).click();
+  await expect(page.getByText(/Dragões vs Constância/)).toBeVisible();
+
+  // Minutes of the season help choose: who played little is flagged.
+  const need = page.getByRole('note', { name: 'Precisam de minutos' });
+  await expect(need).toContainText('Martim Costa 0%');
+  await expect(need).toContainText('Duarte Matos 20%');
+  await page.getByRole('button', { name: 'Limpar', exact: true }).click();
+  for (const name of ['Duarte Matos', 'Martim Costa', 'Rui Silva']) await page.getByText(name, { exact: true }).click();
+  await page
+    .getByRole('button', { name: /Finalizar Convocatória/ })
+    .last()
+    .click();
+  await expect(page.getByText('3 convocados')).toBeVisible();
+
+  await page.getByRole('button', { name: /Enviar por WhatsApp/ }).click();
+  const share = page.getByRole('dialog', { name: 'Enviar convocatória' });
+  const message = share.getByLabel('Mensagem');
+  await expect(message).toHaveValue(/\*Constância vs Dragões\*/);
+  await expect(message).toHaveValue(/Campeonato – Jornada 6/);
+  await expect(message).toHaveValue(/Convocados \(3\)/);
+  await expect(message).toHaveValue(/• 9 – Rui Silva/);
+  await expect(message).not.toHaveValue(/Concentração/);
+  await share.getByRole('button', { name: 'Fechar' }).click();
+
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
+        const body = (await res.json()) as { documents?: Array<{ fields: Record<string, any> }> };
+        const game = (body.documents || [])
+          .map((d) => d.fields.data?.mapValue?.fields)
+          .find((f) => f?.opponent?.stringValue === 'Constância');
+        return game
+          ? [game.phase?.stringValue, game.callup?.arrayValue?.values?.length, game.callupFinalized?.booleanValue]
+          : null;
+      },
+      { timeout: 30_000, message: 'convocatória na nuvem' }
+    )
+    .toEqual(['Jornada 6', 3, true]);
+});
+
 test('análise: remates e eficácia de finalização', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /performance/i);
