@@ -1,7 +1,15 @@
 import { ScheduledMatch, Player, AppState } from '../../types';
 import { sortPlayerObjs, computeAge } from '../utils';
 import { t } from '../../i18n/dict';
-import { getJsPDF, drawDocumentHeader, drawPlayerAvatar, addBolaComVisaoPageFooters } from './pdfLayout';
+import {
+  getJsPDF,
+  drawDocumentHeader,
+  drawPlayerAvatar,
+  addBolaComVisaoPageFooters,
+  createTextReportWriter
+} from './pdfLayout';
+import { buildPlayerSeason } from '../playerSeason';
+import { absenceReasonLabel } from '../trainingQuick';
 
 /**
  * 1. Convocatória Oficial em PDF com Fotos dos Jogadores
@@ -79,7 +87,7 @@ export async function generateConvocatoriaPDF(match: ScheduledMatch, calledPlaye
   doc.setFont('helvetica', 'bold');
   doc.text('Concentração:', col2X, curY + 21);
   doc.setFont('helvetica', 'normal');
-  doc.text(match.meetingTime ? `${match.meetingTime}h` : '--:--', col2X + 30, curY + 21);
+  doc.text(match.meetingTime ? `${match.meetingTime}h` : 'A definir', col2X + 30, curY + 21);
 
   doc.setFont('helvetica', 'bold');
   doc.text('Local / Estádio:', col2X, curY + 28);
@@ -382,134 +390,82 @@ export async function generateSquadPDF(state: AppState) {
 /**
  * 3. Ficha Individual de Atleta em PDF
  */
-export async function generatePlayerProfilePDF(player: Player, stats: any, state: AppState) {
+/** Builds the athlete's season sheet (to show parents or the coordinator: no contacts, no coach notes, no emojis). */
+export async function buildPlayerProfilePDF(player: Player, state: AppState) {
   const jsPDF = await getJsPDF();
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4'
-  });
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const s = buildPlayerSeason(state, player.id, state.season);
+  const g = s.games;
 
-  const brandDark = [8, 20, 30];
-  const lightGray = [242, 246, 250];
-  const darkText = [20, 30, 40];
-  const mutedText = [90, 110, 130];
+  drawDocumentHeader(doc, state, 'FICHA DO ATLETA');
+  const w = createTextReportWriter(doc, 48);
+  const { heading, paragraph, list } = w;
 
-  // Header with Left Club Crest & Right BolaComVisao Logo
-  drawDocumentHeader(doc, state, `FICHA INDIVIDUAL - ${player.name}`, player.number ? `#${player.number}` : undefined);
+  const number =
+    player.number !== null && player.number !== undefined && `${player.number}` !== '' ? `#${player.number} ` : '';
+  w.centered(`${number}${player.name}`, { size: 14, bold: true });
+  w.skip(-0.5);
+  const age = player.birthDate ? computeAge(player.birthDate) : null;
+  const info = [
+    player.positions,
+    age ? `${age} anos` : null,
+    player.dominantFoot ? `Pé ${player.dominantFoot.toLowerCase()}` : null
+  ]
+    .filter(Boolean)
+    .join('  •  ');
+  if (info) w.centered(info, { size: 9, color: [71, 85, 105] });
+  w.skip(4.5);
 
-  let curY = 48;
-
-  // Main Card with Photo & Bio
-  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-  doc.roundedRect(15, curY, 180, 42, 3, 3, 'F');
-  doc.setDrawColor(200, 220, 235);
-  doc.roundedRect(15, curY, 180, 42, 3, 3, 'S');
-
-  // Photo
-  let textLeft = 22;
-  if (player.photoUrl) {
-    try {
-      doc.addImage(player.photoUrl, 20, curY + 6, 30, 30);
-      textLeft = 56;
-    } catch (e) {
-      console.warn('Could not add player photo to PDF:', e);
-    }
-  }
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(brandDark[0], brandDark[1], brandDark[2]);
-  doc.text(player.name, textLeft, curY + 11);
-
-  doc.setFontSize(9.5);
-  doc.setTextColor(0, 140, 220);
-  doc.text(
-    `${player.positions || 'Jogador'}  •  Nº ${player.number !== null && player.number !== undefined ? player.number : 'S/N'}`,
-    textLeft,
-    curY + 18
+  heading('Jogos');
+  paragraph(
+    g.calledUp === 0
+      ? 'Ainda não foi convocado para jogos nesta época.'
+      : `Convocado para ${g.calledUp} jogo(s), jogou ${g.played}, titular em ${g.starts}. ` +
+          `${g.minutes} minutos jogados, ${Math.round(g.share * 100)}% dos minutos possíveis.`
+  );
+  paragraph(
+    `Golos: ${s.goals}  •  Assistências: ${s.assists}` +
+      (s.yellowCards || s.redCards ? `  •  Cartões: ${s.yellowCards} amarelo(s), ${s.redCards} vermelho(s)` : '')
   );
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-  const age = player.birthDate ? `${computeAge(player.birthDate)} anos` : 'Idade N/D';
-  doc.text(`Data Nasc.: ${player.birthDate || 'N/D'} (${age})`, textLeft, curY + 25);
-  doc.text(
-    `Pé Dominante: ${player.dominantFoot || 'Direito'}  •  Alt: ${player.height || 'N/D'}  •  Peso: ${player.weight || 'N/D'}`,
-    textLeft,
-    curY + 31
+  heading('Últimos jogos');
+  list(
+    s.recentGames.map((r) => {
+      const date = r.date.slice(0, 10).split('-').reverse().join('/');
+      const game = `${date}  ${r.opponent} (${r.home ? 'casa' : 'fora'}) ${r.scored}-${r.conceded}`;
+      if (!r.calledUp) return `${game}: não convocado`;
+      const extras = [
+        r.started ? 'titular' : null,
+        r.goals ? `${r.goals} golo(s)` : null,
+        r.assists ? `${r.assists} assist.` : null
+      ]
+        .filter(Boolean)
+        .join(', ');
+      return `${game}: ${r.minutes} min${extras ? `, ${extras}` : ''}`;
+    })
   );
-  doc.text(`Estado Desportivo: ${(player.status || 'disponivel').toUpperCase()}`, textLeft, curY + 37);
 
-  curY += 49;
-
-  // Contacts
-  doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
-  doc.rect(15, curY, 180, 7, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text('CONTACTOS & ENCARREGADOS DE EDUCAÇÃO', 20, curY + 5);
-  curY += 12;
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-  doc.text(`Telefone Atleta: ${player.phone || 'Não registado'}`, 20, curY);
-  doc.text(`Email: ${player.email || 'Não registado'}`, 110, curY);
-  curY += 7;
-  doc.text(`Contacto Emergência / Enc. Educação: ${player.emergencyContact || 'Não registado'}`, 20, curY);
-  curY += 12;
-
-  // Match & Training Statistics
-  doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
-  doc.rect(15, curY, 180, 7, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text('ESTATÍSTICAS E RENDIMENTO NA ÉPOCA', 20, curY + 5);
-  curY += 12;
-
-  // Grid Stats
-  const statItems = [
-    { label: 'Golos Marcados ⚽', value: stats.golos || 0 },
-    { label: 'Assistências 🎯', value: stats.assistencias || 0 },
-    { label: 'Média de Avaliação ⭐', value: stats.media || '-' },
-    { label: 'Minutos Jogados ⏱️', value: stats.minutos || 0 },
-    { label: 'Jogos a titular (1.ª parte) 👕', value: stats.jogosTitular || 0 },
-    { label: 'Titular 2.ª parte 👕', value: stats.titularSegundaParte || 0 },
-    { label: 'Partes a titular ⏱️', value: stats.partesTitular || 0 },
-    { label: 'Cartões Amarelos 🟨', value: stats.amarelos || 0 },
-    { label: 'Cartões Vermelhos 🟥', value: stats.vermelhos || 0 },
-    { label: 'Faltas a Treinos ❌', value: stats.faltasTreino || 0 }
-  ];
-
-  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-  doc.roundedRect(15, curY, 180, 58, 2, 2, 'F');
-
-  let sY = curY + 8;
-  for (let i = 0; i < statItems.length; i += 2) {
-    const s1 = statItems[i];
-    const s2 = statItems[i + 1];
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-    doc.text(s1.label, 22, sY);
-    if (s2) doc.text(s2.label, 110, sY);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.setTextColor(brandDark[0], brandDark[1], brandDark[2]);
-    doc.text(String(s1.value), 85, sY, { align: 'right' });
-    if (s2) doc.text(String(s2.value), 178, sY, { align: 'right' });
-
-    sY += 10;
+  heading('Treinos');
+  paragraph(
+    s.trainings.held === 0
+      ? 'Ainda sem treinos registados nesta época.'
+      : `Presente em ${s.trainings.present} de ${s.trainings.held} treinos (${s.trainings.rate}%).`
+  );
+  if (s.absences.length > 0) {
+    list(
+      s.absences.map((a) => {
+        const date = a.date.slice(0, 10).split('-').reverse().join('/');
+        return `${date}${a.trainingNumber ? ` (treino ${a.trainingNumber})` : ''}: ${absenceReasonLabel(a.reason)}`;
+      })
+    );
   }
 
   addBolaComVisaoPageFooters(doc);
+  return doc;
+}
 
-  const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '_');
+export async function generatePlayerProfilePDF(player: Player, state: AppState) {
+  const doc = await buildPlayerProfilePDF(player, state);
+  const sanitize = (v: string) => v.replace(/[^a-zA-Z0-9]/g, '_');
   doc.save(`Ficha_Atleta_${sanitize(player.name)}.pdf`);
 }

@@ -152,13 +152,16 @@ consentimento RGPD dos pais.
 - **Mensagens para o WhatsApp**: a convocatória sai sempre de `buildCallupMessage` (`src/lib/callupMessage.ts`) e o
   resultado para os pais de `buildParentsMessage`; ambas usam a janela `ShareMessageModal`.
 
+- **Ficha do atleta**: os números saem de `buildPlayerSeason` (`src/lib/playerSeason.ts`), só da época ativa. O PDF
+  é para mostrar (pais, coordenador): não leva contactos nem as notas confidenciais do treinador.
+
 ## 7. Testes
 
 | Comando                 | O que testa                                                                  | Precisa de |
 | ----------------------- | ---------------------------------------------------------------------------- | ---------- |
 | `npm run verify`        | Tipos, lint, formatação, testes unitários, build                             | Node       |
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
-| `npm run test:e2e`      | 15 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
+| `npm run test:e2e`      | 16 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
 
 O teste **"dia de jogo"** faz o percurso completo de um jogo (convocatória, titulares, relógio, golos,
 substituição, cartão, intervalo, fim, minutos, resumo, partilha, relatório do adversário). O relógio do jogo é
@@ -204,3 +207,4 @@ trocar as regras a meio dos testes.
 | #28 | Ensaio do dia de jogo: convocatória passa para o jogo, jornada já não é apagada, resumo pós-jogo aparece, nomes na cronologia, em campo/banco   |
 | #29 | Treinos: "Treino de hoje" em poucos toques, repetir treino, motivo das faltas e faltas por atleta, lista abre em "Todos"                        |
 | #30 | Ensaio da semana: Convocatória abre o jogo tocado, mensagem única de convocatória (WhatsApp/Partilhar/Copiar), minutos da época na Convocatória |
+| #31 | Ficha do atleta por época (jogos, minutos, golos, assiduidade, faltas com motivo, últimos jogos) e PDF para pais/coordenador                    |
