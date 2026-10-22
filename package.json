@@ -25,6 +25,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
+    "fflate": "^0.8.2",
     "firebase": "^12.17.1",
     "imagetracerjs": "^1.2.6",
     "jspdf": "^4.2.1",

@@ -161,6 +161,10 @@ consentimento RGPD dos pais.
 - **Painel e Power BI**: filtros e números em `src/lib/statsPanel.ts`; o ficheiro para o Power BI em
   `src/lib/powerBiExport.ts` (só dados desportivos). Guia de uso em `docs/POWER_BI.md`.
 
+- **PDF e Excel do painel de jogos**: os números saem de `buildGamesDashboard` (`src/lib/gamesDashboard.ts`). O
+  Excel é escrito por `src/lib/excel/xlsxWriter.ts` (a biblioteca `xlsx` não cria gráficos): gráficos nativos que
+  leem a folha "Dados dos gráficos". Para verificar um ficheiro: `soffice --headless --convert-to pdf`.
+
 ## 7. Testes
 
 | Comando                 | O que testa                                                                  | Precisa de |
@@ -216,4 +220,4 @@ trocar as regras a meio dos testes.
 | #31 | Ficha do atleta por época (jogos, minutos, golos, assiduidade, faltas com motivo, últimos jogos) e PDF para pais/coordenador                    |
 | #32 | Início simplificado: hoje/próximo jogo, 4 atalhos, avisos (máx. 3), resumo da época numa linha, próximos 7 dias                                 |
 | #33 | Painel de estatísticas (equipa/atleta por jogo, confronto, fase, época, período) e exportação para Power BI                                     |
-| #34 | PDF das estatísticas com golos e assistências, minutos por atleta e jogos com marcadores; PDF também no painel (por filtro)                     |
+| #34 | Painel de jogos em PDF (design BolaComVisão) e Excel com gráficos nativos + tabelas Power BI, para a época ou o filtro do painel                |

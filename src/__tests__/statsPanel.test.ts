@@ -141,9 +141,9 @@ describe('Exportação para Power BI', () => {
   });
 });
 
-describe('PDF das estatísticas', () => {
+describe('PDF do painel de jogos', () => {
   it('has goals and assists, minutes per athlete and the games of the filter only', async () => {
-    const { buildStatsReportPDF } = await import('../lib/pdf/createSeasonReport');
+    const { buildGamesDashboardPDF } = await import('../lib/pdf/createGamesDashboard');
     const { normalizeClubState } = await import('../lib/storage');
     const state = normalizeClubState({
       myClubName: 'Dragões',
@@ -152,13 +152,17 @@ describe('PDF das estatísticas', () => {
       roster,
       matches
     } as never);
-    const season = (await buildStatsReportPDF(state)).output() as string;
-    expect(season).toContain('GOLOS E ASSIST');
-    expect(season).toContain('MINUTOS POR ATLETA');
+    const season = (await buildGamesDashboardPDF(state)).output() as string;
+    expect(season).toContain('TOP 3 OFENSIVO');
+    expect(season).toContain('MINUTOS JOGADOS');
+    expect(season).toContain('QUANDO MARCAMOS');
+    expect(season).toContain('PLANTEL');
     expect(season).toContain('Tomás');
     expect(season).toContain('Tramagal SU');
     expect(season).not.toContain('Abrantes'); // live game, not finished
-    const h2h = (await buildStatsReportPDF(state, { scope: 'confronto', opponent: 'Tramagal SU' })).output() as string;
+    const h2h = (
+      await buildGamesDashboardPDF(state, { scope: 'confronto', opponent: 'Tramagal SU' })
+    ).output() as string;
     expect(h2h).toContain('Confronto: todos os jogos contra Tramagal SU');
     expect(h2h).not.toContain('Esparteiros');
   });
