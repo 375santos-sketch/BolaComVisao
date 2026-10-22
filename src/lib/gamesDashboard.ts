@@ -1,3 +1,4 @@
+import { withRosterIds } from './eventPlayers';
 import { AppState, Match, Player } from '../types';
 import { normalizeEventTiming } from './gameAnalysis/timingUtils';
 import { getNominalHalfDuration } from './matchPhaseUtils';
@@ -103,8 +104,9 @@ export function tenMinuteBlocks(halfMinutes: number): { label: string; half: 1 |
   return blocks;
 }
 
-export function buildGamesDashboard(games: Match[], state: Pick<AppState, 'roster' | 'category'>): GamesDashboard {
+export function buildGamesDashboard(rawGames: Match[], state: Pick<AppState, 'roster' | 'category'>): GamesDashboard {
   const roster: Player[] = state.roster || [];
+  const games = withRosterIds(rawGames, roster);
   const team = teamPanel(games, roster);
 
   const shotGames = games.filter((m) => {

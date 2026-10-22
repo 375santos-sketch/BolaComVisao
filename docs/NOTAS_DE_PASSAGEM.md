@@ -221,3 +221,4 @@ trocar as regras a meio dos testes.
 | #32 | Início simplificado: hoje/próximo jogo, 4 atalhos, avisos (máx. 3), resumo da época numa linha, próximos 7 dias                                 |
 | #33 | Painel de estatísticas (equipa/atleta por jogo, confronto, fase, época, período) e exportação para Power BI                                     |
 | #34 | Painel de jogos em PDF (design BolaComVisão) e Excel com gráficos nativos + tabelas Power BI, para a época ou o filtro do painel                |
+| #35 | Golos/assistências/cartões com o atleta pelo nome (versões antigas, importações) contam no painel e na ficha; Análise de Jogos exporta o painel |

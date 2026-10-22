@@ -1,3 +1,4 @@
+import { withRosterIds } from './eventPlayers';
 import { AppState, Match, Player } from '../types';
 import { getMatchShots } from './matchShots';
 import { getMatchSetPieces } from './matchSetPieces';
@@ -126,7 +127,8 @@ export interface TeamPanel {
   scorers: { playerId: string; name: string; goals: number; assists: number }[];
 }
 
-export function teamPanel(matches: Match[], roster: Player[]): TeamPanel {
+export function teamPanel(rawMatches: Match[], roster: Player[]): TeamPanel {
+  const matches = withRosterIds(rawMatches, roster);
   const games = matches.map(teamGameRow);
   const p: TeamPanel = {
     games,
@@ -204,11 +206,12 @@ export interface PlayerPanel {
 }
 
 export function playerPanel(
-  matches: Match[],
-  state: Pick<AppState, 'trainings' | 'category'>,
+  rawMatches: Match[],
+  state: Pick<AppState, 'trainings' | 'category'> & { roster?: Player[] },
   playerId: string,
   span?: { from?: string; to?: string }
 ): PlayerPanel {
+  const matches = withRosterIds(rawMatches, state.roster || []);
   const games: PlayerGameRow[] = matches.map((m) => {
     const calledUp = getCalledUpPlayers(m).includes(playerId);
     const total = getMatchTotalMinutes(m, state.category);

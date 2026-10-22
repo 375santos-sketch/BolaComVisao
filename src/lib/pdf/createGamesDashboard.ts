@@ -1,9 +1,8 @@
 import { AppState } from '../../types';
 import { buildGamesDashboard, GamesDashboard, RankRow } from '../gamesDashboard';
-import { PanelFilter, panelMatches } from '../statsPanel';
 import { PLAYING_TIME_TARGET } from '../playingTime';
 import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters } from './pdfLayout';
-import { describePanelFilter } from './createSeasonReport';
+import { DashboardSelection, selectDashboardGames } from './createSeasonReport';
 
 type Doc = InstanceType<Awaited<ReturnType<typeof getJsPDF>>>;
 type RGB = [number, number, number];
@@ -27,9 +26,9 @@ const pct = (v: number) => `${Math.round(v * 100)}%`;
 const dec = (v: number) => v.toLocaleString('pt-PT', { maximumFractionDigits: 1 });
 
 /** A4 "Painel de jogos" (no emojis: the PDF fonts cannot draw them). */
-export async function buildGamesDashboardPDF(state: AppState, filter?: PanelFilter) {
-  const f: PanelFilter = filter || { scope: 'epoca', season: state.season };
-  const d = buildGamesDashboard(panelMatches(state.matches || [], f), state);
+export async function buildGamesDashboardPDF(state: AppState, selection?: DashboardSelection) {
+  const { games, label } = selectDashboardGames(state, selection);
+  const d = buildGamesDashboard(games, state);
   const jsPDF = await getJsPDF();
   const doc: Doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   drawDocumentHeader(doc, state, 'PAINEL DE JOGOS');
@@ -70,7 +69,7 @@ export async function buildGamesDashboardPDF(state: AppState, filter?: PanelFilt
   };
 
   // Title and one-line summary
-  text(`${describePanelFilter(f, state)}  ·  Painel de jogos`, 105, y, 13, INK, true, 'center');
+  text(`${label}  ·  Painel de jogos`, 105, y, 13, INK, true, 'center');
   y += 6;
   const best = d.topGoals[0];
   const bestA = d.topAssists[0];
@@ -425,8 +424,8 @@ function table(
 }
 
 /** Estatísticas → "Exportar PDF" and the panel's "PDF": the dashboard for the chosen games (season by default). */
-export async function generateGamesDashboardPDF(state: AppState, filter?: PanelFilter) {
-  const doc = await buildGamesDashboardPDF(state, filter);
+export async function generateGamesDashboardPDF(state: AppState, selection?: DashboardSelection) {
+  const doc = await buildGamesDashboardPDF(state, selection);
   const club = (state.myClubName || 'Clube').replace(/[^a-zA-Z0-9]/g, '_');
   doc.save(`Painel_Jogos_${club}_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
