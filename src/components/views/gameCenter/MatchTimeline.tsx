@@ -1,6 +1,7 @@
 import React from 'react';
-import { Match, GoalEvent, CardEvent, SubEvent } from '../../../types';
+import { Match, GoalEvent, CardEvent, SubEvent, Player } from '../../../types';
 import { parseMinuteToNumber } from '../../../lib/gameAnalysisUtils';
+import { playerLabel } from '../../../lib/utils';
 
 interface MatchTimelineProps {
   match: Match;
@@ -8,6 +9,8 @@ interface MatchTimelineProps {
   onEditCard?: (card: CardEvent) => void;
   onEditSub?: (sub: SubEvent) => void;
   durationMinutes?: number;
+  /** Squad used to show names instead of the stored player ids. */
+  players?: Player[];
 }
 
 interface TimelineItem {
@@ -28,15 +31,21 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
   onEditGoal,
   onEditCard,
   onEditSub,
-  durationMinutes = 60
+  durationMinutes = 60,
+  players = []
 }) => {
   const items: TimelineItem[] = [];
+  const nameOf = (id?: string | null) => {
+    const p = id ? players.find((x) => x.id === id) : undefined;
+    return p ? playerLabel(p) : id || undefined;
+  };
+  const canEdit = Boolean(onEditGoal || onEditCard || onEditSub);
 
   // Goals
   (match.goals || []).forEach((g, idx) => {
     const isScored = g.type === 'scored';
-    const scorerName = g.scorer || g.scorerId || 'Nossa Equipa';
-    const assistName = g.assist || g.assistId;
+    const scorerName = g.scorer || nameOf(g.scorerId) || 'Nossa Equipa';
+    const assistName = g.assist || nameOf(g.assistId);
     items.push({
       id: g.id || `goal_${g.minute}_${idx}`,
       minute: parseMinuteToNumber(g.minute) ?? 1,
@@ -56,7 +65,7 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
   // Cards
   (match.cards || []).forEach((c, idx) => {
     const isRed = c.color === 'Vermelho' || c.type === 'red';
-    const playerName = c.player || c.playerId || 'Jogador';
+    const playerName = c.player || nameOf(c.playerId) || 'Jogador';
     items.push({
       id: c.id || `card_${c.minute}_${idx}`,
       minute: parseMinuteToNumber(c.minute) ?? 1,
@@ -73,8 +82,8 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
 
   // Subs
   (match.subs || []).forEach((s, idx) => {
-    const pOut = s.playerOut || s.outId || 'Jogador';
-    const pIn = s.playerIn || s.inId || 'Jogador';
+    const pOut = s.playerOut || nameOf(s.outId) || 'Jogador';
+    const pIn = s.playerIn || nameOf(s.inId) || 'Jogador';
     items.push({
       id: s.id || `sub_${s.minute}_${idx}`,
       minute: parseMinuteToNumber(s.minute) ?? (s.isHalftime ? 45 : 1),
@@ -115,7 +124,7 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
               else if (item.rawCard && onEditCard) onEditCard(item.rawCard);
               else if (item.rawSub && onEditSub) onEditSub(item.rawSub);
             }}
-            className={`relative p-3 rounded-2xl border ${item.badgeColor} hover:scale-[1.01] transition-transform cursor-pointer flex items-center justify-between gap-3 shadow-lg`}
+            className={`relative p-3 rounded-2xl border ${item.badgeColor} ${canEdit ? 'hover:scale-[1.01] transition-transform cursor-pointer' : ''} flex items-center justify-between gap-3 shadow-lg`}
           >
             {/* Timeline dot */}
             <div className="absolute -left-[21px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-[8px]" />
@@ -131,7 +140,7 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
               </div>
             </div>
 
-            <span className="text-[10px] font-mono text-slate-400 shrink-0">Editar ➔</span>
+            {canEdit && <span className="text-[10px] font-mono text-slate-400 shrink-0">Editar ➔</span>}
           </div>
         ))}
       </div>

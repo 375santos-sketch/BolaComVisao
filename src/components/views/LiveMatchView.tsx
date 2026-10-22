@@ -3,7 +3,7 @@ import { AppState, Match } from '../../types';
 import { t } from '../../i18n/dict';
 import { calculateMatchScore, getMatchElapsedMs } from '../../lib/utils';
 import { getLineupSize } from '../../lib/constants';
-import { getNowTimeString } from '../../lib/matchPhaseUtils';
+import { getMatchCallup, getNowTimeString } from '../../lib/matchPhaseUtils';
 import { Header } from '../Header';
 import { useLiveMatch } from './liveMatch/hooks/useLiveMatch';
 import { LiveMatchScore } from './liveMatch/components/LiveMatchScore';
@@ -143,8 +143,32 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     showCaptainModal,
     setShowCaptainModal,
     setShowFinishModal,
-    setIsFinishing
+    setIsFinishing,
+    playersOnPitch
   } = useLiveMatch({ state, onUpdateState, onShowToast });
+
+  const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
+
+  // 30-second summary: also rendered after the match is closed (no live match left on this screen).
+  const summaryModal = completedMatchSummary && (
+    <PostMatchSummaryModal
+      isOpen={showSummaryModal}
+      onClose={() => {
+        setShowSummaryModal(false);
+        onNavigate('jogos');
+      }}
+      match={completedMatchSummary}
+      myClubName={myClub}
+      state={state}
+      onGeneratePdf={() => {
+        generateMatchSheetPDF(completedMatchSummary, state);
+      }}
+      onGenerateExcel={async () => {
+        const { exportMatchSheetExcel } = await import('../../lib/exportUtils');
+        exportMatchSheetExcel(completedMatchSummary, state);
+      }}
+    />
+  );
 
   if (!match) {
     return (
@@ -177,11 +201,11 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
             </button>
           </div>
         </div>
+        {summaryModal}
       </div>
     );
   }
 
-  const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
   const captainObj = match.capitao ? state.roster.find((p) => p.id === match.capitao) : null;
   const captainName = captainObj ? captainObj.name : null;
 
@@ -293,7 +317,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   };
 
   const lineupSize = getLineupSize(match);
-  const convocadosIds = match?.convocados || [];
+  // Matches started before the fix did not store the call-up: getMatchCallup falls back to the Agenda copy.
+  const convocadosIds = match ? getMatchCallup(match) : [];
   const hasFewConvocados = convocadosIds.length < lineupSize;
   const availableForLineup = hasFewConvocados
     ? eligiblePlayers
@@ -686,6 +711,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
             onEditGoal={(g) => (g.type === 'scored' ? openEditGoalModal(g) : openEditConcededModal(g))}
             onEditCard={openEditCardModal}
             onEditSub={openEditSubModal}
+            players={state.roster}
           />
         </div>
       )}
@@ -710,6 +736,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         onClose={() => setShowGoalModal(false)}
         editingGoal={editingGoal}
         eligiblePlayers={eligiblePlayers}
+        onPitchIds={playersOnPitch}
         goalMinute={goalMinute}
         setGoalMinute={setGoalMinute}
         suggestedMinute={suggestedMinute}
@@ -746,6 +773,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         onClose={() => setShowSubModal(false)}
         editingSub={editingSub}
         eligiblePlayers={eligiblePlayers}
+        onPitchIds={playersOnPitch}
         subOutId={subOutId}
         setSubOutId={setSubOutId}
         subInId={subInId}
@@ -764,6 +792,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         onClose={() => setShowCardModal(false)}
         editingCard={editingCard}
         eligiblePlayers={eligiblePlayers}
+        onPitchIds={playersOnPitch}
         cardPlayerId={cardPlayerId}
         setCardPlayerId={setCardPlayerId}
         cardColor={cardColor}
@@ -845,27 +874,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         }}
       />
 
-      {/* 30-Second Summary Modal */}
-      {completedMatchSummary && (
-        <PostMatchSummaryModal
-          isOpen={showSummaryModal}
-          onClose={() => {
-            setShowSummaryModal(false);
-            onNavigate('jogos');
-          }}
-          match={completedMatchSummary}
-          myClubName={myClub}
-          state={state}
-          onGeneratePdf={() => {
-            generateMatchSheetPDF(completedMatchSummary, state);
-          }}
-          onGenerateExcel={async () => {
-            const { exportMatchSheetExcel } = await import('../../lib/exportUtils');
-            exportMatchSheetExcel(completedMatchSummary, state);
-          }}
-          onNavigate={onNavigate}
-        />
-      )}
+      {summaryModal}
     </div>
   );
 };

@@ -45,6 +45,9 @@ export interface StoredRecord {
   name?: string;
   opponent?: string;
   goals?: number;
+  finished?: boolean;
+  phase?: string;
+  convocados?: number;
 }
 
 /** Club records in the emulator (read with admin access). */
@@ -59,7 +62,10 @@ export async function cloudRecords(workspace = 'clubA'): Promise<Map<string, Sto
         deleted: d.fields.deleted?.booleanValue === true,
         name: d.fields.data?.mapValue?.fields?.name?.stringValue,
         opponent: d.fields.data?.mapValue?.fields?.opponent?.stringValue,
-        goals: d.fields.data?.mapValue?.fields?.goals?.arrayValue?.values?.length ?? 0
+        goals: d.fields.data?.mapValue?.fields?.goals?.arrayValue?.values?.length ?? 0,
+        finished: d.fields.data?.mapValue?.fields?.finished?.booleanValue === true,
+        phase: d.fields.data?.mapValue?.fields?.phase?.stringValue,
+        convocados: d.fields.data?.mapValue?.fields?.convocados?.arrayValue?.values?.length ?? 0
       }
     ])
   );

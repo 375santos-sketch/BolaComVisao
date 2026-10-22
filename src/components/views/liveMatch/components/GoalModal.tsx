@@ -1,13 +1,14 @@
 import React from 'react';
 import { GoalEvent, Player, GoalType, MatchPeriod } from '../../../../types';
 import { STANDARD_GOAL_TYPES } from '../../../../lib/gameAnalysis/constants';
-import { playerLabel } from '../../../../lib/utils';
+import { PlayerOptions } from './PlayerOptions';
 
 interface GoalModalProps {
   isOpen: boolean;
   onClose: () => void;
   editingGoal: GoalEvent | null;
   eligiblePlayers: Player[];
+  onPitchIds?: string[];
   goalMinute: string;
   setGoalMinute: (val: string) => void;
   suggestedMinute?: string | null;
@@ -31,6 +32,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
   onClose,
   editingGoal,
   eligiblePlayers,
+  onPitchIds,
   goalMinute,
   setGoalMinute,
   suggestedMinute,
@@ -74,13 +76,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
             className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
           >
             <option value="autogolo">⚠️ Auto Golo (Adversário)</option>
-            <optgroup label="Plantel">
-              {eligiblePlayers.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {playerLabel(p, 'Sem nome')} {p.number ? `(#${p.number})` : ''}
-                </option>
-              ))}
-            </optgroup>
+            <PlayerOptions players={eligiblePlayers} onPitchIds={onPitchIds} />
           </select>
         </div>
 
@@ -96,15 +92,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
               className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
             >
               <option value="none">Sem assistência direta</option>
-              <optgroup label="Plantel">
-                {eligiblePlayers
-                  .filter((p) => p.id !== goalScorerId)
-                  .map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {playerLabel(p, 'Sem nome')} {p.number ? `(#${p.number})` : ''}
-                    </option>
-                  ))}
-              </optgroup>
+              <PlayerOptions players={eligiblePlayers.filter((p) => p.id !== goalScorerId)} onPitchIds={onPitchIds} />
             </select>
           </div>
         )}
