@@ -4,6 +4,7 @@ import { uid, formatMinute, sortPlayerObjs, getMatchElapsedMs } from '../../../.
 import { getLineupSize } from '../../../../lib/constants';
 import {
   getMatchPhase,
+  getMatchSquad,
   derivePeriodAndHalfFromPhase,
   getCurrentPlayersOnPitch,
   getPlayersAtEndOfFirstHalf,
@@ -24,8 +25,13 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
   // Current active match
   const match = state.matches.find((m) => !m.finished) || null;
 
-  // Eligible roster players
-  const eligiblePlayers = sortPlayerObjs(state.roster.filter((p) => p.active !== false));
+  // Players called up for this match (whole active squad when there is no usable call-up)
+  const eligiblePlayers = sortPlayerObjs(getMatchSquad(state.roster, match));
+  // Default player for a new goal or card: the first one on the pitch (the whole squad before kick-off).
+  const firstOnPitch = (): string => {
+    const onPitch = match ? getCurrentPlayersOnPitch(match) : [];
+    return (eligiblePlayers.find((p) => onPitch.includes(p.id)) || eligiblePlayers[0])?.id || '';
+  };
 
   // 1. Goal Scored Modal state
   const [showGoalModal, setShowGoalModal] = useState(false);
@@ -82,7 +88,7 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     setEditingGoal(null);
     setGoalMinute(suggested || '');
     setGoalPeriod(derived.period);
-    setGoalScorerId(eligiblePlayers.length > 0 ? eligiblePlayers[0].id : 'autogolo');
+    setGoalScorerId(firstOnPitch() || 'autogolo');
     setGoalAssistId('none');
     setGoalType('Bola jogada');
     setShowGoalModal(true);
@@ -426,7 +432,7 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     setEditingCard(null);
     setCardMinute(suggested || '');
     setCardPeriod(derived.period);
-    setCardPlayerId(eligiblePlayers.length > 0 ? eligiblePlayers[0].id : '');
+    setCardPlayerId(firstOnPitch());
     setCardColor('Amarelo');
     setShowCardModal(true);
   };
@@ -553,7 +559,6 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     updateMatchInState({
       ...match,
       lineup: finalLineup,
-      phase: 'parte1',
       matchPhase: 'parte1',
       timer: updatedTimer,
       timeline: {
@@ -587,7 +592,6 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
 
     updateMatchInState({
       ...match,
-      phase: 'intervalo',
       matchPhase: 'intervalo',
       timer: updatedTimer,
       timeline: {
@@ -623,7 +627,6 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     updateMatchInState({
       ...match,
       lineupSecondHalf: secondHalf7,
-      phase: 'parte2',
       matchPhase: 'parte2',
       timer: updatedTimer,
       timeline: {

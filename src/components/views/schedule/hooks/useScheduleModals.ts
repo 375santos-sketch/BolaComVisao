@@ -315,6 +315,7 @@ export function useScheduleModals(
         cards: [],
         subs: [],
         lineup: [],
+        convocados: [...(s.callup || [])],
         ratings: {},
         capitao: null,
         timer: { isRunning: false, elapsedMs: 0, lastStartTs: null }
