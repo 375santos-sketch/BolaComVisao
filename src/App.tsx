@@ -116,6 +116,7 @@ export default function App() {
   };
   const [currentTab, setCurrentTab] = useState<TabType>('teams');
   const [targetOpponentId, setTargetOpponentId] = useState<string | undefined>(undefined);
+  const [openTodayTraining, setOpenTodayTraining] = useState(false);
 
   // Modals & Overlay state
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -640,6 +641,8 @@ export default function App() {
     if (tab === 'prejogo' || tab === 'convocatoria') {
       setTargetOpponentId(targetId);
     }
+    // "Treino de hoje" shortcut: Treinos opens with today's attendance.
+    setOpenTodayTraining(tab === 'treinos' && targetId === 'hoje');
     setCurrentTab(tab as TabType);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -904,6 +907,7 @@ export default function App() {
                 onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
                 onShowToast={showToast}
                 initialTab="list"
+                openToday={openTodayTraining}
               />
             )}
 
