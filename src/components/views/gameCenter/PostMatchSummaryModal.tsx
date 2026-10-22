@@ -13,7 +13,6 @@ interface PostMatchSummaryModalProps {
   state?: AppState;
   onGeneratePdf?: () => void;
   onGenerateExcel?: () => void;
-  onNavigate?: (tab: any, targetId?: string) => void;
 }
 
 export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
@@ -23,8 +22,7 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
   myClubName = 'Nossa Equipa',
   state,
   onGeneratePdf,
-  onGenerateExcel,
-  onNavigate
+  onGenerateExcel
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -275,7 +273,7 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
         <div className="space-y-1.5">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cronologia de Jogo:</span>
           <div className="max-h-36 overflow-y-auto pr-1">
-            <MatchTimeline match={match} />
+            <MatchTimeline match={match} players={state?.roster} />
           </div>
         </div>
 
@@ -322,10 +320,8 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
             )}
 
             <button
-              onClick={() => {
-                onClose();
-                if (onNavigate) onNavigate('resultados');
-              }}
+              // onClose already opens the games list (Jogos).
+              onClick={onClose}
               className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs font-['Chakra_Petch'] uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-1.5"
             >
               <span>Histórico</span>

@@ -107,7 +107,18 @@ export default async function seed() {
     capitao: 'p1',
     halfDurationMinutes: 25
   });
-  const roster = [player('p1', 'Rui Silva', 9), player('p2', 'Tomás Gonçalves', 7), player('p3', 'André Lopes', 10)];
+  const roster = [
+    player('p1', 'Rui Silva', 9),
+    player('p2', 'Tomás Gonçalves', 7),
+    player('p3', 'André Lopes', 10),
+    player('p4', 'Duarte Matos', 1),
+    player('p5', 'Martim Costa', 2),
+    player('p6', 'Lucas Pereira', 3),
+    player('p7', 'Gabriel Sousa', 4),
+    player('p8', 'Santiago Rocha', 5),
+    player('p9', 'Vicente Lima', 6),
+    player('p10', 'Henrique Alves', 8)
+  ];
   const tramagal = finished('m2', 'Tramagal SU', '2026-10-17');
   tramagal.goals = [
     { id: 'g1', type: 'scored', scorerId: 'p1', assistId: 'p2', minute: "12'" },
@@ -128,8 +139,9 @@ export default async function seed() {
       date: today(),
       time: '10:30',
       type: 'campeonato',
+      phase: 'Jornada 5',
       location: 'casa',
-      callup: ['p1', 'p2', 'p3']
+      callup: roster.map((p) => p.id)
     }
   ];
   const trainings = [

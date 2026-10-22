@@ -1,12 +1,13 @@
 import React from 'react';
 import { CardEvent, Player, MatchPeriod } from '../../../../types';
-import { playerLabel } from '../../../../lib/utils';
+import { PlayerOptions } from './PlayerOptions';
 
 interface CardModalProps {
   isOpen: boolean;
   onClose: () => void;
   editingCard: CardEvent | null;
   eligiblePlayers: Player[];
+  onPitchIds?: string[];
   cardPlayerId: string;
   setCardPlayerId: (id: string) => void;
   cardColor: 'Amarelo' | 'Vermelho';
@@ -28,6 +29,7 @@ const CardModalInner: React.FC<CardModalProps> = ({
   onClose,
   editingCard,
   eligiblePlayers,
+  onPitchIds,
   cardPlayerId,
   setCardPlayerId,
   cardColor,
@@ -67,11 +69,7 @@ const CardModalInner: React.FC<CardModalProps> = ({
             onChange={(e) => setCardPlayerId(e.target.value)}
             className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500"
           >
-            {eligiblePlayers.map((p) => (
-              <option key={p.id} value={p.id}>
-                {playerLabel(p, 'Sem nome')} {p.number ? `(#${p.number})` : ''}
-              </option>
-            ))}
+            <PlayerOptions players={eligiblePlayers} onPitchIds={onPitchIds} />
           </select>
         </div>
 

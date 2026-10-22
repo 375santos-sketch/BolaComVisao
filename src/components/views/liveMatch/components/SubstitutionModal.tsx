@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SubEvent, Player, MatchPeriod } from '../../../../types';
-import { playerLabel } from '../../../../lib/utils';
+import { PlayerOptions } from './PlayerOptions';
 
 export interface SubPair {
   id: string;
@@ -13,6 +13,7 @@ interface SubstitutionModalProps {
   onClose: () => void;
   editingSub: SubEvent | null;
   eligiblePlayers: Player[];
+  onPitchIds?: string[];
   subOutId: string;
   setSubOutId: (id: string) => void;
   subInId: string;
@@ -30,6 +31,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
   onClose,
   editingSub,
   eligiblePlayers,
+  onPitchIds,
   subOutId,
   setSubOutId,
   subInId,
@@ -287,15 +289,14 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
                         <option value="" disabled>
                           Selecione o jogador que sai...
                         </option>
-                        {eligiblePlayers.map((p) => {
-                          const isUsedElsewhere = otherOutIds.includes(p.id) || otherInIds.includes(p.id);
-                          return (
-                            <option key={p.id} value={p.id} disabled={isUsedElsewhere}>
-                              {playerLabel(p, 'Sem nome')} {p.number ? `(#${p.number})` : ''}
-                              {isUsedElsewhere ? ' (Já selecionado)' : ''}
-                            </option>
-                          );
-                        })}
+                        <PlayerOptions
+                          players={eligiblePlayers}
+                          onPitchIds={onPitchIds}
+                          optionState={(p) => {
+                            const isUsedElsewhere = otherOutIds.includes(p.id) || otherInIds.includes(p.id);
+                            return { disabled: isUsedElsewhere, suffix: isUsedElsewhere ? ' (Já selecionado)' : '' };
+                          }}
+                        />
                       </select>
                     </div>
 
@@ -312,17 +313,19 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
                         <option value="" disabled>
                           Selecione o jogador que entra...
                         </option>
-                        {eligiblePlayers.map((p) => {
-                          const isSameAsOut = p.id === pair.outId;
-                          const isUsedElsewhere = otherInIds.includes(p.id) || otherOutIds.includes(p.id);
-                          const isDisabled = isSameAsOut || isUsedElsewhere;
-                          return (
-                            <option key={p.id} value={p.id} disabled={isDisabled}>
-                              {playerLabel(p, 'Sem nome')} {p.number ? `(#${p.number})` : ''}
-                              {isSameAsOut ? ' (A sair nesta troca)' : isUsedElsewhere ? ' (Já selecionado)' : ''}
-                            </option>
-                          );
-                        })}
+                        <PlayerOptions
+                          players={eligiblePlayers}
+                          onPitchIds={onPitchIds}
+                          benchFirst
+                          optionState={(p) => {
+                            const isSameAsOut = p.id === pair.outId;
+                            const isUsedElsewhere = otherInIds.includes(p.id) || otherOutIds.includes(p.id);
+                            return {
+                              disabled: isSameAsOut || isUsedElsewhere,
+                              suffix: isSameAsOut ? ' (A sair nesta troca)' : isUsedElsewhere ? ' (Já selecionado)' : ''
+                            };
+                          }}
+                        />
                       </select>
                     </div>
                   </div>

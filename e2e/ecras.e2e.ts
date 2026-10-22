@@ -317,7 +317,43 @@ test('plantel: novo atleta fica guardado na nuvem e o outro treinador vê-o', as
   await other.close();
 });
 
-test('modo jogo: abrir o jogo de hoje e registar um golo', async ({ page }) => {
+test('dia de jogo: convocatória, titulares, relógio, golos, substituição, cartão, intervalo, fim e minutos', async ({
+  page
+}) => {
+  test.setTimeout(150_000);
+  // The match clock reads the current time: move it forward instead of waiting. Only the date moves, timers stay
+  // real (fake timers firing all at once break the Firestore emulator connection).
+  await page.addInitScript(() => {
+    const RealDate = Date;
+    let offset = 0;
+    (window as unknown as { __advanceTime: (ms: number) => void }).__advanceTime = (ms) => (offset += ms);
+    class ShiftedDate extends RealDate {
+      // new Date() is shifted; new Date(value) and new Date(y, m, d...) are passed through unchanged.
+      constructor(...args: any[]) {
+        super(...((args.length ? args : [RealDate.now() + offset]) as [number]));
+      }
+      static now() {
+        return RealDate.now() + offset;
+      }
+    }
+    window.Date = ShiftedDate as DateConstructor;
+  });
+  const advance = async (time: string) => {
+    const [min, sec] = time.split(':').map(Number);
+    await page.evaluate(
+      (ms) => (window as unknown as { __advanceTime: (ms: number) => void }).__advanceTime(ms),
+      (min * 60 + sec) * 1000
+    );
+    await page.waitForTimeout(1500); // the clock on screen refreshes every second
+  };
+  page.on('console', (m) => {
+    if (m.type() !== 'debug') console.log('CONSOLE', m.type(), m.text().slice(0, 300));
+  });
+  page.on('requestfailed', (r) => console.log('REQFAIL', r.url().slice(0, 150), r.failure()?.errorText));
+  page.on('response', async (r) => {
+    if (r.status() >= 400) console.log('RESP', r.status(), r.url().slice(0, 150));
+  });
+
   await signedIn(page);
   await navTo(page, /agenda/i);
   await page
@@ -325,21 +361,97 @@ test('modo jogo: abrir o jogo de hoje e registar um golo', async ({ page }) => {
     .first()
     .click();
   await expect(page.getByText('JOGO EM CURSO')).toBeVisible();
-  await expect(page.getByText('Abrantes', { exact: true }).first()).toBeVisible();
+
+  // The 10 players called up in the Agenda arrive in the live match.
+  await page.getByRole('button', { name: /Selecionar 7 Titulares/i }).click();
+  await expect(page.getByText(/Só há \d+ jogadores convocados/)).toBeHidden();
+  await expect(page.getByText('Não convocado')).toHaveCount(0);
+  await page.getByRole('button', { name: /1\.ºs 7/ }).click(); // numbers 1 to 7
+  await page.getByRole('button', { name: /Confirmar 7 Titulares/i }).click();
+  await page.getByRole('button', { name: /Iniciar 1.ª parte/i }).click();
+
+  // 11': goal by a player on the pitch, with an assist.
+  await advance('10:05');
+  await page.getByRole('button', { name: /GOLO MARCADO/i }).click();
+  await expect(page.getByPlaceholder('ex: 23 ou 45+2')).toHaveValue('11');
+  await page.locator('select').nth(0).selectOption('p2'); // 7 - Tomás Gonçalves
+  await page.locator('select').nth(1).selectOption('p6'); // 3 - Lucas Pereira
+  await page.getByRole('button', { name: 'Confirmar Golo' }).click();
+
+  // 16': substitution (on-pitch and bench players are listed apart) and a yellow card.
+  await advance('05:00');
+  await page.getByRole('button', { name: /Substituição/ }).click();
+  const [out, into] = [page.locator('select').nth(0), page.locator('select').nth(1)];
+  await expect(out.locator('optgroup[label="Em campo"] option')).toHaveCount(7);
+  await expect(into.locator('optgroup').first()).toHaveAttribute('label', 'No banco');
+  await expect(into.locator('option', { hasText: 'Teste' })).toHaveCount(0); // added to the squad, not called up
+  await out.selectOption('p4'); // 1 - Duarte Matos
+  await into.selectOption('p10'); // 8 - Henrique Alves
+  await page.getByRole('button', { name: 'Confirmar Substituição' }).click();
+  await page.getByRole('button', { name: /Cartão/ }).click();
+  await page.locator('select').first().selectOption('p5'); // 2 - Martim Costa
+  await page.getByRole('button', { name: 'Confirmar Cartão' }).click();
+
+  // 26': goal conceded, then half time after 25 minutes.
+  await advance('10:00');
   await page.getByRole('button', { name: /GOLO SOFRIDO/i }).click();
-  await expect(page.getByText('REGISTAR GOLO SOFRIDO')).toBeVisible();
-  await page.getByPlaceholder('ex: 34').fill('8');
   await page.getByRole('button', { name: 'Confirmar Golo Sofrido' }).click();
-  await expect(page.getByText('REGISTAR GOLO SOFRIDO')).toBeHidden();
+  await page.getByRole('button', { name: /^⏸️ Intervalo$/ }).click();
+  await advance('01:00'); // the clock stops during half time
+  await page.getByRole('button', { name: /Iniciar 2.ª parte/i }).click();
+  await page.getByRole('button', { name: /Confirmar e Iniciar 2.ª Parte/i }).click();
+
+  // 2nd half: goal by the substitute, then 10 minutes in total (less simulated time keeps the sign-in valid).
+  await advance('05:00');
+  await page.getByRole('button', { name: /GOLO MARCADO/i }).click();
+  await page.locator('select').first().selectOption('p10');
+  await page.getByRole('button', { name: 'Confirmar Golo' }).click();
+  await advance('05:00');
+
+  // Playing minutes: 25 + 10, Duarte left at 16', Henrique came on at 16'.
+  await page.getByRole('button', { name: /MINUTOS EM JOGO/i }).click();
+  const minutes = (name: string) => page.locator('li').filter({ hasText: name }).locator('span').last().innerText();
+  expect(await minutes('1 - Duarte Matos')).toBe("16'");
+  expect(await minutes('8 - Henrique Alves')).toBe("19'");
+  expect(await minutes('7 - Tomás Gonçalves')).toBe("35'");
+  expect(await minutes('9 - Rui Silva')).toBe("0'");
+
+  // Finish: checklist, then the 30-second summary with names and the round from the Agenda.
+  await page.getByRole('button', { name: /Validar e Terminar Jogo/i }).click();
+  await page.getByRole('button', { name: /Concluir e ver resumo/i }).click();
+  await expect(page.getByText('RESUMO INTELIGENTE PÓS-JOGO')).toBeVisible();
+  await expect(page.getByText('Jornada 5')).toBeVisible();
+  await expect(page.getByText('Golo (7 - Tomás Gonçalves)')).toBeVisible();
+  await expect(page.getByText('Sai: 1 - Duarte Matos ➔ Entra: 8 - Henrique Alves')).toBeVisible();
+  await expect(page.getByText('Cartão Amarelo (2 - Martim Costa)')).toBeVisible();
+
+  // Games list: result, parents' share and the opponent report with this match's numbers.
+  await page.getByRole('button', { name: /Histórico/i }).click();
+  await expect(page.getByText(/JORNADA 5/i)).toBeVisible();
+  await page.getByText('Abrantes').first().click();
+  await expect(page.getByText("11'⚽ 7 - Tomás Gonçalves")).toBeVisible();
+  await page.getByRole('button', { name: /Partilhar com os pais/i }).click();
+  const share = page.getByRole('dialog', { name: /Partilhar com os pais/i });
+  await expect(share).toBeVisible();
+  await expect(share).toContainText('Abrantes');
+  await share.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: /Relatório do adversário/ }).click();
+  const numbers = page
+    .getByRole('dialog', { name: 'Relatório do adversário' })
+    .getByRole('region', { name: 'Números do jogo' });
+  await expect(numbers).toContainText('2-1');
+  await expect(numbers).toContainText("26'");
+
+  // Reopening the app (back on the real time) sends what is still waiting on this device to the cloud.
+  page.on('dialog', (d) => d.accept()); // "leave with unsaved changes?"
+  await page.reload();
+  await enterPanel(page);
   await expect
     .poll(
-      async () =>
-        [...(await cloudRecords()).values()].some(
-          (r) => r.kind === 'match' && r.opponent === 'Abrantes' && r.goals === 1
-        ),
-      { timeout: 30_000, message: 'golo do jogo em direto na nuvem' }
+      async () => [...(await cloudRecords()).values()].find((r) => r.kind === 'match' && r.opponent === 'Abrantes'),
+      { timeout: 30_000, message: 'jogo terminado na nuvem' }
     )
-    .toBe(true);
+    .toMatchObject({ finished: true, goals: 3, phase: 'Jornada 5', convocados: 10 });
   await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
 });
 

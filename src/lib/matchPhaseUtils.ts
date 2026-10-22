@@ -232,3 +232,28 @@ export function getSubstitutionsPitchContext(
 
   return { onPitch, onBench };
 }
+
+/** Players called up for the match (the convocatória), falling back to the Agenda copy kept in the match. */
+export function getMatchCallup(match: Match): string[] {
+  return match.convocados?.length ? match.convocados : match.originalSchedule?.callup || [];
+}
+
+/**
+ * Players offered in the live match (goals, cards, substitutions): the ones called up, plus anyone already used in
+ * the match. Without a usable call-up (fewer players than the lineup) the whole active squad is offered.
+ */
+export function getMatchSquad(roster: Player[], match: Match | null | undefined): Player[] {
+  const active = roster.filter((p) => p.active !== false);
+  if (!match) return active;
+  const callup = getMatchCallup(match);
+  if (callup.length < getLineupSize(match)) return active;
+  const inMatch = new Set<string>([
+    ...callup,
+    ...(match.lineup || []),
+    ...(match.lineupSecondHalf || []),
+    ...(match.subs || []).flatMap((s) => [s.outId, s.inId]),
+    ...(match.goals || []).flatMap((g) => [g.scorerId || '', g.assistId || '']),
+    ...(match.cards || []).map((c) => c.playerId)
+  ]);
+  return active.filter((p) => inMatch.has(p.id));
+}

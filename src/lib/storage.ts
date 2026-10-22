@@ -136,7 +136,7 @@ export function normalizeClubState(raw: Partial<AppState> | null | undefined): A
   if (!raw) {
     return { ...initialDefaultState };
   }
-  const normalized = withoutOpponentScouting(normalizeClubStateFields(raw));
+  const normalized = withMatchRoundsRestored(withoutOpponentScouting(normalizeClubStateFields(raw)));
   const seasonsFixed = (raw.version || 1) < SEASON_MIGRATION_VERSION ? migrateSeasonsFromDates(normalized) : normalized;
   return (raw.version || 1) < PRE_MATCH_RESET_VERSION ? resetOldPreMatchFlags(seasonsFixed) : seasonsFixed;
 }
@@ -165,6 +165,34 @@ export function resetOldPreMatchFlags(state: AppState): AppState {
     schedule: reset(state.schedule) || [],
     teams: (state.teams || []).map((t) => ({ ...t, schedule: reset(t.schedule) })),
     version: PRE_MATCH_RESET_VERSION
+  };
+}
+
+const GAME_PHASES = new Set(['nao_iniciado', 'parte1', 'intervalo', 'parte2']);
+
+/**
+ * Match.phase is the round ("Jornada 5", "Fase de Grupos"), but older versions of the live match also wrote the
+ * clock state there ("parte1"/"intervalo"/"parte2"), wiping the round. Moves the clock state to matchPhase and
+ * restores the round from the Agenda copy kept in the match. Idempotent: running it again changes nothing.
+ */
+export function withMatchRoundsRestored(state: AppState): AppState {
+  const isBroken = (m?: Match) => Boolean(m && typeof m.phase === 'string' && GAME_PHASES.has(m.phase));
+  const fixList = (list?: Match[]): Match[] | undefined => {
+    if (!Array.isArray(list) || !list.some(isBroken)) return list;
+    return list.map((m) =>
+      isBroken(m)
+        ? {
+            ...m,
+            matchPhase: m.matchPhase || (m.phase as Match['matchPhase']),
+            phase: m.originalSchedule?.phase || ''
+          }
+        : m
+    );
+  };
+  return {
+    ...state,
+    matches: fixList(state.matches) || [],
+    teams: (state.teams || []).map((t) => ({ ...t, matches: fixList(t.matches) || t.matches }))
   };
 }
 
