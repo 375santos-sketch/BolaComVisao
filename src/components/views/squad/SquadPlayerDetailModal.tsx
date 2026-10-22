@@ -3,6 +3,8 @@ import { Player, AppState } from '../../../types';
 import { STATUS_CONFIG } from './types';
 import { computeAge } from '../../../lib/utils';
 import { calculatePlayerEvolution } from '../../../lib/intelligenceEngine';
+import { buildPlayerSeason } from '../../../lib/playerSeason';
+import { PlayerSeasonSection } from './PlayerSeasonSection';
 
 interface SquadPlayerDetailModalProps {
   player: Player | null;
@@ -85,6 +87,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
 
   const st = STATUS_CONFIG[player.status || 'disponivel'];
   const evo = calculatePlayerEvolution(player, state);
+  const season = buildPlayerSeason(state, player.id, state.season);
 
   const handleSaveCoachNotes = () => {
     if (!onUpdateState) {
@@ -186,7 +189,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
 
               <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
                 <span className="text-slate-500 text-[10px] block">Pé Dominante</span>
-                <span className="font-bold text-cyan-300">{player.dominantFoot || 'Direito'}</span>
+                <span className="font-bold text-cyan-300">{player.dominantFoot || 'N/D'}</span>
               </div>
 
               <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
@@ -222,52 +225,8 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
             </div>
           </div>
 
-          {/* Match Statistics */}
-          <div>
-            <h4 className="text-xs font-['Chakra_Petch'] font-bold text-cyan-400 uppercase tracking-wider mb-2">
-              📊 Rendimento na Época
-            </h4>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <div className="text-lg font-extrabold text-cyan-400">{stats.golos}</div>
-                <div className="text-[9px] text-slate-500 uppercase">Golos</div>
-              </div>
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <div className="text-lg font-extrabold text-cyan-400">{stats.assistencias}</div>
-                <div className="text-[9px] text-slate-500 uppercase">Assistências</div>
-              </div>
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <div className="text-lg font-extrabold text-amber-300">{stats.media}</div>
-                <div className="text-[9px] text-slate-500 uppercase">Média Aval.</div>
-              </div>
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <div className="text-lg font-extrabold text-white">{stats.minutos}</div>
-                <div className="text-[9px] text-slate-500 uppercase">Minutos</div>
-              </div>
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <div className="text-lg font-extrabold text-white">{stats.jogosTitular}</div>
-                <div className="text-[9px] text-slate-500 uppercase">Titular (1.ª P)</div>
-              </div>
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <div className="text-lg font-extrabold text-white">{stats.titularSegundaParte ?? 0}</div>
-                <div className="text-[9px] text-slate-500 uppercase">Titular (2.ª P)</div>
-              </div>
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <div className="text-lg font-extrabold text-emerald-400">{stats.partesTitular ?? 0}</div>
-                <div className="text-[9px] text-slate-500 uppercase">Partes a Titular</div>
-              </div>
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <div className="text-lg font-extrabold text-slate-300">
-                  🟨{stats.amarelos} 🟥{stats.vermelhos}
-                </div>
-                <div className="text-[9px] text-slate-500 uppercase">Cartões</div>
-              </div>
-              <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <div className="text-lg font-extrabold text-rose-400">{stats.faltasTreino}</div>
-                <div className="text-[9px] text-slate-500 uppercase">Faltas Treino</div>
-              </div>
-            </div>
-          </div>
+          {/* Season: games, minutes, goals, attendance with absence reasons, latest games */}
+          <PlayerSeasonSection data={season} />
 
           {/* Real-time Player Intelligence & Evolution */}
           {evo && (
@@ -390,7 +349,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
             <button
               onClick={async () => {
                 const { generatePlayerProfilePDF } = await import('../../../lib/pdfUtils');
-                generatePlayerProfilePDF(player, stats, state);
+                generatePlayerProfilePDF(player, state);
                 onShowToast(`Ficha PDF de ${player.name} gerada com sucesso! 📄`);
               }}
               className="w-full py-2 px-3 rounded-xl bg-slate-950 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 font-mono text-xs font-bold hover:bg-slate-900 transition-all flex items-center justify-center gap-1.5"

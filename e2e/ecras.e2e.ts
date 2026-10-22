@@ -349,6 +349,21 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
 });
 
+test('ficha do atleta: época, últimos jogos, faltas com motivo e PDF', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  const season = page.getByRole('region', { name: 'Época do atleta' });
+  await expect(season).toContainText('2/2'); // played / called up
+  await expect(season).toContainText("100'");
+  await expect(season).toContainText('Treinos 2/3'); // missed today's training (treinos test)
+  await expect(season.getByRole('list', { name: 'Últimos jogos' })).toContainText('Tramagal SU');
+  await expect(season.getByRole('list', { name: 'Faltas aos treinos' })).toContainText('Doente');
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: /PDF Ficha do Atleta/ }).click();
+  expect((await download).suggestedFilename()).toBe('Ficha_Atleta_Rui_Silva.pdf');
+});
+
 test('plantel: novo atleta fica guardado na nuvem e o outro treinador vê-o', async ({ page, browser }) => {
   await signedIn(page);
   await navTo(page, /equipa/i);
