@@ -183,7 +183,7 @@ test('análise: remates e eficácia de finalização', async ({ page }) => {
 test('relatório do adversário pós-jogo: números do jogo, notas guardadas na nuvem e PDF', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆' }).first().click();
+  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Relatório do adversário/ }).click();
   const report = page.getByRole('dialog', { name: 'Relatório do adversário' });
@@ -218,7 +218,7 @@ test('relatório do adversário pós-jogo: números do jogo, notas guardadas na 
 test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆' }).first().click();
+  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
   await expect(page.getByText('Esparteiros')).toBeVisible();
   await page.getByText('Tramagal SU').click();
   await expect(page.getByText("12'⚽ 9 - Rui Silva (ast. 7 - Tomás Gonçalves)")).toBeVisible();
@@ -227,6 +227,66 @@ test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await expect(modal).toBeVisible();
   await expect(modal).toContainText('Tramagal SU');
   await expect(modal).toContainText('2');
+});
+
+test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '⚡ Treinos' }).first().click();
+  // Opens on every training (no empty "Agendados" filter), newest first.
+  await expect(page.getByText('TREINO 2')).toBeVisible();
+
+  await page.getByRole('button', { name: /Treino de hoje/ }).click();
+  const today = page.getByRole('dialog', { name: 'Treino de hoje' });
+  await expect(today).toContainText('Nº 3');
+  await expect(today.getByLabel('Hora')).toHaveValue('18:15'); // the usual time
+  await today.getByRole('button', { name: 'Rui Silva: presente' }).click();
+  await today.getByLabel('Motivo da falta de Rui Silva').selectOption('doente');
+  await today.getByRole('button', { name: 'Guardar treino' }).click();
+  await expect(page.getByText(/Treino de hoje guardado: 1 falta/)).toBeVisible();
+
+  const todayISO = await page.evaluate(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
+        const body = (await res.json()) as { documents?: Array<{ fields: Record<string, any> }> };
+        const tr = (body.documents || [])
+          .map((d) => d.fields.data?.mapValue?.fields)
+          .find((f) => f?.date?.stringValue === todayISO && f?.trainingNumber);
+        return tr
+          ? [
+              tr.completed?.booleanValue,
+              tr.absences?.arrayValue?.values?.map((v: any) => v.stringValue),
+              tr.absenceReasons?.mapValue?.fields?.p1?.stringValue
+            ]
+          : null;
+      },
+      { timeout: 30_000, message: 'treino de hoje na nuvem' }
+    )
+    .toEqual([true, ['p1'], 'doente']);
+
+  // Opening it again shows today's training as saved.
+  await page.getByRole('button', { name: /Treino de hoje/ }).click();
+  await expect(today.getByRole('button', { name: 'Rui Silva: faltou' })).toBeVisible();
+  await today.getByRole('button', { name: 'Fechar' }).click();
+
+  // Repeat today's training next week: planned, shown first (what's coming).
+  await page
+    .getByRole('button', { name: /Repetir/ })
+    .first()
+    .click();
+  await expect(page.getByText(/Treino repetido para/)).toBeVisible();
+  await expect(page.getByText('TREINO 4')).toBeVisible();
+
+  // Absences per athlete, with the reason.
+  await page.getByRole('button', { name: /Stats/i }).first().click();
+  await page.getByRole('button', { name: /Rui Silva/ }).click();
+  await expect(page.getByRole('list', { name: 'Faltas de Rui Silva' })).toContainText('Doente');
+  await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
 });
 
 test('plantel: novo atleta fica guardado na nuvem e o outro treinador vê-o', async ({ page, browser }) => {

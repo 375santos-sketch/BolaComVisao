@@ -146,13 +146,16 @@ consentimento RGPD dos pais.
   `matchPhase` (`nao_iniciado`, `parte1`, `intervalo`, `parte2`). Até ao #28 o jogo ao vivo escrevia o relógio em
   `phase` e apagava a jornada; `withMatchRoundsRestored` (storage.ts) repara esses jogos com a cópia da Agenda.
 
+- **Treinos**: `absences` (ids de quem faltou) continua a ser o dado principal; `absenceReasons` guarda o motivo só
+  de quem faltou (`withAttendance` em `src/lib/trainingQuick.ts` mantém os dois coerentes).
+
 ## 7. Testes
 
 | Comando                 | O que testa                                                                  | Precisa de |
 | ----------------------- | ---------------------------------------------------------------------------- | ---------- |
 | `npm run verify`        | Tipos, lint, formatação, testes unitários, build                             | Node       |
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
-| `npm run test:e2e`      | 13 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
+| `npm run test:e2e`      | 14 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
 
 O teste **"dia de jogo"** faz o percurso completo de um jogo (convocatória, titulares, relógio, golos,
 substituição, cartão, intervalo, fim, minutos, resumo, partilha, relatório do adversário). O relógio do jogo é
@@ -196,3 +199,4 @@ trocar as regras a meio dos testes.
 | #26 | Aviso para entrar de novo quando a sessão na nuvem termina (sem perder os dados do aparelho)                                                  |
 | #27 | Simplificação: saem planos comerciais, chat, biblioteca, relatórios da direção, auditoria, ecrã de sincronização e definições dos alertas     |
 | #28 | Ensaio do dia de jogo: convocatória passa para o jogo, jornada já não é apagada, resumo pós-jogo aparece, nomes na cronologia, em campo/banco |
+| #29 | Treinos: "Treino de hoje" em poucos toques, repetir treino, motivo das faltas e faltas por atleta, lista abre em "Todos"                      |
