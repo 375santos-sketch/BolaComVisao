@@ -216,3 +216,4 @@ trocar as regras a meio dos testes.
 | #31 | Ficha do atleta por época (jogos, minutos, golos, assiduidade, faltas com motivo, últimos jogos) e PDF para pais/coordenador                    |
 | #32 | Início simplificado: hoje/próximo jogo, 4 atalhos, avisos (máx. 3), resumo da época numa linha, próximos 7 dias                                 |
 | #33 | Painel de estatísticas (equipa/atleta por jogo, confronto, fase, época, período) e exportação para Power BI                                     |
+| #34 | PDF das estatísticas com golos e assistências, minutos por atleta e jogos com marcadores; PDF também no painel (por filtro)                     |

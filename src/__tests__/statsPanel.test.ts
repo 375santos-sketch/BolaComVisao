@@ -140,3 +140,26 @@ describe('Exportação para Power BI', () => {
     expect(all).not.toContain('privado');
   });
 });
+
+describe('PDF das estatísticas', () => {
+  it('has goals and assists, minutes per athlete and the games of the filter only', async () => {
+    const { buildStatsReportPDF } = await import('../lib/pdf/createSeasonReport');
+    const { normalizeClubState } = await import('../lib/storage');
+    const state = normalizeClubState({
+      myClubName: 'Dragões',
+      season: '2026/2027',
+      category: 'Sub-11',
+      roster,
+      matches
+    } as never);
+    const season = (await buildStatsReportPDF(state)).output() as string;
+    expect(season).toContain('GOLOS E ASSIST');
+    expect(season).toContain('MINUTOS POR ATLETA');
+    expect(season).toContain('Tomás');
+    expect(season).toContain('Tramagal SU');
+    expect(season).not.toContain('Abrantes'); // live game, not finished
+    const h2h = (await buildStatsReportPDF(state, { scope: 'confronto', opponent: 'Tramagal SU' })).output() as string;
+    expect(h2h).toContain('Confronto: todos os jogos contra Tramagal SU');
+    expect(h2h).not.toContain('Esparteiros');
+  });
+});

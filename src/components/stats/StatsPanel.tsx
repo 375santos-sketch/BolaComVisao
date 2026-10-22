@@ -69,6 +69,13 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
   const players = sortPlayerObjs((state.roster || []).filter((p) => p.active !== false));
   const playerName = players.find((p) => p.id === playerId)?.name;
 
+  // PDF of the games of this filter: results, goals and assists, minutes per athlete, games with scorers.
+  const exportPdf = async () => {
+    const { generateSeasonStatsPDF } = await import('../../lib/pdfUtils');
+    await generateSeasonStatsPDF(state, filter);
+    onShowToast?.('PDF das estatísticas gerado 📄');
+  };
+
   const exportPowerBi = async () => {
     const { exportPowerBiWorkbook } = await import('../../lib/powerBiExport');
     const name = await exportPowerBiWorkbook(state);
@@ -311,6 +318,13 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
             Para o Power BI no computador: ficheiro Excel com todos os jogos, golos, minutos, treinos e presenças (sem
             contactos nem datas de nascimento).
           </p>
+          <button
+            type="button"
+            onClick={exportPdf}
+            className="px-3 py-2 rounded-xl bg-slate-950 border border-cyan-500/50 hover:border-cyan-400 text-cyan-200 text-xs font-bold"
+          >
+            📄 PDF destes jogos
+          </button>
           <button
             type="button"
             onClick={exportPowerBi}
