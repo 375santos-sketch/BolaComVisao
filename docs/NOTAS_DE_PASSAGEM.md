@@ -158,13 +158,16 @@ consentimento RGPD dos pais.
 - **Início**: os avisos e o resumo da época saem de `homeNotices` e `seasonSummary` (`src/lib/homeSummary.ts`), no
   máximo 3 avisos, por ordem de urgência. Os detalhes (marcadores, cantos, etc.) ficam nas Estatísticas.
 
+- **Painel e Power BI**: filtros e números em `src/lib/statsPanel.ts`; o ficheiro para o Power BI em
+  `src/lib/powerBiExport.ts` (só dados desportivos). Guia de uso em `docs/POWER_BI.md`.
+
 ## 7. Testes
 
 | Comando                 | O que testa                                                                  | Precisa de |
 | ----------------------- | ---------------------------------------------------------------------------- | ---------- |
 | `npm run verify`        | Tipos, lint, formatação, testes unitários, build                             | Node       |
 | `npm run test:emulator` | Sincronização por registos e regras de segurança, nos emuladores do Firebase | Java       |
-| `npm run test:e2e`      | 16 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
+| `npm run test:e2e`      | 17 testes de ecrã (telemóvel, dois treinadores), nos emuladores do Firebase  | Java       |
 
 O teste **"dia de jogo"** faz o percurso completo de um jogo (convocatória, titulares, relógio, golos,
 substituição, cartão, intervalo, fim, minutos, resumo, partilha, relatório do adversário). O relógio do jogo é
@@ -212,3 +215,4 @@ trocar as regras a meio dos testes.
 | #30 | Ensaio da semana: Convocatória abre o jogo tocado, mensagem única de convocatória (WhatsApp/Partilhar/Copiar), minutos da época na Convocatória |
 | #31 | Ficha do atleta por época (jogos, minutos, golos, assiduidade, faltas com motivo, últimos jogos) e PDF para pais/coordenador                    |
 | #32 | Início simplificado: hoje/próximo jogo, 4 atalhos, avisos (máx. 3), resumo da época numa linha, próximos 7 dias                                 |
+| #33 | Painel de estatísticas (equipa/atleta por jogo, confronto, fase, época, período) e exportação para Power BI                                     |

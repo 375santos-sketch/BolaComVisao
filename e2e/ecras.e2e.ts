@@ -383,6 +383,45 @@ test('ficha do atleta: época, últimos jogos, faltas com motivo e PDF', async (
   expect((await download).suggestedFilename()).toBe('Ficha_Atleta_Rui_Silva.pdf');
 });
 
+test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /performance/i);
+  await page
+    .getByRole('navigation', { name: 'Performance' })
+    .getByRole('button', { name: /Estatísticas/ })
+    .click();
+  await page.getByRole('button', { name: /Abrir painel/ }).click();
+  const panel = page.getByRole('dialog', { name: 'Painel de estatísticas' });
+  const team = panel.getByRole('region', { name: 'Números da equipa' });
+  await expect(team).toContainText('1-1-0'); // V-E-D in the season
+  await expect(panel.getByRole('img', { name: 'Golos por jogo' })).toBeVisible();
+
+  // Head-to-head: only the games against one opponent.
+  await panel.getByRole('tab', { name: 'Confronto' }).click();
+  await panel.getByLabel('Adversário').selectOption('Tramagal SU');
+  await expect(panel.getByRole('table', { name: 'Jogos' })).toContainText('Tramagal SU');
+  await expect(panel.getByRole('table', { name: 'Jogos' })).not.toContainText('Esparteiros');
+
+  // One athlete, any period.
+  await panel.getByLabel('Equipa ou atleta').selectOption('p1');
+  await panel.getByRole('tab', { name: 'Período' }).click();
+  await panel.getByLabel('De').fill('2026-10-15');
+  const athlete = panel.getByRole('region', { name: 'Números do atleta' });
+  await expect(athlete).toContainText('1/1'); // only the Tramagal game
+  await expect(panel.getByRole('table', { name: 'Jogos' })).toContainText('Tramagal SU');
+
+  const download = page.waitForEvent('download');
+  await panel.getByRole('button', { name: /Exportar para Power BI/ }).click();
+  expect((await download).suggestedFilename()).toMatch(/^PowerBI_Drag.*\.xlsx$/);
+  await panel.getByRole('button', { name: 'Fechar' }).click();
+
+  // From the athlete's sheet the panel opens on the athlete.
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Tomás Gonçalves' }).click();
+  await page.getByRole('button', { name: /Painel do atleta/ }).click();
+  await expect(panel).toContainText('Painel · Tomás Gonçalves');
+});
+
 test('plantel: novo atleta fica guardado na nuvem e o outro treinador vê-o', async ({ page, browser }) => {
   await signedIn(page);
   await navTo(page, /equipa/i);

@@ -5,6 +5,7 @@ import { computeAge } from '../../../lib/utils';
 import { calculatePlayerEvolution } from '../../../lib/intelligenceEngine';
 import { buildPlayerSeason } from '../../../lib/playerSeason';
 import { PlayerSeasonSection } from './PlayerSeasonSection';
+import { StatsPanel } from '../../stats/StatsPanel';
 
 interface SquadPlayerDetailModalProps {
   player: Player | null;
@@ -84,6 +85,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
 }) => {
   const [coachNotes, setCoachNotes] = useState<string>(player.coachNotes || player.notes || '');
   const [isSavingNotes, setIsSavingNotes] = useState<boolean>(false);
+  const [showPanel, setShowPanel] = useState(false);
 
   const st = STATUS_CONFIG[player.status || 'disponivel'];
   const evo = calculatePlayerEvolution(player, state);
@@ -227,6 +229,21 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
 
           {/* Season: games, minutes, goals, attendance with absence reasons, latest games */}
           <PlayerSeasonSection data={season} />
+          <button
+            type="button"
+            onClick={() => setShowPanel(true)}
+            className="w-full py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 font-mono text-xs font-bold hover:bg-cyan-500/30"
+          >
+            📊 Painel do atleta (jogo a jogo, confrontos, fases, período)
+          </button>
+          {showPanel && (
+            <StatsPanel
+              state={state}
+              initialPlayerId={player.id}
+              onClose={() => setShowPanel(false)}
+              onShowToast={onShowToast}
+            />
+          )}
 
           {/* Real-time Player Intelligence & Evolution */}
           {evo && (
