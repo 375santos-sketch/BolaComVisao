@@ -96,7 +96,7 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
   const rowH = 6.2;
   section(
     'Minutos jogados',
-    `Minutos e percentagem dos minutos possíveis. A linha tracejada marca ${pct(PLAYING_TIME_TARGET)}.`,
+    `Minutos e percentagem dos minutos dos jogos. A linha tracejada marca ${pct(PLAYING_TIME_TARGET)}.`,
     d.squad.length * rowH + 12
   );
   legend(doc, L, y, [

@@ -17,17 +17,17 @@ interface PlayingTimeSectionProps {
   onSetStarters?: (matchId: string, lineup: string[]) => void;
 }
 
-/** Season playing time per player, players below the target first. */
+/** Season playing time of every active athlete (called up or not), most minutes first. */
 export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches, roster, category, onSetStarters }) => {
-  const [showAll, setShowAll] = useState(false);
   const [fixing, setFixing] = useState<Match | null>(null);
   const rows = useMemo(() => computeSeasonPlayingTime(matches, roster, category), [matches, roster, category]);
   const missing = useMemo(() => gamesMissingStarters(matches, roster), [matches, roster]);
-  const withGames = rows.filter((r) => r.matchesCalledUp > 0);
+  const withGames = rows
+    .filter((r) => r.availableMinutes > 0)
+    .sort((a, b) => b.minutes - a.minutes || a.name.localeCompare(b.name, 'pt-PT'));
   if (withGames.length === 0) return null;
 
   const below = withGames.filter((r) => r.belowTarget);
-  const visible = showAll ? withGames : withGames.slice(0, 8);
   const targetPct = Math.round(PLAYING_TIME_TARGET * 100);
 
   return (
@@ -36,17 +36,17 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
         <div className="card-title" style={{ marginBottom: 0 }}>
           ⏱️ Minutos de jogo
         </div>
-        <span className="text-[10px] font-mono text-slate-400">Objetivo: {targetPct}% dos minutos possíveis</span>
+        <span className="text-[10px] font-mono text-slate-400">Objetivo: {targetPct}% dos minutos dos jogos</span>
       </div>
 
       {below.length > 0 ? (
         <div className="mb-3 p-2.5 rounded-xl bg-amber-950/50 border border-amber-500/40 text-[11px] text-amber-200">
           <strong>{below.length}</strong> {below.length === 1 ? 'atleta está' : 'atletas estão'} abaixo de {targetPct}%
-          dos minutos possíveis: {below.map((r) => r.name).join(', ')}.
+          dos minutos dos jogos: {below.map((r) => r.name).join(', ')}.
         </div>
       ) : (
         <div className="mb-3 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-200">
-          Todos os atletas convocados jogaram pelo menos {targetPct}% dos minutos possíveis. 👏
+          Todos os atletas jogaram pelo menos {targetPct}% dos minutos dos jogos. 👏
         </div>
       )}
 
@@ -98,7 +98,7 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
             </tr>
           </thead>
           <tbody>
-            {visible.map((r) => {
+            {withGames.map((r) => {
               const pct = Math.round(r.share * 100);
               return (
                 <tr key={r.playerId} className="border-t border-slate-800">
@@ -122,16 +122,6 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
           </tbody>
         </table>
       </div>
-
-      {withGames.length > 8 && (
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          className="mt-2 text-[11px] text-cyan-300 hover:underline"
-        >
-          {showAll ? 'Mostrar menos' : `Ver todos (${withGames.length})`}
-        </button>
-      )}
 
       {fixing && onSetStarters && (
         <LineupModal

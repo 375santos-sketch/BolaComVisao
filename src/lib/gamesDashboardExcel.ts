@@ -29,7 +29,7 @@ export function buildGamesDashboardWorkbook(state: AppState, selection?: Dashboa
   };
   const header = (c: number, titles: string[]) => titles.forEach((t, i) => put(0, c + i, { v: t, s: 'header' }));
 
-  header(0, ['Nº', 'Atleta', 'Minutos', '% possíveis', 'Golos', 'Assistências', 'Titular']);
+  header(0, ['Nº', 'Atleta', 'Minutos', '% dos minutos', 'Golos', 'Assistências', 'Titular']);
   d.squad.forEach((s, i) => {
     put(i + 1, 0, s.number === null ? null : Number(s.number) || String(s.number));
     put(i + 1, 1, `${s.number !== null && s.number !== '' ? `${s.number} · ` : ''}${s.name}`);
@@ -37,7 +37,7 @@ export function buildGamesDashboardWorkbook(state: AppState, selection?: Dashboa
     put(i + 1, 3, { v: pct(s.share), s: 'percent' });
     put(i + 1, 4, s.goals);
     put(i + 1, 5, s.assists);
-    put(i + 1, 6, s.started ? 'Sim' : 'Só suplente');
+    put(i + 1, 6, s.started ? 'Sim' : s.calledUp > 0 ? 'Só suplente' : 'Não convocado');
   });
   header(8, ['Jogo', 'Marcados', 'Sofridos']);
   d.games.forEach((g, i) => {
