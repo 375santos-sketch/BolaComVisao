@@ -410,9 +410,13 @@ test('painel: equipa e atleta por época, jogo, confronto e período; exportar p
   await expect(athlete).toContainText('1/1'); // only the Tramagal game
   await expect(panel.getByRole('table', { name: 'Jogos' })).toContainText('Tramagal SU');
 
+  const pdf = page.waitForEvent('download');
+  await panel.getByRole('button', { name: /PDF destes jogos/ }).click();
+  expect((await pdf).suggestedFilename()).toMatch(/^Painel_Jogos_Drag.*\.pdf$/);
+
   const download = page.waitForEvent('download');
-  await panel.getByRole('button', { name: /Exportar para Power BI/ }).click();
-  expect((await download).suggestedFilename()).toMatch(/^PowerBI_Drag.*\.xlsx$/);
+  await panel.getByRole('button', { name: /Excel com gráficos/ }).click();
+  expect((await download).suggestedFilename()).toMatch(/^Painel_Jogos_Drag.*\.xlsx$/);
   await panel.getByRole('button', { name: 'Fechar' }).click();
 
   // From the athlete's sheet the panel opens on the athlete.

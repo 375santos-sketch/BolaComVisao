@@ -149,15 +149,3 @@ export function buildPowerBiTables(
     Presencas: presencas
   };
 }
-
-export async function exportPowerBiWorkbook(state: AppState): Promise<string> {
-  const XLSX = await import('xlsx');
-  const wb = XLSX.utils.book_new();
-  Object.entries(buildPowerBiTables(state)).forEach(([name, rows]) =>
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), name)
-  );
-  const club = (state.myClubName || 'Clube').replace(/[^a-zA-Z0-9]/g, '_');
-  const fileName = `PowerBI_${club}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-  XLSX.writeFile(wb, fileName);
-  return fileName;
-}

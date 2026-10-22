@@ -309,8 +309,8 @@ export const StatsView: React.FC<StatsViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         <button
           onClick={async () => {
-            const { generateSeasonStatsPDF } = await import('../../lib/pdfUtils');
-            generateSeasonStatsPDF(state);
+            const { generateGamesDashboardPDF } = await import('../../lib/pdf/createGamesDashboard');
+            await generateGamesDashboardPDF(state);
             onShowToast('Estatísticas da Época exportadas em PDF (BolaComVisao)! 📄');
           }}
           className="py-2.5 px-3 rounded-xl bg-slate-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 font-['Chakra_Petch'] font-bold uppercase text-xs transition-all flex items-center justify-center gap-2"
@@ -321,8 +321,8 @@ export const StatsView: React.FC<StatsViewProps> = ({
 
         <button
           onClick={async () => {
-            const { exportSeasonStatsExcel } = await import('../../lib/exportUtils');
-            exportSeasonStatsExcel(state);
+            const { exportGamesDashboardExcel } = await import('../../lib/gamesDashboardExcel');
+            exportGamesDashboardExcel(state);
             onShowToast('Estatísticas da Época exportadas em Excel (.xlsx)! 📊');
           }}
           className="py-2.5 px-3 rounded-xl bg-slate-900 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 font-['Chakra_Petch'] font-bold uppercase text-xs transition-all flex items-center justify-center gap-2"

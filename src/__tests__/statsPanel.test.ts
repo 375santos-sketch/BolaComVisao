@@ -140,3 +140,30 @@ describe('Exportação para Power BI', () => {
     expect(all).not.toContain('privado');
   });
 });
+
+describe('PDF do painel de jogos', () => {
+  it('has goals and assists, minutes per athlete and the games of the filter only', async () => {
+    const { buildGamesDashboardPDF } = await import('../lib/pdf/createGamesDashboard');
+    const { normalizeClubState } = await import('../lib/storage');
+    const state = normalizeClubState({
+      myClubName: 'Dragões',
+      season: '2026/2027',
+      category: 'Sub-11',
+      roster,
+      matches
+    } as never);
+    const season = (await buildGamesDashboardPDF(state)).output() as string;
+    expect(season).toContain('TOP 3 OFENSIVO');
+    expect(season).toContain('MINUTOS JOGADOS');
+    expect(season).toContain('QUANDO MARCAMOS');
+    expect(season).toContain('PLANTEL');
+    expect(season).toContain('Tomás');
+    expect(season).toContain('Tramagal SU');
+    expect(season).not.toContain('Abrantes'); // live game, not finished
+    const h2h = (
+      await buildGamesDashboardPDF(state, { scope: 'confronto', opponent: 'Tramagal SU' })
+    ).output() as string;
+    expect(h2h).toContain('Confronto: todos os jogos contra Tramagal SU');
+    expect(h2h).not.toContain('Esparteiros');
+  });
+});

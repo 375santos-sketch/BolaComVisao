@@ -1,125 +1,27 @@
 import { AppState } from '../../types';
-import { playerLabel } from '../utils';
+import { PanelFilter } from '../statsPanel';
 import { t } from '../../i18n/dict';
 import type { TimePeriodKey, AggregatedAnalysis, AnalysisFilters } from '../gameAnalysisUtils';
 import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters } from './pdfLayout';
 
-/**
- * 1. Relatório de Estatísticas da Época em PDF
- */
-export async function generateSeasonStatsPDF(state: AppState) {
-  const jsPDF = await getJsPDF();
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4'
-  });
-
-  const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
-  const brandDark = [8, 20, 30];
-  const lightGray = [242, 246, 250];
-  const darkText = [20, 30, 40];
-  const mutedText = [90, 110, 130];
-
-  // Header with Left Club Crest & Right BolaComVisao Logo
-  drawDocumentHeader(doc, state, 'RELATÓRIO DE ESTATÍSTICAS DA ÉPOCA');
-
-  let curY = 48;
-
-  // Overview stats
-  let scored = 0,
-    conceded = 0,
-    wins = 0,
-    draws = 0,
-    losses = 0;
-  const scorerCount: Record<string, number> = {};
-  const assistCount: Record<string, number> = {};
-
-  state.matches.forEach((m) => {
-    const sc = m.goals.filter((g) => g.type === 'scored').length;
-    const co = m.goals.filter((g) => g.type === 'conceded').length;
-    scored += sc;
-    conceded += co;
-    if (m.finished) {
-      if (sc > co) wins++;
-      else if (sc === co) draws++;
-      else losses++;
+/** Which games a statistics report covers, in words (for the PDF heading). */
+export function describePanelFilter(f: PanelFilter, state: Pick<AppState, 'matches'>): string {
+  switch (f.scope) {
+    case 'jogo': {
+      const m = (state.matches || []).find((x) => x.id === f.matchId);
+      return m ? `Jogo: ${m.date.split('-').reverse().join('/')} vs ${m.opponent}` : 'Jogo';
     }
-    m.goals.forEach((g) => {
-      if (g.type === 'scored') {
-        if (g.scorerId) scorerCount[g.scorerId] = (scorerCount[g.scorerId] || 0) + 1;
-        if (g.assistId && g.assistId !== 'none' && g.assistId !== 'unknown')
-          assistCount[g.assistId] = (assistCount[g.assistId] || 0) + 1;
-      }
-    });
-  });
-
-  // KPI boxes
-  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-  doc.roundedRect(15, curY, 180, 24, 3, 3, 'F');
-  doc.setDrawColor(200, 220, 235);
-  doc.roundedRect(15, curY, 180, 24, 3, 3, 'S');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(brandDark[0], brandDark[1], brandDark[2]);
-  doc.text(`${state.matches.length}`, 35, curY + 11, { align: 'center' });
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-  doc.text('JOGOS TOTAIS', 35, curY + 18, { align: 'center' });
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(16, 140, 70);
-  doc.text(`${wins}V - ${draws}E - ${losses}D`, 90, curY + 11, { align: 'center' });
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-  doc.text('BALANÇO DE RESULTADOS', 90, curY + 18, { align: 'center' });
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(0, 140, 220);
-  doc.text(`${scored} : ${conceded}`, 155, curY + 11, { align: 'center' });
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-  doc.text('GOLOS MARCADOS / SOFRIDOS', 155, curY + 18, { align: 'center' });
-
-  curY += 32;
-
-  // Top Scorers
-  doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
-  doc.rect(15, curY, 180, 7, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text('MELHORES MARCADORES E ASSISTÊNCIAS', 20, curY + 5);
-  curY += 12;
-
-  const scorers = Object.entries(scorerCount)
-    .map(([id, count]) => {
-      const p = state.roster.find((x) => x.id === id);
-      return { name: p ? playerLabel(p) : '—', count };
-    })
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 8);
-
-  scorers.forEach((sc) => {
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-    doc.text(sc.name, 20, curY);
-    doc.setTextColor(0, 140, 220);
-    doc.text(`${sc.count} golos`, 170, curY, { align: 'right' });
-    curY += 6;
-  });
-
-  addBolaComVisaoPageFooters(doc);
-
-  const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '_');
-  doc.save(`Estatisticas_${sanitize(myClub)}_${new Date().toISOString().slice(0, 10)}.pdf`);
+    case 'confronto':
+      return `Confronto: todos os jogos contra ${f.opponent || ''}`;
+    case 'fase':
+      return `Fase: ${f.phase || ''} (época ${f.season || ''})`;
+    case 'periodo': {
+      const d = (iso?: string) => (iso ? iso.split('-').reverse().join('/') : '…');
+      return `Período: ${d(f.from)} a ${d(f.to)}`;
+    }
+    default:
+      return `Época ${f.season || ''}`;
+  }
 }
 
 /**

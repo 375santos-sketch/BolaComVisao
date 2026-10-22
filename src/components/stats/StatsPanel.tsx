@@ -69,10 +69,17 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
   const players = sortPlayerObjs((state.roster || []).filter((p) => p.active !== false));
   const playerName = players.find((p) => p.id === playerId)?.name;
 
-  const exportPowerBi = async () => {
-    const { exportPowerBiWorkbook } = await import('../../lib/powerBiExport');
-    const name = await exportPowerBiWorkbook(state);
-    onShowToast?.(`Ficheiro para o Power BI gerado: ${name}`);
+  // "Painel de jogos" for the games of this filter, as PDF and as Excel with native charts (+ Power BI tables).
+  const exportPdf = async () => {
+    const { generateGamesDashboardPDF } = await import('../../lib/pdf/createGamesDashboard');
+    await generateGamesDashboardPDF(state, filter);
+    onShowToast?.('PDF do painel gerado 📄');
+  };
+
+  const exportExcel = async () => {
+    const { exportGamesDashboardExcel } = await import('../../lib/gamesDashboardExcel');
+    const name = exportGamesDashboardExcel(state, filter);
+    onShowToast?.(`Excel gerado: ${name}`);
   };
 
   const select = 'w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white';
@@ -308,15 +315,22 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
 
         <div className="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
           <p className="text-[11px] text-slate-400 max-w-sm">
-            Para o Power BI no computador: ficheiro Excel com todos os jogos, golos, minutos, treinos e presenças (sem
-            contactos nem datas de nascimento).
+            PDF e Excel destes jogos com gráficos. O Excel traz também as tabelas para o Power BI (sem contactos nem
+            datas de nascimento).
           </p>
           <button
             type="button"
-            onClick={exportPowerBi}
+            onClick={exportPdf}
+            className="px-3 py-2 rounded-xl bg-slate-950 border border-cyan-500/50 hover:border-cyan-400 text-cyan-200 text-xs font-bold"
+          >
+            📄 PDF destes jogos
+          </button>
+          <button
+            type="button"
+            onClick={exportExcel}
             className="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold"
           >
-            ⬇️ Exportar para Power BI
+            📊 Excel com gráficos (+ Power BI)
           </button>
         </div>
       </div>
