@@ -361,3 +361,60 @@ describe('Votação dos pais no jogador do jogo (link secreto)', () => {
     expect((await ballot(TOKEN, 'telemovelTardio0000006', 'p1')).status).toBe(403);
   });
 });
+
+describe('Conta sem código de clube (clube principal "main")', () => {
+  const poll = (clubId: string) => ({
+    clubId,
+    teamId: 'sub11',
+    title: 'Tramagal SU 1-10 Dragões',
+    candidates: [{ id: 'p1', label: 'Miguel (7)' }],
+    candidateIds: ['p1'],
+    open: true,
+    closesAt: Date.now() + 3_600_000,
+    createdAt: Date.now()
+  });
+
+  beforeAll(async () => {
+    await setRules(OPEN_RULES);
+    await fs.setDoc(userDoc('semClube'), account('semClube', null));
+    await setRules(RULES_NOW);
+  });
+
+  it('opens the parents vote and the calendar link of the main club, and sees the votes', async () => {
+    await signInAs('semClube');
+    await fs.setDoc(fs.doc(fb.db, 'public_votes', 'VotoClubePrincipal123456'), poll('main'));
+    await fs.setDoc(fs.doc(fb.db, 'public_calendars', 'CalClubePrincipal1234567'), {
+      clubId: 'main',
+      teamId: 'sub11',
+      events: [],
+      updatedAt: Date.now()
+    });
+    await fa.signOut(fb.auth);
+    const res = await fetch(
+      `http://${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/public_votes/VotoClubePrincipal123456/ballots?documentId=telemovelDoPaiMain00001`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: { candidate: { stringValue: 'p1' } } })
+      }
+    );
+    expect(res.status).toBe(200);
+    await signInAs('semClube');
+    const snap = await fs.getDocs(fs.collection(fb.db, 'public_votes', 'VotoClubePrincipal123456', 'ballots'));
+    expect(snap.size).toBe(1);
+  });
+
+  it('but not for another club, and other clubs do not see the main club votes', async () => {
+    await signInAs('semClube');
+    await expect(
+      fs.setDoc(fs.doc(fb.db, 'public_votes', 'VotoParaOClubeA12345678'), poll('clubA'))
+    ).rejects.toMatchObject(denied);
+    await signInAs('coachB');
+    await expect(
+      fs.getDocs(fs.collection(fb.db, 'public_votes', 'VotoClubePrincipal123456', 'ballots'))
+    ).rejects.toMatchObject(denied);
+    await expect(
+      fs.setDoc(fs.doc(fb.db, 'public_votes', 'VotoClubePrincipal123456'), { ...poll('main'), open: false })
+    ).rejects.toMatchObject(denied);
+  });
+});

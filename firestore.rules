@@ -317,15 +317,15 @@ service cloud.firestore {
 
     // Shareable calendar (Agenda → "Calendário para os pais"): the document id is a secret token of 24 random
     // characters. Anyone with the link reads that one document (no listing); only the club's approved coaches
-    // write it or switch it off.
+    // write it or switch it off (same access as the club's workspace, including the default "main" club).
     match /public_calendars/{token} {
       allow get: if token.size() >= 20;
       allow list: if false;
-      allow create: if isApprovedUser() && isValidId(token) && token.size() >= 20 &&
-        isValidPublicCalendar(incoming()) && incoming().clubId == getUserClubId();
-      allow update: if isApprovedUser() && resource.data.clubId == getUserClubId() &&
+      allow create: if isValidId(token) && token.size() >= 20 &&
+        isValidPublicCalendar(incoming()) && canAccessClubWorkspace(incoming().clubId);
+      allow update: if canAccessClubWorkspace(resource.data.clubId) &&
         isValidPublicCalendar(incoming()) && incoming().clubId == resource.data.clubId;
-      allow delete: if isApprovedUser() && resource.data.clubId == getUserClubId();
+      allow delete: if canAccessClubWorkspace(resource.data.clubId);
     }
 
     // Parents' vote for the "Jogador do jogo" (Resultados → ⭐): the poll id is a secret token. Anyone with the link
@@ -334,11 +334,11 @@ service cloud.firestore {
     match /public_votes/{token} {
       allow get: if token.size() >= 20;
       allow list: if false;
-      allow create: if isApprovedUser() && isValidId(token) && token.size() >= 20 &&
-        isValidMvpPoll(incoming()) && incoming().clubId == getUserClubId();
-      allow update: if isApprovedUser() && resource.data.clubId == getUserClubId() &&
+      allow create: if isValidId(token) && token.size() >= 20 &&
+        isValidMvpPoll(incoming()) && canAccessClubWorkspace(incoming().clubId);
+      allow update: if canAccessClubWorkspace(resource.data.clubId) &&
         isValidMvpPoll(incoming()) && incoming().clubId == resource.data.clubId;
-      allow delete: if isApprovedUser() && resource.data.clubId == getUserClubId();
+      allow delete: if canAccessClubWorkspace(resource.data.clubId);
 
       match /ballots/{voterId} {
         allow create: if isValidId(voterId) && voterId.size() >= 16 && voterId.size() <= 64 &&
@@ -347,8 +347,8 @@ service cloud.firestore {
           get(/databases/$(database)/documents/public_votes/$(token)).data.open == true &&
           request.time.toMillis() < get(/databases/$(database)/documents/public_votes/$(token)).data.closesAt &&
           incoming().candidate in get(/databases/$(database)/documents/public_votes/$(token)).data.candidateIds;
-        allow get, list: if isApprovedUser() &&
-          get(/databases/$(database)/documents/public_votes/$(token)).data.clubId == getUserClubId();
+        allow get, list: if
+          canAccessClubWorkspace(get(/databases/$(database)/documents/public_votes/$(token)).data.clubId);
         allow update, delete: if false;
       }
     }
