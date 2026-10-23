@@ -18,6 +18,7 @@ import { SubstitutionModal } from './liveMatch/components/SubstitutionModal';
 import { CardModal } from './liveMatch/components/CardModal';
 import { CaptainModal } from './liveMatch/components/CaptainModal';
 import { QuickBenchMode } from './liveMatch/components/QuickBenchMode';
+import { VoiceDictation } from './liveMatch/components/VoiceDictation';
 import { LivePlayingTimePanel } from './liveMatch/components/LivePlayingTimePanel';
 import { HalftimePlanPanel } from './liveMatch/components/HalftimePlanPanel';
 import { LineupModal } from './liveMatch/components/LineupModal';
@@ -91,6 +92,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     handleSaveGoal,
     handleDeleteGoal,
     handleQuickGoalBy,
+    handleVoiceCommand,
+    handleUndoVoice,
 
     // Conceded
     showConcededModal,
@@ -534,6 +537,16 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           <span>Cronologia</span>
         </button>
       </div>
+
+      {/* 🎤 Dictation (only where the browser has speech recognition, with the game under way) */}
+      {(matchPhase === 'parte1' || matchPhase === 'parte2' || matchPhase === 'intervalo') && (
+        <VoiceDictation
+          squad={eligiblePlayers}
+          onPitch={playersOnPitch}
+          onCommand={handleVoiceCommand}
+          onUndo={handleUndoVoice}
+        />
+      )}
 
       {/* Render selected mode */}
       {matchMode === 'quick' && (
