@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { compressImageFile, PHOTO_MAX_BYTES, PHOTO_MAX_SIDE } from '../../../../lib/imageCompress';
 import { AppState, Player, PlayerStatus, DominantFoot, StaffMember } from '../../../../types';
 import { SquadTab, SquadViewMode, SquadSortBy, SquadSortDirection, POSITION_OPTIONS } from '../types';
 import { getPositionRank, sortPlayerObjs, uid, calcPlayerMinutes } from '../../../../lib/utils';
@@ -184,20 +185,14 @@ export function useSquadRoster({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      onShowToast('A foto deve ser inferior a 5MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setFormPhotoUrl(event.target.result as string);
-        onShowToast('Foto carregada com sucesso! 📷');
-      }
-    };
-    reader.readAsDataURL(file);
     e.target.value = '';
+    // Reduced to a small JPEG: full-size photos filled the phone's storage ("Espaço esgotado") and the cloud records
+    compressImageFile(file, PHOTO_MAX_SIDE, PHOTO_MAX_BYTES)
+      .then((photo) => {
+        setFormPhotoUrl(photo);
+        onShowToast('Foto carregada com sucesso! 📷');
+      })
+      .catch((err: Error) => onShowToast(err.message || 'Não foi possível carregar a foto.'));
   };
 
   // Return date and reason only make sense while injured or suspended (cleared otherwise)

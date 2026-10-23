@@ -481,6 +481,8 @@ export function loadAppState(): AppState {
   return initialDefaultState;
 }
 
+let quotaWarned = false;
+
 export function saveAppState(state: AppState): boolean {
   try {
     const normalized = normalizeClubState(state);
@@ -497,9 +499,13 @@ export function saveAppState(state: AppState): boolean {
       e.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
       (e.message && e.message.includes('quota'))
     ) {
-      alert(
-        '⚠️ Espaço Esgotado! O teu dispositivo não tem mais memória alocada para a app. Exporta os dados (JSON) e limpa o armazenamento.'
-      );
+      // Once per session: the alert used to pop up again on every change while the storage stayed full.
+      if (!quotaWarned) {
+        quotaWarned = true;
+        alert(
+          '⚠️ Espaço Esgotado! O teu dispositivo não tem mais memória alocada para a app. Exporta os dados (JSON) e limpa o armazenamento.'
+        );
+      }
     } else {
       console.error('Error saving state:', e);
     }

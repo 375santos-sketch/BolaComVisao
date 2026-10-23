@@ -29,6 +29,7 @@ import { InstallPwaBanner } from './components/InstallPwaBanner';
 import { ViewLoadingFallback } from './components/ViewLoadingFallback';
 import { lazyWithRetry } from './lib/lazyWithRetry';
 import { useCalendarPublisher } from './hooks/useCalendarPublisher';
+import { useShrinkOldPhotos } from './hooks/useShrinkOldPhotos';
 
 // Dynamic Lazy Views (Zero initial bundle cost + auto-recovery)
 const AuthView = lazyWithRetry(() => import('./components/views/AuthView'), 'AuthView');
@@ -285,6 +286,9 @@ export default function App() {
       return updated;
     });
   };
+
+  // Full-size photos saved by older versions filled the phone's storage: reduce them once.
+  useShrinkOldPhotos(state, latestStateRef, updateState);
 
   const cloudSync = deriveCloudSyncStatus({
     signedIn: Boolean(state.currentUser?.id),
