@@ -7,6 +7,7 @@ import { DeletedMatchesSection } from './results/DeletedMatchesSection';
 import { ParentsShareModal } from './results/ParentsShareModal';
 import { OpponentReportModal } from './results/OpponentReportModal';
 import { MatchEditModal } from './results/MatchEditModal';
+import { LeagueTableModal } from './results/LeagueTableModal';
 import { hasReportNotes } from '../../lib/opponentReport';
 
 interface ResultsViewProps {
@@ -37,6 +38,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [editMatch, setEditMatch] = useState<Match | null>(null);
   const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
   const [isGeneratingPdfId, setIsGeneratingPdfId] = useState<string | null>(null);
+  const [showLeague, setShowLeague] = useState(false);
 
   if (!state.matches.length) {
     return (
@@ -170,6 +172,22 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           <span>Resultados</span>
         </button>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setShowLeague(true)}
+        className="w-full mb-3 py-2.5 rounded-2xl border border-cyan-500/40 bg-slate-900/80 text-cyan-200 text-xs font-bold flex items-center justify-center gap-2"
+      >
+        📊 Classificação do campeonato
+      </button>
+      {showLeague && (
+        <LeagueTableModal
+          state={state}
+          onUpdateState={onUpdateState}
+          onShowToast={(msg) => onShowToast?.(msg)}
+          onClose={() => setShowLeague(false)}
+        />
+      )}
 
       <div className="field">
         <input
