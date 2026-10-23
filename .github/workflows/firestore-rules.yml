@@ -15,6 +15,7 @@ on:
     paths:
       - 'firestore.rules'
       - 'firebase.json'
+      - '.github/workflows/firestore-rules.yml'
   workflow_dispatch:
 
 concurrency:
@@ -78,11 +79,44 @@ jobs:
 
       - name: Publicar firestore.rules (conta de serviço)
         if: env.HAS_SERVICE_ACCOUNT == 'true'
-        run: npx -y firebase-tools@13.35.1 deploy --only firestore:rules --project glowing-orbit-vk8sk --non-interactive
+        run: |
+          DB=$(node -p "require('./firebase.json').firestore[0].database")
+          # "firestore:rules" alone selects no database when firebase.json lists databases (firebase-tools then deploys
+          # nothing and still says "Deploy complete!"): name the app's database too.
+          npx -y firebase-tools@13.35.1 deploy --only "firestore:rules,firestore:${DB}" --project glowing-orbit-vk8sk --non-interactive 2>&1 | tee deploy.log
+          exit ${PIPESTATUS[0]}
 
       # Sem conta de serviço, usa o código de acesso de "firebase login:ci" (FIREBASE_TOKEN).
       - name: Publicar firestore.rules (código de acesso)
         if: env.HAS_SERVICE_ACCOUNT != 'true'
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: npx -y firebase-tools@13.35.1 deploy --only firestore:rules --project glowing-orbit-vk8sk --non-interactive
+        run: |
+          DB=$(node -p "require('./firebase.json').firestore[0].database")
+          # "firestore:rules" alone selects no database when firebase.json lists databases (firebase-tools then deploys
+          # nothing and still says "Deploy complete!"): name the app's database too.
+          npx -y firebase-tools@13.35.1 deploy --only "firestore:rules,firestore:${DB}" --project glowing-orbit-vk8sk --non-interactive 2>&1 | tee deploy.log
+          exit ${PIPESTATUS[0]}
+
+      # The deploy can report success without the app's database using the new rules (wrong database, rules replaced
+      # elsewhere). Check it from outside: anyone may read a parents' calendar by its token, so reading a token that
+      # does not exist must answer "not found" (404), never "permission denied" (403).
+      - name: Confirmar que as regras estão ativas na base de dados da app
+        if: always()
+        run: |
+          grep -v "npm warn" deploy.log | sed 's/\x1b\[[0-9;]*m//g' | grep -v '^\s*$' | tail -25 | while IFS= read -r line; do
+            echo "::notice title=Firebase deploy::$line"
+          done || true
+          DB=$(node -p "require('./firebase.json').firestore[0].database")
+          KEY=$(node -p "require('./firebase-applet-config.json').apiKey")
+          URL="https://firestore.googleapis.com/v1/projects/glowing-orbit-vk8sk/databases/${DB}/documents/public_calendars/VerificacaoRegrasInexistente1"
+          for i in 1 2 3 4 5 6; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' "${URL}?key=${KEY}")
+            [ "$CODE" = "404" ] && break
+            sleep 20
+          done
+          echo "::notice title=Verificação das regras::Base ${DB}: leitura pública de teste respondeu ${CODE} (esperado 404)"
+          if [ "$CODE" != "404" ]; then
+            echo "::error title=Regras não ativas::A base de dados ${DB} não está a usar as regras novas (resposta ${CODE})."
+            exit 1
+          fi
