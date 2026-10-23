@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { VoiceCommand } from '../../../../lib/voiceCommands';
 import { AppState, Match, GoalEvent, CardEvent, SubEvent, GoalType, MatchPeriod } from '../../../../types';
 import { uid, formatMinute, sortPlayerObjs, getMatchElapsedMs } from '../../../../lib/utils';
 import { getLineupSize } from '../../../../lib/constants';
@@ -193,72 +192,6 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     };
     updateMatchInState({ ...match, goals: [...match.goals, goal] });
     return goal;
-  };
-
-  /**
-   * Dictation (🎤): records the event said by the coach with the clock's minute and half. Returns the id of the new
-   * event (to undo it) or an error message.
-   */
-  const handleVoiceCommand = (cmd: VoiceCommand): { id?: string; error?: string } => {
-    if (!match) return { error: 'Não há nenhum jogo a decorrer.' };
-    const phase = getMatchPhase(match);
-    const running = phase === 'parte1' || phase === 'parte2';
-    if (!running && !(cmd.kind === 'sub' && phase === 'intervalo')) {
-      return { error: 'Só regista com o jogo a decorrer (substituições também no intervalo).' };
-    }
-    const D = getNominalHalfDuration(match, state.category);
-    const { period, half } = derivePeriodAndHalfFromPhase(phase);
-    const suggested = getSuggestedMinute(match, state.category) || '';
-    const timing = {
-      minute: suggested ? formatMinute(suggested) : null,
-      minuteBase: 'game' as const,
-      minuteInHalf: computeMinuteInHalf(suggested, half, D),
-      period,
-      half
-    };
-    const id = uid();
-    if (cmd.kind === 'goal' || cmd.kind === 'conceded') {
-      const goal: GoalEvent =
-        cmd.kind === 'goal'
-          ? { id, type: 'scored', scorerId: cmd.scorerId, assistId: cmd.assistId, ...timing }
-          : { id, type: 'conceded', scorerId: null, assistId: null, ...timing };
-      updateMatchInState({ ...match, goals: [...match.goals, goal] });
-    } else if (cmd.kind === 'card') {
-      const card: CardEvent = { id, playerId: cmd.playerId, color: cmd.color, ...timing };
-      updateMatchInState({ ...match, cards: [...(match.cards || []), card] });
-    } else {
-      const onPitch = getCurrentPlayersOnPitch(match);
-      if (phase !== 'intervalo' && (!onPitch.includes(cmd.outId) || onPitch.includes(cmd.inId))) {
-        return { error: 'Essa substituição não bate certo com quem está em campo.' };
-      }
-      const halftime = phase === 'intervalo';
-      const sub: SubEvent = halftime
-        ? {
-            id,
-            outId: cmd.outId,
-            inId: cmd.inId,
-            minute: 'INT',
-            minuteBase: 'game',
-            minuteInHalf: D,
-            period: 'Intervalo',
-            half: 1,
-            isHalftime: true
-          }
-        : { id, outId: cmd.outId, inId: cmd.inId, ...timing };
-      updateMatchInState({ ...match, subs: [...(match.subs || []), sub] });
-    }
-    return { id };
-  };
-
-  /** Removes an event recorded by dictation ("Desfazer"). */
-  const handleUndoVoice = (id: string) => {
-    if (!match) return;
-    updateMatchInState({
-      ...match,
-      goals: match.goals.filter((g) => g.id !== id),
-      cards: (match.cards || []).filter((c) => c.id !== id),
-      subs: (match.subs || []).filter((s) => s.id !== id)
-    });
   };
 
   const handleDeleteGoal = (goalId: string) => {
@@ -774,8 +707,6 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     handleSaveGoal,
     handleDeleteGoal,
     handleQuickGoalBy,
-    handleVoiceCommand,
-    handleUndoVoice,
 
     // Goal Conceded
     showConcededModal,
