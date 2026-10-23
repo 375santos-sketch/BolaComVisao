@@ -931,6 +931,33 @@ function largePng(side = 1000): Buffer {
   ]);
 }
 
+test('aniversário: no dia de anos aparece no Início com a imagem de parabéns para partilhar', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Gonçalo Teste' }).click();
+  await page.getByRole('button', { name: /Editar Dados/ }).click();
+  // Born 10 years ago today (local date, as the app sees it)
+  const birth = await page.evaluate(() => {
+    const d = new Date();
+    return `${d.getFullYear() - 10}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  await page.locator('#player-form input[type=date]').first().fill(birth);
+  await page.locator('#player-form button[type=submit]').click();
+
+  await navTo(page, /início/i);
+  const today = page.getByRole('region', { name: 'Aniversários de hoje' });
+  await expect(today).toContainText('Gonçalo Teste');
+  await expect(today).toContainText('10 anos');
+  await today.getByRole('button', { name: /Imagem de parabéns/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Imagem de parabéns' });
+  const picture = dialog.getByRole('img', { name: 'Imagem de parabéns para Gonçalo Teste' });
+  await expect(picture).toBeVisible();
+  await picture.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/parabens.png` : undefined });
+  const download = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: /Partilhar imagem/ }).click();
+  expect((await download).suggestedFilename()).toBe('Parabens_Gon_alo_Teste.png');
+});
+
 test('foto do atleta: uma foto grande do telemóvel fica pequena e é guardada', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /equipa/i);

@@ -10,6 +10,7 @@ import {
 } from '../../../lib/mvpCard';
 import { calculateMatchScore } from '../../../lib/utils';
 import { MvpVotePanel } from './MvpVotePanel';
+import { loadDataImage, shareCanvasImage } from '../../../lib/shareImage';
 
 interface MvpModalProps {
   match: Match;
@@ -18,16 +19,6 @@ interface MvpModalProps {
   onShowToast: (msg: string) => void;
   onClose: () => void;
 }
-
-/** Only images that are already in the app (data URLs) can go into the picture: other links block the export. */
-const loadImage = (src?: string): Promise<HTMLImageElement | null> =>
-  new Promise((resolve) => {
-    if (!src || !src.startsWith('data:image/')) return resolve(null);
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
 
 /** ⭐ Jogador do jogo: pick the standout athlete and share a picture with the parents. */
 export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShowToast, onClose }) => {
@@ -48,8 +39,8 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
     let cancelled = false;
     (async () => {
       const [photo, logo] = await Promise.all([
-        withPhoto ? loadImage(line.player.photoUrl) : Promise.resolve(null),
-        loadImage(state.clubLogoUrl)
+        withPhoto ? loadDataImage(line.player.photoUrl) : Promise.resolve(null),
+        loadDataImage(state.clubLogoUrl)
       ]);
       if (document.fonts?.ready) await document.fonts.ready.catch(() => undefined);
       const ctx = canvasRef.current?.getContext('2d');
@@ -85,29 +76,9 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
     const canvas = canvasRef.current;
     if (!canvas || !line) return;
     save();
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
-    if (!blob) {
-      onShowToast('Não foi possível criar a imagem.');
-      return;
-    }
-    const file = new File([blob], fileName, { type: 'image/png' });
-    const text = `⭐ Jogador do jogo: ${line.player.name}!`;
-    try {
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], text });
-        return;
-      }
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') return;
-    }
-    // Computers and browsers without sharing: download the picture
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    onShowToast('Imagem descarregada 📥');
+    const result = await shareCanvasImage(canvas, fileName, `⭐ Jogador do jogo: ${line.player.name}!`);
+    if (result === 'error') onShowToast('Não foi possível criar a imagem.');
+    if (result === 'downloaded') onShowToast('Imagem descarregada 📥');
   };
 
   return (

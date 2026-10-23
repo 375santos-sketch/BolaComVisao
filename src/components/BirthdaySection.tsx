@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BirthdayImageModal } from './birthday/BirthdayImageModal';
 import { AppState, Player, StaffMember } from '../types';
 import {
   BirthdayPerson,
@@ -53,6 +54,8 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
       person.formattedDayMonth.toLowerCase().includes(term)
     );
   });
+
+  const [imagePerson, setImagePerson] = useState<BirthdayPerson | null>(null);
 
   const handleShareWhatsApp = (person: BirthdayPerson) => {
     const text = getBirthdayGreetingMessage(person, state.myClubName);
@@ -258,6 +261,15 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
 
                 {/* Actions */}
                 <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setImagePerson(person)}
+                    className="px-2.5 py-1.5 rounded-xl bg-fuchsia-500 hover:bg-fuchsia-400 text-white font-black text-xs shadow transition-all"
+                    title="Imagem de parabéns para partilhar"
+                    aria-label={`Imagem de parabéns para ${person.name}`}
+                  >
+                    🖼️
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleShareWhatsApp(person)}
@@ -593,6 +605,15 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
+                        onClick={() => setImagePerson(person)}
+                        className="px-2.5 py-1 rounded-xl bg-fuchsia-950/80 border border-fuchsia-500/50 text-fuchsia-200 text-xs font-bold"
+                        title="Imagem de parabéns para partilhar"
+                        aria-label={`Imagem de parabéns para ${person.name}`}
+                      >
+                        🖼️
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleShareWhatsApp(person)}
                         className="px-2.5 py-1 rounded-xl bg-emerald-950/80 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 hover:text-white text-xs font-mono font-bold transition-all flex items-center gap-1"
                         title="Enviar mensagem no WhatsApp"
@@ -724,6 +745,14 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
             </div>
           )}
         </div>
+      )}
+      {imagePerson && (
+        <BirthdayImageModal
+          person={imagePerson}
+          state={state}
+          onShowToast={onShowToast}
+          onClose={() => setImagePerson(null)}
+        />
       )}
     </div>
   );
