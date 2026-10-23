@@ -96,7 +96,7 @@ jobs:
       - name: Confirmar que as regras estão ativas na base de dados da app
         if: always()
         run: |
-          grep -iE "database|released|deploy complete|rules file|compiled|error|warn" deploy.log | head -20 | while IFS= read -r line; do
+          grep -v "npm warn" deploy.log | sed 's/\x1b\[[0-9;]*m//g' | grep -v '^\s*$' | tail -25 | while IFS= read -r line; do
             echo "::notice title=Firebase deploy::$line"
           done || true
           DB=$(node -p "require('./firebase.json').firestore[0].database")
