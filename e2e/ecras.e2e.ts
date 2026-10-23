@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { COACH_A, COACH_B, FIRESTORE, owner, PASSWORD } from './seed';
+import { buildICS, feedFromRestDocument } from '../src/lib/calendarFeed';
 import {
   cloudRecords,
   enterPanel,
@@ -257,6 +258,42 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
       { timeout: 30_000, message: 'convocatória na nuvem' }
     )
     .toEqual(['Jornada 6', 3, true]);
+});
+
+test('calendário para os pais: link secreto com jogos e treinos que se atualiza sozinho', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: /Calendário para os pais/ }).click();
+  const share = page.getByRole('dialog', { name: 'Calendário para os pais' });
+  await share.getByRole('button', { name: 'Criar link do calendário' }).click();
+  const link = share.getByLabel('Link do calendário');
+  await expect(link).toHaveValue(/\/cal\/[a-zA-Z0-9]{24}\.ics$/);
+  const token = (await link.inputValue()).match(/\/cal\/([a-zA-Z0-9]{24})\.ics$/)![1];
+
+  // Anyone with the link reads it (no sign-in), and it only has games and trainings
+  const published = async () => {
+    const res = await fetch(`${FIRESTORE}/public_calendars/${token}`);
+    return res.ok ? JSON.stringify(await res.json()) : null;
+  };
+  await expect.poll(published, { timeout: 30_000 }).toContain('Abrantes');
+  expect(await published()).not.toContain('Rui Silva');
+  const ics = buildICS(feedFromRestDocument(JSON.parse((await published())!))!);
+  expect(ics).toContain('SUMMARY:⚽ Dragões vs Abrantes');
+  expect(ics).toContain('BEGIN:VEVENT');
+  await share.getByRole('button', { name: 'Fechar' }).click();
+
+  // A new game in the Agenda reaches the calendar on its own
+  await page.getByRole('button', { name: '⚽ ＋ Jogo' }).first().click();
+  await page.getByPlaceholder('Nome da equipa adversária').fill('Mação');
+  await page.locator('input[type=date]').first().fill('2026-12-12');
+  await page.locator('input[type=time]').first().fill('15:00');
+  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await expect.poll(published, { timeout: 30_000 }).toContain('Mação');
+
+  // Switched off: the link stops working
+  await page.getByRole('button', { name: /Calendário para os pais/ }).click();
+  await page.getByRole('button', { name: 'Desativar este link' }).click();
+  await expect.poll(published, { timeout: 30_000 }).toBeNull();
 });
 
 test('análise: remates e eficácia de finalização', async ({ page }) => {

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AppState } from '../../types';
 import { Header } from '../Header';
 import { CalendarEvent } from './schedule/types';
@@ -18,6 +18,7 @@ import { ScheduleTrainingModal } from './schedule/ScheduleTrainingModal';
 import { ScheduleStaffModal } from './schedule/ScheduleStaffModal';
 import { ScheduleClubEventModal } from './schedule/ScheduleClubEventModal';
 import { ScheduleFab } from './schedule/ScheduleFab';
+import { CalendarShareModal } from './schedule/CalendarShareModal';
 
 export type { CalendarEvent };
 
@@ -42,6 +43,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
   onShowConfirm,
   onShowToast
 }) => {
+  const [showCalendarShare, setShowCalendarShare] = useState(false);
   // Events hook
   const {
     viewMode,
@@ -330,6 +332,27 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         onOpenScheduleStaff={() => handleOpenScheduleStaff(selectedDate)}
         onResetSchedule={handleResetSchedule}
       />
+
+      <button
+        type="button"
+        onClick={() => setShowCalendarShare(true)}
+        className="w-full mb-3 py-2.5 px-3 rounded-2xl border border-cyan-500/40 bg-slate-900/80 text-cyan-200 text-xs font-bold flex items-center justify-center gap-2"
+      >
+        📅 Calendário para os pais{' '}
+        <span className="text-[10px] font-normal text-slate-400">
+          {(state.teams || []).find((t) => t.id === state.activeTeamId)?.calendarToken
+            ? '(link ativo)'
+            : '(Google / iPhone)'}
+        </span>
+      </button>
+      {showCalendarShare && (
+        <CalendarShareModal
+          state={state}
+          onUpdateState={onUpdateState}
+          onShowToast={onShowToast}
+          onClose={() => setShowCalendarShare(false)}
+        />
+      )}
 
       {/* View Switcher & Event Category Filter Pills */}
       <ScheduleFilters
