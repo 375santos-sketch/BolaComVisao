@@ -78,7 +78,8 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
   }, [vote, count]);
 
   const open = async () => {
-    const clubId = state.currentUser?.clubId;
+    // Same club workspace as the cloud sync (accounts without a club code use the default "main" club)
+    const clubId = state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined;
     if (!clubId || !state.activeTeamId) {
       onShowToast('Precisa de ter sessão iniciada na nuvem para abrir a votação.');
       return;

@@ -23,7 +23,8 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
 }) => {
   const team = (state.teams || []).find((t) => t.id === state.activeTeamId);
   const token = team?.calendarToken;
-  const clubId = state.currentUser?.clubId;
+  // Same club workspace as the cloud sync (accounts without a club code use the default "main" club)
+  const clubId = state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined;
   const [busy, setBusy] = useState(false);
   const links = token ? calendarLinks(token) : null;
   const events = calendarEventsOf(state);
