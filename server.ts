@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
+import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
 
 // Load Firebase Config for Backend operations
 let firebaseConfig: any = {};
@@ -225,6 +226,31 @@ async function startServer() {
       });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // Parents' calendar (Agenda → "Calendário para os pais"): /cal/{token}.ics, read from public_calendars/{token}.
+  // The token is the secret; the document only holds games and trainings (no athletes' data).
+  app.get('/cal/:file', async (req, res) => {
+    const match = /^([a-zA-Z0-9]{20,64})\.ics$/.exec(req.params.file || '');
+    if (!match) return res.status(404).type('text/plain').send('Calendário não encontrado.');
+    try {
+      const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+      const base = process.env.FIRESTORE_EMULATOR_HOST
+        ? `http://${process.env.FIRESTORE_EMULATOR_HOST}`
+        : 'https://firestore.googleapis.com';
+      const key = firebaseConfig.apiKey ? `?key=${encodeURIComponent(firebaseConfig.apiKey)}` : '';
+      const url = `${base}/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/public_calendars/${match[1]}${key}`;
+      const resp = await fetch(url);
+      if (!resp.ok) return res.status(404).type('text/plain').send('Calendário não encontrado ou desativado.');
+      const feed = feedFromRestDocument(await resp.json());
+      if (!feed) return res.status(404).type('text/plain').send('Calendário não encontrado.');
+      res.set('Cache-Control', 'public, max-age=900');
+      res.set('Content-Disposition', 'inline; filename="calendario.ics"');
+      return res.type('text/calendar; charset=utf-8').send(buildICS(feed));
+    } catch (err) {
+      console.error('Erro na rota /cal:', err);
+      return res.status(502).type('text/plain').send('Calendário temporariamente indisponível.');
     }
   });
 

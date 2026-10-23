@@ -229,3 +229,59 @@ describe('Regras atuais: o uso normal continua a funcionar', () => {
     await fs.setDoc(userDoc('semClube'), account('semClube', 'clubA'));
   });
 });
+
+describe('Calendário para os pais (link secreto)', () => {
+  const TOKEN = 'Cal7aBcDeFgHiJkLmNoPqRsT';
+  const calendar = (clubId: string, extra: Record<string, unknown> = {}) => ({
+    clubId,
+    teamId: 'sub11',
+    teamName: 'Dragões',
+    events: [{ uid: 'jogo-1', kind: 'jogo', date: '2026-11-07', time: '10:00', title: '⚽ Dragões vs Abrantes' }],
+    updatedAt: Date.now(),
+    ...extra
+  });
+  const calDoc = (token = TOKEN) => fs.doc(fb.db, 'public_calendars', token);
+
+  beforeAll(async () => {
+    await setRules(RULES_NOW);
+  });
+
+  it('a coach publishes the calendar of their club', async () => {
+    await signInAs('coachA');
+    await fs.setDoc(calDoc(), calendar('clubA'));
+    await fs.setDoc(calDoc(), calendar('clubA', { updatedAt: Date.now() + 1 }));
+  });
+
+  it('anyone with the link reads it, without signing in (but nobody lists the calendars)', async () => {
+    const res = await fetch(
+      `http://${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/public_calendars/${TOKEN}`
+    );
+    expect(res.status).toBe(200);
+    expect(JSON.stringify(await res.json())).toContain('Dragões vs Abrantes');
+    const list = await fetch(
+      `http://${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/public_calendars`
+    );
+    expect(list.status).toBe(403);
+  });
+
+  it('another club, an anonymous visitor or extra (personal) fields are refused', async () => {
+    await signInAs('coachB');
+    await expect(fs.setDoc(calDoc(), calendar('clubB'))).rejects.toMatchObject(denied);
+    await expect(fs.deleteDoc(calDoc())).rejects.toMatchObject(denied);
+    await expect(fs.setDoc(calDoc('OutroTokenDoClubeA12345'), calendar('clubA'))).rejects.toMatchObject(denied);
+    await signInAs('coachA');
+    await expect(fs.setDoc(calDoc(), calendar('clubA', { roster: ['Rui Silva'] }))).rejects.toMatchObject(denied);
+    await expect(fs.setDoc(calDoc('curto'), calendar('clubA'))).rejects.toMatchObject(denied);
+    await fa.signOut(fb.auth);
+    await expect(fs.setDoc(calDoc('AnonimoTokenAbcdef12345'), calendar('clubA'))).rejects.toMatchObject(denied);
+  });
+
+  it('a coach of the club switches the link off', async () => {
+    await signInAs('colegaA');
+    await fs.deleteDoc(calDoc());
+    const res = await fetch(
+      `http://${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/public_calendars/${TOKEN}`
+    );
+    expect(res.status).toBe(404);
+  });
+});

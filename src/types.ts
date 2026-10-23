@@ -661,6 +661,8 @@ export interface SquadProfile {
   staffUnavailability?: StaffUnavailability[];
   clubEvents?: ClubEvent[];
   exerciseLibrary?: Exercise[];
+  /** Secret part of the parents' calendar link (/cal/{token}.ics); none = calendar not shared. */
+  calendarToken?: string;
 }
 
 export type UserStatus = 'approved' | 'pending' | 'rejected';

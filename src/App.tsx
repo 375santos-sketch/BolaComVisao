@@ -28,6 +28,7 @@ import { ConfirmModal } from './components/ConfirmModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
 import { ViewLoadingFallback } from './components/ViewLoadingFallback';
 import { lazyWithRetry } from './lib/lazyWithRetry';
+import { useCalendarPublisher } from './hooks/useCalendarPublisher';
 
 // Dynamic Lazy Views (Zero initial bundle cost + auto-recovery)
 const AuthView = lazyWithRetry(() => import('./components/views/AuthView'), 'AuthView');
@@ -57,6 +58,7 @@ import { NotificationModal } from './components/NotificationModal';
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
+  useCalendarPublisher(state);
   const latestStateRef = useRef(state);
   useEffect(() => {
     latestStateRef.current = state;

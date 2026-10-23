@@ -224,3 +224,4 @@ trocar as regras a meio dos testes.
 | #35 | Golos/assistências/cartões com o atleta pelo nome (versões antigas, importações) contam no painel e na ficha; Análise de Jogos exporta o painel                         |
 | #36 | Minutos de jogo: aviso e botão para indicar titulares em falta; % sobre os minutos de todos os jogos (convocado ou não), todos os atletas ativos na tabela, por minutos |
 | #39 | Verificação ao terminar o jogo (titulares, minutos = jogadores x duração, local casa/fora); resultados com a equipa da casa primeiro em todo o lado                     |
+| #44 | Calendário para os pais: link secreto `/cal/{token}.ics` (servidor) a partir de `public_calendars/{token}` (regras), só jogos e treinos, atualizado sozinho             |

@@ -287,7 +287,32 @@ service cloud.firestore {
         (data.deleted == true || data.data is map);
     }
 
+    // Calendar for the parents: only games and trainings (dates, times, opponents, places), never athletes' data.
+    function isValidPublicCalendar(data) {
+      return data is map &&
+        data.keys().hasAll(['clubId', 'teamId', 'events', 'updatedAt']) &&
+        data.keys().hasOnly(['clubId', 'teamId', 'teamName', 'events', 'updatedAt']) &&
+        data.clubId is string && data.clubId.size() > 0 && data.clubId.size() <= 128 &&
+        data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
+        (!data.keys().hasAny(['teamName']) || (data.teamName is string && data.teamName.size() <= 200)) &&
+        data.events is list && data.events.size() <= 600 &&
+        data.updatedAt is number;
+    }
+
     // --- Collection Security Rules ---
+
+    // Shareable calendar (Agenda → "Calendário para os pais"): the document id is a secret token of 24 random
+    // characters. Anyone with the link reads that one document (no listing); only the club's approved coaches
+    // write it or switch it off.
+    match /public_calendars/{token} {
+      allow get: if token.size() >= 20;
+      allow list: if false;
+      allow create: if isApprovedUser() && isValidId(token) && token.size() >= 20 &&
+        isValidPublicCalendar(incoming()) && incoming().clubId == getUserClubId();
+      allow update: if isApprovedUser() && resource.data.clubId == getUserClubId() &&
+        isValidPublicCalendar(incoming()) && incoming().clubId == resource.data.clubId;
+      allow delete: if isApprovedUser() && resource.data.clubId == getUserClubId();
+    }
 
     // Dedicated Admins Collection
     match /admins/{adminId} {
