@@ -87,6 +87,9 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
   const [coachNotes, setCoachNotes] = useState<string>(player.coachNotes || player.notes || '');
   const [isSavingNotes, setIsSavingNotes] = useState<boolean>(false);
   const [showPanel, setShowPanel] = useState(false);
+  const [seasonMessage, setSeasonMessage] = useState<string>(
+    (state.season && player.seasonMessages?.[state.season]) || ''
+  );
 
   const st = STATUS_CONFIG[player.status || 'disponivel'];
   const evo = calculatePlayerEvolution(player, state);
@@ -115,6 +118,33 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
 
     setIsSavingNotes(false);
     onShowToast(`Notas confidenciais de ${player.name} guardadas! 📝`);
+  };
+
+  /** Saves the end-of-season message (only when it changed) and returns it. */
+  const handleSaveSeasonMessage = (): string => {
+    const msg = seasonMessage.trim();
+    if (!state.season) return msg;
+    if (msg === (player.seasonMessages?.[state.season] || '').trim()) return msg;
+    if (!onUpdateState) {
+      onShowToast('Mensagem atualizada localmente!');
+      return msg;
+    }
+    const updatedRoster = (state.roster || []).map((p) => (p.id === player.id ? withSeasonMessage(p, msg) : p));
+    const updatedTeams =
+      state.activeTeamId && state.teams
+        ? state.teams.map((t) => (t.id === state.activeTeamId ? { ...t, roster: updatedRoster } : t))
+        : state.teams;
+    onUpdateState({ roster: updatedRoster, ...(updatedTeams ? { teams: updatedTeams } : {}) });
+    onShowToast('Mensagem de fim de época guardada ✓');
+    return msg;
+  };
+
+  const withSeasonMessage = (p: Player, msg: string): Player => {
+    if (!state.season) return p;
+    const seasonMessages = { ...(p.seasonMessages || {}) };
+    if (msg) seasonMessages[state.season] = msg;
+    else delete seasonMessages[state.season];
+    return { ...p, seasonMessages };
   };
 
   return (
@@ -363,6 +393,49 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
               className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors resize-none font-mono"
             />
           </div>
+
+          {/* Relatório de fim de época (para a família) */}
+          <section
+            aria-label="Relatório de fim de época"
+            className="bg-slate-950/80 p-3.5 rounded-2xl border border-amber-500/30 space-y-2"
+          >
+            <div className="text-xs font-['Chakra_Petch'] font-bold text-amber-300 uppercase tracking-wider">
+              🏆 Relatório de fim de época {state.season ? `· ${state.season}` : ''}
+            </div>
+            <p className="text-[11px] text-slate-400">
+              PDF para entregar à família: evolução, minutos, golos, assiduidade e a sua mensagem. Não leva contactos nem
+              as notas confidenciais.
+            </p>
+            <textarea
+              rows={3}
+              aria-label="Mensagem do treinador para a família"
+              value={seasonMessage}
+              onChange={(e) => setSeasonMessage(e.target.value)}
+              placeholder="Ex: Foi uma época de grande evolução. O teu empenho nos treinos fez a diferença…"
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleSaveSeasonMessage}
+                className="py-2 rounded-xl border border-amber-500/50 text-amber-200 text-xs font-bold"
+              >
+                Guardar mensagem
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const msg = handleSaveSeasonMessage();
+                  const { generateSeasonFinalReportPDF } = await import('../../../lib/pdfUtils');
+                  await generateSeasonFinalReportPDF([withSeasonMessage(player, msg)], state);
+                  onShowToast(`Relatório de fim de época de ${player.name} gerado 🏆`);
+                }}
+                className="py-2 rounded-xl bg-amber-500 text-slate-950 text-xs font-black"
+              >
+                📄 PDF fim de época
+              </button>
+            </div>
+          </section>
 
           {/* Individual Export Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">

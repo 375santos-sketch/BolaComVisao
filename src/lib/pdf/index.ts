@@ -4,3 +4,4 @@ export * from './createTrainingReport';
 export * from './createMatchReport';
 export * from './createSeasonReport';
 export * from './createGamesDashboard';
+export { generateSeasonFinalReportPDF } from './createSeasonFinalReport';
