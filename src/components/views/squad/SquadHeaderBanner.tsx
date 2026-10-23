@@ -89,6 +89,24 @@ export const SquadHeaderBanner: React.FC<SquadHeaderBannerProps> = ({
             <span>📄 PDF</span>
           </button>
 
+          {/* End-of-season report: one PDF with every active athlete (one per page, to print for the families) */}
+          <button
+            onClick={async () => {
+              const players = (state.roster || []).filter((p) => p && p.active !== false);
+              if (players.length === 0) {
+                onShowToast('Não existem jogadores no plantel.');
+                return;
+              }
+              const { generateSeasonFinalReportPDF } = await import('../../../lib/pdfUtils');
+              await generateSeasonFinalReportPDF(players, state);
+              onShowToast(`Relatórios de fim de época gerados (${players.length} atletas) 🏆`);
+            }}
+            className="px-3 py-2 rounded-xl bg-slate-950 border border-amber-500/40 hover:border-amber-400 text-amber-300 font-mono text-xs font-bold hover:bg-slate-900 transition-all flex items-center gap-1.5"
+            title="Relatório de fim de época de todos os atletas (um PDF, uma página por atleta)"
+          >
+            <span>🏆 Fim de época</span>
+          </button>
+
           {/* Export Excel Button */}
           <button
             onClick={async () => {

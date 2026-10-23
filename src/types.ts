@@ -27,6 +27,8 @@ export interface Player {
   active: boolean;
   notes?: string;
   coachNotes?: string;
+  /** Coach's message to the family in the end-of-season report, per season ("2026/2027" → text). */
+  seasonMessages?: Record<string, string>;
   nickname?: string;
   captain?: boolean;
 }

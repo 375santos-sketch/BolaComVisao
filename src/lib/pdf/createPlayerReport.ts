@@ -469,17 +469,17 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
 }
 
 // Light-surface step of the validated palette (one series) and neutral tokens
-const PDF_BAR: [number, number, number] = [42, 120, 214];
-const PDF_TRACK: [number, number, number] = [226, 232, 240];
+export const PDF_BAR: [number, number, number] = [42, 120, 214];
+export const PDF_TRACK: [number, number, number] = [226, 232, 240];
 const PDF_GRID: [number, number, number] = [203, 213, 225];
-const PDF_MUTED: [number, number, number] = [100, 116, 139];
-const PDF_INK: [number, number, number] = [15, 23, 42];
+export const PDF_MUTED: [number, number, number] = [100, 116, 139];
+export const PDF_INK: [number, number, number] = [15, 23, 42];
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
 type Writer = ReturnType<typeof createTextReportWriter>;
 
 /** Minutes game by game: bar = minutes played over the game's minutes (track), dashed 50% line, G/A above. */
-function drawMinutesByGame(doc: any, w: Writer, s: ReturnType<typeof buildPlayerSeason>) {
+export function drawMinutesByGame(doc: any, w: Writer, s: ReturnType<typeof buildPlayerSeason>) {
   const games = s.evolution.games;
   if (games.length === 0) return;
   w.heading('Minutos jogo a jogo');
@@ -547,7 +547,7 @@ function drawMinutesByGame(doc: any, w: Writer, s: ReturnType<typeof buildPlayer
 }
 
 /** Training attendance per month: one thin bar per month with "presente/realizados". */
-function drawTrainingMonths(doc: any, w: Writer, s: ReturnType<typeof buildPlayerSeason>) {
+export function drawTrainingMonths(doc: any, w: Writer, s: ReturnType<typeof buildPlayerSeason>) {
   const months = s.evolution.trainingMonths;
   if (months.length === 0) return;
   w.ensure(months.length * 5 + 4);

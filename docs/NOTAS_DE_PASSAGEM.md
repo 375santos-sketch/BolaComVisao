@@ -227,4 +227,5 @@ trocar as regras a meio dos testes.
 | #43 | Biblioteca de exercícios (nome, objetivo, desenho importado, duração) usada no plano do treino e no PDF; exercícios em registos `exercise` (regras)                                                  |
 | #44 | Calendário para os pais: link secreto `/cal/{token}.ics` (servidor) a partir de `public_calendars/{token}` (regras), só jogos e treinos, atualizado sozinho                                          |
 | #45 | Fotos de atletas e staff reduzidas ao carregar (JPEG ~45 KB); fotos antigas em tamanho original reduzidas uma vez ao abrir a app; aviso "Espaço esgotado" só uma vez                                 |
+| #46 | Relatório de fim de época por atleta (PDF para a família: números, destaques, evolução, assiduidade e mensagem do treinador em `Player.seasonMessages[época]`); botão do plantel inteiro             |
 | #47 | Classificação do campeonato (Resultados): outros jogos da série escritos ou colados em `SquadProfile.leagues` (registo club), jogos de campeonato da app automáticos, desempate por confronto direto |
