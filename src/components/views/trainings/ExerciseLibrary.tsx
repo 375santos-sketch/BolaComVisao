@@ -1,0 +1,257 @@
+import React, { useMemo, useState } from 'react';
+import { Exercise, ExerciseCategory } from '../../../types';
+import { compressImageFile } from '../../../lib/imageCompress';
+import { uid } from '../../../lib/utils';
+
+export const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
+  { id: 'aquecimento', label: '🔥 Aquecimento' },
+  { id: 'tecnica', label: '⚽ Técnica' },
+  { id: 'tatica', label: '⚡ Tática' },
+  { id: 'fisico', label: '🏃 Físico' },
+  { id: 'jogo', label: '🥅 Jogo' },
+  { id: 'bolas_paradas', label: '🎯 Bolas paradas' }
+];
+export const categoryLabel = (c?: ExerciseCategory) => EXERCISE_CATEGORIES.find((x) => x.id === c)?.label || '';
+
+interface ExerciseLibraryProps {
+  exercises: Exercise[];
+  onSave: (exercises: Exercise[]) => void;
+  onShowToast: (msg: string) => void;
+}
+
+const input =
+  'w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-cyan-400 outline-none';
+
+const blank = (): Exercise => ({
+  id: uid(),
+  name: '',
+  category: 'tecnica',
+  durationMinutes: 15,
+  createdAt: new Date().toISOString()
+});
+
+/** Treinos → Biblioteca: the coach's exercises (name, objective, drawing/photo, duration), reused in session plans. */
+export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onSave, onShowToast }) => {
+  const [editing, setEditing] = useState<Exercise | null>(null);
+  const [search, setSearch] = useState('');
+  const [loadingImage, setLoadingImage] = useState(false);
+
+  const list = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return [...exercises]
+      .filter((e) => !q || `${e.name} ${e.objective || ''}`.toLowerCase().includes(q))
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-PT'));
+  }, [exercises, search]);
+
+  const save = () => {
+    if (!editing) return;
+    if (!editing.name.trim()) {
+      onShowToast('Dê um nome ao exercício.');
+      return;
+    }
+    const clean: Exercise = { ...editing, name: editing.name.trim(), objective: editing.objective?.trim() || '' };
+    const exists = exercises.some((e) => e.id === clean.id);
+    onSave(exists ? exercises.map((e) => (e.id === clean.id ? clean : e)) : [...exercises, clean]);
+    onShowToast(exists ? 'Exercício atualizado ✓' : 'Exercício guardado na biblioteca ✓');
+    setEditing(null);
+  };
+
+  const importImage = async (file?: File) => {
+    if (!file || !editing) return;
+    setLoadingImage(true);
+    try {
+      const image = await compressImageFile(file);
+      setEditing((e) => (e ? { ...e, image } : e));
+    } catch (err) {
+      onShowToast((err as Error).message || 'Não foi possível importar a imagem.');
+    } finally {
+      setLoadingImage(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <section aria-label="Editar exercício" className="card space-y-3">
+        <h3 className="text-sm font-black text-white font-['Chakra_Petch'] uppercase">
+          {exercises.some((e) => e.id === editing.id) ? '✏️ Editar exercício' : '➕ Novo exercício'}
+        </h3>
+        <label className="block text-[11px] text-slate-400">
+          Nome
+          <input
+            className={input}
+            value={editing.name}
+            placeholder="Ex: Rondo 4x2"
+            onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+          />
+        </label>
+        <label className="block text-[11px] text-slate-400">
+          Objetivo
+          <textarea
+            className={input}
+            rows={2}
+            value={editing.objective || ''}
+            placeholder="Ex: Circulação de bola sob pressão e reação à perda"
+            onChange={(e) => setEditing({ ...editing, objective: e.target.value })}
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="block text-[11px] text-slate-400">
+            Duração (min)
+            <input
+              type="number"
+              min={1}
+              max={120}
+              className={input}
+              value={editing.durationMinutes}
+              onChange={(e) =>
+                setEditing({ ...editing, durationMinutes: Math.max(1, Math.round(Number(e.target.value) || 1)) })
+              }
+            />
+          </label>
+          <label className="block text-[11px] text-slate-400">
+            Tipo
+            <select
+              className={input}
+              value={editing.category}
+              onChange={(e) => setEditing({ ...editing, category: e.target.value as ExerciseCategory })}
+            >
+              {EXERCISE_CATEGORIES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <label className="block text-[11px] text-slate-400">
+          Descrição / regras (opcional)
+          <textarea
+            className={input}
+            rows={2}
+            value={editing.description || ''}
+            placeholder="Espaço, número de jogadores, regras, variantes…"
+            onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+          />
+        </label>
+
+        <div className="space-y-2">
+          <div className="text-[11px] text-slate-400">Desenho do exercício</div>
+          {editing.image ? (
+            <div className="space-y-2">
+              <img
+                src={editing.image}
+                alt={`Desenho: ${editing.name || 'exercício'}`}
+                className="w-full max-h-64 object-contain rounded-xl bg-white"
+              />
+              <button
+                type="button"
+                onClick={() => setEditing({ ...editing, image: undefined })}
+                className="text-[11px] text-rose-300 underline"
+              >
+                Remover imagem
+              </button>
+            </div>
+          ) : (
+            <p className="text-[11px] text-slate-500">
+              Importe uma foto do quadro, um desenho ou uma imagem tirada de outra app.
+            </p>
+          )}
+          <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-cyan-500/50 text-cyan-200 text-xs font-bold cursor-pointer">
+            📷 {loadingImage ? 'A preparar a imagem…' : editing.image ? 'Trocar imagem' : 'Importar imagem'}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              aria-label="Importar imagem do exercício"
+              onChange={(e) => {
+                importImage(e.target.files?.[0]);
+                e.target.value = '';
+              }}
+            />
+          </label>
+        </div>
+
+        <div className="flex justify-between gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => setEditing(null)}
+            className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={save}
+            disabled={loadingImage}
+            className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase disabled:opacity-50"
+          >
+            Guardar exercício
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section aria-label="Biblioteca de exercícios" className="space-y-3">
+      <div className="flex items-center gap-2">
+        <input
+          className={input}
+          placeholder="🔍 Procurar exercício"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button
+          type="button"
+          onClick={() => setEditing(blank())}
+          className="shrink-0 px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase"
+        >
+          ➕ Novo exercício
+        </button>
+      </div>
+      {list.length === 0 ? (
+        <div className="card text-center text-xs text-slate-400 py-8">
+          {exercises.length === 0
+            ? 'Ainda sem exercícios. Crie o primeiro e use-o depois no plano de cada treino.'
+            : 'Nenhum exercício com esse nome.'}
+        </div>
+      ) : (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {list.map((e) => (
+            <li key={e.id} className="card p-3 flex gap-3 items-start">
+              {e.image ? (
+                <img src={e.image} alt="" className="w-20 h-16 object-contain rounded-lg bg-white shrink-0" />
+              ) : (
+                <div className="w-20 h-16 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center text-xl shrink-0">
+                  📋
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-white truncate">{e.name}</div>
+                <div className="text-[10px] text-slate-400 font-mono">
+                  {categoryLabel(e.category)} · {e.durationMinutes} min
+                </div>
+                {e.objective && <div className="text-[11px] text-slate-300 line-clamp-2 mt-0.5">{e.objective}</div>}
+                <div className="flex gap-3 mt-1.5 text-[11px]">
+                  <button type="button" className="text-cyan-300 font-bold" onClick={() => setEditing(e)}>
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    className="text-rose-300"
+                    onClick={() => {
+                      onSave(exercises.filter((x) => x.id !== e.id));
+                      onShowToast('Exercício apagado da biblioteca');
+                    }}
+                  >
+                    Apagar
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+};

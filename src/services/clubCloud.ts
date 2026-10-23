@@ -32,7 +32,16 @@ import {
 
 export type CloudMode = 'unknown' | 'legacy' | 'records';
 
-const RECORD_KINDS: RecordKind[] = ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting'];
+const RECORD_KINDS: RecordKind[] = [
+  'club',
+  'player',
+  'match',
+  'training',
+  'schedule',
+  'message',
+  'scouting',
+  'exercise'
+];
 const MAX_BATCH_WRITES = 400;
 const MAX_BATCH_BYTES = 4_000_000;
 /** A save that would delete more than this share of the club's records is treated as a broken load. */

@@ -215,6 +215,12 @@ export async function generateTrainingsStatsPDF(state: AppState) {
  * 2. Plano de Sessão de Treino em PDF
  */
 export async function generateTrainingSessionPDF(training: Training, state: AppState) {
+  const { doc, filename } = await buildTrainingSessionPDF(training, state);
+  doc.save(filename);
+}
+
+/** Session plan PDF (for the assistant coach): blocks with duration and objective, and the drawing of each exercise. */
+export async function buildTrainingSessionPDF(training: Training, state: AppState) {
   const jsPDF = await getJsPDF();
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -315,7 +321,29 @@ export async function generateTrainingSessionPDF(training: Training, state: AppS
     curY += 20;
   } else {
     blocks.forEach((block, idx) => {
-      if (curY > 245) {
+      // Exercises from the library bring their drawing: the block grows to fit it on the right
+      const exercise = block.exerciseId
+        ? (state.exerciseLibrary || []).find((e) => e.id === block.exerciseId)
+        : undefined;
+      const image = exercise?.image;
+      let imgW = 0;
+      let imgH = 0;
+      if (image) {
+        try {
+          const props = doc.getImageProperties(image);
+          imgW = 70;
+          imgH = Math.min(52, (props.height / props.width) * imgW);
+          if (imgH === 52) imgW = (props.width / props.height) * imgH;
+        } catch {
+          imgW = 0;
+        }
+      }
+      const textWidth = imgW ? 176 - imgW - 18 : 166;
+      const details = [block.notes, exercise?.description].filter(Boolean).join('\n');
+      const noteLines = details ? doc.splitTextToSize(details, textWidth).slice(0, imgW ? 8 : 2) : [];
+      const boxH = Math.max(22, imgW ? imgH + 8 : 0, 16 + noteLines.length * 3.6);
+
+      if (curY + boxH > 280) {
         doc.addPage();
         curY = 20;
       }
@@ -324,9 +352,12 @@ export async function generateTrainingSessionPDF(training: Training, state: AppS
       const duration = block.durationMinutes ? `${block.durationMinutes} min` : '';
 
       doc.setFillColor(248, 250, 252);
-      doc.roundedRect(15, curY, 180, 22, 2, 2, 'F');
+      doc.roundedRect(15, curY, 180, boxH, 2, 2, 'F');
       doc.setDrawColor(200, 220, 235);
-      doc.roundedRect(15, curY, 180, 22, 2, 2, 'S');
+      doc.roundedRect(15, curY, 180, boxH, 2, 2, 'S');
+      if (imgW) {
+        doc.addImage(image!, 'JPEG', 192 - imgW, curY + 4, imgW, imgH);
+      }
 
       // Index badge
       doc.setFillColor(0, 180, 230);
@@ -340,25 +371,24 @@ export async function generateTrainingSessionPDF(training: Training, state: AppS
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
       doc.setTextColor(15, 30, 52);
-      doc.text(`${catLabel}${block.title || 'Bloco sem título'}`, 27, curY + 8);
+      doc.text(doc.splitTextToSize(`${catLabel}${block.title || 'Bloco sem título'}`, textWidth)[0], 27, curY + 8);
 
       if (duration) {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
         doc.setTextColor(0, 140, 200);
-        doc.text(duration, 188, curY + 8, { align: 'right' });
+        doc.text(duration, imgW ? 27 : 188, imgW ? curY + 13 : curY + 8, { align: imgW ? 'left' : 'right' });
       }
 
-      // Notes / Description
-      if (block.notes) {
+      // Objective / notes and the exercise's rules
+      if (noteLines.length > 0) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7.5);
         doc.setTextColor(60, 75, 90);
-        const noteLines = doc.splitTextToSize(block.notes, 166);
-        doc.text(noteLines.slice(0, 2), 27, curY + 14);
+        doc.text(noteLines, 27, curY + (imgW ? 18 : 14));
       }
 
-      curY += 25;
+      curY += boxH + 3;
     });
   }
 
@@ -392,5 +422,5 @@ export async function generateTrainingSessionPDF(training: Training, state: AppS
   const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '_');
   const numPart = training.trainingNumber ? `_Treino_${training.trainingNumber}` : '';
   const filename = `Plano${numPart}_${sanitize(myClub)}_${training.date || 'sem_data'}.pdf`;
-  doc.save(filename);
+  return { doc, filename };
 }
