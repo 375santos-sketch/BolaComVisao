@@ -6,6 +6,7 @@ import { Header } from '../Header';
 import { DeletedMatchesSection } from './results/DeletedMatchesSection';
 import { ParentsShareModal } from './results/ParentsShareModal';
 import { OpponentReportModal } from './results/OpponentReportModal';
+import { MatchEditModal } from './results/MatchEditModal';
 import { hasReportNotes } from '../../lib/opponentReport';
 
 interface ResultsViewProps {
@@ -33,6 +34,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [seasonFilter, setSeasonFilter] = useState<string>('todas');
   const [shareMatch, setShareMatch] = useState<Match | null>(null);
   const [reportMatch, setReportMatch] = useState<Match | null>(null);
+  const [editMatch, setEditMatch] = useState<Match | null>(null);
   const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
   const [isGeneratingPdfId, setIsGeneratingPdfId] = useState<string | null>(null);
 
@@ -192,6 +194,20 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             </div>
           ))}
         </div>
+      )}
+
+      {editMatch && (
+        <MatchEditModal
+          match={editMatch}
+          roster={state.roster || []}
+          category={state.category}
+          onSave={(updated) => {
+            onUpdateState({ matches: state.matches.map((m) => (m.id === updated.id ? updated : m)) });
+            setEditMatch(null);
+            onShowToast?.('Jogo atualizado ✓');
+          }}
+          onClose={() => setEditMatch(null)}
+        />
       )}
 
       {reportMatch && (
@@ -486,10 +502,19 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         className="btn btn-outline w-full"
                         onClick={(e) => {
                           e.stopPropagation();
+                          setEditMatch(m);
+                        }}
+                      >
+                        ✏️ {t(state.lang, 'res_edit')}
+                      </button>
+                      <button
+                        className="btn btn-outline w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleReopenMatch(m.id);
                         }}
                       >
-                        {t(state.lang, 'res_edit')}
+                        ↩️ {t(state.lang, 'res_reopen')}
                       </button>
                     </div>
                   )}

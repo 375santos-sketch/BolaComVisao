@@ -138,5 +138,36 @@ describe('PDF da ficha do atleta', () => {
     expect(raw).toContain('Doente');
     expect(raw).not.toContain('912345678');
     expect(raw).not.toContain('Nota privada');
+    expect(raw).toContain('MINUTOS JOGO A JOGO');
+  });
+});
+
+describe('Evolução do atleta', () => {
+  it('lists every game of the season (oldest first) and training attendance per month', () => {
+    const state = {
+      category: 'Sub-11',
+      roster,
+      matches: [
+        game('m2', '2026-11-07', { convocados: ['a', 'b'] } as Partial<Match>),
+        game('m1', '2026-10-03', {
+          goals: [{ id: 'g1', type: 'scored', scorerId: 'c', assistId: 'a', minute: "5'" }],
+          subs: [{ id: 's1', outId: 'b', inId: 'c', minute: "40'", half: 2, minuteInHalf: 10 }]
+        } as Partial<Match>)
+      ],
+      trainings: [
+        training('t1', '2026-10-01', { absences: ['c'] }),
+        training('t2', '2026-10-08'),
+        training('t3', '2026-11-05', { absences: ['c'] })
+      ]
+    };
+    const ev = buildPlayerSeason(state as never, 'c', '2026/2027').evolution;
+    expect(ev.games.map((g) => [g.date, g.calledUp, g.minutes, g.totalMinutes, g.goals])).toEqual([
+      ['2026-10-03', true, 20, 60, 1],
+      ['2026-11-07', false, 0, 60, 0]
+    ]);
+    expect(ev.trainingMonths).toEqual([
+      { month: '2026-10', held: 2, present: 1 },
+      { month: '2026-11', held: 1, present: 0 }
+    ]);
   });
 });
