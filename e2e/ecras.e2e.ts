@@ -45,7 +45,10 @@ test('entrar: escolha da equipa e painel inicial', async ({ page }) => {
   // Simple home: shortcuts, what needs attention, the season in one line, the next 7 days.
   const notices = page.getByRole('region', { name: 'Avisos' });
   await expect(notices).toContainText('Convocatória por fechar: vs Abrantes');
-  await expect(notices).toContainText('Precisam de minutos: Martim Costa (0%), Duarte Matos (20%)');
+  // Share over all the games' minutes: athletes never called up count too (0%)
+  await expect(notices).toContainText(
+    'Precisam de minutos: Gabriel Sousa (0%), Henrique Alves (0%), Lucas Pereira (0%) e mais 4'
+  );
   await expect(page.getByRole('region', { name: 'Resumo da época' })).toContainText('2 jogos · 1V 1E 0D · golos 2-1');
   await expect(page.getByText('VISÃO DO TREINADOR')).toHaveCount(0);
 
@@ -105,6 +108,16 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   const performanceTabs = page.getByRole('navigation', { name: 'Performance' });
   await performanceTabs.getByRole('button', { name: /Estatísticas/ }).click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
+  // Games without the 7 first-half starters are flagged (their minutes come out short) and can be fixed here
+  const missing = page.getByTestId('missing-starters');
+  await expect(missing).toContainText('Esparteiros');
+  await missing.locator('div', { hasText: 'Esparteiros' }).getByRole('button', { name: 'Indicar titulares' }).click();
+  for (const name of ['Duarte Matos', 'Martim Costa', 'Lucas Pereira', 'Gabriel Sousa']) {
+    await page.getByText(new RegExp(`^\\d+ - ${name}$`)).click();
+  }
+  await page.getByRole('button', { name: 'Confirmar 7 Titulares' }).click();
+  await expect(missing).not.toContainText('Esparteiros');
+  await expect(missing).toContainText('Tramagal');
   await expect(performanceTabs.getByRole('button', { name: /Adversário/ })).toHaveCount(0); // scouting removed
   await performanceTabs.getByRole('button', { name: /Pré-jogo/ }).click();
   await expect(page.getByRole('region', { name: 'Plano' })).toBeVisible();
@@ -209,7 +222,8 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
   // Minutes of the season help choose: who played little is flagged.
   const need = page.getByRole('note', { name: 'Precisam de minutos' });
   await expect(need).toContainText('Martim Costa 0%');
-  await expect(need).toContainText('Duarte Matos 20%');
+  await expect(need).toContainText('Duarte Matos 10%'); // 10' of the 2 games' 100'
+  await expect(need).toContainText('Gabriel Sousa 0% · fora 2/3');
   await page.getByRole('button', { name: 'Limpar', exact: true }).click();
   for (const name of ['Duarte Matos', 'Martim Costa', 'Rui Silva']) await page.getByText(name, { exact: true }).click();
   await page

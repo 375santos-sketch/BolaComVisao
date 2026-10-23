@@ -55,7 +55,7 @@ export interface GamesDashboard {
     foulsCommitted: number;
     foulsSuffered: number;
   };
-  /** Called-up athletes, most minutes first. */
+  /** Active athletes (called up or not), most minutes first. */
   squad: SquadRow[];
   halfMinutes: number;
   /** Goals scored by origin, most first. */
@@ -140,7 +140,7 @@ export function buildGamesDashboard(rawGames: Match[], state: Pick<AppState, 'ro
 
   const scorerById = new Map(team.scorers.map((s) => [s.playerId, s]));
   const squad: SquadRow[] = computeSeasonPlayingTime(games, roster, state.category)
-    .filter((r) => r.matchesCalledUp > 0)
+    .filter((r) => r.availableMinutes > 0)
     .map((r) => ({
       playerId: r.playerId,
       number: r.number ?? null,

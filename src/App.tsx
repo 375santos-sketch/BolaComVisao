@@ -932,6 +932,7 @@ export default function App() {
                 onOpenNotifications={() => setShowNotifications(true)}
                 onOpenSync={() => showSyncStatus()}
                 onShowToast={showToast}
+                onUpdateState={updateState}
               />
             )}
 

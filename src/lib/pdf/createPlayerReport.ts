@@ -421,7 +421,7 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
     g.calledUp === 0
       ? 'Ainda não foi convocado para jogos nesta época.'
       : `Convocado para ${g.calledUp} jogo(s), jogou ${g.played}, titular em ${g.starts}. ` +
-          `${g.minutes} minutos jogados, ${Math.round(g.share * 100)}% dos minutos possíveis.`
+          `${g.minutes} minutos jogados, ${Math.round(g.share * 100)}% dos minutos dos jogos.`
   );
   paragraph(
     `Golos: ${s.goals}  •  Assistências: ${s.assists}` +

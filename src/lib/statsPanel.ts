@@ -239,7 +239,7 @@ export function playerPanel(
     played: games.filter((g) => g.minutes > 0).length,
     starts: games.filter((g) => g.started).length,
     minutes: games.reduce((n, g) => n + g.minutes, 0),
-    availableMinutes: games.reduce((n, g) => n + g.totalMinutes, 0),
+    availableMinutes: matches.reduce((n, m) => n + getMatchTotalMinutes(m, state.category), 0),
     goals: games.reduce((n, g) => n + g.goals, 0),
     assists: games.reduce((n, g) => n + g.assists, 0),
     trainings: {

@@ -1,6 +1,8 @@
 import { Match, Player } from '../types';
 import { calcPlayerMinutes, getHalfDuration, getMatchElapsedMs } from './utils';
 import { getMatchPhase, getNominalHalfDuration } from './matchPhaseUtils';
+import { getLineupSize } from './constants';
+import { withRosterIds } from './eventPlayers';
 
 /**
  * Playing time per player (youth football: every called-up player should get meaningful minutes).
@@ -89,20 +91,42 @@ export interface PlayerPlayingTime {
   belowTarget: boolean;
 }
 
-/** Season summary of playing time, lowest share first so the players who need minutes stand out. */
+/**
+ * Finished games without the full first-half line-up (e.g. imported from a sheet that did not list the starters):
+ * nobody is known to be on the pitch at kick-off, so the minutes of those games come out short.
+ */
+export function gamesMissingStarters(matches: Match[], roster: Player[]): Match[] {
+  return withRosterIds(
+    (matches || []).filter((m) => m && m.finished),
+    roster
+  ).filter((m) => {
+    const ids = new Set(roster.map((p) => p.id));
+    return (m.lineup || []).filter((id) => ids.has(id)).length < getLineupSize(m);
+  });
+}
+
+/**
+ * Season summary of playing time, lowest share first so the players who need minutes stand out. The share is over
+ * the minutes of all the games (2 games of 60' = 120' for everyone), called up or not, so it adds up to the team's
+ * time on the pitch.
+ */
 export function computeSeasonPlayingTime(
   matches: Match[],
   roster: Player[],
   category?: string,
   target = PLAYING_TIME_TARGET
 ): PlayerPlayingTime[] {
-  const finished = matches.filter((m) => m && m.finished);
+  const finished = withRosterIds(
+    matches.filter((m) => m && m.finished),
+    roster
+  );
+
+  const availableMinutes = finished.reduce((n, m) => n + getMatchTotalMinutes(m, category), 0);
 
   return roster
     .filter((p) => p && p.active !== false)
     .map((p) => {
       let minutes = 0;
-      let availableMinutes = 0;
       let matchesCalledUp = 0;
       let matchesPlayed = 0;
       let starts = 0;
@@ -112,7 +136,6 @@ export function computeSeasonPlayingTime(
         const full = withPlayableDurations(m, category);
         const played = calcPlayerMinutes(full, p.id);
         matchesCalledUp++;
-        availableMinutes += getMatchTotalMinutes(m, category);
         minutes += played;
         if (played > 0) matchesPlayed++;
         if ((m.lineup || []).includes(p.id)) starts++;
@@ -129,7 +152,7 @@ export function computeSeasonPlayingTime(
         matchesCalledUp,
         matchesPlayed,
         starts,
-        belowTarget: matchesCalledUp > 0 && share < target
+        belowTarget: availableMinutes > 0 && share < target
       };
     })
     .sort((a, b) => a.share - b.share || a.minutes - b.minutes || a.name.localeCompare(b.name, 'pt-PT'));

@@ -485,14 +485,14 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                     >
                       {r.name}{' '}
                       <b>
-                        {r.matchesCalledUp > 0 ? `${Math.round(r.share * 100)}%` : 'sem jogos'}
+                        {r.availableMinutes > 0 ? `${Math.round(r.share * 100)}%` : 'sem jogos'}
                         {r.leftOutRecently >= 2 ? ` · fora ${r.leftOutRecently}/${RECENT_GAMES}` : ''}
                       </b>
                     </span>
                   ))}
                 </div>
                 <div className="text-amber-200/70">
-                  % = minutos jogados dos possíveis quando convocado · fora = não convocado nos últimos jogos
+                  % = minutos jogados de todos os minutos dos jogos · fora = não convocado nos últimos jogos
                 </div>
               </div>
             )}

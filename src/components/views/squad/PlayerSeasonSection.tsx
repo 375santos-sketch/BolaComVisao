@@ -16,7 +16,7 @@ const Tile: React.FC<{ value: React.ReactNode; label: string; tone?: string }> =
 export const PlayerSeasonSection: React.FC<{ data: PlayerSeason }> = ({ data }) => {
   const { games, trainings } = data;
   const sharePct = Math.round(games.share * 100);
-  const lowMinutes = games.calledUp > 0 && games.share < PLAYING_TIME_TARGET;
+  const lowMinutes = games.availableMinutes > 0 && games.share < PLAYING_TIME_TARGET;
 
   return (
     <section aria-label="Época do atleta" className="space-y-3">
@@ -29,7 +29,7 @@ export const PlayerSeasonSection: React.FC<{ data: PlayerSeason }> = ({ data }) 
         <Tile value={games.starts} label="Titular" />
         <Tile
           value={`${games.minutes}'`}
-          label={games.calledUp > 0 ? `${sharePct}% possíveis` : 'Minutos'}
+          label={`${sharePct}% dos minutos`}
           tone={lowMinutes ? 'text-amber-300' : 'text-white'}
         />
         <Tile value={data.goals} label="Golos" tone="text-cyan-400" />

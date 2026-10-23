@@ -218,7 +218,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
                 value={`${player.minutes}'`}
                 label={
                   player.availableMinutes > 0
-                    ? `${Math.round((player.minutes / player.availableMinutes) * 100)}% possíveis`
+                    ? `${Math.round((player.minutes / player.availableMinutes) * 100)}% dos minutos`
                     : 'Minutos'
                 }
               />
