@@ -2,6 +2,7 @@ import React from 'react';
 import { PlayerSeason } from '../../../lib/playerSeason';
 import { absenceReasonLabel } from '../../../lib/trainingQuick';
 import { PLAYING_TIME_TARGET } from '../../../lib/playingTime';
+import { homeFirstScore } from '../../../lib/utils';
 
 const ddmm = (iso: string) => iso.slice(0, 10).split('-').reverse().slice(0, 2).join('/');
 
@@ -63,9 +64,7 @@ export const PlayerSeasonSection: React.FC<{ data: PlayerSeason }> = ({ data }) 
               >
                 <span className="text-slate-300 truncate">
                   {ddmm(g.date)} {g.home ? 'vs' : '@'} {g.opponent}{' '}
-                  <span className="text-slate-500">
-                    {g.scored}-{g.conceded}
-                  </span>
+                  <span className="text-slate-500">{homeFirstScore(g.scored, g.conceded, g.home)}</span>
                 </span>
                 <span className="shrink-0 text-right">
                   {!g.calledUp ? (
