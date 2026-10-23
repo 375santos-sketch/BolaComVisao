@@ -617,6 +617,13 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await page.getByRole('button', { name: 'Confirmar Golo Sofrido' }).click();
   await page.getByRole('button', { name: /^⏸️ Intervalo$/ }).click();
   await advance('01:00'); // the clock stops during half time
+  // Halftime: season minutes of the 10 called up and a suggested 2nd-half line-up (7, pre-filled in the picker)
+  const plan = page.getByRole('region', { name: 'Sugestão para a 2.ª parte' });
+  await expect(plan.getByRole('listitem')).toHaveCount(10);
+  await expect(plan.getByRole('listitem').filter({ hasText: '✓' })).toHaveCount(7);
+  await plan.getByRole('button', { name: /com esta sugestão/ }).click();
+  await expect(page.getByRole('button', { name: /Confirmar e Iniciar 2.ª Parte/i })).toBeEnabled();
+  await page.getByRole('button', { name: 'Cancelar' }).click();
   await page.getByRole('button', { name: /Iniciar 2.ª parte/i }).click();
   await page.getByRole('button', { name: /Confirmar e Iniciar 2.ª Parte/i }).click();
 
