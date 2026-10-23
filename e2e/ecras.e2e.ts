@@ -466,6 +466,71 @@ test('classificação: resultados colados da série, jogos da app e posição da
     .toBe(true);
 });
 
+test('bolas paradas: caderno com desenho e quem marca aparece na Convocatória', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: /Lista/i }).click();
+  await page.getByTitle('Abrir Convocatória').first().click();
+  const card = page.getByRole('region', { name: 'Bolas paradas', exact: true });
+  await card.getByRole('button', { name: 'Criar caderno' }).click();
+
+  const book = page.getByRole('dialog', { name: 'Caderno de bolas paradas' });
+  await book.getByRole('button', { name: /Nova bola parada/ }).click();
+  await book.getByRole('button', { name: /Canto/ }).click();
+  await book.getByRole('combobox').first().selectOption('direita');
+  await book.getByLabel('Atleta para Marca').selectOption({ label: '9 · Rui Silva' });
+  await book.getByLabel('Atleta para 1.º poste').selectOption({ label: '10 · André Lopes' });
+  await book.getByLabel('Importar desenho da bola parada').setInputFiles('e2e/fixtures/exercicio.jpg');
+  await expect(book.getByRole('img', { name: /Desenho: Canto direita/ })).toBeVisible();
+  await book.getByRole('button', { name: 'Guardar' }).click();
+  await expect(book.getByRole('list', { name: 'Lista de bolas paradas' })).toContainText('Marca: Rui Silva');
+  await book.getByRole('button', { name: 'Fechar bolas paradas' }).click();
+
+  await expect(card).toContainText('Canto direita');
+  await expect(card).toContainText('Marca Rui Silva');
+  await expect(card).toContainText('1.º poste André Lopes');
+  await expect
+    .poll(async () => [...(await cloudRecords()).values()].some((r) => r.kind === 'setpiece' && !r.deleted), {
+      timeout: 30_000,
+      message: 'bola parada guardada na nuvem'
+    })
+    .toBe(true);
+});
+
+test('jogador do jogo: escolher o destaque, guardar no jogo e descarregar a imagem', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByText('Tramagal SU').click();
+  await page.getByRole('button', { name: /Jogador do jogo/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Jogador do jogo' });
+  // Rui Silva scored in this game: suggested first
+  await expect(dialog.getByRole('combobox')).toHaveValue('p1');
+  await expect(dialog.getByRole('img', { name: 'Imagem do jogador do jogo' })).toBeVisible();
+  await dialog
+    .getByRole('img', { name: 'Imagem do jogador do jogo' })
+    .screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/jogador-do-jogo.png` : undefined });
+  await dialog.getByRole('button', { name: 'Guardar destaque' }).click();
+  await expect(page.getByText('⭐ Rui Silva é o jogador do jogo')).toBeVisible();
+
+  const download = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: /Partilhar imagem/ }).click();
+  expect((await download).suggestedFilename()).toBe('Jogador_do_jogo_Rui_Silva.png');
+  await dialog.getByRole('button', { name: 'Fechar jogador do jogo' }).click();
+  await expect(page.getByRole('button', { name: /Jogador do jogo: Rui Silva/ })).toBeVisible();
+
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/match__sub11__m2`, { headers: owner });
+        const body = (await res.json()) as { fields?: { data?: { mapValue?: { fields?: Record<string, any> } } } };
+        return body.fields?.data?.mapValue?.fields?.mvpId?.stringValue;
+      },
+      { timeout: 30_000, message: 'jogador do jogo guardado na nuvem' }
+    )
+    .toBe('p1');
+});
+
 test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);

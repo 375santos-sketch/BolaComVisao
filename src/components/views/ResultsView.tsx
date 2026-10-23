@@ -8,6 +8,7 @@ import { ParentsShareModal } from './results/ParentsShareModal';
 import { OpponentReportModal } from './results/OpponentReportModal';
 import { MatchEditModal } from './results/MatchEditModal';
 import { LeagueTableModal } from './results/LeagueTableModal';
+import { MvpModal } from './results/MvpModal';
 import { hasReportNotes } from '../../lib/opponentReport';
 
 interface ResultsViewProps {
@@ -39,6 +40,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
   const [isGeneratingPdfId, setIsGeneratingPdfId] = useState<string | null>(null);
   const [showLeague, setShowLeague] = useState(false);
+  const [mvpMatch, setMvpMatch] = useState<Match | null>(null);
 
   if (!state.matches.length) {
     return (
@@ -180,6 +182,18 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       >
         📊 Classificação do campeonato
       </button>
+      {mvpMatch && (
+        <MvpModal
+          match={mvpMatch}
+          state={state}
+          onSave={(updated) => {
+            onUpdateState({ matches: state.matches.map((x) => (x.id === updated.id ? updated : x)) });
+            setMvpMatch(updated);
+          }}
+          onShowToast={(msg) => onShowToast?.(msg)}
+          onClose={() => setMvpMatch(null)}
+        />
+      )}
       {showLeague && (
         <LeagueTableModal
           state={state}
@@ -496,6 +510,21 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         }}
                       >
                         📲 Partilhar com os pais
+                      </button>
+                    </div>
+                  )}
+
+                  {m.finished && (
+                    <div className="btn-row mt-2.5">
+                      <button
+                        className="btn btn-outline w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMvpMatch(m);
+                        }}
+                      >
+                        ⭐ Jogador do jogo
+                        {m.mvpId ? `: ${state.roster.find((p) => p.id === m.mvpId)?.name || ''}` : ''}
                       </button>
                     </div>
                   )}

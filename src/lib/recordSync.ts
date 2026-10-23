@@ -4,7 +4,7 @@ import { normalizeClubState } from './storage';
 /**
  * Per-record cloud storage (club_workspace/{club}/records/{docId}).
  *
- * Every player, match, training, scheduled game, staff message, scouting report and exercise of every team is its own
+ * Every player, match, training, scheduled game, staff message, scouting report, exercise and set piece of every team is its own
  * Firestore document, plus one "club" document holding everything else (team list, settings, ...). This keeps
  * each document far below Firestore's 1 MB limit and lets two coaches edit different records at the same time.
  *
@@ -13,7 +13,8 @@ import { normalizeClubState } from './storage';
  * This module is pure (no Firebase), so it can be tested exhaustively.
  */
 
-export type EntityKind = 'player' | 'match' | 'training' | 'schedule' | 'message' | 'scouting' | 'exercise';
+export type EntityKind =
+  'player' | 'match' | 'training' | 'schedule' | 'message' | 'scouting' | 'exercise' | 'setpiece';
 export type RecordKind = EntityKind | 'club';
 
 /** Team array that holds each kind of record. */
@@ -25,7 +26,9 @@ export const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppSta
   message: 'staffMessages',
   scouting: 'opponentScouting',
   // Exercises carry a drawing/photo: each one is its own document so the club document stays small
-  exercise: 'exerciseLibrary'
+  exercise: 'exerciseLibrary',
+  // Set pieces carry a drawing too
+  setpiece: 'setPieces'
 };
 const ENTITY_KINDS = Object.keys(ENTITY_FIELDS) as EntityKind[];
 
