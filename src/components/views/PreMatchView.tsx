@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { AppState, PreMatchPlan, ScheduledMatch } from '../../types';
 import { Header } from '../Header';
 import { LastTimeAgainstCard } from './results/LastTimeAgainstCard';
 import { SetPiecesCard } from './setpieces/SetPiecesCard';
+
+// The tactics board only loads when opened (keeps the app light)
+const TacticBoard = lazy(() => import('./board/TacticBoard').then((m) => ({ default: m.TacticBoard })));
 import {
   MAX_OBJECTIVES,
   SEVEN_A_SIDE_SYSTEMS,
@@ -43,6 +46,7 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
 }) => {
   const games = upcomingGames(state.schedule || []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showBoard, setShowBoard] = useState(false);
   const game =
     games.find((g) => g.id === selectedId) || games.find((g) => g.id === targetOpponentId) || games[0] || null;
 
@@ -60,6 +64,24 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
         onOpenNotifications={onOpenNotifications}
         onOpenSync={onOpenSync}
       />
+
+      <button
+        type="button"
+        onClick={() => setShowBoard(true)}
+        className="w-full py-3 rounded-2xl border border-cyan-500/40 bg-slate-900/80 text-cyan-200 text-sm font-bold flex items-center justify-center gap-2"
+      >
+        🧩 Quadro tático (jogadas animadas)
+      </button>
+      {showBoard && (
+        <Suspense fallback={null}>
+          <TacticBoard
+            state={state}
+            onUpdateState={onUpdateState}
+            onShowToast={onShowToast}
+            onClose={() => setShowBoard(false)}
+          />
+        </Suspense>
+      )}
 
       {!game ? (
         <div className="card p-6 text-center space-y-3">

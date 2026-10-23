@@ -186,8 +186,8 @@ describe('Regras dos registos', () => {
     await fs.setDoc(fs.doc(recordsCol(), 'match__sub11__probe'), validRecord({ deleted: true, data: {} }));
   });
 
-  it('accepts every kind of record the app writes (exercises and set pieces included)', async () => {
-    for (const kind of ['exercise', 'setpiece']) {
+  it('accepts every kind of record the app writes (exercises, set pieces and tactics-board plays included)', async () => {
+    for (const kind of ['exercise', 'setpiece', 'tacticplay']) {
       await fs.setDoc(
         fs.doc(recordsCol(), `${kind}__sub11__probe`),
         validRecord({ kind, data: { id: 'probe', name: 'Teste', image: 'data:image/jpeg;base64,AAAA' } })

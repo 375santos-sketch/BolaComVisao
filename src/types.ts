@@ -691,6 +691,33 @@ export interface SquadProfile {
   leagues?: LeagueSetup[];
   /** The team's rehearsed set pieces (corners, free kicks, throw-ins…), each its own cloud record. */
   setPieces?: SetPiece[];
+  /** Animated plays drawn on the tactics board, each its own cloud record. */
+  tacticPlays?: TacticPlay[];
+}
+
+/** A piece on the tactics board: our player, an opponent or the ball. */
+export interface BoardPiece {
+  id: string;
+  kind: 'own' | 'opp' | 'ball';
+  /** Shirt number or letter shown on the piece. */
+  label: string;
+  playerId?: string | null;
+}
+
+/** One step of a play: where each piece is (percent of the pitch: x left→right, y top→bottom). */
+export interface PlayFrame {
+  positions: Record<string, { x: number; y: number }>;
+  note?: string;
+}
+
+/** Quadro tático: a play in steps that the app animates (saída de bola, pressão, canto…). */
+export interface TacticPlay {
+  id: string;
+  name: string;
+  format: 5 | 7 | 9 | 11;
+  pieces: BoardPiece[];
+  frames: PlayFrame[];
+  createdAt: string;
 }
 
 export type SetPieceType = 'canto' | 'livre' | 'lancamento' | 'penalti' | 'pontape_saida';
@@ -958,6 +985,8 @@ export interface AppState {
   clubEvents?: ClubEvent[];
   /** Copy of the active team's set pieces (the teams hold them; see SquadProfile.setPieces). */
   setPieces?: SetPiece[];
+  /** Copy of the active team's tactics-board plays (the teams hold them; see SquadProfile.tacticPlays). */
+  tacticPlays?: TacticPlay[];
   exerciseLibrary?: Exercise[];
   subscription?: ClubSubscription;
   updatedAt?: number;

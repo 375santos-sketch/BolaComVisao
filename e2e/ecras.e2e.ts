@@ -592,6 +592,72 @@ test('votação dos pais: link anónimo, um voto por telemóvel e os dois mais v
   await late.close();
 });
 
+test('quadro tático: jogada em passos arrastando a bola, animação e jogada guardada na nuvem', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /performance/i);
+  await page.getByRole('button', { name: /Quadro tático/ }).click();
+  const board = page.getByRole('dialog', { name: 'Quadro tático' });
+  await board.getByRole('button', { name: /Nova jogada/ }).click();
+  await expect(board.getByRole('button', { name: /^Jogador \d+$/ })).toHaveCount(7);
+
+  // A finger drag: pointer events on the ball, then on the pitch (the phone emulation sends no mouse events)
+  const drag = async (dx: number, dy: number) => {
+    const box = (await board.getByRole('button', { name: 'Bola' }).boundingBox())!;
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    const ev = { pointerId: 7, pointerType: 'touch', isPrimary: true, bubbles: true };
+    await board.getByRole('button', { name: 'Bola' }).dispatchEvent('pointerdown', { ...ev, clientX: x, clientY: y });
+    const pitch = board.getByRole('img', { name: 'Campo' });
+    await pitch.dispatchEvent('pointermove', { ...ev, clientX: x + dx / 2, clientY: y + dy / 2 });
+    await pitch.dispatchEvent('pointermove', { ...ev, clientX: x + dx, clientY: y + dy });
+    await pitch.dispatchEvent('pointerup', { ...ev, clientX: x + dx, clientY: y + dy });
+  };
+  const ballAt = async () => board.getByRole('button', { name: 'Bola' }).getAttribute('transform');
+
+  await board.getByRole('button', { name: /Passo$/ }).click();
+  await expect(board).toContainText('Passo 2 de 2');
+  const before = await ballAt();
+  await drag(-60, -120);
+  expect(await ballAt()).not.toBe(before);
+  await expect(board.locator('line[marker-end]')).toHaveCount(1); // the ball's path in this step
+  await board.getByRole('button', { name: 'Passo anterior' }).click();
+  expect(await ballAt()).toBe(before); // step 1 unchanged
+
+  await board.getByRole('button', { name: /Ver jogada/ }).click();
+  await expect(board.getByRole('button', { name: /Parar/ })).toBeVisible();
+  await expect(board.getByRole('button', { name: /Ver jogada/ })).toBeVisible({ timeout: 5000 });
+  await expect(board).toContainText('Passo 2 de 2');
+
+  await board.getByLabel('Nome da jogada').fill('Saída de bola curta');
+  await board.getByRole('button', { name: 'Guardar jogada' }).click();
+  await expect(page.getByText('Jogada "Saída de bola curta" guardada ✓')).toBeVisible();
+  await board.getByRole('button', { name: /Jogadas$/ }).click();
+  await expect(board.getByRole('list', { name: 'Jogadas guardadas' })).toContainText('Saída de bola curta');
+  await expect
+    .poll(async () => [...(await cloudRecords()).values()].some((r) => r.kind === 'tacticplay' && !r.deleted), {
+      timeout: 30_000,
+      message: 'jogada guardada na nuvem'
+    })
+    .toBe(true);
+});
+
+test('assistente: perguntas sobre a equipa respondidas com os dados da app', async ({ page }) => {
+  await signedIn(page);
+  const card = page.getByRole('region', { name: 'Pergunte à app' });
+  await card.getByLabel('Pergunta').fill('Quem é o melhor marcador?');
+  await card.getByRole('button', { name: 'Perguntar' }).click();
+  const answer = card.getByRole('status', { name: 'Resposta' });
+  await expect(answer).toContainText('Melhores marcadores esta época');
+  await expect(answer).toContainText('1. 9 · Rui Silva');
+  await card.getByRole('button', { name: 'Outra pergunta' }).click();
+  await card.getByRole('button', { name: 'Quando é o próximo jogo?' }).click();
+  await expect(answer).toContainText('Abrantes');
+  await card.getByRole('button', { name: 'Outra pergunta' }).click();
+  await card.getByLabel('Pergunta').fill('qual é a cor do equipamento?');
+  await card.getByRole('button', { name: 'Perguntar' }).click();
+  await expect(answer).toContainText('Não percebi a pergunta.');
+});
+
 test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
