@@ -171,3 +171,73 @@ describe('Evolução do atleta', () => {
     ]);
   });
 });
+
+describe('Relatório de fim de época', () => {
+  const season = '2026/2027';
+  const player = {
+    ...roster[0],
+    id: 'a',
+    name: 'Rui Silva',
+    positions: 'Médio',
+    phone: '912345678',
+    email: 'pais@exemplo.pt',
+    birthDate: '2016-03-04',
+    coachNotes: 'Nota privada do treinador',
+    seasonMessages: { [season]: 'Foi uma época de grande evolução. Obrigado pelo empenho!' }
+  } as Player;
+  const games = [
+    game('m1', '2026-10-03', {
+      convocados: ['a'],
+      lineup: ['a'],
+      goals: [{ id: 'g1', type: 'scored', scorerId: 'a', assistId: null, minute: "5'" }]
+    } as Partial<Match>),
+    game('m2', '2026-10-10', {
+      opponent: 'Tramagal SU',
+      convocados: ['a'],
+      lineup: ['a'],
+      goals: [
+        { id: 'g2', type: 'scored', scorerId: 'a', assistId: null, minute: "3'" },
+        { id: 'g3', type: 'scored', scorerId: 'a', assistId: null, minute: "9'" }
+      ]
+    } as Partial<Match>)
+  ];
+  const trainings = [training('t1', '2026-10-01'), training('t2', '2026-10-08')];
+
+  it('lists the highlights of the season', async () => {
+    const { seasonHighlights } = await import('../lib/pdf/createSeasonFinalReport');
+    const s = buildPlayerSeason({ category: 'Sub-11', roster: [player], matches: games, trainings }, 'a', season);
+    expect(seasonHighlights(s)).toEqual([
+      'Primeiro golo da época a 03/10, contra Adv m1.',
+      'Melhor jogo: 2 golos contra Tramagal SU (10/10).',
+      'Jogou o jogo inteiro em 2 jogos.',
+      'Titular em 2 jogos.',
+      'Presente em todos os treinos de outubro.'
+    ]);
+  });
+
+  it('PDF has the season and the coach message, never contacts, birth date or private notes', async () => {
+    const { buildSeasonFinalReportPDF } = await import('../lib/pdf/createSeasonFinalReport');
+    const { normalizeClubState } = await import('../lib/storage');
+    const state = normalizeClubState({
+      myClubName: 'Dragões',
+      season,
+      roster: [player, { ...roster[1], name: 'Tiago Costa' }],
+      matches: games,
+      trainings,
+      currentUser: { id: 'u', username: 'mister', name: 'Mister Teste', role: 'coach', status: 'approved' }
+    } as never);
+    const doc = await buildSeasonFinalReportPDF(state.roster, state);
+    const raw = doc.output() as string;
+    expect(doc.getNumberOfPages()).toBeGreaterThanOrEqual(2);
+    expect(raw).toContain('Rui Silva');
+    expect(raw).toContain('Tiago Costa');
+    expect(raw).toContain('MENSAGEM DO TREINADOR');
+    expect(raw).toContain('Foi uma');
+    expect(raw).toContain('Mister Teste, treinador');
+    expect(raw).toContain('MINUTOS JOGO A JOGO');
+    expect(raw).not.toContain('912345678');
+    expect(raw).not.toContain('pais@exemplo.pt');
+    expect(raw).not.toContain('04/03/2016');
+    expect(raw).not.toContain('Nota privada');
+  });
+});

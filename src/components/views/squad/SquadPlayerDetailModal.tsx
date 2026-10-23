@@ -403,8 +403,8 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
               🏆 Relatório de fim de época {state.season ? `· ${state.season}` : ''}
             </div>
             <p className="text-[11px] text-slate-400">
-              PDF para entregar à família: evolução, minutos, golos, assiduidade e a sua mensagem. Não leva contactos nem
-              as notas confidenciais.
+              PDF para entregar à família: evolução, minutos, golos, assiduidade e a sua mensagem. Não leva contactos
+              nem as notas confidenciais.
             </p>
             <textarea
               rows={3}

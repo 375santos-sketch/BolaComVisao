@@ -538,6 +538,36 @@ test('ficha do atleta: época, últimos jogos, faltas com motivo e PDF', async (
   expect((await download).suggestedFilename()).toBe('Ficha_Atleta_Rui_Silva.pdf');
 });
 
+test('fim de época: mensagem do treinador guardada na nuvem e PDF para a família (um atleta ou o plantel)', async ({
+  page
+}) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  const report = page.getByRole('region', { name: 'Relatório de fim de época' });
+  await report.getByLabel('Mensagem do treinador para a família').fill('Uma época de grande evolução. Parabéns!');
+  await report.getByRole('button', { name: 'Guardar mensagem' }).click();
+  await expect(page.getByText('Mensagem de fim de época guardada ✓')).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
+        return JSON.stringify(await res.json()).includes('Uma época de grande evolução');
+      },
+      { timeout: 30_000, message: 'mensagem guardada no registo do atleta' }
+    )
+    .toBe(true);
+
+  const one = page.waitForEvent('download');
+  await report.getByRole('button', { name: /PDF fim de época/ }).click();
+  expect((await one).suggestedFilename()).toMatch(/^Fim_de_Epoca_Rui_Silva_2\d{3}_2\d{3}\.pdf$/);
+
+  await page.getByRole('button', { name: 'Fechar' }).click();
+  const all = page.waitForEvent('download');
+  await page.getByRole('button', { name: /Fim de época/ }).click();
+  expect((await all).suggestedFilename()).toMatch(/^Fim_de_Epoca_Plantel_/);
+});
+
 test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /performance/i);

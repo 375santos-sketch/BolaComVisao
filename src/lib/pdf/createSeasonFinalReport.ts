@@ -150,6 +150,7 @@ function drawSeasonFinalReport(doc: Doc, player: Player, state: AppState, season
 
   const message = seasonMessageOf(player, season);
   if (message) {
+    w.skip(2);
     w.heading('Mensagem do treinador');
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(10);
@@ -177,8 +178,11 @@ function drawSeasonFinalReport(doc: Doc, player: Player, state: AppState, season
     w.skip(h + 4);
   }
 
-  w.ensure(10);
-  w.centered('Obrigado por esta época. Continua a crescer!', { size: 10, bold: true, color: [42, 120, 214] });
+  // Closing line only where it fits: never a page of its own
+  if (w.y < 276) {
+    w.skip(2);
+    w.centered('Obrigado por esta época. Continua a crescer!', { size: 10, bold: true, color: [42, 120, 214] });
+  }
 }
 
 /** One athlete per section (each starting on a new page); a single PDF for the whole squad when given many. */
