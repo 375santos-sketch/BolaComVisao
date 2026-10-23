@@ -229,6 +229,8 @@ export function createTextReportWriter(doc: jsPDF, startY: number) {
     get y() {
       return y;
     },
+    /** Starts a new page when the next h mm do not fit (for drawings placed at writer.y). */
+    ensure,
     skip(mm: number) {
       y += mm;
     },

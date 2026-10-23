@@ -3,6 +3,7 @@ import { PlayerSeason } from '../../../lib/playerSeason';
 import { absenceReasonLabel } from '../../../lib/trainingQuick';
 import { PLAYING_TIME_TARGET } from '../../../lib/playingTime';
 import { homeFirstScore } from '../../../lib/utils';
+import { PlayerEvolutionCharts } from './PlayerEvolutionCharts';
 
 const ddmm = (iso: string) => iso.slice(0, 10).split('-').reverse().slice(0, 2).join('/');
 
@@ -50,6 +51,8 @@ export const PlayerSeasonSection: React.FC<{ data: PlayerSeason }> = ({ data }) 
           {data.ratingAverage !== null ? ` · Avaliação média ${data.ratingAverage}` : ''}
         </p>
       )}
+
+      <PlayerEvolutionCharts data={data} />
 
       <div>
         <div className="text-[11px] font-mono uppercase text-cyan-300 font-bold mb-1">Últimos jogos</div>

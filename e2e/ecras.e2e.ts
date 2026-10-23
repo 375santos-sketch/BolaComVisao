@@ -324,6 +324,37 @@ test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await expect(modal).toContainText('2');
 });
 
+test('resultados: editar um jogo terminado num só ecrã (golo novo) fica guardado', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByText('Tramagal SU').click();
+  await page.getByRole('button', { name: /Editar jogo/ }).click();
+  const editor = page.getByRole('dialog', { name: 'Editar jogo' });
+  await expect(editor.getByLabel('Resultado')).toHaveText('Tramagal SU 1 – 2 Nós');
+
+  await editor.getByRole('button', { name: '+ Golo nosso' }).click();
+  const goal = editor.getByLabel('Golo 4');
+  await goal.getByLabel('Parte').selectOption('2');
+  await goal.getByLabel('Minuto do golo').fill('45');
+  await goal.getByLabel('Marcador').selectOption({ label: '7 - Tomás Gonçalves' });
+  await goal.getByLabel('Assistência').selectOption({ label: '9 - Rui Silva' });
+  await goal.getByLabel('Origem').selectOption('Canto');
+  await expect(editor.getByLabel('Resultado')).toHaveText('Tramagal SU 1 – 3 Nós');
+  await editor.getByRole('button', { name: 'Guardar alterações' }).click();
+  await expect(editor).toBeHidden();
+
+  await expect(page.locator('.match-item', { hasText: 'Tramagal SU' }).locator('.match-score')).toHaveText('1 – 3');
+  await expect(page.getByText(/45'.*7 - Tomás Gonçalves/).first()).toBeVisible();
+  await expect
+    .poll(
+      async () =>
+        [...(await cloudRecords()).values()].find((r) => r.kind === 'match' && r.opponent === 'Tramagal SU')?.goals,
+      { timeout: 30_000 }
+    )
+    .toBe(4);
+});
+
 test('resultados: corrigir o local de um jogo terminado (casa/fora) fica guardado', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
@@ -422,6 +453,13 @@ test('ficha do atleta: época, últimos jogos, faltas com motivo e PDF', async (
   await expect(season).toContainText('Treinos 2/3'); // missed today's training (treinos test)
   await expect(season.getByRole('list', { name: 'Últimos jogos' })).toContainText('Tramagal SU');
   await expect(season.getByRole('list', { name: 'Faltas aos treinos' })).toContainText('Doente');
+  // Evolution: minutes game by game (tap a bar for the details) and training attendance per month
+  const chart = season.getByRole('img', { name: 'Minutos jogados em cada jogo' });
+  await expect(chart.getByRole('button')).toHaveCount(2);
+  await chart.getByRole('button', { name: /Tramagal SU/ }).dispatchEvent('click');
+  await expect(season.getByText(/Tramagal SU .* · 50' de 50' · titular · 2 golo\(s\)/)).toBeVisible();
+  await expect(season.getByRole('list', { name: 'Presença nos treinos por mês' })).toContainText('out');
+  await season.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/ficha.png` : undefined });
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: /PDF Ficha do Atleta/ }).click();
   expect((await download).suggestedFilename()).toBe('Ficha_Atleta_Rui_Silva.pdf');

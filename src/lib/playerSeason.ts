@@ -1,5 +1,5 @@
 import { withRosterIds } from './eventPlayers';
-import { AbsenceReason, AppState, Match } from '../types';
+import { AbsenceReason, AppState, Match, Training } from '../types';
 import {
   computeSeasonPlayingTime,
   getCalledUpPlayers,
@@ -38,6 +38,11 @@ export interface PlayerSeason {
   trainings: { held: number; present: number; rate: number | null };
   absences: { date: string; trainingNumber?: number; reason?: AbsenceReason }[];
   recentGames: PlayerGameLine[];
+  /** Season game by game (oldest first) and training attendance month by month, for the evolution charts. */
+  evolution: {
+    games: PlayerGameLine[];
+    trainingMonths: { month: string; held: number; present: number }[];
+  };
 }
 
 const inSeason = (date: string | undefined, explicit: string | undefined, season?: string) =>
@@ -116,8 +121,28 @@ export function buildPlayerSeason(
       rate: held > 0 ? Math.round(((held - absences.length) / held) * 100) : null
     },
     absences,
-    recentGames
+    recentGames,
+    evolution: {
+      games: [...games]
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+        .map((m) => gameLine(m, playerId, state.category)),
+      trainingMonths: trainingMonths(trainings, playerId)
+    }
   };
+}
+
+/** Trainings held and attended per month ("2026-10"), oldest first. */
+function trainingMonths(trainings: Training[], playerId: string) {
+  const byMonth = new Map<string, { held: number; present: number }>();
+  trainings.forEach((t) => {
+    const month = (t.date || '').slice(0, 7);
+    if (!month) return;
+    const row = byMonth.get(month) || { held: 0, present: 0 };
+    row.held++;
+    if (!(t.absences || []).includes(playerId)) row.present++;
+    byMonth.set(month, row);
+  });
+  return [...byMonth].sort(([a], [b]) => a.localeCompare(b)).map(([month, r]) => ({ month, ...r }));
 }
 
 const isInvolved = (m: Match, playerId: string) =>

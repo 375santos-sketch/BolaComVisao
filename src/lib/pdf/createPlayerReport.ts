@@ -10,6 +10,7 @@ import {
 } from './pdfLayout';
 import { buildPlayerSeason } from '../playerSeason';
 import { absenceReasonLabel } from '../trainingQuick';
+import { PLAYING_TIME_TARGET } from '../playingTime';
 
 /**
  * 1. Convocatória Oficial em PDF com Fotos dos Jogadores
@@ -428,6 +429,8 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
       (s.yellowCards || s.redCards ? `  •  Cartões: ${s.yellowCards} amarelo(s), ${s.redCards} vermelho(s)` : '')
   );
 
+  drawMinutesByGame(doc, w, s);
+
   heading('Últimos jogos');
   list(
     s.recentGames.map((r) => {
@@ -451,6 +454,7 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
       ? 'Ainda sem treinos registados nesta época.'
       : `Presente em ${s.trainings.present} de ${s.trainings.held} treinos (${s.trainings.rate}%).`
   );
+  drawTrainingMonths(doc, w, s);
   if (s.absences.length > 0) {
     list(
       s.absences.map((a) => {
@@ -462,6 +466,110 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
 
   addBolaComVisaoPageFooters(doc);
   return doc;
+}
+
+// Light-surface step of the validated palette (one series) and neutral tokens
+const PDF_BAR: [number, number, number] = [42, 120, 214];
+const PDF_TRACK: [number, number, number] = [226, 232, 240];
+const PDF_GRID: [number, number, number] = [203, 213, 225];
+const PDF_MUTED: [number, number, number] = [100, 116, 139];
+const PDF_INK: [number, number, number] = [15, 23, 42];
+const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+type Writer = ReturnType<typeof createTextReportWriter>;
+
+/** Minutes game by game: bar = minutes played over the game's minutes (track), dashed 50% line, G/A above. */
+function drawMinutesByGame(doc: any, w: Writer, s: ReturnType<typeof buildPlayerSeason>) {
+  const games = s.evolution.games;
+  if (games.length === 0) return;
+  w.heading('Minutos jogo a jogo');
+  const h = 38;
+  w.ensure(h + 12);
+  const left = 24;
+  const right = 188;
+  const top = w.y;
+  const bottom = top + h;
+  const max = Math.max(1, ...games.map((g) => g.totalMinutes || 0));
+  const y = (v: number) => bottom - (v / max) * h;
+  const slot = (right - left) / games.length;
+  const barW = Math.max(1.5, Math.min(9, slot - 1.2));
+
+  doc.setLineWidth(0.15);
+  doc.setDrawColor(...PDF_GRID);
+  doc.setFontSize(6.5);
+  doc.setTextColor(...PDF_MUTED);
+  [0, max].forEach((v) => {
+    doc.line(left, y(v), right, y(v));
+    doc.text(`${v}'`, left - 1.5, y(v) + 1, { align: 'right' });
+  });
+  const target = y(max * PLAYING_TIME_TARGET);
+  doc.setLineDashPattern([1.2, 0.8], 0);
+  doc.setDrawColor(...PDF_MUTED);
+  doc.line(left, target, right, target);
+  doc.setLineDashPattern([], 0);
+  doc.text(`${Math.round(PLAYING_TIME_TARGET * 100)}%`, right + 1.5, target + 1);
+
+  const labelEvery = Math.ceil(games.length / 12);
+  games.forEach((g, i) => {
+    const x = left + i * slot + (slot - barW) / 2;
+    const cx = x + barW / 2;
+    if (g.calledUp) {
+      doc.setFillColor(...PDF_TRACK);
+      doc.roundedRect(x, y(g.totalMinutes), barW, bottom - y(g.totalMinutes), 0.6, 0.6, 'F');
+      if (g.minutes > 0) {
+        doc.setFillColor(...PDF_BAR);
+        doc.roundedRect(x, y(g.minutes), barW, bottom - y(g.minutes), 0.6, 0.6, 'F');
+      }
+    } else {
+      doc.setTextColor(...PDF_MUTED);
+      doc.text('-', cx, bottom - 1, { align: 'center' });
+    }
+    const extras = [
+      g.goals ? `G${g.goals > 1 ? g.goals : ''}` : '',
+      g.assists ? `A${g.assists > 1 ? g.assists : ''}` : ''
+    ]
+      .filter(Boolean)
+      .join(' ');
+    if (extras) {
+      doc.setTextColor(...PDF_INK);
+      doc.text(extras, cx, (g.calledUp ? y(g.minutes) : bottom - 4) - 1.2, { align: 'center' });
+    }
+    if (i % labelEvery === 0) {
+      doc.setTextColor(...PDF_MUTED);
+      doc.text(`${g.date.slice(8, 10)}/${g.date.slice(5, 7)}`, cx, bottom + 4, { align: 'center' });
+    }
+  });
+  w.skip(h + 7);
+  doc.setFontSize(7);
+  doc.setTextColor(...PDF_MUTED);
+  doc.text('Azul: minutos jogados. Fundo: minutos do jogo. G = golos, A = assistencias, - = nao convocado.', 14, w.y);
+  w.skip(6);
+}
+
+/** Training attendance per month: one thin bar per month with "presente/realizados". */
+function drawTrainingMonths(doc: any, w: Writer, s: ReturnType<typeof buildPlayerSeason>) {
+  const months = s.evolution.trainingMonths;
+  if (months.length === 0) return;
+  w.ensure(months.length * 5 + 4);
+  const left = 30;
+  const width = 130;
+  doc.setFontSize(7.5);
+  months.forEach((m) => {
+    const pct = m.held ? m.present / m.held : 0;
+    const y = w.y;
+    doc.setTextColor(...PDF_MUTED);
+    doc.text(MONTHS[Number(m.month.slice(5, 7)) - 1] || m.month, 16, y + 2.4);
+    doc.setFillColor(...PDF_TRACK);
+    doc.roundedRect(left, y, width, 3, 1.5, 1.5, 'F');
+    if (pct > 0) {
+      doc.setFillColor(...PDF_BAR);
+      doc.roundedRect(left, y, Math.max(3, width * pct), 3, 1.5, 1.5, 'F');
+    }
+    doc.setTextColor(...PDF_INK);
+    doc.text(`${m.present}/${m.held}  ${Math.round(pct * 100)}%`, left + width + 3, y + 2.4);
+    w.skip(5);
+  });
+  w.skip(4);
 }
 
 export async function generatePlayerProfilePDF(player: Player, state: AppState) {
