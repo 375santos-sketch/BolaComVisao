@@ -19,6 +19,7 @@ import { CardModal } from './liveMatch/components/CardModal';
 import { CaptainModal } from './liveMatch/components/CaptainModal';
 import { QuickBenchMode } from './liveMatch/components/QuickBenchMode';
 import { LivePlayingTimePanel } from './liveMatch/components/LivePlayingTimePanel';
+import { HalftimePlanPanel } from './liveMatch/components/HalftimePlanPanel';
 import { LineupModal } from './liveMatch/components/LineupModal';
 import { MatchClock } from './liveMatch/components/MatchClock';
 import { MatchTimeline } from './gameCenter/MatchTimeline';
@@ -54,6 +55,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   const [completedMatchSummary, setCompletedMatchSummary] = useState<Match | null>(null);
   const [showLineupFirstHalfModal, setShowLineupFirstHalfModal] = useState<boolean>(false);
   const [showLineupSecondHalfModal, setShowLineupSecondHalfModal] = useState<boolean>(false);
+  // 2nd-half picker pre-filled from the halftime suggestion
+  const [secondHalfPreset, setSecondHalfPreset] = useState<string[] | null>(null);
 
   const {
     match,
@@ -464,8 +467,24 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         )}
 
         {matchPhase === 'intervalo' && (
+          <HalftimePlanPanel
+            match={match}
+            matches={state.matches || []}
+            roster={state.roster || []}
+            category={state.category}
+            onUseSuggestion={(ids) => {
+              setSecondHalfPreset(ids);
+              setShowLineupSecondHalfModal(true);
+            }}
+          />
+        )}
+
+        {matchPhase === 'intervalo' && (
           <button
-            onClick={() => setShowLineupSecondHalfModal(true)}
+            onClick={() => {
+              setSecondHalfPreset(null);
+              setShowLineupSecondHalfModal(true);
+            }}
             className="w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:opacity-95 text-slate-950 shadow-xl shadow-emerald-500/25 transition-all active:scale-98 flex items-center justify-center gap-2.5 animate-pulse"
           >
             <span className="text-xl">▶️</span>
@@ -833,11 +852,13 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         convocadosIds={convocadosIds}
         lineupSize={lineupSize}
         initialSelection={
-          match.lineupSecondHalf && match.lineupSecondHalf.length === lineupSize
-            ? match.lineupSecondHalf
-            : playersAtEndOfFirstHalf.length === lineupSize
-              ? playersAtEndOfFirstHalf
-              : match.lineup || []
+          secondHalfPreset
+            ? secondHalfPreset
+            : match.lineupSecondHalf && match.lineupSecondHalf.length === lineupSize
+              ? match.lineupSecondHalf
+              : playersAtEndOfFirstHalf.length === lineupSize
+                ? playersAtEndOfFirstHalf
+                : match.lineup || []
         }
         onConfirm={(selectedN) => {
           handleStartSecondHalf(selectedN);
