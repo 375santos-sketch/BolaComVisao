@@ -7,6 +7,7 @@ import { TodayFocusCard } from '../dashboard/TodayFocusCard';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { homeNotices, seasonSummary } from '../../lib/homeSummary';
+import { AssistantCard } from '../assistant/AssistantCard';
 
 interface HomeViewProps {
   state: AppState;
@@ -226,6 +227,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
           ))}
         </section>
       )}
+
+      {/* Questions about the team, answered from the app's data */}
+      <AssistantCard state={state} />
 
       {/* 4. Season at a glance */}
       <section
