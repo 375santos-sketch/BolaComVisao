@@ -155,3 +155,12 @@ describe('Assistente (perguntas sobre a equipa)', () => {
     expect(unknown.understood).toBe(false);
   });
 });
+
+describe('Imagem de parabéns', () => {
+  it('without the photo the picture shows the initials (staff) ', async () => {
+    const { initialsOf } = await import('../lib/birthdayCard');
+    expect(initialsOf('Bruno Santos')).toBe('BS');
+    expect(initialsOf('Rui Pedro Silva')).toBe('RP');
+    expect(initialsOf('Miguel')).toBe('M');
+  });
+});

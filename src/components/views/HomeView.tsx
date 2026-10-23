@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { AppState, ScheduledMatch, Training, UserAccount, ClubEvent } from '../../types';
 import { TabType } from '../Navbar';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
@@ -8,6 +8,8 @@ import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { homeNotices, seasonSummary } from '../../lib/homeSummary';
 import { AssistantCard } from '../assistant/AssistantCard';
+import { BirthdayImageModal } from '../birthday/BirthdayImageModal';
+import { BirthdayPerson, getAllBirthdays } from '../../lib/birthdayUtils';
 
 interface HomeViewProps {
   state: AppState;
@@ -35,8 +37,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenAdminUsers,
   pendingUsersCount = 0,
   latestPendingUser,
-  onExportBackup
+  onExportBackup,
+  onShowToast
 }) => {
+  const [birthdayImage, setBirthdayImage] = useState<BirthdayPerson | null>(null);
+  // Who has a birthday today (athletes and staff)
+  const birthdaysToday = useMemo(
+    () => getAllBirthdays(state.roster || [], state.staffMembers || []).filter((b) => b.isToday),
+    [state.roster, state.staffMembers]
+  );
   const activeMatch = (state.matches || []).find((m) => !m.finished);
 
   // Date Calculations for "Hoje" and "Próximos Compromissos"
@@ -192,6 +201,38 @@ export const HomeView: React.FC<HomeViewProps> = ({
         activeMatch={activeMatch}
         onNavigate={onNavigate}
       />
+
+      {/* 🎂 Birthdays today, with the picture to share */}
+      {birthdaysToday.length > 0 && (
+        <section
+          aria-label="Aniversários de hoje"
+          className="p-3.5 rounded-2xl bg-gradient-to-r from-fuchsia-950/80 to-indigo-950/80 border border-fuchsia-500/40 space-y-2"
+        >
+          <div className="text-xs font-black text-fuchsia-200 uppercase tracking-wider">🎂 Hoje faz anos</div>
+          {birthdaysToday.map((b) => (
+            <div key={b.id} className="flex items-center gap-2">
+              <div className="flex-1 min-w-0 text-sm text-white font-bold truncate">
+                {b.name} <span className="text-fuchsia-200 font-normal">· {b.nextAge} anos</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBirthdayImage(b)}
+                className="shrink-0 px-3 py-1.5 rounded-xl bg-fuchsia-500 text-white text-xs font-black"
+              >
+                🖼️ Imagem de parabéns
+              </button>
+            </div>
+          ))}
+        </section>
+      )}
+      {birthdayImage && (
+        <BirthdayImageModal
+          person={birthdayImage}
+          state={state}
+          onShowToast={(msg) => onShowToast?.(msg)}
+          onClose={() => setBirthdayImage(null)}
+        />
+      )}
 
       {/* 2. Shortcuts */}
       <nav aria-label="Atalhos" className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
