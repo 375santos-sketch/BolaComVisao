@@ -19,6 +19,10 @@ export interface Player {
   email?: string;
   emergencyContact?: string;
   status?: PlayerStatus;
+  /** Expected return date (YYYY-MM-DD) of an injury or suspension: available again from that day. */
+  statusUntil?: string;
+  /** Short reason shown in the call-up ("entorse", "2 jogos de castigo"). */
+  statusNote?: string;
   photoUrl?: string;
   active: boolean;
   notes?: string;
@@ -275,6 +279,10 @@ export interface Exercise {
   tacticalObjectives?: string;
   coachingPoints?: string[];
   variations?: string;
+  /** What the exercise trains (shown in the session plan and its PDF). */
+  objective?: string;
+  /** Drawing or photo of the exercise, imported and compressed (JPEG data URL, about 150 KB at most). */
+  image?: string;
 }
 
 export interface SessionBlock {

@@ -270,13 +270,13 @@ service cloud.firestore {
     }
 
     // Per-record club storage (one document per player, match, training, scheduled game, staff message,
-    // scouting report, plus the "club" document with settings and the team list).
+    // scouting report and training exercise, plus the "club" document with settings and the team list).
     function isValidClubRecord(data) {
       return data is map &&
         data.size() <= 10 &&
         data.keys().hasAll(['kind', 'teamId', 'entityId', 'updatedAt', 'deleted']) &&
         data.keys().hasOnly(['kind', 'teamId', 'entityId', 'updatedAt', 'updatedBy', 'deleted', 'data']) &&
-        data.kind in ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting'] &&
+        data.kind in ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting', 'exercise'] &&
         data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
         data.entityId is string && data.entityId.size() > 0 && data.entityId.size() <= 256 &&
         data.updatedAt is number &&

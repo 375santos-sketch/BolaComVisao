@@ -166,6 +166,34 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     setEditingGoal(null);
   };
 
+  /**
+   * One-tap goal (quick mode): the scorer is the athlete tapped; minute and half come from the clock. Assist and
+   * origin stay empty (the end-of-game checklist reminds to fill them). Returns the new goal so it can be undone.
+   */
+  const handleQuickGoalBy = (scorerId: string): GoalEvent | null => {
+    if (!match) return null;
+    const phase = getMatchPhase(match);
+    if (phase !== 'parte1' && phase !== 'parte2') {
+      if (onShowToast) onShowToast('O golo com um toque só funciona com o jogo a decorrer.');
+      return null;
+    }
+    const { period, half } = derivePeriodAndHalfFromPhase(phase);
+    const suggested = getSuggestedMinute(match, state.category) || '';
+    const goal: GoalEvent = {
+      id: uid(),
+      type: 'scored',
+      scorerId,
+      assistId: null,
+      minute: suggested ? formatMinute(suggested) : null,
+      minuteBase: 'game',
+      minuteInHalf: computeMinuteInHalf(suggested, half, getNominalHalfDuration(match, state.category)),
+      period,
+      half
+    };
+    updateMatchInState({ ...match, goals: [...match.goals, goal] });
+    return goal;
+  };
+
   const handleDeleteGoal = (goalId: string) => {
     if (!match) return;
     updateMatchInState({
@@ -678,6 +706,7 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     openEditGoalModal,
     handleSaveGoal,
     handleDeleteGoal,
+    handleQuickGoalBy,
 
     // Goal Conceded
     showConcededModal,

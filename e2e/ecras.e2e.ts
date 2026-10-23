@@ -480,6 +480,41 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
 });
 
+test('exercícios: biblioteca com desenho importado, usada no plano do treino', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '⚡ Treinos' }).first().click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  await page.getByRole('button', { name: '➕ Novo exercício' }).click();
+  const form = page.getByRole('region', { name: 'Editar exercício' });
+  await form.getByLabel('Nome').fill('Rondo 4x2');
+  await form.getByLabel('Objetivo').fill('Circulação de bola sob pressão');
+  await form.getByLabel('Duração (min)').fill('15');
+  await form.getByLabel('Importar imagem do exercício').setInputFiles('e2e/fixtures/exercicio.jpg');
+  await expect(form.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
+  await form.getByRole('button', { name: 'Guardar exercício' }).click();
+  const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
+  await expect(library).toContainText('Rondo 4x2');
+  await expect(library).toContainText('15 min');
+  await expect
+    .poll(async () => [...(await cloudRecords()).values()].find((r) => r.kind === 'exercise')?.name, {
+      timeout: 30_000,
+      message: 'exercício na nuvem'
+    })
+    .toBe('Rondo 4x2');
+
+  // New training: the exercise joins the session plan with its drawing
+  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
+  await page.getByRole('button', { name: /Da biblioteca \(1\)/ }).click();
+  await page
+    .getByRole('group', { name: 'Escolher da biblioteca' })
+    .getByRole('button', { name: /Rondo 4x2/ })
+    .click();
+  await expect(page.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
+  await expect(page.getByText('Planeado: 15 /')).toBeVisible();
+});
+
 test('ficha do atleta: época, últimos jogos, faltas com motivo e PDF', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /equipa/i);
@@ -571,6 +606,26 @@ test('plantel: novo atleta fica guardado na nuvem e o outro treinador vê-o', as
   await addPlayer(coachB, 'Duarte Teste', '24');
   await expect(page.getByRole('heading', { name: 'Duarte Teste' })).toBeVisible({ timeout: 30_000 });
   await other.close();
+});
+
+test('disponibilidade: lesão com data de regresso aparece no plantel e na Convocatória', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Gonçalo Teste' }).click();
+  await page.getByRole('button', { name: /Editar Dados/ }).click();
+  await page
+    .locator('select')
+    .filter({ has: page.locator('option[value=lesionado]') })
+    .selectOption('lesionado');
+  await page.getByLabel('Regressa a').fill('2099-01-15');
+  await page.getByLabel('Motivo').fill('entorse');
+  await page.locator('#player-form button[type=submit]').click();
+  await expect(page.getByText('Lesionado até 15/01').first()).toBeVisible();
+
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: /Lista/i }).click();
+  await page.getByTitle('Abrir Convocatória').first().click();
+  await expect(page.getByText('🏥 Lesionado até 15/01 · entorse')).toBeVisible();
 });
 
 test('dia de jogo: convocatória, titulares, relógio, golos, substituição, cartão, intervalo, fim e minutos', async ({
@@ -666,6 +721,12 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
 
   // 2nd half: goal by the substitute, then 10 minutes in total (less simulated time keeps the sign-in valid).
   await advance('05:00');
+  // One-tap goal: tap who scored (minute from the clock), then undo it
+  const oneTap = page.getByRole('region', { name: 'Golo com um toque' });
+  await oneTap.getByRole('button', { name: '7 - Tomás Gonçalves' }).click();
+  await expect(oneTap.getByRole('status')).toContainText(/Golo de 7 - Tomás Gonçalves aos \d+'/);
+  await oneTap.getByRole('button', { name: 'Desfazer' }).click();
+  await expect(oneTap.getByRole('status')).toHaveCount(0);
   await page.getByRole('button', { name: /GOLO MARCADO/i }).click();
   await page.locator('select').first().selectOption('p10');
   await page.getByRole('button', { name: 'Confirmar Golo' }).click();
