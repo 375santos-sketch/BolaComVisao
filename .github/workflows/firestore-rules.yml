@@ -79,7 +79,12 @@ jobs:
 
       - name: Publicar firestore.rules (conta de serviço)
         if: env.HAS_SERVICE_ACCOUNT == 'true'
-        run: npx -y firebase-tools@13.35.1 deploy --only firestore:rules --project glowing-orbit-vk8sk --non-interactive
+        run: |
+          DB=$(node -p "require('./firebase.json').firestore[0].database")
+          # "firestore:rules" alone selects no database when firebase.json lists databases (firebase-tools then deploys
+          # nothing and still says "Deploy complete!"): name the app's database too.
+          npx -y firebase-tools@13.35.1 deploy --only "firestore:rules,firestore:${DB}" --project glowing-orbit-vk8sk --non-interactive 2>&1 | tee deploy.log
+          exit ${PIPESTATUS[0]}
 
       # Sem conta de serviço, usa o código de acesso de "firebase login:ci" (FIREBASE_TOKEN).
       - name: Publicar firestore.rules (código de acesso)
@@ -87,7 +92,10 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          npx -y firebase-tools@13.35.1 deploy --only firestore:rules --project glowing-orbit-vk8sk --non-interactive 2>&1 | tee deploy.log
+          DB=$(node -p "require('./firebase.json').firestore[0].database")
+          # "firestore:rules" alone selects no database when firebase.json lists databases (firebase-tools then deploys
+          # nothing and still says "Deploy complete!"): name the app's database too.
+          npx -y firebase-tools@13.35.1 deploy --only "firestore:rules,firestore:${DB}" --project glowing-orbit-vk8sk --non-interactive 2>&1 | tee deploy.log
           exit ${PIPESTATUS[0]}
 
       # The deploy can report success without the app's database using the new rules (wrong database, rules replaced
