@@ -148,8 +148,22 @@ export interface PreMatchPlan {
 
 export type MatchGamePhase = 'nao_iniciado' | 'parte1' | 'intervalo' | 'parte2';
 
+export interface MvpVote {
+  token: string;
+  closesAt: number;
+  open: boolean;
+  /** Votes per athlete id, as counted the last time the coach checked. */
+  votes?: Record<string, number>;
+  total?: number;
+  countedAt?: number;
+}
+
 export interface Match {
   id: string;
+  /** "Jogador do jogo" chosen by the coach after the game. */
+  mvpId?: string | null;
+  /** Parents' anonymous vote for the "Jogador do jogo" (public_votes/{token}); votes counted when last checked. */
+  mvpVote?: MvpVote;
   teamId?: string;
   teamName?: string;
   opponent: string;
@@ -675,6 +689,28 @@ export interface SquadProfile {
   calendarToken?: string;
   /** Championship series (one per season): other games of the series, for the league table. */
   leagues?: LeagueSetup[];
+  /** The team's rehearsed set pieces (corners, free kicks, throw-ins…), each its own cloud record. */
+  setPieces?: SetPiece[];
+}
+
+export type SetPieceType = 'canto' | 'livre' | 'lancamento' | 'penalti' | 'pontape_saida';
+
+/** One job in a set piece ("Marca", "1.º poste") and the athlete who does it. */
+export interface SetPieceRole {
+  label: string;
+  playerId?: string | null;
+}
+
+export interface SetPiece {
+  id: string;
+  name: string;
+  type: SetPieceType;
+  side?: 'esquerda' | 'direita' | 'central';
+  /** Drawing or photo (compressed JPEG data URL). */
+  image?: string;
+  notes?: string;
+  roles: SetPieceRole[];
+  createdAt: string;
 }
 
 /** A game of the championship series between two other teams (home team first). */
@@ -920,6 +956,8 @@ export interface AppState {
   opponentScouting?: OpponentScouting[];
   staffUnavailability?: StaffUnavailability[];
   clubEvents?: ClubEvent[];
+  /** Copy of the active team's set pieces (the teams hold them; see SquadProfile.setPieces). */
+  setPieces?: SetPiece[];
   exerciseLibrary?: Exercise[];
   subscription?: ClubSubscription;
   updatedAt?: number;

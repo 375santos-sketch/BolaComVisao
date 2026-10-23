@@ -270,13 +270,13 @@ service cloud.firestore {
     }
 
     // Per-record club storage (one document per player, match, training, scheduled game, staff message,
-    // scouting report and training exercise, plus the "club" document with settings and the team list).
+    // scouting report, training exercise and set piece, plus the "club" document with settings and the team list).
     function isValidClubRecord(data) {
       return data is map &&
         data.size() <= 10 &&
         data.keys().hasAll(['kind', 'teamId', 'entityId', 'updatedAt', 'deleted']) &&
         data.keys().hasOnly(['kind', 'teamId', 'entityId', 'updatedAt', 'updatedBy', 'deleted', 'data']) &&
-        data.kind in ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting', 'exercise'] &&
+        data.kind in ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting', 'exercise', 'setpiece'] &&
         data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
         data.entityId is string && data.entityId.size() > 0 && data.entityId.size() <= 256 &&
         data.updatedAt is number &&
@@ -299,6 +299,20 @@ service cloud.firestore {
         data.updatedAt is number;
     }
 
+    // "Jogador do jogo" vote for the parents: candidates are shown by first name + initial and shirt number only.
+    function isValidMvpPoll(data) {
+      return data is map &&
+        data.keys().hasAll(['clubId', 'teamId', 'title', 'candidates', 'candidateIds', 'open', 'closesAt', 'createdAt']) &&
+        data.keys().hasOnly(['clubId', 'teamId', 'title', 'candidates', 'candidateIds', 'open', 'closesAt', 'createdAt']) &&
+        data.clubId is string && data.clubId.size() > 0 && data.clubId.size() <= 128 &&
+        data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
+        data.title is string && data.title.size() <= 200 &&
+        data.candidates is list && data.candidates.size() > 0 && data.candidates.size() <= 30 &&
+        data.candidateIds is list && data.candidateIds.size() == data.candidates.size() &&
+        data.open is bool &&
+        data.closesAt is number && data.createdAt is number;
+    }
+
     // --- Collection Security Rules ---
 
     // Shareable calendar (Agenda → "Calendário para os pais"): the document id is a secret token of 24 random
@@ -312,6 +326,31 @@ service cloud.firestore {
       allow update: if isApprovedUser() && resource.data.clubId == getUserClubId() &&
         isValidPublicCalendar(incoming()) && incoming().clubId == resource.data.clubId;
       allow delete: if isApprovedUser() && resource.data.clubId == getUserClubId();
+    }
+
+    // Parents' vote for the "Jogador do jogo" (Resultados → ⭐): the poll id is a secret token. Anyone with the link
+    // reads the poll and casts ONE anonymous ballot per device (the ballot id is a random id kept on the phone; a
+    // ballot is never changed). Only the club's approved coaches create/close the poll and read the ballots.
+    match /public_votes/{token} {
+      allow get: if token.size() >= 20;
+      allow list: if false;
+      allow create: if isApprovedUser() && isValidId(token) && token.size() >= 20 &&
+        isValidMvpPoll(incoming()) && incoming().clubId == getUserClubId();
+      allow update: if isApprovedUser() && resource.data.clubId == getUserClubId() &&
+        isValidMvpPoll(incoming()) && incoming().clubId == resource.data.clubId;
+      allow delete: if isApprovedUser() && resource.data.clubId == getUserClubId();
+
+      match /ballots/{voterId} {
+        allow create: if isValidId(voterId) && voterId.size() >= 16 && voterId.size() <= 64 &&
+          incoming().keys().hasOnly(['candidate']) &&
+          incoming().candidate is string &&
+          get(/databases/$(database)/documents/public_votes/$(token)).data.open == true &&
+          request.time.toMillis() < get(/databases/$(database)/documents/public_votes/$(token)).data.closesAt &&
+          incoming().candidate in get(/databases/$(database)/documents/public_votes/$(token)).data.candidateIds;
+        allow get, list: if isApprovedUser() &&
+          get(/databases/$(database)/documents/public_votes/$(token)).data.clubId == getUserClubId();
+        allow update, delete: if false;
+      }
     }
 
     // Dedicated Admins Collection

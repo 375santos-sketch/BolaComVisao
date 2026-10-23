@@ -285,3 +285,79 @@ describe('Calendário para os pais (link secreto)', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('Votação dos pais no jogador do jogo (link secreto)', () => {
+  const TOKEN = 'Vot7aBcDeFgHiJkLmNoPqRsT';
+  const CLOSED = 'VotFechadaAbcDefGhiJkLmN';
+  const poll = (clubId: string, extra: Record<string, unknown> = {}) => ({
+    clubId,
+    teamId: 'sub11',
+    title: 'Tramagal SU 1-10 Dragões · 17/10/2026',
+    candidates: [
+      { id: 'p1', label: 'Rui S. (9)' },
+      { id: 'p2', label: 'Tomás G. (7)' }
+    ],
+    candidateIds: ['p1', 'p2'],
+    open: true,
+    closesAt: Date.now() + 3_600_000,
+    createdAt: Date.now(),
+    ...extra
+  });
+  const rest = (path: string) =>
+    `http://${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/public_votes/${path}`;
+  const ballot = (token: string, voter: string, candidate: string) =>
+    fetch(`${rest(`${token}/ballots`)}?documentId=${voter}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: { candidate: { stringValue: candidate } } })
+    });
+
+  beforeAll(async () => {
+    await setRules(RULES_NOW);
+  });
+
+  it('a coach opens the vote of their club (another club or extra fields are refused)', async () => {
+    await signInAs('coachA');
+    await fs.setDoc(fs.doc(fb.db, 'public_votes', TOKEN), poll('clubA'));
+    await fs.setDoc(fs.doc(fb.db, 'public_votes', CLOSED), poll('clubA', { open: false }));
+    await expect(
+      fs.setDoc(fs.doc(fb.db, 'public_votes', 'OutroTokenComNomes12345'), poll('clubA', { phones: ['912'] }))
+    ).rejects.toMatchObject(denied);
+    await signInAs('coachB');
+    await expect(
+      fs.setDoc(fs.doc(fb.db, 'public_votes', 'TokenDoClubeBabcdef12345'), poll('clubA'))
+    ).rejects.toMatchObject(denied);
+  });
+
+  it('a parent without an account reads the vote and votes once (anonymous, not changeable)', async () => {
+    await fa.signOut(fb.auth);
+    expect((await fetch(rest(TOKEN))).status).toBe(200);
+    expect((await ballot(TOKEN, 'telemovelDoPai0000001', 'p1')).status).toBe(200);
+    // same phone again: rejected (a ballot never changes)
+    expect((await ballot(TOKEN, 'telemovelDoPai0000001', 'p2')).status).not.toBe(200);
+    expect((await ballot(TOKEN, 'telemovelDaMae0000002', 'p2')).status).toBe(200);
+  });
+
+  it('refuses votes for someone who is not a candidate, extra data, or a closed vote', async () => {
+    expect((await ballot(TOKEN, 'telemovelOutro0000003', 'p9')).status).toBe(403);
+    const extra = await fetch(`${rest(`${TOKEN}/ballots`)}?documentId=telemovelOutro0000004`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: { candidate: { stringValue: 'p1' }, nome: { stringValue: 'Pai do Rui' } } })
+    });
+    expect(extra.status).toBe(403);
+    expect((await ballot(CLOSED, 'telemovelOutro0000005', 'p1')).status).toBe(403);
+  });
+
+  it('only the club coaches see the ballots (parents and other clubs do not)', async () => {
+    expect((await fetch(rest(`${TOKEN}/ballots`))).status).toBe(403);
+    await signInAs('coachB');
+    await expect(fs.getDocs(fs.collection(fb.db, 'public_votes', TOKEN, 'ballots'))).rejects.toMatchObject(denied);
+    await signInAs('colegaA');
+    const snap = await fs.getDocs(fs.collection(fb.db, 'public_votes', TOKEN, 'ballots'));
+    expect(snap.docs.map((d) => d.data().candidate).sort()).toEqual(['p1', 'p2']);
+    await fs.updateDoc(fs.doc(fb.db, 'public_votes', TOKEN), { open: false });
+    await fa.signOut(fb.auth);
+    expect((await ballot(TOKEN, 'telemovelTardio0000006', 'p1')).status).toBe(403);
+  });
+});

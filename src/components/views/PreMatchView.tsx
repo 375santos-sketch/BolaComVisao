@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppState, PreMatchPlan, ScheduledMatch } from '../../types';
 import { Header } from '../Header';
 import { LastTimeAgainstCard } from './results/LastTimeAgainstCard';
+import { SetPiecesCard } from './setpieces/SetPiecesCard';
 import {
   MAX_OBJECTIVES,
   SEVEN_A_SIDE_SYSTEMS,
@@ -117,6 +118,13 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
           <LastTimeAgainstCard matches={state.matches || []} opponent={game.opponent} />
 
           <PreMatchForm key={game.id} game={game} state={state} onSave={saveGame} onShowToast={onShowToast} />
+
+          <SetPiecesCard
+            state={state}
+            callup={game.callup || []}
+            onUpdateState={onUpdateState}
+            onShowToast={onShowToast}
+          />
         </>
       )}
     </div>

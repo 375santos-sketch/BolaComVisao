@@ -8,6 +8,7 @@ import { CallupShareModal } from '../CallupShareModal';
 import { upcomingGames } from '../../lib/preMatchPlan';
 import { callupPlayingTime, playersNeedingMinutes, RECENT_GAMES } from '../../lib/callupPlayingTime';
 import { availabilityOn } from '../../lib/availability';
+import { SetPiecesCard } from './setpieces/SetPiecesCard';
 
 interface ConvocatoriaViewProps {
   state: AppState;
@@ -647,6 +648,8 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           </>
         )}
       </div>
+
+      <SetPiecesCard state={state} callup={match.callup} onUpdateState={onUpdateState} onShowToast={onShowToast} />
 
       {/* Action Buttons */}
       <div className="flex flex-col gap-2">
