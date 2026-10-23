@@ -3,6 +3,7 @@ import { AppState, Player } from '../../../types';
 import { SquadSortBy, SquadSortDirection, POSITION_GROUPS, STATUS_CONFIG } from './types';
 import { SquadPositionBadge } from './SquadPositionBadge';
 import { computeAge, getPositionRank } from '../../../lib/utils';
+import { returnSuffix } from '../../../lib/availability';
 
 interface SquadListViewProps {
   state: AppState;
@@ -90,6 +91,12 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
                 </span>
               )}
             </div>
+            {(player.status === 'lesionado' || player.status === 'suspenso') && (
+              <div className={`sm:hidden text-[10px] font-mono font-bold mt-0.5 ${st.text}`}>
+                {st.icon} {st.label}
+                {returnSuffix(player)}
+              </div>
+            )}
             <div className="text-[10px] font-mono text-slate-400 truncate mt-0.5 flex items-center gap-2">
               <span className="hidden sm:inline">{player.positions || 'Jogador'}</span>
               {player.dominantFoot && (
@@ -104,7 +111,10 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
             className={`hidden sm:inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-md font-bold border ${st.bg} ${st.text} ${st.border}`}
           >
             <span>{st.icon}</span>
-            <span>{st.label}</span>
+            <span>
+              {st.label}
+              {returnSuffix(player)}
+            </span>
           </span>
 
           <button

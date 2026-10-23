@@ -536,6 +536,26 @@ test('plantel: novo atleta fica guardado na nuvem e o outro treinador vê-o', as
   await other.close();
 });
 
+test('disponibilidade: lesão com data de regresso aparece no plantel e na Convocatória', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Gonçalo Teste' }).click();
+  await page.getByRole('button', { name: /Editar Dados/ }).click();
+  await page
+    .locator('select')
+    .filter({ has: page.locator('option[value=lesionado]') })
+    .selectOption('lesionado');
+  await page.getByLabel('Regressa a').fill('2099-01-15');
+  await page.getByLabel('Motivo').fill('entorse');
+  await page.locator('#player-form button[type=submit]').click();
+  await expect(page.getByText('Lesionado até 15/01').first()).toBeVisible();
+
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: /Lista/i }).click();
+  await page.getByTitle('Abrir Convocatória').first().click();
+  await expect(page.getByText('🏥 Lesionado até 15/01 · entorse')).toBeVisible();
+});
+
 test('dia de jogo: convocatória, titulares, relógio, golos, substituição, cartão, intervalo, fim e minutos', async ({
   page
 }) => {
@@ -629,6 +649,12 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
 
   // 2nd half: goal by the substitute, then 10 minutes in total (less simulated time keeps the sign-in valid).
   await advance('05:00');
+  // One-tap goal: tap who scored (minute from the clock), then undo it
+  const oneTap = page.getByRole('region', { name: 'Golo com um toque' });
+  await oneTap.getByRole('button', { name: '7 - Tomás Gonçalves' }).click();
+  await expect(oneTap.getByRole('status')).toContainText(/Golo de 7 - Tomás Gonçalves aos \d+'/);
+  await oneTap.getByRole('button', { name: 'Desfazer' }).click();
+  await expect(oneTap.getByRole('status')).toHaveCount(0);
   await page.getByRole('button', { name: /GOLO MARCADO/i }).click();
   await page.locator('select').first().selectOption('p10');
   await page.getByRole('button', { name: 'Confirmar Golo' }).click();

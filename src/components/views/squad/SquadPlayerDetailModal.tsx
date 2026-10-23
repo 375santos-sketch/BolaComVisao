@@ -6,6 +6,7 @@ import { calculatePlayerEvolution } from '../../../lib/intelligenceEngine';
 import { buildPlayerSeason } from '../../../lib/playerSeason';
 import { PlayerSeasonSection } from './PlayerSeasonSection';
 import { StatsPanel } from '../../stats/StatsPanel';
+import { returnSuffix } from '../../../lib/availability';
 
 interface SquadPlayerDetailModalProps {
   player: Player | null;
@@ -152,6 +153,8 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                   className={`inline-block text-[10px] font-mono px-2 py-0.5 rounded-md font-bold border ${st.bg} ${st.text} ${st.border}`}
                 >
                   {st.icon} {st.label}
+                  {returnSuffix(player)}
+                  {player.statusNote && returnSuffix(player) ? ` · ${player.statusNote}` : ''}
                 </span>
 
                 {/* Alerta de faltas consecutivas */}

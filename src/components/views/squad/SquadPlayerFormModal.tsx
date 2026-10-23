@@ -28,6 +28,10 @@ interface SquadPlayerFormModalProps {
   setFormEmergencyContact: (val: string) => void;
   formStatus: PlayerStatus;
   setFormStatus: (val: PlayerStatus) => void;
+  formStatusUntil?: string;
+  setFormStatusUntil?: (val: string) => void;
+  formStatusNote?: string;
+  setFormStatusNote?: (val: string) => void;
   formPhotoUrl: string;
   setFormPhotoUrl: (val: string) => void;
   onPhotoFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -60,6 +64,10 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
   setFormEmergencyContact,
   formStatus,
   setFormStatus,
+  formStatusUntil = '',
+  setFormStatusUntil,
+  formStatusNote = '',
+  setFormStatusNote,
   formPhotoUrl,
   setFormPhotoUrl,
   onPhotoFileUpload,
@@ -182,6 +190,40 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                   </select>
                 </div>
               </div>
+
+              {(formStatus === 'lesionado' || formStatus === 'suspenso') && setFormStatusUntil && setFormStatusNote && (
+                <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-amber-950/30 border border-amber-500/30">
+                  <div>
+                    <label className="block text-xs font-mono text-amber-200 mb-1" htmlFor="player-status-until">
+                      Regressa a
+                    </label>
+                    <input
+                      id="player-status-until"
+                      type="date"
+                      value={formStatusUntil}
+                      onChange={(e) => setFormStatusUntil(e.target.value)}
+                      className="w-full bg-slate-950 border border-amber-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-amber-200 mb-1" htmlFor="player-status-note">
+                      Motivo
+                    </label>
+                    <input
+                      id="player-status-note"
+                      type="text"
+                      maxLength={60}
+                      placeholder={formStatus === 'lesionado' ? 'Ex: entorse' : 'Ex: 2 jogos'}
+                      value={formStatusNote}
+                      onChange={(e) => setFormStatusNote(e.target.value)}
+                      className="w-full bg-slate-950 border border-amber-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-amber-400 font-mono"
+                    />
+                  </div>
+                  <p className="col-span-2 text-[10px] text-amber-200/80">
+                    Fica indisponível na Convocatória até esta data; a partir dela volta a estar disponível sozinho.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Posição em Campo</label>

@@ -90,6 +90,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     openEditGoalModal,
     handleSaveGoal,
     handleDeleteGoal,
+    handleQuickGoalBy,
 
     // Conceded
     showConcededModal,
@@ -541,6 +542,9 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           myClubName={myClub}
           roster={state.roster || []}
           onQuickGoalScored={openAddGoalModal}
+          onQuickGoalBy={handleQuickGoalBy}
+          onUndoGoal={handleDeleteGoal}
+          onEditGoal={openEditGoalModal}
           onQuickGoalConceded={openAddConcededModal}
           onQuickSub={openAddSubModal}
           onQuickCard={openAddCardModal}

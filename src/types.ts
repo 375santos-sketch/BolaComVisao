@@ -19,6 +19,10 @@ export interface Player {
   email?: string;
   emergencyContact?: string;
   status?: PlayerStatus;
+  /** Expected return date (YYYY-MM-DD) of an injury or suspension: available again from that day. */
+  statusUntil?: string;
+  /** Short reason shown in the call-up ("entorse", "2 jogos de castigo"). */
+  statusNote?: string;
   photoUrl?: string;
   active: boolean;
   notes?: string;
