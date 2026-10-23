@@ -47,6 +47,7 @@ export interface StoredRecord {
   goals?: number;
   finished?: boolean;
   phase?: string;
+  location?: string;
   convocados?: number;
 }
 
@@ -65,6 +66,7 @@ export async function cloudRecords(workspace = 'clubA'): Promise<Map<string, Sto
         goals: d.fields.data?.mapValue?.fields?.goals?.arrayValue?.values?.length ?? 0,
         finished: d.fields.data?.mapValue?.fields?.finished?.booleanValue === true,
         phase: d.fields.data?.mapValue?.fields?.phase?.stringValue,
+        location: d.fields.data?.mapValue?.fields?.location?.stringValue,
         convocados: d.fields.data?.mapValue?.fields?.convocados?.arrayValue?.values?.length ?? 0
       }
     ])

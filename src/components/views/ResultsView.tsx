@@ -112,6 +112,12 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
     onNavigate('jogo');
   };
 
+  // Fixes where a finished game was played (e.g. registered as "Casa" when it was away).
+  const handleSetLocation = (id: string, location: Match['location']) => {
+    const updated = state.matches.map((m) => (m.id === id ? { ...m, location } : m));
+    onUpdateState({ matches: updated });
+  };
+
   const handleDeleteMatch = (id: string) => {
     const updated = state.matches.filter((m) => m.id !== id);
     onUpdateState({ matches: updated });
@@ -410,6 +416,33 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                       <span>Excel Ficha de Jogo</span>
                     </button>
                   </div>
+
+                  {m.finished && (
+                    <div className="mt-2.5 flex items-center gap-2 text-xs" role="group" aria-label="Local do jogo">
+                      <span className="text-slate-400">Local do jogo:</span>
+                      {(['casa', 'fora'] as const).map((loc) => {
+                        const active = (m.location || 'casa') === loc;
+                        return (
+                          <button
+                            key={loc}
+                            type="button"
+                            aria-pressed={active}
+                            className={`px-3 py-1 rounded-lg border font-bold ${
+                              active
+                                ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200'
+                                : 'border-slate-600 text-slate-400 hover:text-slate-200'
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!active) handleSetLocation(m.id, loc);
+                            }}
+                          >
+                            {loc === 'casa' ? 'Casa' : 'Fora'}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   {m.finished && (
                     <div className="btn-row mt-2.5">

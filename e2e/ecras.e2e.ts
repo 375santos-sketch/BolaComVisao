@@ -322,6 +322,34 @@ test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await expect(modal).toContainText('2');
 });
 
+test('resultados: corrigir o local de um jogo terminado (casa/fora) fica guardado', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByText('Tramagal SU').click();
+  const place = page.getByRole('group', { name: 'Local do jogo' });
+  await expect(place.getByRole('button', { name: 'Fora' })).toHaveAttribute('aria-pressed', 'true');
+  await place.getByRole('button', { name: 'Casa' }).click();
+  await expect(place.getByRole('button', { name: 'Casa' })).toHaveAttribute('aria-pressed', 'true');
+
+  await expect
+    .poll(
+      async () =>
+        [...(await cloudRecords()).values()].find((r) => r.kind === 'match' && r.opponent === 'Tramagal SU')?.location,
+      { timeout: 30_000 }
+    )
+    .toBe('casa');
+
+  await page.reload();
+  await enterPanel(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByText('Tramagal SU').click();
+  await expect(
+    page.getByRole('group', { name: 'Local do jogo' }).getByRole('button', { name: 'Casa' })
+  ).toHaveAttribute('aria-pressed', 'true');
+});
+
 test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
