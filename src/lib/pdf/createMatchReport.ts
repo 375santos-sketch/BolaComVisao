@@ -308,13 +308,15 @@ export async function generateMatchSheetPDF(
   const categoryLabel = state.category || 'Geral';
   const seasonLabel = match.season || state.season || defaultSeason();
 
+  // Home team first (title and score): away games read "Adversário 1 - 10 Nós"
+  const home = (match.location || 'casa') === 'casa';
+  const fixtureTitle = home
+    ? `${myClub.toUpperCase()}  vs  ${match.opponent.toUpperCase()}`
+    : `${match.opponent.toUpperCase()}  vs  ${myClub.toUpperCase()}`;
+  const fixtureScore = home ? `${sc}   -   ${co}` : `${co}   -   ${sc}`;
+
   // Header with Left Club Crest & Right BolaComVisao Logo
-  drawDocumentHeader(
-    doc,
-    state,
-    'RELATÓRIO OFICIAL DO JOGO',
-    `${myClub.toUpperCase()}  vs  ${match.opponent.toUpperCase()}`
-  );
+  drawDocumentHeader(doc, state, 'RELATÓRIO OFICIAL DO JOGO', fixtureTitle);
 
   let curY = 46;
 
@@ -329,16 +331,12 @@ export async function generateMatchSheetPDF(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(255, 255, 255);
-  const fixtureTitle =
-    (match.location || 'casa') === 'casa'
-      ? `${myClub.toUpperCase()}  vs  ${match.opponent.toUpperCase()}`
-      : `${match.opponent.toUpperCase()}  vs  ${myClub.toUpperCase()}`;
   doc.text(fixtureTitle, 105, curY + 6.5, { align: 'center' });
 
   // Big Score
   doc.setFontSize(16);
   doc.setTextColor(0, 210, 255);
-  doc.text(`${sc}   -   ${co}`, 105, curY + 15, { align: 'center' });
+  doc.text(fixtureScore, 105, curY + 15, { align: 'center' });
 
   // Competition type and phase line: TIPO: CAMPEONATO • FASE/JORNADA: JORNADA 4
   doc.setFont('helvetica', 'bold');
