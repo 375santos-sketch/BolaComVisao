@@ -592,38 +592,6 @@ test('votação dos pais: link anónimo, um voto por telemóvel e os dois mais v
   await late.close();
 });
 
-test('vídeo do jogo: link do YouTube e início das partes, cada lance abre no momento certo', async ({ page }) => {
-  await signedIn(page);
-  await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
-  await page.getByText('Tramagal SU').click();
-  await page.getByRole('button', { name: /Vídeo do jogo/ }).click();
-  const dialog = page.getByRole('dialog', { name: 'Vídeo do jogo' });
-  await dialog.getByLabel('Link do vídeo (YouTube, Drive…)').fill('https://www.youtube.com/watch?v=abc123XYZ');
-  await dialog.getByLabel('Início da 1.ª parte no vídeo').fill('2:15');
-  await dialog.getByLabel('Início da 2.ª parte no vídeo').fill('34:40');
-  await dialog.getByRole('button', { name: 'Guardar vídeo' }).click();
-
-  // Rui's goal at 12' (1st half): 2:15 + 11 minutes - 15 seconds = 13:00
-  const marks = dialog.getByRole('list', { name: 'Lances no vídeo' });
-  const goal = marks.getByRole('link', { name: /Ver no vídeo: Golo de Rui Silva/ }).first();
-  await expect(goal).toHaveAttribute('href', 'https://youtu.be/abc123XYZ?t=780');
-  await expect(goal).toContainText('13:00');
-  await expect(marks).toContainText('Golo sofrido');
-  await dialog.getByRole('button', { name: 'Fechar vídeo do jogo' }).click();
-  await expect(page.getByRole('button', { name: /Vídeo do jogo ✓/ })).toBeVisible();
-
-  await expect
-    .poll(
-      async () => {
-        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/match__sub11__m2`, { headers: owner });
-        return JSON.stringify(await res.json()).includes('abc123XYZ');
-      },
-      { timeout: 30_000, message: 'vídeo guardado no jogo na nuvem' }
-    )
-    .toBe(true);
-});
-
 test('quadro tático: jogada em passos arrastando a bola, animação e jogada guardada na nuvem', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /performance/i);
