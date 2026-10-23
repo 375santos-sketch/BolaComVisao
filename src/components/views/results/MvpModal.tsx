@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Match } from '../../../types';
 import { drawMvpCard, MVP_CARD_SIZE, mvpCandidates, mvpResultLine, mvpStatsLine } from '../../../lib/mvpCard';
 import { calculateMatchScore } from '../../../lib/utils';
+import { MvpVotePanel } from './MvpVotePanel';
 
 interface MvpModalProps {
   match: Match;
@@ -30,6 +31,9 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
   const line = candidates.find((c) => c.player.id === playerId);
   const hasPhoto = Boolean(line?.player.photoUrl?.startsWith('data:image/'));
   const clubName = state.myClubName || 'A nossa equipa';
+  const { scored, conceded } = calculateMatchScore(match);
+  const resultLine = mvpResultLine(match, clubName, scored, conceded);
+  const dateLine = (match.date || '').slice(0, 10).split('-').reverse().join('/');
   const fileName = `Jogador_do_jogo_${(line?.player.name || '').replace(/[^a-zA-Z0-9]/g, '_')}.png`;
 
   useEffect(() => {
@@ -43,13 +47,12 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
       if (document.fonts?.ready) await document.fonts.ready.catch(() => undefined);
       const ctx = canvasRef.current?.getContext('2d');
       if (cancelled || !ctx) return;
-      const { scored, conceded } = calculateMatchScore(match);
       const number = line.player.number;
       drawMvpCard(ctx, {
         clubName,
         category: state.category,
-        result: mvpResultLine(match, clubName, scored, conceded),
-        date: (match.date || '').slice(0, 10).split('-').reverse().join('/'),
+        result: resultLine,
+        date: dateLine,
         name: line.player.nickname?.trim() || line.player.name,
         number: number !== null && number !== undefined && `${number}` !== '' ? String(number) : undefined,
         position: line.player.positions || undefined,
@@ -61,7 +64,7 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
     return () => {
       cancelled = true;
     };
-  }, [line, withPhoto, match, clubName, state.category, state.clubLogoUrl]);
+  }, [line, withPhoto, resultLine, dateLine, clubName, state.category, state.clubLogoUrl]);
 
   const save = () => {
     if (!line) return;
@@ -184,6 +187,20 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
                 📲 Partilhar imagem
               </button>
             </div>
+
+            <MvpVotePanel
+              match={match}
+              state={state}
+              candidates={candidates}
+              title={`${resultLine} · ${dateLine}`}
+              onSave={onSave}
+              onPick={(id) => {
+                setPlayerId(id);
+                setWithPhoto(false);
+                onShowToast('Escolhido o mais votado: carregue em "Guardar destaque" para confirmar');
+              }}
+              onShowToast={onShowToast}
+            />
           </>
         )}
       </div>

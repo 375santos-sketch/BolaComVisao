@@ -17,6 +17,11 @@ export default defineConfig(() => {
     },
     build: {
       rollupOptions: {
+        // votar.html: the parents' voting page for the "Jogador do jogo" (tiny, without React)
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          votar: path.resolve(__dirname, 'votar.html')
+        },
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {

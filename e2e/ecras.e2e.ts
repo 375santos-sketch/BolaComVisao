@@ -531,6 +531,65 @@ test('jogador do jogo: escolher o destaque, guardar no jogo e descarregar a imag
     .toBe('p1');
 });
 
+test('votação dos pais: link anónimo, um voto por telemóvel e os dois mais votados na app', async ({
+  page,
+  browser
+}) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByText('Tramagal SU').click();
+  await page.getByRole('button', { name: /Jogador do jogo/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Jogador do jogo' });
+  const panel = dialog.getByRole('region', { name: 'Votação dos pais' });
+  await panel.getByRole('button', { name: 'Abrir votação dos pais' }).click();
+  const link = await panel.getByLabel('Link da votação').inputValue();
+  expect(link).toMatch(/\/votar\.html\?v=[a-zA-Z0-9]{24}$/);
+
+  // Parent 1 (this phone): votes for Rui; opening the link again says it already voted
+  const parent1 = await page.context().newPage();
+  await parent1.goto(link);
+  await expect(parent1.getByRole('button', { name: 'Rui S. (9)' })).toBeVisible();
+  await expect(parent1.getByText('Silva')).toHaveCount(0); // never the full name
+  await parent1.getByRole('button', { name: 'Tomás G. (7)' }).click();
+  await parent1.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/votacao.png` : undefined });
+  await parent1.getByRole('button', { name: 'Rui S. (9)' }).click();
+  await parent1.getByRole('button', { name: 'Votar' }).click();
+  await expect(parent1.getByText('Obrigado! Votou em Rui S. (9)')).toBeVisible();
+  await parent1.reload();
+  await expect(parent1.getByText(/Já votou em Rui S\. \(9\)/)).toBeVisible();
+  await parent1.close();
+
+  // Parents 2 and 3 (other phones)
+  for (const who of ['Tomás G. (7)', 'Rui S. (9)']) {
+    const ctx = await browser.newContext();
+    const other = await ctx.newPage();
+    await other.goto(link);
+    await other.getByRole('button', { name: who }).click();
+    await other.getByRole('button', { name: 'Votar' }).click();
+    await expect(other.getByText(`Obrigado! Votou em ${who}`)).toBeVisible();
+    await ctx.close();
+  }
+
+  await panel.getByRole('button', { name: /Ver votos/ }).click();
+  const best = panel.getByRole('list', { name: 'Mais votados' });
+  await expect(best.getByRole('listitem')).toHaveCount(2);
+  await expect(best.getByRole('listitem').first()).toContainText('Rui S. (9)');
+  await expect(best.getByRole('listitem').first()).toContainText('2 voto(s)');
+  await expect(best.getByRole('listitem').nth(1)).toContainText('Tomás G. (7)');
+  await expect(panel).toContainText('3 voto(s) no total');
+
+  await panel.getByRole('button', { name: 'Fechar votação' }).click();
+  await expect(panel).toContainText('Fechada');
+  await dialog.getByRole('button', { name: 'Fechar jogador do jogo' }).click();
+  await expect(page.getByText('🗳️ Pais: Rui S. (9) (2) · Tomás G. (7) (1)')).toBeVisible();
+
+  const late = await page.context().newPage();
+  await late.goto(link);
+  await expect(late.getByText('A votação já fechou. Obrigado!')).toBeVisible();
+  await late.close();
+});
+
 test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);

@@ -98,3 +98,29 @@ describe('Jogador do jogo', () => {
     expect(mvpResultLine({ ...match, location: 'casa' }, 'Dragões', 2, 1)).toBe('Dragões 2-1 Tramagal SU');
   });
 });
+
+describe('Votação dos pais (jogador do jogo)', () => {
+  it('the public link only shows first name, surname initial and number', async () => {
+    const { candidateLabel } = await import('../lib/mvpVote');
+    expect(candidateLabel(roster[1])).toBe('Tomás G. (7)');
+    expect(candidateLabel({ name: 'Rui', number: null })).toBe('Rui');
+    expect(candidateLabel({ name: 'Rui Pedro Silva', nickname: 'Ruizinho', number: 9 })).toBe('Ruizinho (9)');
+  });
+
+  it('counts the ballots and keeps the two most voted', async () => {
+    const { tallyVotes, topTwo } = await import('../lib/mvpVote');
+    const candidates = [
+      { id: 'p1', label: 'Rui S. (9)' },
+      { id: 'p2', label: 'Tomás G. (7)' },
+      { id: 'p3', label: 'André L. (10)' }
+    ];
+    const tally = tallyVotes(candidates, ['p2', 'p3', 'p2', 'p3', 'p2', 'x']);
+    expect(tally.map((t) => [t.candidate.id, t.votes])).toEqual([
+      ['p2', 3],
+      ['p3', 2],
+      ['p1', 0]
+    ]);
+    expect(topTwo(tally).map((t) => t.candidate.id)).toEqual(['p2', 'p3']);
+    expect(topTwo(tallyVotes(candidates, []))).toEqual([]);
+  });
+});
