@@ -8,7 +8,7 @@ import { newCalendarToken } from './calendarFeed';
  */
 
 /** Hours the vote stays open after it is created. */
-export const VOTE_HOURS = 72;
+export const VOTE_HOURS = 24;
 
 export interface VoteCandidate {
   id: string;

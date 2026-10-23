@@ -83,13 +83,22 @@ describe('Jogador do jogo', () => {
     halfDurationMinutes: 25
   } as unknown as Match;
 
-  it('suggests the athletes who played, best contribution first (who did not play is left out)', () => {
-    const list = mvpCandidates({ roster, matches: [], trainings: [], category: 'Sub-11' }, match);
+  it('lists the whole team: first who played (best contribution first), then the rest of the squad', async () => {
+    const { mvpPlayed } = await import('../lib/mvpCard');
+    const team = [
+      ...roster,
+      { id: 'p4', name: 'Bernardo Lima', number: 4, positions: '', birthDate: null, active: true }
+    ];
+    const list = mvpCandidates({ roster: team, matches: [], trainings: [], category: 'Sub-11' }, match);
     expect(list.map((l) => [l.player.name, l.goals, l.assists, l.minutes])).toEqual([
       ['Tomás Gonçalves', 2, 0, 50],
-      ['Rui Silva', 0, 1, 50]
+      ['Rui Silva', 0, 1, 50],
+      ['André Lopes', 0, 0, 0],
+      ['Bernardo Lima', 0, 0, 0]
     ]);
+    expect(mvpPlayed(list).map((l) => l.player.id)).toEqual(['p2', 'p1']);
     expect(mvpStatsLine(list[0])).toBe('2 golos · 50 minutos');
+    expect(mvpStatsLine(list[3])).toBe('');
     expect(mvpStatsLine({ goals: 1, assists: 1, minutes: 20 })).toBe('1 golo · 1 assistência · 20 minutos');
   });
 

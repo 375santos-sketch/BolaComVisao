@@ -506,6 +506,8 @@ test('jogador do jogo: escolher o destaque, guardar no jogo e descarregar a imag
   const dialog = page.getByRole('dialog', { name: 'Jogador do jogo' });
   // Rui Silva scored in this game: suggested first
   await expect(dialog.getByRole('combobox')).toHaveValue('p1');
+  // Anyone in the team can be chosen, also who did not play
+  await expect(dialog.getByRole('combobox').locator('option', { hasText: 'Henrique Alves' })).toHaveCount(1);
   await expect(dialog.getByRole('img', { name: 'Imagem do jogador do jogo' })).toBeVisible();
   await dialog
     .getByRole('img', { name: 'Imagem do jogador do jogo' })
