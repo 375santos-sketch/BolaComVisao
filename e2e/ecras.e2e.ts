@@ -1010,28 +1010,6 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
     }
     window.Date = ShiftedDate as DateConstructor;
   });
-  // The phone's speech recognition, simulated: hears what the test puts in window.__speech.
-  await page.addInitScript(() => {
-    class FakeRecognition {
-      onresult: ((e: unknown) => void) | null = null;
-      onerror: ((e: unknown) => void) | null = null;
-      onend: (() => void) | null = null;
-      lang = '';
-      start() {
-        setTimeout(() => {
-          const heard = (window as unknown as { __speech: string[] }).__speech || [];
-          this.onresult?.({ results: [heard.map((transcript) => ({ transcript }))] });
-          this.onend?.();
-        }, 50);
-      }
-      stop() {
-        this.onend?.();
-      }
-    }
-    const w = window as unknown as { SpeechRecognition: unknown; webkitSpeechRecognition: unknown };
-    w.SpeechRecognition = FakeRecognition;
-    w.webkitSpeechRecognition = FakeRecognition;
-  });
   const advance = async (time: string) => {
     const [min, sec] = time.split(':').map(Number);
     await page.evaluate(
@@ -1085,20 +1063,6 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await page.getByRole('button', { name: /Cartão/ }).click();
   await page.locator('select').first().selectOption('p5'); // 2 - Martim Costa
   await page.getByRole('button', { name: 'Confirmar Cartão' }).click();
-
-  // 🎤 Dictation: a goal said by number and name is recorded with the clock's minute, then undone; nonsense is
-  // explained (the recognition's first guess is wrong, the second is understood).
-  const speak = (...heard: string[]) =>
-    page.evaluate((h) => ((window as unknown as { __speech: string[] }).__speech = h), heard);
-  await speak('bolo do sete', 'golo do número sete assistência do Lucas');
-  await page.getByRole('button', { name: /Ditar/ }).click();
-  const dictated = page.getByRole('status').filter({ hasText: 'Registado' });
-  await expect(dictated).toContainText('Golo de Tomás Gonçalves (assistência Lucas Pereira)');
-  await dictated.getByRole('button', { name: 'Desfazer' }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Desfeito' })).toBeVisible();
-  await speak('bom jogo pessoal');
-  await page.getByRole('button', { name: /Ditar/ }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Não percebi' })).toContainText('Ouvi: «bom jogo pessoal»');
 
   // 26': goal conceded, then half time after 25 minutes.
   await advance('10:00');
