@@ -226,3 +226,4 @@ trocar as regras a meio dos testes.
 | #39 | Verificação ao terminar o jogo (titulares, minutos = jogadores x duração, local casa/fora); resultados com a equipa da casa primeiro em todo o lado                     |
 | #43 | Biblioteca de exercícios (nome, objetivo, desenho importado, duração) usada no plano do treino e no PDF; exercícios em registos `exercise` (regras)                     |
 | #44 | Calendário para os pais: link secreto `/cal/{token}.ics` (servidor) a partir de `public_calendars/{token}` (regras), só jogos e treinos, atualizado sozinho             |
+| #45 | Fotos de atletas e staff reduzidas ao carregar (JPEG ~45 KB); fotos antigas em tamanho original reduzidas uma vez ao abrir a app; aviso "Espaço esgotado" só uma vez    |
