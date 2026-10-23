@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppState, ExerciseCategory, Player, SessionBlock, Training } from '../../../types';
+import { AppState, Exercise, ExerciseCategory, Player, SessionBlock, Training } from '../../../types';
 import { t } from '../../../i18n/dict';
 import { uid } from '../../../lib/utils';
 import { Header } from '../../Header';
@@ -29,7 +29,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
   trainingForm,
   setTrainingForm,
   state,
-  onUpdateState: _onUpdateState,
+  onUpdateState,
   onNavigate,
   onOpenSettings,
   onOpenNotifications,
@@ -42,6 +42,42 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
   onBatchGenerated
 }) => {
   const [viewerDoc, setViewerDoc] = useState<PDFDocumentItem | null>(null);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const library = state.exerciseLibrary || [];
+  const exerciseOf = (id?: string) => (id ? library.find((e) => e.id === id) : undefined);
+
+  // Exercises from the library become blocks of the session (name, duration, type and objective copied)
+  const handleAddFromLibrary = (ex: Exercise) => {
+    const block: SessionBlock = {
+      id: uid(),
+      exerciseId: ex.id,
+      title: ex.name,
+      category: ex.category,
+      durationMinutes: ex.durationMinutes || 10,
+      notes: ex.objective || ''
+    };
+    setTrainingForm({ ...trainingForm, sessionBlocks: [...trainingForm.sessionBlocks, block] });
+    setShowLibrary(false);
+  };
+
+  // A block written by hand can be kept in the library for the next sessions
+  const handleSaveBlockToLibrary = (block: SessionBlock) => {
+    if (!block.title.trim()) {
+      onShowToast('Dê um nome ao exercício antes de o guardar na biblioteca.');
+      return;
+    }
+    const ex: Exercise = {
+      id: uid(),
+      name: block.title.trim(),
+      category: block.category || 'tecnica',
+      durationMinutes: block.durationMinutes || 10,
+      objective: block.notes || '',
+      createdAt: new Date().toISOString()
+    };
+    onUpdateState({ exerciseLibrary: [...library, ex] });
+    handleUpdateBlock(block.id, { exerciseId: ex.id });
+    onShowToast('Exercício guardado na biblioteca ✓ (pode juntar-lhe o desenho em Treinos → Exercícios)');
+  };
 
   const isEdit = !!trainingForm.id;
   const plannedMinutes = (trainingForm.sessionBlocks || []).reduce((sum, b) => sum + (b.durationMinutes || 0), 0);
@@ -407,7 +443,57 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                   <span>➕</span>
                   <span>Adicionar exercício</span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setShowLibrary((v) => !v)}
+                  className="px-3 py-2 rounded-xl border border-cyan-500/60 text-cyan-200 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider active:scale-95 transition-all flex items-center gap-1.5"
+                  aria-expanded={showLibrary}
+                >
+                  <span>📚</span>
+                  <span>Da biblioteca ({library.length})</span>
+                </button>
               </div>
+
+              {showLibrary && (
+                <div
+                  aria-label="Escolher da biblioteca"
+                  role="group"
+                  className="mb-3 p-2 rounded-2xl bg-slate-950/80 border border-cyan-500/30 space-y-1.5 max-h-72 overflow-y-auto"
+                >
+                  {library.length === 0 ? (
+                    <p className="text-[11px] text-slate-400 p-2">
+                      A biblioteca está vazia. Crie exercícios em Treinos → Exercícios, ou guarde aqui um bloco com
+                      &quot;📚 Guardar na biblioteca&quot;.
+                    </p>
+                  ) : (
+                    [...library]
+                      .sort((a, b) => a.name.localeCompare(b.name, 'pt-PT'))
+                      .map((ex) => (
+                        <button
+                          key={ex.id}
+                          type="button"
+                          onClick={() => handleAddFromLibrary(ex)}
+                          className="w-full flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-900 text-left"
+                        >
+                          {ex.image ? (
+                            <img src={ex.image} alt="" className="w-12 h-9 object-contain rounded bg-white shrink-0" />
+                          ) : (
+                            <span className="w-12 h-9 rounded bg-slate-900 flex items-center justify-center shrink-0">
+                              📋
+                            </span>
+                          )}
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-xs font-bold text-white truncate">{ex.name}</span>
+                            <span className="block text-[10px] text-slate-400 font-mono truncate">
+                              {ex.durationMinutes} min{ex.objective ? ` · ${ex.objective}` : ''}
+                            </span>
+                          </span>
+                          <span className="text-cyan-300 text-xs font-bold shrink-0">+ Juntar</span>
+                        </button>
+                      ))
+                  )}
+                </div>
+              )}
 
               {/* Blocks List */}
               {trainingForm.sessionBlocks.length === 0 ? (
@@ -514,6 +600,24 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                           </button>
                         </div>
                       </div>
+
+                      {/* Drawing from the library, or keep this block in the library */}
+                      {exerciseOf(block.exerciseId)?.image ? (
+                        <img
+                          src={exerciseOf(block.exerciseId)!.image}
+                          alt={`Desenho: ${block.title}`}
+                          className="w-full max-h-48 object-contain rounded-xl bg-white"
+                        />
+                      ) : null}
+                      {!exerciseOf(block.exerciseId) && (
+                        <button
+                          type="button"
+                          onClick={() => handleSaveBlockToLibrary(block)}
+                          className="text-[11px] text-cyan-300 font-bold"
+                        >
+                          📚 Guardar na biblioteca
+                        </button>
+                      )}
 
                       {/* PDF Attachment Badge */}
                       {block.pdfId && (

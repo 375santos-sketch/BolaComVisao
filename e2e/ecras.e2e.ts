@@ -443,6 +443,41 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
 });
 
+test('exercícios: biblioteca com desenho importado, usada no plano do treino', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '⚡ Treinos' }).first().click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  await page.getByRole('button', { name: '➕ Novo exercício' }).click();
+  const form = page.getByRole('region', { name: 'Editar exercício' });
+  await form.getByLabel('Nome').fill('Rondo 4x2');
+  await form.getByLabel('Objetivo').fill('Circulação de bola sob pressão');
+  await form.getByLabel('Duração (min)').fill('15');
+  await form.getByLabel('Importar imagem do exercício').setInputFiles('e2e/fixtures/exercicio.jpg');
+  await expect(form.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
+  await form.getByRole('button', { name: 'Guardar exercício' }).click();
+  const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
+  await expect(library).toContainText('Rondo 4x2');
+  await expect(library).toContainText('15 min');
+  await expect
+    .poll(async () => [...(await cloudRecords()).values()].find((r) => r.kind === 'exercise')?.name, {
+      timeout: 30_000,
+      message: 'exercício na nuvem'
+    })
+    .toBe('Rondo 4x2');
+
+  // New training: the exercise joins the session plan with its drawing
+  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
+  await page.getByRole('button', { name: /Da biblioteca \(1\)/ }).click();
+  await page
+    .getByRole('group', { name: 'Escolher da biblioteca' })
+    .getByRole('button', { name: /Rondo 4x2/ })
+    .click();
+  await expect(page.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
+  await expect(page.getByText('Planeado: 15 /')).toBeVisible();
+});
+
 test('ficha do atleta: época, últimos jogos, faltas com motivo e PDF', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /equipa/i);

@@ -275,6 +275,10 @@ export interface Exercise {
   tacticalObjectives?: string;
   coachingPoints?: string[];
   variations?: string;
+  /** What the exercise trains (shown in the session plan and its PDF). */
+  objective?: string;
+  /** Drawing or photo of the exercise, imported and compressed (JPEG data URL, about 150 KB at most). */
+  image?: string;
 }
 
 export interface SessionBlock {

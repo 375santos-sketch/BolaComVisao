@@ -10,6 +10,7 @@ import { TrainingFormData, TrainingsTab } from './trainings/types';
 import { useTrainings } from './trainings/hooks/useTrainings';
 import { useTrainingFilters } from './trainings/hooks/useTrainingFilters';
 import { TrainingHeader } from './trainings/TrainingHeader';
+import { ExerciseLibrary } from './trainings/ExerciseLibrary';
 import { TrainingList } from './trainings/TrainingList';
 import { TrainingAttendance } from './trainings/TrainingAttendance';
 import { TrainingEditor } from './trainings/TrainingEditor';
@@ -276,7 +277,13 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
         completedCount={completedCount}
       />
 
-      {activeTab === 'stats' ? (
+      {activeTab === 'library' ? (
+        <ExerciseLibrary
+          exercises={state.exerciseLibrary || []}
+          onSave={(exerciseLibrary) => onUpdateState({ exerciseLibrary })}
+          onShowToast={onShowToast}
+        />
+      ) : activeTab === 'stats' ? (
         <TrainingAttendance
           state={state}
           completedCount={completedCount}
