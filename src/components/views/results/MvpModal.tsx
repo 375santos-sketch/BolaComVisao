@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, Match } from '../../../types';
-import { drawMvpCard, MVP_CARD_SIZE, mvpCandidates, mvpResultLine, mvpStatsLine } from '../../../lib/mvpCard';
+import {
+  drawMvpCard,
+  MVP_CARD_SIZE,
+  mvpCandidates,
+  mvpPlayed,
+  mvpResultLine,
+  mvpStatsLine
+} from '../../../lib/mvpCard';
 import { calculateMatchScore } from '../../../lib/utils';
 import { MvpVotePanel } from './MvpVotePanel';
 
@@ -127,9 +134,7 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
         </div>
 
         {candidates.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center py-6">
-            Este jogo não tem atletas com minutos registados (titulares e substituições).
-          </p>
+          <p className="text-xs text-slate-400 text-center py-6">Ainda não há atletas no plantel.</p>
         ) : (
           <>
             <label className="block text-[11px] text-slate-400">
@@ -142,11 +147,21 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
                   setWithPhoto(false);
                 }}
               >
-                {candidates.map((c) => (
-                  <option key={c.player.id} value={c.player.id}>
-                    {c.player.name} — {mvpStatsLine(c)}
-                  </option>
-                ))}
+                {[
+                  { label: 'Jogaram', lines: mvpPlayed(candidates) },
+                  { label: 'Resto da equipa', lines: candidates.filter((c) => c.minutes <= 0) }
+                ]
+                  .filter((g) => g.lines.length > 0)
+                  .map((g) => (
+                    <optgroup key={g.label} label={g.label}>
+                      {g.lines.map((c) => (
+                        <option key={c.player.id} value={c.player.id}>
+                          {c.player.name}
+                          {mvpStatsLine(c) ? ` — ${mvpStatsLine(c)}` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
               </select>
             </label>
 
@@ -191,7 +206,7 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
             <MvpVotePanel
               match={match}
               state={state}
-              candidates={candidates}
+              candidates={mvpPlayed(candidates).length ? mvpPlayed(candidates) : candidates}
               title={`${resultLine} · ${dateLine}`}
               onSave={onSave}
               onPick={(id) => {

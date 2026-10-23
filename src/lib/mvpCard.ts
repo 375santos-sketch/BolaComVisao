@@ -16,31 +16,42 @@ export interface MvpLine {
   started: boolean;
 }
 
-/** Athletes who played in the game, best contribution first (goals, assists, minutes). */
+/**
+ * Every athlete of the team: first those who played in the game, best contribution first (goals, assists, minutes),
+ * then the rest of the squad by name (the coach may pick anyone, e.g. for attitude on the bench).
+ */
 export function mvpCandidates(state: Pick<AppState, 'matches' | 'trainings' | 'roster' | 'category'>, match: Match) {
   const ids = new Set([...(match.convocados || []), ...(match.lineup || [])].filter(Boolean) as string[]);
-  const lines: MvpLine[] = [];
-  (state.roster || [])
-    .filter((p) => p && ids.has(p.id))
-    .forEach((player) => {
-      const game = buildPlayerSeason({ ...state, matches: [match] }, player.id).evolution.games[0];
-      if (!game || game.minutes <= 0) return;
-      lines.push({
+  const lines: MvpLine[] = (state.roster || [])
+    .filter((p) => p && (p.active !== false || ids.has(p.id)))
+    .map((player) => {
+      const game = ids.has(player.id)
+        ? buildPlayerSeason({ ...state, matches: [match] }, player.id).evolution.games[0]
+        : undefined;
+      return {
         player,
-        minutes: game.minutes,
-        goals: game.goals,
-        assists: game.assists,
-        started: game.started
-      });
+        minutes: game?.minutes || 0,
+        goals: game?.goals || 0,
+        assists: game?.assists || 0,
+        started: Boolean(game?.started)
+      };
     });
   return lines.sort(
     (a, b) =>
-      b.goals - a.goals || b.assists - a.assists || b.minutes - a.minutes || a.player.name.localeCompare(b.player.name)
+      Number(b.minutes > 0) - Number(a.minutes > 0) ||
+      b.goals - a.goals ||
+      b.assists - a.assists ||
+      b.minutes - a.minutes ||
+      a.player.name.localeCompare(b.player.name, 'pt-PT')
   );
 }
 
-/** "2 golos · 1 assistência · 50 minutos" */
+/** Athletes who played (minutes in the game): the parents vote among these. */
+export const mvpPlayed = (lines: MvpLine[]) => lines.filter((l) => l.minutes > 0);
+
+/** "2 golos · 1 assistência · 50 minutos" ("" for an athlete who did not play). */
 export function mvpStatsLine(l: Pick<MvpLine, 'goals' | 'assists' | 'minutes'>): string {
+  if (!l.minutes && !l.goals && !l.assists) return '';
   return [
     l.goals ? `${l.goals} ${l.goals === 1 ? 'golo' : 'golos'}` : '',
     l.assists ? `${l.assists} ${l.assists === 1 ? 'assistência' : 'assistências'}` : '',
@@ -159,8 +170,10 @@ export function drawMvpCard(ctx: CanvasRenderingContext2D, d: MvpCardData) {
     ctx.fillText(d.position, W / 2, 1000);
   }
 
-  ctx.fillStyle = '#00bef0';
-  fit(d.stats, 700, 44, 1085);
+  if (d.stats) {
+    ctx.fillStyle = '#00bef0';
+    fit(d.stats, 700, 44, 1085);
+  }
 
   ctx.fillStyle = 'rgba(255,255,255,0.08)';
   ctx.fillRect(90, 1140, W - 180, 110);
