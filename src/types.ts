@@ -148,17 +148,6 @@ export interface PreMatchPlan {
 
 export type MatchGamePhase = 'nao_iniciado' | 'parte1' | 'intervalo' | 'parte2';
 
-/** Video of a game (YouTube, Drive…) with where each half starts, to jump to each moment. */
-export interface MatchVideo {
-  url: string;
-  /** Second of the video where the 1st half kicks off. */
-  half1Start?: number;
-  /** Second of the video where the 2nd half kicks off (a second video link can be used instead). */
-  half2Start?: number;
-  /** Optional separate link for the 2nd half. */
-  url2?: string;
-}
-
 export interface MvpVote {
   token: string;
   closesAt: number;
@@ -175,8 +164,6 @@ export interface Match {
   mvpId?: string | null;
   /** Parents' anonymous vote for the "Jogador do jogo" (public_votes/{token}); votes counted when last checked. */
   mvpVote?: MvpVote;
-  /** Game video and where each half starts (Resultados → 🎥). */
-  video?: MatchVideo;
   teamId?: string;
   teamName?: string;
   opponent: string;
