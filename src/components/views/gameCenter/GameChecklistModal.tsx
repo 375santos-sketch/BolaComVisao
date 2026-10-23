@@ -1,29 +1,23 @@
 import React from 'react';
 import { Match } from '../../../types';
-import { parseMinuteToNumber } from '../../../lib/gameAnalysisUtils';
-
-function isGoalMinuteAssigned(minuteVal: unknown): boolean {
-  if (minuteVal === null || minuteVal === undefined) return false;
-  const str = String(minuteVal).trim();
-  if (!str || str.toLowerCase() === 'n/a' || str.toLowerCase() === 'sem minuto') return false;
-  if (str.toUpperCase() === 'INT' || str.toLowerCase() === 'intervalo') return true;
-  if (/\d/.test(str)) return true;
-  const num = parseMinuteToNumber(minuteVal as string | number);
-  return num !== null && num >= 0;
-}
+import { buildMatchChecklist } from '../../../lib/matchChecklist';
 
 interface GameChecklistModalProps {
   isOpen: boolean;
   onClose: () => void;
   match: Match;
+  category?: string;
   onConfirmFinish: () => void;
   onOpenEditField?: (fieldKey: string) => void;
+  /** Confirms where the game was played before it is saved (a wrong "Casa" turns the scoreline around). */
+  onSetLocation?: (location: Match['location']) => void;
 }
 
 interface ChecklistItem {
   id: string;
   label: string;
   isComplete: boolean;
+  important?: boolean;
   details: string;
   fieldKey: string;
 }
@@ -32,30 +26,18 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
   isOpen,
   onClose,
   match,
+  category,
   onConfirmFinish,
-  onOpenEditField
+  onOpenEditField,
+  onSetLocation
 }) => {
   if (!isOpen) return null;
 
   const scoredGoals = (match.goals || []).filter((g) => g.type === 'scored');
   const concededGoals = (match.goals || []).filter((g) => g.type === 'conceded');
+  const home = (match.location || 'casa') === 'casa';
 
-  // 1. Check Scorers
-  const allScorersAssigned = scoredGoals.length === 0 || scoredGoals.every((g) => Boolean(g.scorerId || g.scorer));
-
-  // 2. Check Goal Types
-  const allGoalTypesAssigned =
-    (match.goals || []).length === 0 || (match.goals || []).every((g) => g.goalType && g.goalType.trim() !== '');
-
-  // 3. Check Minutes
-  const allScoredMinutesAssigned = scoredGoals.length === 0 || scoredGoals.every((g) => isGoalMinuteAssigned(g.minute));
-  const allConcededMinutesAssigned =
-    concededGoals.length === 0 || concededGoals.every((g) => isGoalMinuteAssigned(g.minute));
-  const allMinutesAssigned =
-    (match.goals || []).length === 0 ||
-    (scoredGoals.length > 0 ? allScoredMinutesAssigned : allConcededMinutesAssigned);
-
-  // 4. Check Remates / Corners / Fouls
+  // Remates / Corners / Fouls
   const rematesDentroArea = match.rematesDentroArea ?? match.shotsInBoxFor ?? 0;
   const rematesForaArea = match.rematesForaArea ?? match.shotsOutBoxFor ?? 0;
   const rematesDentroAreaAdv = match.rematesDentroAreaAdv ?? match.shotsInBoxAgainst ?? 0;
@@ -66,10 +48,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
   const cornersLogged = typeof match.cantos === 'number' || typeof match.cantosAdv === 'number';
   const foulsLogged = typeof match.faltas === 'number' || typeof match.faltasAdv === 'number';
 
-  // 5. Check Convocados / Subs
   const convocadosPresent = (match.convocados || []).length > 0;
-
-  // 6. Check Notes
   const notesFilled = Boolean(match.notes && match.notes.trim().length > 5);
 
   const checklist: ChecklistItem[] = [
@@ -77,34 +56,19 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
       id: 'score',
       label: 'Resultado Final',
       isComplete: true,
-      details: `${scoredGoals.length} - ${concededGoals.length} vs ${match.opponent || 'Adversário'}`,
+      details: home
+        ? `Nós ${scoredGoals.length} - ${concededGoals.length} ${match.opponent || 'Adversário'}`
+        : `${match.opponent || 'Adversário'} ${concededGoals.length} - ${scoredGoals.length} Nós`,
       fieldKey: 'score'
     },
-    {
-      id: 'scorers',
-      label: 'Marcadores dos Golos',
-      isComplete: allScorersAssigned,
-      details: allScorersAssigned
-        ? `${scoredGoals.length} golos com marcador atribuído`
-        : 'Existem golos marcados sem identificação do autor',
-      fieldKey: 'goals'
-    },
-    {
-      id: 'types',
-      label: 'Tipos e Origem dos Golos',
-      isComplete: allGoalTypesAssigned,
-      details: allGoalTypesAssigned
-        ? 'Todos os golos têm tipo classificado (bola jogada, canto, etc.)'
-        : 'Defina o tipo de golo para enriquecer os dados analíticos',
-      fieldKey: 'goals'
-    },
-    {
-      id: 'minutes',
-      label: 'Minutos dos Golos',
-      isComplete: allMinutesAssigned,
-      details: allMinutesAssigned ? 'Minutos temporais registados ✓' : 'Alguns golos não têm minuto indicado',
-      fieldKey: 'goals'
-    },
+    ...buildMatchChecklist(match, category).map((c) => ({
+      id: c.id,
+      label: c.label,
+      isComplete: c.ok,
+      important: c.important,
+      details: c.details,
+      fieldKey: c.fieldKey
+    })),
     {
       id: 'corners',
       label: 'Estatísticas de Jogo (Remates, Cantos, Faltas)',
@@ -129,6 +93,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
   ];
 
   const pendingCount = checklist.filter((item) => !item.isComplete).length;
+  const importantPending = checklist.filter((item) => !item.isComplete && item.important).length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
@@ -156,8 +121,48 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
           </button>
         </div>
 
+        {/* Where the game was played: confirmed here so the scoreline is not turned around */}
+        {onSetLocation && (
+          <div className="flex items-center gap-2 text-xs" role="group" aria-label="Local do jogo">
+            <span className="text-slate-400">Local do jogo:</span>
+            {(['casa', 'fora'] as const).map((loc) => {
+              const active = (match.location || 'casa') === loc;
+              return (
+                <button
+                  key={loc}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => !active && onSetLocation(loc)}
+                  className={`px-3 py-1 rounded-lg border font-bold ${
+                    active
+                      ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200'
+                      : 'border-slate-600 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {loc === 'casa' ? 'Casa' : 'Fora'}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Status Warning Banner */}
-        {pendingCount > 0 ? (
+        {importantPending > 0 ? (
+          <div
+            className="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/50 flex items-center gap-3 text-rose-200 text-xs"
+            role="alert"
+          >
+            <span className="text-xl shrink-0">⛔</span>
+            <div>
+              <span className="font-bold block uppercase font-['Chakra_Petch']">
+                {importantPending === 1 ? 'Há 1 problema' : `Há ${importantPending} problemas`} nos minutos de jogo
+              </span>
+              <span className="text-[11px] text-rose-200/80">
+                Corrija antes de terminar, senão os minutos dos atletas ficam errados nas estatísticas.
+              </span>
+            </div>
+          </div>
+        ) : pendingCount > 0 ? (
           <div className="p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/40 flex items-center gap-3 text-amber-300 text-xs">
             <span className="text-xl shrink-0">⚠️</span>
             <div>
@@ -192,7 +197,9 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
               className={`p-3 rounded-2xl border ${
                 item.isComplete
                   ? 'bg-slate-950/60 border-emerald-500/30'
-                  : 'bg-amber-950/20 border-amber-500/40 hover:border-amber-400'
+                  : item.important
+                    ? 'bg-rose-950/30 border-rose-500/50 hover:border-rose-400'
+                    : 'bg-amber-950/20 border-amber-500/40 hover:border-amber-400'
               } flex items-center justify-between gap-3 cursor-pointer transition-colors`}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -207,7 +214,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
                 </div>
                 <div className="min-w-0">
                   <span className="text-xs font-bold text-white block">{item.label}</span>
-                  <span className="text-[11px] text-slate-400 truncate block mt-0.5">{item.details}</span>
+                  <span className="text-[11px] text-slate-400 block mt-0.5">{item.details}</span>
                 </div>
               </div>
 
@@ -233,7 +240,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
             }}
             className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs font-['Chakra_Petch'] uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-1.5"
           >
-            <span>Concluir e Ver Resumo</span>
+            <span>{importantPending > 0 ? 'Terminar mesmo assim' : 'Concluir e Ver Resumo'}</span>
             <span>➔</span>
           </button>
         </div>

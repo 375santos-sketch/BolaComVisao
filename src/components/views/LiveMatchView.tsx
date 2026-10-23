@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppState, Match } from '../../types';
 import { t } from '../../i18n/dict';
-import { calculateMatchScore, getMatchElapsedMs } from '../../lib/utils';
+import { calculateMatchScore } from '../../lib/utils';
 import { getLineupSize } from '../../lib/constants';
 import { getMatchCallup, getNowTimeString } from '../../lib/matchPhaseUtils';
 import { Header } from '../Header';
@@ -23,6 +23,7 @@ import { LineupModal } from './liveMatch/components/LineupModal';
 import { MatchClock } from './liveMatch/components/MatchClock';
 import { MatchTimeline } from './gameCenter/MatchTimeline';
 import { GameChecklistModal } from './gameCenter/GameChecklistModal';
+import { withFinalDurations } from '../../lib/matchChecklist';
 import { PostMatchSummaryModal } from './gameCenter/PostMatchSummaryModal';
 import { generateMatchSheetPDF } from '../../lib/pdfUtils';
 
@@ -213,18 +214,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     setIsFinishing(true);
     const finalScore = calculateMatchScore(match);
     const nowTime = getNowTimeString();
-    const totalElapsed = getMatchElapsedMs(match);
-    const half1DurationMs = match.timer?.half1DurationMs ?? Math.floor(totalElapsed / 2);
-    const half2DurationMs = match.timer?.half2DurationMs ?? Math.max(0, totalElapsed - half1DurationMs);
-
-    const updatedTimer = {
-      ...(match.timer || { elapsedMs: 0, lastStartTs: null }),
-      isRunning: false,
-      elapsedMs: totalElapsed,
-      lastStartTs: null,
-      half1DurationMs,
-      half2DurationMs
-    };
+    const updatedTimer = withFinalDurations(match).timer;
 
     const updatedTimeline = {
       ...(match.timeline || {}),
@@ -861,10 +851,17 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         isOpen={showChecklistModal}
         onClose={() => setShowChecklistModal(false)}
         match={match}
+        category={state.category}
         onConfirmFinish={handleFinishMatchConfirm}
+        onSetLocation={(location) => updateMatchInState({ ...match, location })}
         onOpenEditField={(fieldKey) => {
           setShowChecklistModal(false);
-          if (fieldKey === 'goals') {
+          if (fieldKey === 'lineup') {
+            setShowLineupFirstHalfModal(true);
+          } else if (fieldKey === 'subs') {
+            setMatchMode('detailed');
+            setActiveTab('subs');
+          } else if (fieldKey === 'goals') {
             setMatchMode('detailed');
             setActiveTab('events');
           } else if (fieldKey === 'stats') {

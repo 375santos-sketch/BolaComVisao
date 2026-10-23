@@ -273,7 +273,15 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                     </div>
                   </div>
                   <div className="match-score">
-                    <span className="s">{sc}</span> – <span className="c">{co}</span>
+                    {(m.location || 'casa') === 'casa' ? (
+                      <>
+                        <span className="s">{sc}</span> – <span className="c">{co}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="c">{co}</span> – <span className="s">{sc}</span>
+                      </>
+                    )}
                   </div>
                 </div>
 

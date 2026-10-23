@@ -10,7 +10,7 @@ import {
   playerPanel,
   teamPanel
 } from '../../lib/statsPanel';
-import { sortPlayerObjs } from '../../lib/utils';
+import { sortPlayerObjs, homeFirstScore } from '../../lib/utils';
 import { BarChart } from './BarChart';
 
 // Categorical slots 1 and 2 of the validated dark palette (checked against the app surface #0f172a).
@@ -288,7 +288,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
               rows={team.games.map((g) => [
                 ddmm(g.date),
                 `${g.opponent}${g.home ? '' : ' (f)'}`,
-                `${g.scored}-${g.conceded}`,
+                homeFirstScore(g.scored, g.conceded, g.home),
                 g.shotsFor === undefined ? '–' : `${g.shotsFor}-${g.shotsAgainst ?? 0}`,
                 g.cornersFor === undefined ? '–' : `${g.cornersFor}-${g.cornersAgainst ?? 0}`
               ])}

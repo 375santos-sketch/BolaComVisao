@@ -1,5 +1,5 @@
 import { ScheduledMatch, Player, AppState } from '../../types';
-import { sortPlayerObjs, computeAge } from '../utils';
+import { sortPlayerObjs, computeAge, homeFirstScore } from '../utils';
 import { t } from '../../i18n/dict';
 import {
   getJsPDF,
@@ -432,7 +432,7 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
   list(
     s.recentGames.map((r) => {
       const date = r.date.slice(0, 10).split('-').reverse().join('/');
-      const game = `${date}  ${r.opponent} (${r.home ? 'casa' : 'fora'}) ${r.scored}-${r.conceded}`;
+      const game = `${date}  ${r.opponent} (${r.home ? 'casa' : 'fora'}) ${homeFirstScore(r.scored, r.conceded, r.home)}`;
       if (!r.calledUp) return `${game}: não convocado`;
       const extras = [
         r.started ? 'titular' : null,

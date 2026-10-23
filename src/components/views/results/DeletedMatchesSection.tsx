@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppState, Match } from '../../../types';
 import { getDeletedRecords } from '../../../services/clubCloud';
+import { homeFirstScore } from '../../../lib/utils';
 
 interface DeletedMatchesSectionProps {
   state: AppState;
@@ -46,7 +47,7 @@ export const DeletedMatchesSection: React.FC<DeletedMatchesSectionProps> = ({ st
                   <div className="text-slate-200 font-bold truncate">
                     {formatDate(m.date)} · vs {m.opponent}{' '}
                     <span className="font-mono text-slate-400">
-                      {scored}-{conceded}
+                      {homeFirstScore(scored, conceded, m.location !== 'fora')}
                     </span>
                   </div>
                   <div className="text-[10px] text-slate-500 font-mono">

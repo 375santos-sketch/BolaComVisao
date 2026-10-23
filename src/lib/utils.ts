@@ -240,6 +240,11 @@ export function parseMinuteOrder(min: number | string | null | undefined, period
   return 999;
 }
 
+/** Score as on a scoreboard, home team first: an away win by 10-1 reads "1-10". */
+export function homeFirstScore(scored: number, conceded: number, home: boolean, sep = '-'): string {
+  return home ? `${scored}${sep}${conceded}` : `${conceded}${sep}${scored}`;
+}
+
 export function calculateMatchScore(match: Match): { scored: number; conceded: number } {
   const scored = (match.goals || []).filter((g) => g.type === 'scored').length;
   const conceded = (match.goals || []).filter((g) => g.type === 'conceded').length;

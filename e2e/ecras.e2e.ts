@@ -313,6 +313,8 @@ test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await navTo(page, /agenda/i);
   await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
   await expect(page.getByText('Esparteiros')).toBeVisible();
+  // Away win 2-1 reads like a scoreboard, home team first: Tramagal SU (Fora) 1 – 2
+  await expect(page.locator('.match-item', { hasText: 'Tramagal SU' }).locator('.match-score')).toHaveText('1 – 2');
   await page.getByText('Tramagal SU').click();
   await expect(page.getByText("12'⚽ 9 - Rui Silva (ast. 7 - Tomás Gonçalves)")).toBeVisible();
   await page.getByRole('button', { name: /Partilhar com os pais/i }).click();
@@ -597,6 +599,11 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
 
   // Finish: checklist, then the 30-second summary with names and the round from the Agenda.
   await page.getByRole('button', { name: /Validar e Terminar Jogo/i }).click();
+  // The checklist confirms starters, that the minutes add up (7 x game length) and where the game was played
+  await expect(page.getByText('7 titulares registados')).toBeVisible();
+  await expect(page.getByText(/^\d+' = 7 x \d+'$/)).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'minutos de jogo' })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: 'Local do jogo' })).toBeVisible();
   await page.getByRole('button', { name: /Concluir e ver resumo/i }).click();
   await expect(page.getByText('RESUMO INTELIGENTE PÓS-JOGO')).toBeVisible();
   await expect(page.getByText('Jornada 5')).toBeVisible();

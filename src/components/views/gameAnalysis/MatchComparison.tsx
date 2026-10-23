@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AggregatedAnalysis } from '../../../lib/gameAnalysis';
+import { homeFirstScore } from '../../../lib/utils';
 
 interface MatchComparisonProps {
   analysis: AggregatedAnalysis;
@@ -26,7 +27,7 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
           opponent: m.opponent,
           location: m.location,
           result: res,
-          score: `${sc} - ${co}`
+          score: homeFirstScore(sc, co, m.location !== 'fora', ' - ')
         };
       });
   }, [filteredMatches]);
@@ -208,7 +209,7 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
 
                     <div className="flex items-center gap-3">
                       <span className="text-base font-['Chakra_Petch'] font-black text-white font-mono">
-                        {m.scored} - {m.conceded}
+                        {homeFirstScore(m.scored, m.conceded, m.location !== 'fora', ' - ')}
                       </span>
                       <span className="text-slate-500 text-xs">›</span>
                     </div>

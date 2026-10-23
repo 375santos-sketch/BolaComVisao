@@ -866,7 +866,7 @@ export async function generateMatchSheetPDF(
   doc.setFontSize(7.8);
   doc.setTextColor(darkText[0], darkText[1], darkText[2]);
   doc.text(
-    `• Resultado Final: ${sc} - ${co} (${sc > co ? 'Vitória' : sc === co ? 'Empate' : 'Derrota'})`,
+    `• Resultado Final: ${home ? `${myClub} ${sc} - ${co} ${match.opponent}` : `${match.opponent} ${co} - ${sc} ${myClub}`} (${sc > co ? 'Vitória' : sc === co ? 'Empate' : 'Derrota'})`,
     20,
     curY + 5.5
   );

@@ -409,7 +409,10 @@ export function buildMatchSheetExcelWorkbook(match: Match, state: AppState, XLSX
   const rows: (string | number)[][] = [
     [
       'RESULTADO FINAL',
-      `${myClub} ${sc} - ${co} ${match.opponent}`.toUpperCase(),
+      (match.location === 'fora'
+        ? `${match.opponent} ${co} - ${sc} ${myClub}`
+        : `${myClub} ${sc} - ${co} ${match.opponent}`
+      ).toUpperCase(),
       '-',
       '-',
       `DATA: ${match.date}`.toUpperCase()

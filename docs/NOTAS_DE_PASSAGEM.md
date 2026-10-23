@@ -223,3 +223,4 @@ trocar as regras a meio dos testes.
 | #34 | Painel de jogos em PDF (design BolaComVisão) e Excel com gráficos nativos + tabelas Power BI, para a época ou o filtro do painel                                        |
 | #35 | Golos/assistências/cartões com o atleta pelo nome (versões antigas, importações) contam no painel e na ficha; Análise de Jogos exporta o painel                         |
 | #36 | Minutos de jogo: aviso e botão para indicar titulares em falta; % sobre os minutos de todos os jogos (convocado ou não), todos os atletas ativos na tabela, por minutos |
+| #39 | Verificação ao terminar o jogo (titulares, minutos = jogadores x duração, local casa/fora); resultados com a equipa da casa primeiro em todo o lado                     |
