@@ -673,6 +673,32 @@ export interface SquadProfile {
   exerciseLibrary?: Exercise[];
   /** Secret part of the parents' calendar link (/cal/{token}.ics); none = calendar not shared. */
   calendarToken?: string;
+  /** Championship series (one per season): other games of the series, for the league table. */
+  leagues?: LeagueSetup[];
+}
+
+/** A game of the championship series between two other teams (home team first). */
+export interface LeagueGame {
+  id: string;
+  round?: number;
+  date?: string; // YYYY-MM-DD
+  home: string;
+  away: string;
+  homeGoals: number;
+  awayGoals: number;
+}
+
+export interface LeagueSetup {
+  id: string;
+  season: string;
+  /** Competition name ("Campeonato Distrital Sub-11 – Série B"). */
+  name?: string;
+  /** Teams of the series (teams that only appear in results are added on their own). */
+  teams: string[];
+  /** Results of the other games (the team's own championship games come from the app). */
+  games: LeagueGame[];
+  /** How the team is called in the table (default: the club name). */
+  ourName?: string;
 }
 
 export type UserStatus = 'approved' | 'pending' | 'rejected';

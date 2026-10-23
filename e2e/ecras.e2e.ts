@@ -421,6 +421,51 @@ test('resultados: corrigir o local de um jogo terminado (casa/fora) fica guardad
   ).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('classificação: resultados colados da série, jogos da app e posição da equipa', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: /Classificação do campeonato/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Classificação do campeonato' });
+
+  await dialog.getByRole('button', { name: 'Colar' }).click();
+  await dialog
+    .getByLabel('Resultados colados')
+    .fill('Jornada 1\nMação 3-0 Abrantes\nJornada 2\nEsparteiros 0-4 Mação\nTramagal SU 1-1 Abrantes\nlinha estranha');
+  await expect(dialog).toContainText('3 jogo(s) reconhecido(s)');
+  await expect(dialog).toContainText('Não percebi 1 linha(s): linha estranha');
+  await dialog.getByRole('button', { name: 'Importar resultados' }).click();
+
+  // Mação 6 pts; Dragões 4 pts from the app's championship games (draw with Esparteiros, win against Tramagal SU)
+  const table = dialog.getByRole('table', { name: 'Tabela classificativa' });
+  await expect(table.getByRole('row').nth(1)).toContainText('Mação');
+  await expect(dialog.getByLabel('Posição da equipa')).toContainText('Dragões em 2.º lugar de 5');
+  await expect(dialog.getByLabel('Posição da equipa')).toContainText('4 pontos');
+
+  // A result typed by hand; our own games show as coming from the app
+  await dialog.getByRole('button', { name: 'Resultados' }).click();
+  await dialog.getByLabel('Casa', { exact: true }).fill('Abrantes');
+  await dialog.getByLabel('Golos da equipa da casa').fill('2');
+  await dialog.getByLabel('Golos da equipa de fora').fill('0');
+  await dialog.getByLabel('Fora', { exact: true }).fill('Esparteiros');
+  await dialog.getByRole('button', { name: 'Guardar resultado' }).click();
+  const results = dialog.getByRole('list', { name: 'Resultados da série' });
+  await expect(results.getByRole('listitem')).toHaveCount(6);
+  await expect(results.getByRole('listitem').filter({ hasText: 'Tramagal SU' }).first()).toBeVisible();
+  await expect(results.getByText('da app')).toHaveCount(2);
+
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
+        const raw = JSON.stringify(await res.json());
+        return raw.includes('leagues') && raw.includes('Esparteiros') && raw.includes('Mação');
+      },
+      { timeout: 30_000, message: 'classificação guardada na nuvem' }
+    )
+    .toBe(true);
+});
+
 test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
