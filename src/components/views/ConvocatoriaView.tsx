@@ -7,6 +7,7 @@ import { Header } from '../Header';
 import { CallupShareModal } from '../CallupShareModal';
 import { upcomingGames } from '../../lib/preMatchPlan';
 import { callupPlayingTime, playersNeedingMinutes, RECENT_GAMES } from '../../lib/callupPlayingTime';
+import { availabilityOn } from '../../lib/availability';
 
 interface ConvocatoriaViewProps {
   state: AppState;
@@ -80,7 +81,14 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
     () => callupPlayingTime(state.matches || [], state.roster || [], state.season, state.category),
     [state.matches, state.roster, state.season, state.category]
   );
-  const needMinutes = playersNeedingMinutes(minutesById);
+  // Injuries and suspensions on the day of this game (return date included)
+  const availabilityById = useMemo(
+    () => new Map(squad.map((p) => [p.id, availabilityOn(p, match?.date)])),
+    [squad, match?.date]
+  );
+  const isAvailable = (id: string) => availabilityById.get(id)?.available !== false;
+  const calledUnavailable = squad.filter((p) => match?.callup.includes(p.id) && !isAvailable(p.id));
+  const needMinutes = playersNeedingMinutes(minutesById).filter((r) => isAvailable(r.playerId));
   const [sortByMinutes, setSortByMinutes] = useState(false);
   const eligiblePlayers = sortByMinutes
     ? [...squad].sort(
@@ -133,6 +141,10 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
       onShowToast('Modo de edição ativado ✓');
     }
     const isCalled = match.callup.includes(playerId);
+    const availability = availabilityById.get(playerId);
+    if (!isCalled && availability && !availability.available) {
+      onShowToast(`⚠️ Atenção: ${availability.label} (convocado na mesma).`);
+    }
     const newCallup = isCalled ? match.callup.filter((id) => id !== playerId) : [...match.callup, playerId];
 
     handleUpdateMatchField('callup', newCallup);
@@ -140,15 +152,19 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
 
   const handleSelectAll = () => {
     if (!match) return;
-    const allIds = eligiblePlayers.map((p) => p.id);
+    const allIds = eligiblePlayers.filter((p) => isAvailable(p.id)).map((p) => p.id);
     handleUpdateMatchField('callup', allIds);
-    onShowToast('Todos os jogadores convocados ✓');
+    const out = eligiblePlayers.length - allIds.length;
+    onShowToast(
+      `Todos os jogadores disponíveis convocados ✓${out ? ` (${out} lesionado(s)/castigado(s) de fora)` : ''}`
+    );
   };
 
   const handleSelectByAttendance = () => {
     if (!match) return;
     // Seleciona atletas com pelo menos 70% de assiduidade ou que não tenham faltas excessivas
     const disciplined = eligiblePlayers.filter((p) => {
+      if (!isAvailable(p.id)) return false;
       const att = getPlayerQuickAttendance(p.id, state);
       return att.rate >= 70 || att.totalTrainings === 0;
     });
@@ -470,6 +486,15 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           </div>
         ) : (
           <>
+            {calledUnavailable.length > 0 && (
+              <div
+                role="alert"
+                className="mb-2.5 p-2.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-[11px] text-rose-100"
+              >
+                ⚠️ Convocados indisponíveis neste jogo:{' '}
+                {calledUnavailable.map((p) => `${p.name} (${availabilityById.get(p.id)?.label})`).join(', ')}
+              </div>
+            )}
             {needMinutes.length > 0 && (
               <div
                 role="note"
@@ -508,6 +533,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {eligiblePlayers.map((p) => {
                 const isCalled = match.callup.includes(p.id);
+                const availability = availabilityById.get(p.id);
                 const att = getPlayerQuickAttendance(p.id, state);
                 const mins = minutesById.get(p.id);
 
@@ -525,6 +551,8 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                     key={p.id}
                     onClick={() => handleTogglePlayer(p.id)}
                     className={`p-2.5 min-h-[48px] rounded-xl border text-left cursor-pointer transition-all active:scale-[0.98] touch-manipulation flex items-center justify-between gap-2.5 select-none ${
+                      availability && !availability.available && !isCalled ? 'opacity-60 ' : ''
+                    }${
                       isCalled
                         ? 'bg-gold-dim border-gold text-gold font-bold shadow-sm'
                         : 'bg-surface border-line text-muted hover:border-line-bright'
@@ -576,6 +604,18 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
 
                           {p.positions && <span className="opacity-60 truncate font-normal">{p.positions}</span>}
                         </div>
+
+                        {/* Lesão ou castigo neste dia (ou regresso já previsto) */}
+                        {availability?.label && (
+                          <div
+                            className={`text-[10px] font-mono mt-0.5 font-bold ${
+                              availability.available ? 'text-emerald-400' : 'text-rose-400'
+                            }`}
+                          >
+                            {availability.available ? '✓ ' : availability.status === 'lesionado' ? '🏥 ' : '🟥 '}
+                            {availability.label}
+                          </div>
+                        )}
 
                         {/* Minutos da época */}
                         {mins && mins.matchesCalledUp === 0 && (

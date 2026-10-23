@@ -59,6 +59,8 @@ export function useSquadRoster({
   const [formEmail, setFormEmail] = useState('');
   const [formEmergencyContact, setFormEmergencyContact] = useState('');
   const [formStatus, setFormStatus] = useState<PlayerStatus>('disponivel');
+  const [formStatusUntil, setFormStatusUntil] = useState('');
+  const [formStatusNote, setFormStatusNote] = useState('');
   const [formPhotoUrl, setFormPhotoUrl] = useState('');
 
   // Active Roster
@@ -151,6 +153,8 @@ export function useSquadRoster({
     setFormEmail('');
     setFormEmergencyContact('');
     setFormStatus('disponivel');
+    setFormStatusUntil('');
+    setFormStatusNote('');
     setFormPhotoUrl('');
     setIsModalOpen(true);
   };
@@ -169,6 +173,8 @@ export function useSquadRoster({
     setFormEmail(player.email || '');
     setFormEmergencyContact(player.emergencyContact || '');
     setFormStatus(player.status || 'disponivel');
+    setFormStatusUntil(player.statusUntil || '');
+    setFormStatusNote(player.statusNote || '');
     setFormPhotoUrl(player.photoUrl || '');
     setIsModalOpen(true);
   };
@@ -193,6 +199,12 @@ export function useSquadRoster({
     reader.readAsDataURL(file);
     e.target.value = '';
   };
+
+  // Return date and reason only make sense while injured or suspended (cleared otherwise)
+  const statusDetails = () =>
+    formStatus === 'lesionado' || formStatus === 'suspenso'
+      ? { statusUntil: formStatusUntil || '', statusNote: formStatusNote.trim() }
+      : { statusUntil: '', statusNote: '' };
 
   // Save Player
   const handleSavePlayer = (e: React.FormEvent) => {
@@ -222,6 +234,7 @@ export function useSquadRoster({
             email: formEmail.trim(),
             emergencyContact: formEmergencyContact.trim(),
             status: formStatus,
+            ...statusDetails(),
             photoUrl: formPhotoUrl.trim()
           };
         }
@@ -245,6 +258,7 @@ export function useSquadRoster({
         email: formEmail.trim(),
         emergencyContact: formEmergencyContact.trim(),
         status: formStatus,
+        ...statusDetails(),
         photoUrl: formPhotoUrl.trim(),
         active: true
       };
@@ -403,6 +417,10 @@ export function useSquadRoster({
     setFormEmergencyContact,
     formStatus,
     setFormStatus,
+    formStatusUntil,
+    setFormStatusUntil,
+    formStatusNote,
+    setFormStatusNote,
     formPhotoUrl,
     setFormPhotoUrl,
     activeRoster,

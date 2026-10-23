@@ -3,6 +3,7 @@ import { AppState, Player } from '../../../types';
 import { SquadSortBy, SquadSortDirection, POSITION_GROUPS, STATUS_CONFIG } from './types';
 import { SquadPositionBadge } from './SquadPositionBadge';
 import { getPositionRank } from '../../../lib/utils';
+import { returnSuffix } from '../../../lib/availability';
 
 interface SquadGridViewProps {
   state: AppState;
@@ -83,7 +84,10 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
               className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold border inline-flex items-center gap-1 ${st.bg} ${st.text} ${st.border}`}
             >
               <span>{st.icon}</span>
-              <span>{st.label}</span>
+              <span>
+                {st.label}
+                {returnSuffix(player)}
+              </span>
             </span>
           </div>
         </div>
