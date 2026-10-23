@@ -9,6 +9,7 @@ import { OpponentReportModal } from './results/OpponentReportModal';
 import { MatchEditModal } from './results/MatchEditModal';
 import { LeagueTableModal } from './results/LeagueTableModal';
 import { MvpModal } from './results/MvpModal';
+import { VideoMarksModal } from './results/VideoMarksModal';
 import { candidateLabel } from '../../lib/mvpVote';
 import { hasReportNotes } from '../../lib/opponentReport';
 
@@ -42,6 +43,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [isGeneratingPdfId, setIsGeneratingPdfId] = useState<string | null>(null);
   const [showLeague, setShowLeague] = useState(false);
   const [mvpMatch, setMvpMatch] = useState<Match | null>(null);
+  const [videoMatch, setVideoMatch] = useState<Match | null>(null);
 
   if (!state.matches.length) {
     return (
@@ -183,6 +185,18 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       >
         📊 Classificação do campeonato
       </button>
+      {videoMatch && (
+        <VideoMarksModal
+          match={videoMatch}
+          state={state}
+          onSave={(updated) => {
+            onUpdateState({ matches: state.matches.map((x) => (x.id === updated.id ? updated : x)) });
+            setVideoMatch(updated);
+          }}
+          onShowToast={(msg) => onShowToast?.(msg)}
+          onClose={() => setVideoMatch(null)}
+        />
+      )}
       {mvpMatch && (
         <MvpModal
           match={mvpMatch}
@@ -543,6 +557,20 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         </p>
                       )}
                     </>
+                  )}
+
+                  {m.finished && (
+                    <div className="btn-row mt-2.5">
+                      <button
+                        className="btn btn-outline w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setVideoMatch(m);
+                        }}
+                      >
+                        🎥 Vídeo do jogo{m.video?.url ? ' ✓' : ''}
+                      </button>
+                    </div>
                   )}
 
                   {m.finished && (
