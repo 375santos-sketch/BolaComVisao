@@ -1,3 +1,4 @@
+import { deflateSync } from 'node:zlib';
 import { test, expect, type Page } from '@playwright/test';
 import { COACH_A, COACH_B, FIRESTORE, owner, PASSWORD } from './seed';
 import { buildICS, feedFromRestDocument } from '../src/lib/calendarFeed';
@@ -626,6 +627,67 @@ test('disponibilidade: lesão com data de regresso aparece no plantel e na Convo
   await page.getByRole('button', { name: /Lista/i }).click();
   await page.getByTitle('Abrir Convocatória').first().click();
   await expect(page.getByText('🏥 Lesionado até 15/01 · entorse')).toBeVisible();
+});
+
+/** A noisy PNG of about 3 MB, like a photo taken with the phone (fictitious content, no person). */
+function largePng(side = 1000): Buffer {
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc = (buf: Buffer) => {
+    let c = 0xffffffff;
+    for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunk = (type: string, data: Buffer) => {
+    const body = Buffer.concat([Buffer.from(type), data]);
+    const out = Buffer.alloc(body.length + 8);
+    out.writeUInt32BE(data.length, 0);
+    body.copy(out, 4);
+    out.writeUInt32BE(crc(body), body.length + 4);
+    return out;
+  };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(side, 0);
+  header.writeUInt32BE(side, 4);
+  header[8] = 8; // bit depth
+  header[9] = 2; // RGB
+  const raw = Buffer.alloc((side * 3 + 1) * side);
+  for (let i = 0; i < raw.length; i++) raw[i] = i % (side * 3 + 1) === 0 ? 0 : (Math.random() * 256) | 0;
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', header),
+    chunk('IDAT', deflateSync(raw)),
+    chunk('IEND', Buffer.alloc(0))
+  ]);
+}
+
+test('foto do atleta: uma foto grande do telemóvel fica pequena e é guardada', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Gonçalo Teste' }).click();
+  await page.getByRole('button', { name: /Editar Dados/ }).click();
+  const png = largePng();
+  expect(png.length).toBeGreaterThan(2_000_000);
+  await page
+    .locator('#player-form input[type=file]')
+    .setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: png });
+  await expect(page.getByText('Foto carregada com sucesso!')).toBeVisible();
+  const preview = await page.locator('#player-form img[alt=Preview]').getAttribute('src');
+  expect(preview).toMatch(/^data:image\/jpeg;base64,/);
+  expect(preview!.length).toBeLessThan(65_000);
+  await page.locator('#player-form button[type=submit]').click();
+
+  const saved = await page.evaluate(() => {
+    const raw = Object.keys(localStorage)
+      .map((k) => localStorage.getItem(k) || '')
+      .find((v) => v.includes('Gonçalo Teste'));
+    const roster = raw ? (JSON.parse(raw).roster as { name: string; photoUrl?: string }[]) : [];
+    return roster.find((p) => p.name === 'Gonçalo Teste')?.photoUrl || '';
+  });
+  expect(saved).toBe(preview);
 });
 
 test('dia de jogo: convocatória, titulares, relógio, golos, substituição, cartão, intervalo, fim e minutos', async ({
