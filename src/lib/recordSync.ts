@@ -29,7 +29,7 @@ export const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppSta
   exercise: 'exerciseLibrary',
   // Set pieces carry a drawing too
   setpiece: 'setPieces',
-  // Tactics-board plays: many steps each, kept out of the club document
+  // Plays of the former tactics board (removed from the app): kept so stored plays are not lost
   tacticplay: 'tacticPlays'
 };
 const ENTITY_KINDS = Object.keys(ENTITY_FIELDS) as EntityKind[];

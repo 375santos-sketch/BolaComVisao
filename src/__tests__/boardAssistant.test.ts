@@ -1,61 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { addStep, movePiece, movesInto, newPlay, positionsAt, removeStep } from '../lib/tacticBoard';
 import { answerQuestion } from '../lib/coachAssistant';
-import { assembleState, extractRecords } from '../lib/recordSync';
-import { normalizeClubState } from '../lib/storage';
 import { AppState, Match, Player, Training } from '../types';
-
-describe('Quadro tático', () => {
-  it('a new 7x7 play has our 7 players, 7 opponents (mirrored) and the ball', () => {
-    const play = newPlay(7, true);
-    expect(play.pieces.filter((p) => p.kind === 'own').map((p) => p.label)).toEqual([
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7'
-    ]);
-    expect(play.pieces.filter((p) => p.kind === 'opp')).toHaveLength(7);
-    const f = play.frames[0].positions;
-    expect(f.opp1).toEqual({ x: 100 - f.own1.x, y: 100 - f.own1.y });
-    expect(newPlay(5, false).pieces.map((p) => p.kind)).toEqual(['own', 'own', 'own', 'own', 'own', 'ball']);
-  });
-
-  it('steps start where the previous one ends; moving shows the path and the animation goes in between', () => {
-    let play = addStep(newPlay(7, false), 0);
-    play = movePiece(play, 1, 'ball', 30, 60);
-    play = movePiece(play, 1, 'own2', 150, -10); // kept inside the pitch
-    expect(play.frames[1].positions.own2).toEqual({ x: 98, y: 2 });
-    expect(play.frames[0].positions.ball).toEqual({ x: 50, y: 88 });
-    expect(
-      movesInto(play, 1)
-        .map((m) => m.id)
-        .sort()
-    ).toEqual(['ball', 'own2']);
-    const mid = positionsAt(play, 0.5).ball;
-    expect(mid.x).toBeCloseTo(40);
-    expect(mid.y).toBeCloseTo(74);
-    expect(positionsAt(play, 9).ball).toEqual({ x: 30, y: 60 });
-    expect(removeStep(play, 1).frames).toHaveLength(1);
-    expect(removeStep(removeStep(play, 1), 0).frames).toHaveLength(1); // the last step stays
-  });
-
-  it('each play is its own cloud record, kept per team', () => {
-    const state = normalizeClubState({ myClubName: 'Dragões' } as never);
-    const play = { ...newPlay(7), id: 'jog1', name: 'Saída curta' };
-    const withPlay = {
-      ...state,
-      teams: state.teams.map((t) => (t.id === state.activeTeamId ? { ...t, tacticPlays: [play] } : t))
-    } as AppState;
-    const records = extractRecords(withPlay);
-    expect([...records.values()].find((r) => r.kind === 'tacticplay')?.entityId).toBe('jog1');
-    expect(JSON.stringify(records.get('club')?.data)).not.toContain('Saída curta');
-    const back = assembleState(records, state as AppState);
-    expect(back.teams.find((t) => t.id === back.activeTeamId)?.tacticPlays?.[0]?.name).toBe('Saída curta');
-  });
-});
 
 describe('Assistente (perguntas sobre a equipa)', () => {
   const p = (id: string, name: string, number: number): Player => ({
