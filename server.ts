@@ -4,6 +4,7 @@ import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
 import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
+import { cleanPrintGames, PRINT_PROMPT, PRINT_SCHEMA } from './src/lib/printJornada';
 
 // Load Firebase Config for Backend operations
 let firebaseConfig: any = {};
@@ -226,6 +227,48 @@ async function startServer() {
       });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // Classificação → "📷 Importar print da jornada": reads the games of a screenshot with Gemini. Only for signed-in
+  // users; the picture is not stored.
+  app.post('/api/ler-jornada', async (req, res) => {
+    try {
+      const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
+      const authHeader = req.headers.authorization || '';
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+      const verification = token && apiKey ? await verifyFirebaseIdToken(token, apiKey) : { valid: false };
+      if (!verification.valid) {
+        return res.status(401).json({ success: false, error: 'Sessão expirada. Entre de novo na app.' });
+      }
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (!geminiKey) {
+        return res
+          .status(503)
+          .json({ success: false, error: 'A leitura de prints não está disponível (falta a chave do Gemini).' });
+      }
+      const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(req.body?.image || ''));
+      if (!match) return res.status(400).json({ success: false, error: 'Imagem inválida.' });
+
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          { role: 'user', parts: [{ inlineData: { mimeType: match[1], data: match[2] } }, { text: PRINT_PROMPT }] }
+        ],
+        config: { responseMimeType: 'application/json', responseSchema: PRINT_SCHEMA as any, temperature: 0 }
+      });
+      let parsed: unknown = [];
+      try {
+        parsed = JSON.parse(response.text || '[]');
+      } catch {
+        parsed = [];
+      }
+      res.json({ success: true, games: cleanPrintGames(parsed) });
+    } catch (err: any) {
+      console.error('Erro na rota /api/ler-jornada:', err?.message || err);
+      res.status(500).json({ success: false, error: 'Não foi possível ler o print. Tente outra vez.' });
     }
   });
 

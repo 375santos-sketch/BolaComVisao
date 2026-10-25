@@ -478,6 +478,69 @@ test('classificação: resultados colados da série, jogos da app e posição da
     .toBe(true);
 });
 
+test('classificação: print da jornada (sem o nosso jogo) e nova fase sem perder a anterior', async ({ page }) => {
+  await page.route('**/api/ler-jornada', (route) =>
+    route.fulfill({
+      json: {
+        success: true,
+        games: [
+          { home: "Cdr Dragões 'A'", away: 'Abrantes', homeGoals: 7, awayGoals: 3, date: '24 OUT' },
+          { home: 'Gdr Mação', away: 'Tramagal Su', homeGoals: 2, awayGoals: 1, date: '24 OUT' }
+        ]
+      }
+    })
+  );
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: /Classificação do campeonato/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Classificação do campeonato' });
+
+  await dialog.getByRole('button', { name: 'Colar' }).click();
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==',
+    'base64'
+  );
+  await dialog
+    .getByLabel('Print da jornada')
+    .setInputFiles({ name: 'jornada.png', mimeType: 'image/png', buffer: png });
+  const read = dialog.getByRole('list', { name: 'Jogos lidos do print' });
+  await expect(read.getByRole('listitem')).toHaveCount(1);
+  await expect(read).toContainText('Mação 2-1 Tramagal SU');
+  await expect(dialog).toContainText('O jogo de Dragões foi deixado de fora');
+  await dialog.getByRole('button', { name: 'Importar 1 jogo(s)' }).click();
+  const table = dialog.getByRole('table', { name: 'Tabela classificativa' });
+  await expect(table).toContainText('Mação');
+
+  // A second phase starts empty; the first one is kept as it was
+  await dialog.getByRole('button', { name: '➕ Nova fase' }).click();
+  const form = dialog.getByRole('region', { name: 'Nova fase' });
+  await form.getByLabel('Nome da fase').fill('Fase de apuramento');
+  await form.getByLabel('Começa em').fill('2099-01-10');
+  await form.getByRole('button', { name: 'Criar fase' }).click();
+  await dialog.getByLabel('Equipas da série').fill('Equipa Azul\nEquipa Verde');
+  await dialog.getByRole('button', { name: 'Guardar equipas' }).click();
+  const phases = dialog.getByRole('group', { name: 'Fases' });
+  await expect(phases.getByRole('button', { name: 'Fase de apuramento' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(table).toContainText('Equipa Azul');
+  await expect(table).not.toContainText('Mação');
+
+  await phases.getByRole('button', { name: '1.ª fase' }).click();
+  await expect(table).toContainText('Mação');
+  await expect(table).not.toContainText('Equipa Azul');
+
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
+        const raw = JSON.stringify(await res.json());
+        return raw.includes('Fase de apuramento') && raw.includes('2099-01-10') && raw.includes('Mação');
+      },
+      { timeout: 30_000, message: 'fases guardadas na nuvem' }
+    )
+    .toBe(true);
+});
+
 test('bolas paradas: caderno com desenho e quem marca aparece na Convocatória', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);

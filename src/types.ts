@@ -762,6 +762,11 @@ export interface LeagueSetup {
   games: LeagueGame[];
   /** How the team is called in the table (default: the club name). */
   ourName?: string;
+  /**
+   * First day of this phase (YYYY-MM-DD). A season can have several phases (1.ª fase, 2.ª fase…), each with its own
+   * teams and results; the team's games from this day until the next phase starts count for this one.
+   */
+  startDate?: string;
 }
 
 export type UserStatus = 'approved' | 'pending' | 'rejected';

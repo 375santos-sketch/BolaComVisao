@@ -37,8 +37,42 @@ export const teamKey = (name: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-/** The team's finished championship games of that season, written as league games (home team first). */
-export function ownLeagueGames(matches: Match[], ourName: string, season?: string): TableGame[] {
+/** Dates of a phase (YYYY-MM-DD): from `from` (inclusive) up to `to` (exclusive); open ends have no limit. */
+export interface PhaseRange {
+  from?: string;
+  to?: string;
+}
+
+/** The phases of a season (1.ª fase, 2.ª fase…), in order: the first has no start date, then by start date. */
+export function seasonPhases(leagues: LeagueSetup[] | undefined, season: string): LeagueSetup[] {
+  return (leagues || [])
+    .filter((l) => l && l.season === season)
+    .sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
+}
+
+/** A phase lasts from its start date until the next phase of the season starts. */
+export function phaseRange(leagues: LeagueSetup[] | undefined, league: LeagueSetup): PhaseRange {
+  const phases = seasonPhases(leagues, league.season);
+  const next = phases.find((l) => l.id !== league.id && (l.startDate || '') > (league.startDate || ''));
+  return { from: league.startDate || undefined, to: next?.startDate || undefined };
+}
+
+const inRange = (date: string | undefined, range?: PhaseRange) => {
+  if (!range || (!range.from && !range.to)) return true;
+  const d = (date || '').slice(0, 10);
+  if (!d) return !range.from; // an undated game belongs to the first phase
+  return (!range.from || d >= range.from) && (!range.to || d < range.to);
+};
+
+/** "1.ª fase", "2.ª fase"… (the phase's own name when it has one). */
+export const phaseLabel = (phases: LeagueSetup[], league: LeagueSetup) =>
+  league.name?.trim() || `${phases.findIndex((l) => l.id === league.id) + 1}.ª fase`;
+
+/**
+ * The team's finished championship games of that season (and phase, when given), written as league games (home
+ * team first).
+ */
+export function ownLeagueGames(matches: Match[], ourName: string, season?: string, range?: PhaseRange): TableGame[] {
   return (matches || [])
     .filter(
       (m) =>
@@ -46,7 +80,8 @@ export function ownLeagueGames(matches: Match[], ourName: string, season?: strin
         m.finished &&
         m.type === 'campeonato' &&
         m.opponent?.trim() &&
-        isSeasonMatching(m.season || (m.date ? seasonFromDate(m.date) : undefined), season)
+        isSeasonMatching(m.season || (m.date ? seasonFromDate(m.date) : undefined), season) &&
+        inRange(m.date, range)
     )
     .map((m) => {
       const { scored, conceded } = calculateMatchScore(m);
@@ -69,9 +104,9 @@ export function ownLeagueGames(matches: Match[], ourName: string, season?: strin
  * within 3 days). A pasted game that repeats one of the team's games under another name ("GD Alferrarede" for
  * "Dragões": same opponent, same side, same score) is left out, so it is not counted twice.
  */
-export function leagueGames(league: LeagueSetup, matches: Match[], ourName: string): TableGame[] {
+export function leagueGames(league: LeagueSetup, matches: Match[], ourName: string, range?: PhaseRange): TableGame[] {
   const ourKey = teamKey(ourName);
-  const own = ownLeagueGames(matches, ourName, league.season);
+  const own = ownLeagueGames(matches, ourName, league.season, range);
   const repeatsOwn = (g: LeagueGame) =>
     own.some(
       (o) =>
@@ -249,6 +284,29 @@ export function parseFpfPage(text: string, season?: string): LeagueGame[] {
     i += 2;
   }
   return games;
+}
+
+/**
+ * A date as written on a results page or a picture: "24 OUT", "24 out.", "24/10", "24-10-2026" or "2026-10-24".
+ * Without the year, the season says which one.
+ */
+export function looseDate(text: string | undefined, season?: string): string | undefined {
+  const t = (text || '').trim();
+  if (!t) return undefined;
+  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(t);
+  if (iso) return isoDate(iso[3], iso[2], iso[1], season);
+  const pt = /^(\d{1,2})\s*(?:de\s+)?(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-zç]*\.?(?:\s+(\d{4}))?/i.exec(
+    t
+  );
+  if (pt) return isoDate(pt[1], String(PT_MONTHS[pt[2].toLowerCase()]), pt[3], season);
+  const d = DATE.exec(t);
+  return d ? isoDate(d[1], d[2], d[3], season) : undefined;
+}
+
+/** Leaves out the games of our team: those come from the games registered in the app, so they are never doubled. */
+export function withoutOurGames<T extends LeagueGame>(games: T[], ourName: string): T[] {
+  const ourKey = teamKey(ourName);
+  return games.filter((g) => teamKey(g.home) !== ourKey && teamKey(g.away) !== ourKey);
 }
 
 // Words that say nothing about which team it is ("Cdr", "Clube", "Casa do Povo"…)
