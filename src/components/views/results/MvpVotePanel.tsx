@@ -119,10 +119,7 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
   const btn = 'py-2 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 disabled:opacity-50';
 
   return (
-    <section
-      aria-label="Votação dos pais"
-      className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2"
-    >
+    <section aria-label="Votação dos pais" className="ui-inset p-3 space-y-2">
       <div className="flex items-center justify-between">
         <h4 className="text-xs font-black text-amber-200 uppercase tracking-wider">🗳️ Votação dos pais</h4>
         {vote && (

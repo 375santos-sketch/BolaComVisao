@@ -55,7 +55,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
       return (
         <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 text-center">
-          <div className="max-w-md w-full p-6 rounded-2xl bg-slate-900 border border-red-500/40 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+          <div className="ui-card max-w-md w-full p-6">
             <div className="text-4xl mb-3">{isModuleFetchError ? '🔄' : '⚠️'}</div>
             <h2 className="text-xl font-['Chakra_Petch'] font-black uppercase text-red-400 mb-2">
               {isModuleFetchError ? 'Nova Atualização Disponível' : 'Ocorreu um erro inesperado'}
@@ -67,7 +67,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             </p>
 
             {this.state.error && (
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-left mb-5 overflow-x-auto">
+              <div className="ui-inset p-3 text-left mb-5 overflow-x-auto">
                 <p className="text-xs font-mono text-red-300 font-bold mb-1">Detalhes:</p>
                 <code className="text-[11px] font-mono text-slate-400 block whitespace-pre-wrap">
                   {this.state.error.toString()}
@@ -79,7 +79,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleReload}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md"
+                className="ui-btn ui-btn-primary flex-1 py-2.5 px-4 text-xs"
               >
                 Recarregar Aplicação ↻
               </button>
@@ -87,7 +87,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 <button
                   type="button"
                   onClick={this.handleResetState}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
+                  className="ui-btn ui-btn-secondary flex-1 py-2.5 px-4 text-xs"
                 >
                   Tentar Novamente ↺
                 </button>

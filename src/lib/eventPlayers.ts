@@ -19,7 +19,7 @@ const withoutNumber = (s: string) => s.replace(/^#?\s*\d+\s*[-·.:)]?\s*/, '');
 
 const IGNORED = new Set(['', 'none', 'unknown', 'autogolo', 'auto_golo', 'auto-golo']);
 
-export function playerResolver(roster: Player[]): (...refs: unknown[]) => string | null {
+function playerResolver(roster: Player[]): (...refs: unknown[]) => string | null {
   const byKey = new Map<string, string>();
   (roster || []).forEach((p) => {
     if (!p) return;

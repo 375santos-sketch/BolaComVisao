@@ -88,7 +88,7 @@ export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onS
           </div>
 
           {/* Period Selector Tabs */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-cyan-500/30 shrink-0">
+          <div className="ui-inset flex items-center gap-1 p-1 shrink-0">
             {(
               [
                 { id: '7d', label: '7 Dias' },
@@ -112,7 +112,7 @@ export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onS
 
         {/* Global Key Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 rounded-xl bg-slate-950/80 border border-cyan-500/20">
+          <div className="ui-inset p-3">
             <span className="text-[10px] uppercase font-mono text-slate-400 block">Assiduidade Global</span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-2xl font-extrabold text-cyan-300 font-['Chakra_Petch']">
@@ -142,7 +142,7 @@ export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onS
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+          <div className="ui-inset p-3">
             <span className="text-[10px] uppercase font-mono text-slate-400 block">Treinos Avaliados</span>
             <span className="text-2xl font-extrabold text-white font-['Chakra_Petch'] mt-1 block">
               {attendanceData.totalTrainingsEvaluated}
@@ -150,7 +150,7 @@ export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onS
             <span className="text-[10px] text-slate-500 font-mono block mt-0.5">Sessões com presenças fechadas</span>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-950/80 border border-emerald-500/30">
+          <div className="ui-inset p-3">
             <span className="text-[10px] uppercase font-mono text-emerald-400 block">Excelente / Boa (≥75%)</span>
             <span className="text-2xl font-extrabold text-emerald-300 font-['Chakra_Petch'] mt-1 block">
               {attendanceData.categoryCounts.excelente + attendanceData.categoryCounts.boa}
@@ -158,7 +158,7 @@ export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onS
             <span className="text-[10px] text-slate-500 font-mono block mt-0.5">Atletas com alto compromisso</span>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-950/80 border border-red-500/30">
+          <div className="ui-inset p-3">
             <span className="text-[10px] uppercase font-mono text-red-400 block">Atenção / Baixa (&lt;75%)</span>
             <span className="text-2xl font-extrabold text-red-300 font-['Chakra_Petch'] mt-1 block">
               {attendanceData.categoryCounts.atencao + attendanceData.categoryCounts.baixa}
@@ -169,7 +169,7 @@ export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onS
       </div>
 
       {/* Category Filter Pills & Search */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/80 p-3 rounded-2xl border border-cyan-500/20">
+      <div className="ui-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3">
         {/* Category Filters */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           <button
@@ -212,14 +212,14 @@ export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onS
             placeholder="Pesquisar atleta..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+            className="ui-input w-full text-xs"
           />
         </div>
       </div>
 
       {/* Table / Card List */}
       {sortedPlayers.length === 0 ? (
-        <div className="p-8 text-center bg-slate-900/60 border border-slate-800 rounded-2xl">
+        <div className="ui-card p-8 text-center">
           <div className="text-3xl mb-2">📋</div>
           <p className="text-sm font-['Chakra_Petch'] text-cyan-300 font-bold">
             Nenhum atleta encontrado para o filtro selecionado.
@@ -229,7 +229,7 @@ export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onS
           </p>
         </div>
       ) : (
-        <div className="bg-slate-900/90 border border-cyan-500/20 rounded-2xl overflow-hidden shadow-sm">
+        <div className="ui-card overflow-hidden">
           {/* Header Row */}
           <div className="grid grid-cols-12 gap-2 p-3 bg-slate-950/80 border-b border-cyan-500/20 text-[10px] font-['Chakra_Petch'] uppercase tracking-wider text-slate-400 font-bold">
             <div className="col-span-5 sm:col-span-4">Atleta</div>
@@ -308,7 +308,7 @@ export const AttendanceSection: React.FC<AttendanceSectionProps> = ({ state, onS
                         e.stopPropagation();
                         if (onSelectPlayer) onSelectPlayer(p.playerId);
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-slate-950 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 text-[10px] font-['Chakra_Petch'] font-bold uppercase transition-all"
+                      className="ui-btn ui-btn-soft px-2.5 py-1 text-[10px]"
                     >
                       Ver Perfil
                     </button>

@@ -1,6 +1,6 @@
 import { Language } from '../types';
 
-export const dict = {
+const dict = {
   pt: {
     def_club: 'A Minha Equipa',
     set_club: 'Nome da tua Equipa',

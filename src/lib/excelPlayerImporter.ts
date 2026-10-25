@@ -86,7 +86,7 @@ export function normalizeHeader(str: string): string {
 /**
  * Scores a potential header row based on presence of player-related keywords
  */
-export function scoreHeaderRow(row: any[]): { score: number; matchedFields: string[] } {
+function scoreHeaderRow(row: any[]): { score: number; matchedFields: string[] } {
   if (!Array.isArray(row) || row.length === 0) return { score: 0, matchedFields: [] };
 
   let score = 0;
@@ -284,7 +284,7 @@ export function scoreHeaderRow(row: any[]): { score: number; matchedFields: stri
 /**
  * Auto-detects the header row from a 2D sheet matrix scanning up to maxScanRows (default 25)
  */
-export function detectHeaderRowInMatrix(
+function detectHeaderRowInMatrix(
   matrix: any[][],
   maxScanRows = 25
 ): { headerRowIndex: number; rawHeaders: string[]; score: number } {
@@ -365,11 +365,7 @@ export function detectHeaderRowInMatrix(
 /**
  * Converts a 2D sheet matrix into row objects using the specified header row index
  */
-export function extractRowsFromMatrix(
-  matrix: any[][],
-  headerRowIndex: number,
-  headers: string[]
-): Record<string, any>[] {
+function extractRowsFromMatrix(matrix: any[][], headerRowIndex: number, headers: string[]): Record<string, any>[] {
   const rows: Record<string, any>[] = [];
 
   for (let r = headerRowIndex + 1; r < matrix.length; r++) {
@@ -624,7 +620,7 @@ export function autoDetectColumnMapping(headers: string[]): ColumnMapping {
 /**
  * Parses and formats Date string / Excel date serial into YYYY-MM-DD
  */
-export function formatExcelDate(val: any): string | null {
+function formatExcelDate(val: any): string | null {
   if (val === null || val === undefined || val === '') return null;
 
   // If it's already a JS Date
@@ -702,7 +698,7 @@ export function formatExcelDate(val: any): string | null {
 /**
  * Normalizes Dominant Foot
  */
-export function normalizeDominantFoot(val: any): DominantFoot {
+function normalizeDominantFoot(val: any): DominantFoot {
   if (!val) return 'Direito';
   const str = String(val).toLowerCase().trim();
   if (str.includes('esq') || str === 'e' || str === 'l' || str.includes('left') || str.includes('canhoto'))
@@ -768,7 +764,7 @@ export function normalizeWeight(val: any): string {
 /**
  * Normalizes Position string
  */
-export function normalizePosition(val: any): string {
+function normalizePosition(val: any): string {
   if (!val) return 'Jogador';
   const str = String(val).trim();
   if (!str) return 'Jogador';
@@ -861,7 +857,7 @@ export function normalizePosition(val: any): string {
 /**
  * Normalizes Emergency Contact (combines Name and Phone if applicable)
  */
-export function normalizeEmergencyContact(contactVal: any, phoneVal?: any): string {
+function normalizeEmergencyContact(contactVal: any, phoneVal?: any): string {
   const contactStr = contactVal ? String(contactVal).trim() : '';
   const phoneStr = phoneVal ? String(phoneVal).trim() : '';
 

@@ -20,7 +20,7 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
   const cornerConversionRate = cornersForTotal > 0 ? ((cornerGoalsScored / cornersForTotal) * 100).toFixed(1) : '0';
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+    <div className="ui-card p-5">
       <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
         <div>
           <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -33,7 +33,7 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Cantos a Favor */}
-        <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 text-center">
+        <div className="ui-inset p-4 text-center">
           <span className="text-xs font-bold text-cyan-400 block mb-1">🚩 Cantos a Favor</span>
           <span className="text-3xl font-['Chakra_Petch'] font-black text-white">{cornersForTotal}</span>
           <span className="text-xs text-slate-400 block mt-1">
@@ -43,7 +43,7 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
         </div>
 
         {/* Cantos Sofridos */}
-        <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 text-center">
+        <div className="ui-inset p-4 text-center">
           <span className="text-xs font-bold text-rose-400 block mb-1">🚩 Cantos Sofridos (Contra)</span>
           <span className="text-3xl font-['Chakra_Petch'] font-black text-white">{cornersAgainstTotal}</span>
           <span className="text-xs text-slate-400 block mt-1">
@@ -53,7 +53,7 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
         </div>
 
         {/* Eficácia de Golo de Canto */}
-        <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 text-center">
+        <div className="ui-inset p-4 text-center">
           <span className="text-xs font-bold text-amber-400 block mb-1">🎯 Eficácia de Canto</span>
           <span className="text-3xl font-['Chakra_Petch'] font-black text-amber-400">{cornerGoalsScored}</span>
           <span className="text-xs text-slate-400 block mt-1">
@@ -78,7 +78,7 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
   const balance = foulsSufferedTotal - foulsCommittedTotal;
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+    <div className="ui-card p-5">
       <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
         <div>
           <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -91,7 +91,7 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Faltas Cometidas */}
-        <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 text-center">
+        <div className="ui-inset p-4 text-center">
           <span className="text-xs font-bold text-amber-400 block mb-1">⚠️ Faltas Cometidas</span>
           <span className="text-3xl font-['Chakra_Petch'] font-black text-white">{foulsCommittedTotal}</span>
           <span className="text-xs text-slate-400 block mt-1">
@@ -101,7 +101,7 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
         </div>
 
         {/* Faltas Sofridas */}
-        <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 text-center">
+        <div className="ui-inset p-4 text-center">
           <span className="text-xs font-bold text-emerald-400 block mb-1">🩹 Faltas Sofridas</span>
           <span className="text-3xl font-['Chakra_Petch'] font-black text-white">{foulsSufferedTotal}</span>
           <span className="text-xs text-slate-400 block mt-1">
@@ -111,7 +111,7 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
         </div>
 
         {/* Rácio Disciplinar */}
-        <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 text-center">
+        <div className="ui-inset p-4 text-center">
           <span className="text-xs font-bold text-cyan-400 block mb-1">⚖️ Saldo Disciplinar</span>
           <span
             className={`text-3xl font-['Chakra_Petch'] font-black ${
@@ -133,7 +133,7 @@ export const CardsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
   const { yellowCardsTotal, redCardsTotal, cardsPerMatchAvg, cardedPlayers, totalMatches } = analysis;
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+    <div className="ui-card p-5">
       <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
         <div>
           <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -154,7 +154,7 @@ export const CardsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+        <div className="ui-inset p-4 flex items-center justify-between">
           <div>
             <span className="text-xs text-slate-400 block">Total de Cartões</span>
             <span className="text-2xl font-['Chakra_Petch'] font-black text-white">
@@ -167,7 +167,7 @@ export const CardsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
           </div>
         </div>
 
-        <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+        <div className="ui-inset p-4 flex items-center justify-between">
           <div>
             <span className="text-xs text-slate-400 block">Jogadores Advertidos</span>
             <span className="text-2xl font-['Chakra_Petch'] font-black text-amber-400">{cardedPlayers.length}</span>

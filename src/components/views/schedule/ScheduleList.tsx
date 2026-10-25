@@ -21,7 +21,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   return (
     <div className="space-y-3">
       {/* Quick Action Header for Lista View */}
-      <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-2 flex-wrap shadow-md">
+      <div className="ui-card p-3.5 flex items-center justify-between gap-2 flex-wrap">
         <span className="text-xs font-mono text-slate-300">
           📋 Lista com <strong className="text-cyan-300">{filteredEvents.length}</strong>{' '}
           {filteredEvents.length === 1 ? 'evento' : 'eventos'}:
@@ -30,7 +30,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
           <button
             type="button"
             onClick={onOpenScheduleMatch}
-            className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
+            className="ui-btn ui-btn-primary px-3 py-1.5 text-xs flex items-center gap-1"
           >
             <span>⚽</span>
             <span>＋ Jogo</span>
@@ -38,7 +38,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
           <button
             type="button"
             onClick={onOpenScheduleTraining}
-            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
+            className="ui-btn ui-btn-warning px-3 py-1.5 text-xs flex items-center gap-1"
           >
             <span>⚡</span>
             <span>＋ Treino</span>
@@ -65,7 +65,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
       {filteredEvents.length > 0 ? (
         filteredEvents.map((ev) => renderEventCard(ev))
       ) : (
-        <div className="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 text-center font-mono text-xs text-slate-400">
+        <div className="ui-card p-8 text-center font-mono text-xs text-slate-400">
           Nenhum evento corresponde ao filtro atual.
         </div>
       )}

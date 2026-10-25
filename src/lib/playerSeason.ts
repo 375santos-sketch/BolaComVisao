@@ -10,7 +10,7 @@ import { calcPlayerMinutes, calculateMatchScore, isSeasonMatching, seasonFromDat
 import { playerAbsences } from './trainingQuick';
 
 /** How many of the latest games the athlete's sheet lists. */
-export const RECENT_PLAYER_GAMES = 5;
+const RECENT_PLAYER_GAMES = 5;
 
 export interface PlayerGameLine {
   matchId: string;

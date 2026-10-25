@@ -19,7 +19,7 @@ export interface CalendarEvent {
   description?: string;
 }
 
-export interface CalendarFeed {
+interface CalendarFeed {
   teamName: string;
   events: CalendarEvent[];
   updatedAt: number;

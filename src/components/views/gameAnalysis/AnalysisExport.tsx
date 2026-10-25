@@ -15,7 +15,7 @@ export const AnalysisExport: React.FC<AnalysisExportProps> = ({
   exporting = false
 }) => {
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+    <div className="ui-card p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -33,7 +33,7 @@ export const AnalysisExport: React.FC<AnalysisExportProps> = ({
               type="button"
               disabled={exporting}
               onClick={onExportPDF}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold transition-all disabled:opacity-50"
+              className="ui-btn ui-btn-soft-danger flex items-center gap-2 px-4 py-2.5 text-xs"
             >
               <span>📄</span>
               <span>{exporting ? 'A gerar...' : 'Exportar PDF'}</span>
@@ -45,7 +45,7 @@ export const AnalysisExport: React.FC<AnalysisExportProps> = ({
               type="button"
               disabled={exporting}
               onClick={onExportExcel}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition-all disabled:opacity-50"
+              className="ui-btn ui-btn-soft-success flex items-center gap-2 px-4 py-2.5 text-xs"
             >
               <span>📊</span>
               <span>Exportar Excel</span>

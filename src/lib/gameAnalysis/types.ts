@@ -44,25 +44,6 @@ export type EventTypeFilter =
   | 'vermelhos'
   | 'substituicoes';
 
-export type TimePeriodKey =
-  | '0-5'
-  | '6-10'
-  | '11-15'
-  | '16-20'
-  | '21-25'
-  | '26-30'
-  | '31-35'
-  | '36-40'
-  | '41-45'
-  | '46-50'
-  | '51-55'
-  | '56-60'
-  | '61-75'
-  | '76-90'
-  | '60+'
-  | '90+'
-  | string;
-
 export interface TimePeriodStat {
   key: string;
   label: string;

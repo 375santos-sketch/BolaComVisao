@@ -68,7 +68,7 @@ export function mvpResultLine(match: Match, clubName: string, scored: number, co
   return home ? `${clubName} ${score} ${match.opponent}` : `${match.opponent} ${score} ${clubName}`;
 }
 
-export interface MvpCardData {
+interface MvpCardData {
   clubName: string;
   category?: string;
   result: string;

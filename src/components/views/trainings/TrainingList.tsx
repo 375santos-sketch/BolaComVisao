@@ -64,7 +64,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
       <button
         type="button"
         onClick={onOpenToday}
-        className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-['Chakra_Petch'] font-black text-base uppercase tracking-wide shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-[0.99]"
+        className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-['Chakra_Petch'] font-black text-base uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 active:scale-[0.99]"
       >
         <span>✅</span>
         <span>Treino de hoje</span>
@@ -74,7 +74,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <button
           type="button"
-          className="py-3 px-4 rounded-xl bg-slate-900 border border-amber-500/40 hover:border-amber-400 text-amber-300 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
+          className="ui-btn ui-btn-soft-warning py-3 px-4 text-xs flex items-center justify-center gap-2"
           onClick={() => onOpenCreateForm('single')}
         >
           <span>+</span>
@@ -128,7 +128,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
           ))}
         </div>
       ) : (
-        <div className="py-12 text-center bg-slate-900/60 rounded-2xl border border-dashed border-slate-800 p-6">
+        <div className="ui-card py-12 text-center p-6">
           <div className="text-3xl mb-2">📋</div>
           <p className="text-sm font-['Chakra_Petch'] text-cyan-300 uppercase font-bold">
             {(state.trainings || []).length === 0
@@ -146,7 +146,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
             <button
               type="button"
               onClick={() => onOpenCreateForm('batch')}
-              className="px-4 py-2 rounded-xl bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-bold uppercase hover:border-cyan-300 transition-all"
+              className="ui-btn ui-btn-soft px-4 py-2 text-xs"
             >
               📅 Adicionar Vários Treinos (Período)
             </button>

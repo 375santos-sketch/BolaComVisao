@@ -22,7 +22,7 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
   return (
     <div className="space-y-6">
       {/* 1. Visão Global 1.ª Parte vs 2.ª Parte */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+      <div className="ui-card p-5">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
           <div>
             <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -44,7 +44,7 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* 1.ª Parte */}
-          <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+          <div className="ui-inset p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-slate-300">1.ª Parte (0–{configuredHalfDuration}')</span>
               <span className="text-xs font-bold text-slate-400">
@@ -73,7 +73,7 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
           </div>
 
           {/* 2.ª Parte */}
-          <div className="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+          <div className="ui-inset p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-slate-300">
                 2.ª Parte ({configuredHalfDuration + 1}–{configuredHalfDuration * 2}'+)
@@ -106,7 +106,7 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
       </div>
 
       {/* 2. Períodos Detalhados do Jogo (Item 2 & 3) */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+      <div className="ui-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
           <div>
             <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -116,7 +116,7 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
             <p className="text-xs text-slate-400 mt-0.5">Clique em qualquer período para consultar todos os lances</p>
           </div>
 
-          <div className="text-xs text-slate-400 font-bold bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800">
+          <div className="ui-inset text-xs text-slate-400 font-bold px-3 py-1.5">
             Duração configurada: <span className="text-cyan-400 font-black">{configuredHalfDuration}m / parte</span>
           </div>
         </div>

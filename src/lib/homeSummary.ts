@@ -7,11 +7,11 @@ import { addDaysISO, localDateISO } from './trainingQuick';
 import { calculateMatchScore, isSeasonMatching, seasonFromDate } from './utils';
 
 /** Season attendance below this (with enough trainings) is worth a notice on the home screen. */
-export const LOW_ATTENDANCE = 70;
+const LOW_ATTENDANCE = 70;
 const MIN_TRAININGS_FOR_ATTENDANCE = 3;
-export const MAX_HOME_NOTICES = 3;
+const MAX_HOME_NOTICES = 3;
 
-export interface HomeNotice {
+interface HomeNotice {
   id: 'convocatoria' | 'minutos' | 'assiduidade' | 'aniversarios';
   icon: string;
   text: string;
@@ -100,7 +100,7 @@ export function homeNotices(state: SummaryState, today: string = localDateISO())
   return notices.slice(0, MAX_HOME_NOTICES);
 }
 
-export interface SeasonSummary {
+interface SeasonSummary {
   played: number;
   wins: number;
   draws: number;

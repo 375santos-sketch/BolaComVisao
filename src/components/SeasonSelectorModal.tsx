@@ -70,7 +70,7 @@ export const SeasonSelectorModal: React.FC<SeasonSelectorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn select-none">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn select-none">
       <div className="w-full max-w-lg bg-slate-950 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88dvh] text-left">
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between gap-3 shrink-0">
@@ -89,7 +89,7 @@ export const SeasonSelectorModal: React.FC<SeasonSelectorModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm cursor-pointer active:scale-95 transition-colors"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
           >
             ✕
           </button>
@@ -136,10 +136,7 @@ export const SeasonSelectorModal: React.FC<SeasonSelectorModalProps> = ({
           </div>
 
           {/* Add New Season Form */}
-          <form
-            onSubmit={handleCreateSeason}
-            className="p-3.5 bg-slate-900/60 border border-slate-800 rounded-2xl space-y-3"
-          >
+          <form onSubmit={handleCreateSeason} className="ui-card p-3.5 space-y-3">
             <h4 className="text-xs font-bold font-['Chakra_Petch'] uppercase text-slate-300">Criar Nova Época</h4>
             <div>
               <label className="block text-[11px] text-slate-400 mb-1">Designação da Época (ex: 2026/2027) *</label>
@@ -149,7 +146,7 @@ export const SeasonSelectorModal: React.FC<SeasonSelectorModalProps> = ({
                 value={newSeasonName}
                 onChange={(e) => setNewSeasonName(e.target.value)}
                 placeholder="2026/2027"
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-cyan-500"
+                className="ui-input w-full text-xs"
               />
             </div>
 
@@ -171,5 +168,3 @@ export const SeasonSelectorModal: React.FC<SeasonSelectorModalProps> = ({
     </div>
   );
 };
-
-export default SeasonSelectorModal;

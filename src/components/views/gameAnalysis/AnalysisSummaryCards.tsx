@@ -57,19 +57,19 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
-            <div className="bg-slate-900/80 border border-cyan-500/20 rounded-2xl p-2.5">
+            <div className="ui-card p-2.5">
               <span className="text-[10px] text-slate-400 font-bold block uppercase">⏱️ Minuto Médio</span>
               <span className="text-xl font-['Chakra_Petch'] font-black text-cyan-300">
                 {filterMetrics.avgMinute !== null ? `${filterMetrics.avgMinute}'` : '—'}
               </span>
             </div>
 
-            <div className="bg-slate-900/80 border border-cyan-500/20 rounded-2xl p-2.5">
+            <div className="ui-card p-2.5">
               <span className="text-[10px] text-slate-400 font-bold block uppercase">📊 Média / Jogo</span>
               <span className="text-xl font-['Chakra_Petch'] font-black text-white">{filterMetrics.avgPerMatch}</span>
             </div>
 
-            <div className="bg-slate-900/80 border border-cyan-500/20 rounded-2xl p-2.5">
+            <div className="ui-card p-2.5">
               <span className="text-[10px] text-slate-400 font-bold block uppercase">🏟️ Jogos c/ Ocorrência</span>
               <span className="text-xl font-['Chakra_Petch'] font-black text-emerald-400">
                 {filterMetrics.matchOccurrenceRate}%
@@ -79,7 +79,7 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
               </span>
             </div>
 
-            <div className="bg-slate-900/80 border border-cyan-500/20 rounded-2xl p-2.5">
+            <div className="ui-card p-2.5">
               <span className="text-[10px] text-slate-400 font-bold block uppercase">🔥 Período Mais Frequente</span>
               <span className="text-xs font-black text-amber-300 truncate block mt-1">
                 {filterMetrics.mostFrequentPeriod ? filterMetrics.mostFrequentPeriod.label : 'N/A'}
@@ -105,7 +105,7 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
       {/* Main KPI Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
         {/* Card 1: Jogos & Resultados */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-lg backdrop-blur-md">
+        <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
             <span>🏟️ Jogos</span>
             <span className="text-cyan-400 font-black">{winPercentage}% V</span>
@@ -132,7 +132,7 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
         </div>
 
         {/* Card 2: Golos, Médias por Jogo e Minuto Médio (Item 9) */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-lg backdrop-blur-md">
+        <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
             <span>⚽ Golos</span>
             <span
@@ -169,7 +169,7 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
         </div>
 
         {/* Card 3: Primeiro Golo & Entrada em Jogo (Item 5 & 9) */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-lg backdrop-blur-md">
+        <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
             <span>⏱️ 1.º Golo Médio</span>
             <span className="text-amber-400 font-black">Entrada</span>
@@ -201,7 +201,7 @@ export const AnalysisSummaryCards: React.FC<AnalysisSummaryCardsProps> = ({ anal
         </div>
 
         {/* Card 4: Disciplina, Cantos & Faltas Registadas (Item 6 & 7) */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-lg backdrop-blur-md">
+        <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
             <span>🚩 Cantos & Disciplina</span>
             <span className="text-cyan-400 font-black">{cleanSheets} Clean Sheets</span>

@@ -25,8 +25,7 @@ interface MatchEditModalProps {
   onClose: () => void;
 }
 
-const input =
-  'w-full px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-cyan-400 outline-none';
+const input = 'ui-input text-xs';
 const small = 'px-2 py-1 rounded-lg border text-[11px] font-bold';
 
 /** Resultados → "Editar jogo": data, golos, substituições e titulares de um jogo terminado, num só ecrã. */
@@ -83,10 +82,7 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
   const home = draft.location === 'casa';
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-sm"
-      onClick={onClose}
-    >
+    <div className="ui-overlay fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={onClose}>
       <div
         role="dialog"
         aria-label="Editar jogo"
@@ -366,18 +362,10 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
         )}
 
         <div className="flex gap-2 justify-end pt-1">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
-          >
+          <button type="button" onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2 text-xs">
             Cancelar
           </button>
-          <button
-            type="button"
-            onClick={save}
-            className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase"
-          >
+          <button type="button" onClick={save} className="ui-btn ui-btn-primary px-5 py-2 text-xs">
             Guardar alterações
           </button>
         </div>

@@ -93,7 +93,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn select-none">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn select-none">
       <div className="w-full max-w-2xl bg-slate-950 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88dvh] text-left">
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between gap-3 shrink-0">
@@ -112,7 +112,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm cursor-pointer active:scale-95 transition-colors"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
           >
             ✕
           </button>
@@ -121,10 +121,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
         {/* Modal Body */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-4 font-mono text-xs flex-1 scrollbar-thin">
           {/* Creation Form */}
-          <form
-            onSubmit={handleCreateInvite}
-            className="p-4 bg-slate-900/60 border border-slate-800 rounded-2xl space-y-3"
-          >
+          <form onSubmit={handleCreateInvite} className="ui-card p-4 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-slate-400 text-[11px] mb-1 font-['Chakra_Petch'] uppercase font-bold">
@@ -136,7 +133,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="exemplo@clube.pt"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-cyan-500"
+                  className="ui-input w-full text-xs"
                 />
               </div>
               <div>
@@ -148,7 +145,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Nome do treinador"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-cyan-500"
+                  className="ui-input w-full text-xs"
                 />
               </div>
             </div>
@@ -161,7 +158,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
                 <select
                   value={selectedTeamId}
                   onChange={(e) => setSelectedTeamId(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-cyan-500"
+                  className="ui-input w-full text-xs"
                 >
                   {teams.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -177,7 +174,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value as UserClubRole)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-cyan-500"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="Treinador Principal">Treinador Principal</option>
                   <option value="Treinador Adjunto">Treinador Adjunto</option>
@@ -232,10 +229,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
                 <p className="text-slate-400 py-3 text-center">Nenhum convite emitido recentemente.</p>
               ) : (
                 invitations.map((inv) => (
-                  <div
-                    key={inv.id}
-                    className="p-3 bg-slate-900/70 border border-slate-800 rounded-xl flex items-center justify-between gap-2"
-                  >
+                  <div key={inv.id} className="ui-card p-3 flex items-center justify-between gap-2">
                     <div>
                       <div className="font-bold text-white flex items-center gap-2">
                         <span>{inv.email}</span>
@@ -258,7 +252,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
                           <button
                             type="button"
                             onClick={() => handleCopyInviteLink(inv)}
-                            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-lg"
+                            className="ui-btn ui-btn-secondary p-1.5"
                             title="Copiar"
                           >
                             📋
@@ -266,7 +260,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
                           <button
                             type="button"
                             onClick={() => handleRevokeInvite(inv.id)}
-                            className="p-1.5 bg-slate-800 hover:bg-rose-900 text-rose-400 rounded-lg"
+                            className="ui-btn ui-btn-secondary p-1.5"
                             title="Revogar"
                           >
                             ✕
@@ -291,5 +285,3 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
     </div>
   );
 };
-
-export default TeamInviteModal;

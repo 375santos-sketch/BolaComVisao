@@ -1,10 +1,10 @@
 import React from 'react';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'emerald' | 'amber' | 'cyan';
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'emerald' | 'amber' | 'cyan';
 
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: React.ReactNode;
@@ -25,9 +25,6 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyles =
-    "inline-flex items-center justify-center font-['Chakra_Petch'] font-bold uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-cyan-400/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none active:scale-[0.98]";
-
   const sizeStyles: Record<ButtonSize, string> = {
     xs: 'px-2 py-1 text-[11px] gap-1',
     sm: 'px-3 py-1.5 text-xs gap-1.5',
@@ -35,26 +32,23 @@ export const Button: React.FC<ButtonProps> = ({
     lg: 'px-5 py-3 text-sm sm:text-base gap-2.5'
   };
 
+  // Shared look from the design system (index.css)
   const variantStyles: Record<ButtonVariant, string> = {
-    primary:
-      'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_15px_rgba(0,210,255,0.25)] border border-cyan-400/60 font-black',
-    secondary: 'bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 border border-slate-700 hover:border-slate-600',
-    outline: 'bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 border border-cyan-500/50 hover:border-cyan-400',
-    danger:
-      'bg-rose-600 hover:bg-rose-500 text-white shadow-[0_0_15px_rgba(244,63,94,0.3)] border border-rose-500 font-bold',
-    ghost: 'bg-transparent hover:bg-slate-800/60 text-slate-300 hover:text-white border border-transparent',
-    emerald:
-      'bg-emerald-600 hover:bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.3)] border border-emerald-400/60 font-black',
-    amber:
-      'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.3)] border border-amber-400/60 font-black',
-    cyan: 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_15px_rgba(0,210,255,0.25)] border border-cyan-400/60 font-black'
+    primary: 'ui-btn-primary',
+    cyan: 'ui-btn-primary',
+    secondary: 'ui-btn-secondary',
+    outline: 'ui-btn-soft',
+    danger: 'ui-btn-danger',
+    ghost: 'ui-btn-ghost',
+    emerald: 'ui-btn-success',
+    amber: 'ui-btn-warning'
   };
 
   const widthStyle = fullWidth ? 'w-full' : '';
 
   return (
     <button
-      className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${widthStyle} ${className}`}
+      className={`ui-btn ${sizeStyles[size]} ${variantStyles[variant]} ${widthStyle} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

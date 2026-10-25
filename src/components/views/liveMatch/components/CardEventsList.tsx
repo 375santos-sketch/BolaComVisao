@@ -17,7 +17,7 @@ export const CardEventsList: React.FC<CardEventsListProps> = ({ cards, roster, o
 
   if (cards.length === 0) {
     return (
-      <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 text-center text-sm text-slate-500">
+      <div className="ui-card p-4 text-center text-sm text-slate-500">
         Nenhum cartão disciplinar registado (Jogo limpo! 🤝).
       </div>
     );

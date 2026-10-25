@@ -13,7 +13,7 @@ export const ShotsSection: React.FC<ShotsSectionProps> = ({ matches }) => {
   const s = useMemo(() => computeShotStats(matches), [matches]);
 
   return (
-    <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl" aria-label="Remates">
+    <section className="ui-card p-5" aria-label="Remates">
       <div className="pb-3 border-b border-slate-800 mb-4">
         <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2 uppercase tracking-wide">
           <span className="text-cyan-400">🎯</span> Remates
@@ -28,7 +28,7 @@ export const ShotsSection: React.FC<ShotsSectionProps> = ({ matches }) => {
       {s.matchesCount > 0 && (
         <>
           <div className="grid grid-cols-2 gap-3 mb-3">
-            <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 text-center">
+            <div className="ui-inset p-3 text-center">
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">A favor</div>
               <div className="text-2xl font-['Chakra_Petch'] font-black text-emerald-400">{s.shotsFor}</div>
               <div className="text-[11px] text-slate-400">
@@ -36,7 +36,7 @@ export const ShotsSection: React.FC<ShotsSectionProps> = ({ matches }) => {
               </div>
               <div className="text-[11px] text-slate-300 mt-1">{fmt(s.avgShotsFor)} por jogo</div>
             </div>
-            <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 text-center">
+            <div className="ui-inset p-3 text-center">
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contra</div>
               <div className="text-2xl font-['Chakra_Petch'] font-black text-rose-400">{s.shotsAgainst}</div>
               <div className="text-[11px] text-slate-400">

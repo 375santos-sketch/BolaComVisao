@@ -294,11 +294,8 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
       />
 
       {/* Sub-Navigation: Planeamento & Treino */}
-      <div className="grid grid-cols-3 gap-1 p-1 bg-slate-900/90 border border-cyan-500/20 rounded-2xl shadow-sm text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
-        <button
-          type="button"
-          className="py-2 px-1 rounded-xl bg-cyan-500 text-slate-950 font-black flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(0,210,255,0.4)]"
-        >
+      <div className="ui-card grid grid-cols-3 gap-1 p-1 text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
+        <button type="button" className="ui-btn ui-btn-primary py-2 px-1 flex items-center justify-center gap-1.5">
           <span>📅</span>
           <span>Agenda</span>
         </button>
@@ -336,7 +333,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
       <button
         type="button"
         onClick={() => setShowCalendarShare(true)}
-        className="w-full mb-3 py-2.5 px-3 rounded-2xl border border-cyan-500/40 bg-slate-900/80 text-cyan-200 text-xs font-bold flex items-center justify-center gap-2"
+        className="ui-btn ui-btn-soft w-full mb-3 py-2.5 px-3 text-xs flex items-center justify-center gap-2"
       >
         📅 Calendário para os pais{' '}
         <span className="text-[10px] font-normal text-slate-400">

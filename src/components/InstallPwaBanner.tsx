@@ -85,11 +85,7 @@ export const InstallPwaBanner: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={handleInstallClick}
-            className="px-3 py-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black font-['Chakra_Petch'] uppercase rounded-lg text-[10px] tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
-          >
+          <button type="button" onClick={handleInstallClick} className="ui-btn ui-btn-primary px-3 py-1 text-[10px]">
             Instalar 📲
           </button>
           <button

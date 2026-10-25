@@ -18,7 +18,7 @@ export const ConcededGoalEventsList: React.FC<ConcededGoalEventsListProps> = ({
 
   if (concededGoals.length === 0) {
     return (
-      <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 text-center text-sm text-slate-500">
+      <div className="ui-card p-4 text-center text-sm text-slate-500">
         Nenhum golo sofrido registado neste jogo (Baliza inviolada! 🧤).
       </div>
     );
@@ -27,10 +27,7 @@ export const ConcededGoalEventsList: React.FC<ConcededGoalEventsListProps> = ({
   return (
     <div className="space-y-2">
       {concededGoals.map((g) => (
-        <div
-          key={g.id}
-          className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-red-500/20 hover:border-red-500/40 transition-colors"
-        >
+        <div key={g.id} className="ui-card flex items-center justify-between p-3 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 font-bold flex items-center justify-center text-sm">
               🛡️

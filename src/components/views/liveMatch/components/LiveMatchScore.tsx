@@ -30,7 +30,7 @@ export const LiveMatchScore: React.FC<LiveMatchScoreProps> = ({
   const locLabel = (match.location || 'casa') === 'casa' ? t(lang, 'match_home') : t(lang, 'match_away');
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl mb-6 relative overflow-hidden">
+    <div className="ui-card p-5 mb-6 relative overflow-hidden">
       {/* Background visual glow */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -52,7 +52,7 @@ export const LiveMatchScore: React.FC<LiveMatchScoreProps> = ({
 
         <button
           onClick={onOpenCaptainModal}
-          className="text-xs font-semibold px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 transition-colors flex items-center gap-1"
+          className="ui-btn ui-btn-soft-warning text-xs px-3 py-1 flex items-center gap-1"
         >
           <span>©</span>
           <span>{captainName ? `Capitão: ${captainName}` : 'Definir Capitão'}</span>
@@ -71,7 +71,7 @@ export const LiveMatchScore: React.FC<LiveMatchScoreProps> = ({
 
         {/* Score Display */}
         <div className="col-span-1 text-center flex flex-col items-center justify-center">
-          <div className="inline-flex items-center gap-2 bg-slate-950/80 px-4 py-2 rounded-xl border border-slate-800 shadow-inner">
+          <div className="ui-inset inline-flex items-center gap-2 px-4 py-2">
             <span className="text-3xl md:text-5xl font-black text-emerald-400 tabular-nums">{scored}</span>
             <span className="text-xl md:text-2xl font-bold text-slate-500">-</span>
             <span className="text-3xl md:text-5xl font-black text-red-400 tabular-nums">{conceded}</span>
@@ -92,7 +92,7 @@ export const LiveMatchScore: React.FC<LiveMatchScoreProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-slate-800/80 relative z-10">
         <button
           onClick={onOpenAddGoal}
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md hover:shadow-emerald-600/20 active:scale-95 transition-all"
+          className="ui-btn ui-btn-success flex items-center justify-center gap-2 py-2.5 px-3 text-sm"
         >
           <span className="text-base">⚽</span>
           <span>+ Golo Marcado</span>
@@ -100,7 +100,7 @@ export const LiveMatchScore: React.FC<LiveMatchScoreProps> = ({
 
         <button
           onClick={onOpenAddConceded}
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-red-600/90 hover:bg-red-500 text-white font-bold text-sm shadow-md hover:shadow-red-600/20 active:scale-95 transition-all"
+          className="ui-btn ui-btn-soft-danger flex items-center justify-center gap-2 py-2.5 px-3 text-sm"
         >
           <span className="text-base">🛡️</span>
           <span>+ Golo Sofrido</span>
@@ -108,7 +108,7 @@ export const LiveMatchScore: React.FC<LiveMatchScoreProps> = ({
 
         <button
           onClick={onOpenAddSub}
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-md hover:shadow-blue-600/20 active:scale-95 transition-all"
+          className="ui-btn ui-btn-primary flex items-center justify-center gap-2 py-2.5 px-3 text-sm"
         >
           <span className="text-base">🔄</span>
           <span>+ Substituição</span>
@@ -116,7 +116,7 @@ export const LiveMatchScore: React.FC<LiveMatchScoreProps> = ({
 
         <button
           onClick={onOpenAddCard}
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm shadow-md hover:shadow-amber-600/20 active:scale-95 transition-all"
+          className="ui-btn ui-btn-warning flex items-center justify-center gap-2 py-2.5 px-3 text-sm"
         >
           <span className="text-base">🟨</span>
           <span>+ Disciplina</span>

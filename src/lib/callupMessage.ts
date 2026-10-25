@@ -22,7 +22,7 @@ const competitionLabel = (match: ScheduledMatch): string => {
 };
 
 /** Called-up players of the squad, in squad order (players removed from the squad are left out). */
-export function calledUpPlayers(match: ScheduledMatch, roster: Player[]): Player[] {
+function calledUpPlayers(match: ScheduledMatch, roster: Player[]): Player[] {
   const ids = new Set(match.callup || []);
   return sortPlayerObjs((roster || []).filter((p) => ids.has(p.id)));
 }

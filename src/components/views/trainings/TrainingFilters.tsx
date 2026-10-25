@@ -25,7 +25,7 @@ export const TrainingFilters: React.FC<TrainingFiltersProps> = ({
   onClearAllTrainings
 }) => {
   return (
-    <div className="p-3 rounded-2xl bg-slate-900/90 border border-cyan-500/20 space-y-2">
+    <div className="ui-card p-3 space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
           <button
@@ -71,7 +71,7 @@ export const TrainingFilters: React.FC<TrainingFiltersProps> = ({
             <button
               type="button"
               onClick={onClearAllTrainings}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 font-['Chakra_Petch'] font-bold text-xs uppercase transition-colors"
+              className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-xs"
               title="Eliminar todos os treinos desta equipa"
             >
               <span>🗑️ Limpar</span>
@@ -94,7 +94,7 @@ export const TrainingFilters: React.FC<TrainingFiltersProps> = ({
         placeholder="Filtrar treinos por data (AAAA-MM-DD), foco ou notas..."
         value={listSearch}
         onChange={(e) => setListSearch(e.target.value)}
-        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+        className="ui-input w-full text-xs"
       />
     </div>
   );

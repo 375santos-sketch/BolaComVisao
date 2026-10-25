@@ -23,7 +23,7 @@ export const SquadFilters: React.FC<SquadFiltersProps> = ({
   setSortDirection
 }) => {
   return (
-    <div className="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-3 sm:p-4 mb-4 space-y-3 shadow-sm backdrop-blur-md">
+    <div className="ui-card p-3 sm:p-4 mb-4 space-y-3">
       {/* Top line: Search Bar + Clear button */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
@@ -33,7 +33,7 @@ export const SquadFilters: React.FC<SquadFiltersProps> = ({
             placeholder="Pesquisar por nome, número ou posição..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl pl-8 pr-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono min-h-[40px]"
+            className="ui-input w-full text-xs sm:text-sm min-h-[40px]"
           />
         </div>
 
@@ -43,7 +43,7 @@ export const SquadFilters: React.FC<SquadFiltersProps> = ({
               setStatusFilter('todos');
               setSearchQuery('');
             }}
-            className="px-3 py-2 min-h-[40px] rounded-xl bg-slate-950 border border-slate-700 hover:border-cyan-400 text-xs text-slate-300 hover:text-white font-mono transition-colors whitespace-nowrap active:scale-95 touch-manipulation flex items-center justify-center gap-1"
+            className="ui-btn ui-btn-secondary px-3 py-2 min-h-[40px] text-xs whitespace-nowrap touch-manipulation flex items-center justify-center gap-1"
             title="Limpar todos os filtros de pesquisa e estado"
           >
             <span>Limpar Filtros</span>
@@ -107,7 +107,7 @@ export const SquadFilters: React.FC<SquadFiltersProps> = ({
         <div className="flex items-center gap-1 ml-auto sm:ml-0">
           <button
             onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-            className="px-2.5 sm:px-3 py-1.5 min-h-[36px] rounded-lg bg-slate-950 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 font-bold transition-all flex items-center gap-1.5 shadow-sm hover:text-white active:scale-95 touch-manipulation"
+            className="ui-btn ui-btn-soft px-2.5 sm:px-3 py-1.5 min-h-[36px] flex items-center gap-1.5 touch-manipulation"
             title={
               sortDirection === 'asc'
                 ? 'Ordem Crescente (clique para alternar para Decrescente)'

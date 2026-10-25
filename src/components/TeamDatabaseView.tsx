@@ -565,13 +565,13 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
   return (
     <div className="flex flex-col h-full space-y-3">
       {/* Team Selector & Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-900/90 border border-cyan-500/30 rounded-xl">
+      <div className="ui-card flex flex-wrap items-center justify-between gap-2 p-3">
         <div className="flex items-center gap-2 flex-wrap">
           <label className="text-xs font-['Chakra_Petch'] font-bold uppercase text-cyan-300">Equipa:</label>
           <select
             value={selectedTeamId}
             onChange={(e) => setSelectedTeamId(e.target.value)}
-            className="bg-slate-950 border border-cyan-500/40 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-cyan-400"
+            className="ui-input text-xs"
           >
             {accessibleTeams.map((team) => (
               <option key={team.id} value={team.id}>
@@ -585,7 +585,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
             <select
               value={activeDatasetId}
               onChange={(e) => handleSelectDataset(e.target.value)}
-              className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-cyan-400"
+              className="ui-input text-xs"
             >
               {datasets.map((d) => (
                 <option key={d.id} value={d.id}>
@@ -619,7 +619,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
           {columns.length > 0 && (
             <button
               onClick={handleExport}
-              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase border border-slate-700 hover:border-cyan-500/30 transition-all flex items-center gap-1"
+              className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-xs flex items-center gap-1"
             >
               <span>📤</span>
               <span>Exportar</span>
@@ -629,7 +629,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
           {canEdit && canUndo && (
             <button
               onClick={handleUndo}
-              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase border border-amber-500/30 transition-all flex items-center gap-1"
+              className="ui-btn ui-btn-soft-warning px-2.5 py-1.5 text-xs flex items-center gap-1"
               title="Desfazer última alteração"
             >
               <span>↩️</span>
@@ -695,7 +695,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Pesquisar em todas as colunas..."
-            className="w-full bg-slate-950 border border-slate-800 focus:border-cyan-500 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none"
+            className="ui-input w-full text-xs"
           />
           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs">🔍</span>
           {searchTerm && (
@@ -713,14 +713,14 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
           <div className="flex items-center gap-2">
             <button
               onClick={() => setColModal({ mode: 'add', newColName: '' })}
-              className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-cyan-300 rounded-lg text-xs font-['Chakra_Petch'] font-semibold border border-cyan-500/30 flex items-center gap-1 transition-all"
+              className="ui-btn ui-btn-soft px-2.5 py-1 text-xs flex items-center gap-1"
             >
               <span>+</span>
               <span>Nova Coluna</span>
             </button>
             <button
               onClick={handleAddRow}
-              className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-emerald-300 rounded-lg text-xs font-['Chakra_Petch'] font-semibold border border-emerald-500/30 flex items-center gap-1 transition-all"
+              className="ui-btn ui-btn-soft-success px-2.5 py-1 text-xs flex items-center gap-1"
             >
               <span>+</span>
               <span>Nova Linha</span>
@@ -730,7 +730,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       </div>
 
       {/* Data Table Container */}
-      <div className="flex-1 min-h-[350px] max-h-[550px] overflow-auto border border-slate-800 rounded-xl bg-slate-950/80 scrollbar-thin">
+      <div className="ui-inset flex-1 min-h-[350px] max-h-[550px] overflow-auto scrollbar-thin">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-64 text-slate-400">
             <div className="text-2xl animate-spin mb-2">🔄</div>
@@ -746,14 +746,14 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
             </p>
             {canEdit && (
               <div className="flex items-center gap-2">
-                <label className="cursor-pointer px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase shadow-lg shadow-cyan-500/20 hover:brightness-110 transition-all flex items-center gap-2">
+                <label className="cursor-pointer px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase shadow-lg hover:brightness-110 transition-all flex items-center gap-2">
                   <span>📥</span>
                   <span>Importar Excel</span>
                   <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} className="hidden" />
                 </label>
                 <button
                   onClick={() => setColModal({ mode: 'add', newColName: 'NOME' })}
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-cyan-300 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase border border-cyan-500/30 transition-all"
+                  className="ui-btn ui-btn-soft px-4 py-2 text-xs"
                 >
                   + Criar Manualmente
                 </button>
@@ -844,7 +844,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                                 if (e.key === 'Enter') commitCellEdit();
                                 if (e.key === 'Escape') setEditingCell(null);
                               }}
-                              className="w-full bg-slate-900 border border-cyan-400 text-white px-1.5 py-0.5 rounded text-xs focus:outline-none"
+                              className="ui-input w-full text-xs"
                             />
                           ) : (
                             <div
@@ -880,8 +880,8 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
 
       {/* Column Modal: Add / Rename */}
       {colModal && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-950 border border-cyan-500/40 rounded-2xl p-5 max-w-sm w-full shadow-2xl text-left">
+        <div className="ui-overlay fixed inset-0 z-[100000] flex items-center justify-center p-4 animate-fade-in">
+          <div className="ui-inset p-5 max-w-sm w-full text-left">
             <h3 className="font-['Chakra_Petch'] font-bold text-sm text-cyan-300 uppercase mb-3">
               {colModal.mode === 'add' ? 'Adicionar Nova Coluna' : `Renomear Coluna: ${colModal.oldCol}`}
             </h3>
@@ -904,7 +904,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                     }
                   }}
                   placeholder="Ex: POSICAO, MINUTOS, EVAL..."
-                  className="w-full bg-slate-900 border border-slate-700 focus:border-cyan-400 rounded-lg p-2 text-xs text-white uppercase focus:outline-none"
+                  className="ui-input w-full text-xs"
                 />
               </div>
 
@@ -912,14 +912,14 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                 <button
                   type="button"
                   onClick={() => setColModal(null)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold"
+                  className="ui-btn ui-btn-secondary px-3 py-1.5 text-xs"
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
                   onClick={colModal.mode === 'add' ? handleAddColumnConfirm : handleRenameColumnConfirm}
-                  className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-['Chakra_Petch'] font-bold uppercase shadow-md shadow-cyan-500/30"
+                  className="ui-btn ui-btn-primary px-3 py-1.5 text-xs"
                 >
                   {colModal.mode === 'add' ? 'Adicionar' : 'Guardar'}
                 </button>
@@ -931,8 +931,8 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
 
       {/* Excel Import Preview Modal */}
       {importModal && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-          <div className="bg-slate-950 border border-cyan-500/40 rounded-2xl p-5 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl text-left">
+        <div className="ui-overlay fixed inset-0 z-[100000] flex items-center justify-center p-4 animate-fade-in">
+          <div className="ui-inset p-5 max-w-2xl w-full max-h-[85vh] flex flex-col text-left">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="font-['Chakra_Petch'] font-bold text-base text-cyan-300 uppercase flex items-center gap-2">
                 <span>📊</span>
@@ -944,7 +944,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
             </div>
 
             <div className="py-3 space-y-3 flex-1 overflow-y-auto">
-              <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 text-xs">
+              <div className="ui-card flex flex-wrap items-center justify-between gap-2 p-2.5 text-xs">
                 <div>
                   <span className="text-slate-400">Ficheiro: </span>
                   <span className="font-bold text-white">{importModal.fileName}</span>
@@ -956,7 +956,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                     <select
                       value={importModal.selectedSheet}
                       onChange={(e) => setImportModal({ ...importModal, selectedSheet: e.target.value })}
-                      className="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white"
+                      className="ui-input text-xs"
                     >
                       {importModal.sheetNames.map((s) => (
                         <option key={s} value={s}>
@@ -1033,14 +1033,14 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                 <button
                   type="button"
                   onClick={() => setImportModal(null)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold"
+                  className="ui-btn ui-btn-secondary px-3 py-1.5 text-xs"
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmImport}
-                  className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md shadow-cyan-500/30 hover:brightness-110"
+                  className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md hover:brightness-110"
                 >
                   Confirmar Importação
                 </button>
@@ -1052,4 +1052,3 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
     </div>
   );
 };
-export default TeamDatabaseView;

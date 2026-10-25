@@ -79,7 +79,7 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
       {/* Highlight Header */}
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-bold shadow-[0_0_15px_rgba(0,210,255,0.4)] text-lg">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-bold text-lg">
             👔
           </div>
           <div>
@@ -96,7 +96,7 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
           {onNavigateToStaffSection && (
             <button
               onClick={onNavigateToStaffSection}
-              className="px-3 py-1.5 rounded-xl bg-slate-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 font-mono text-xs font-bold hover:bg-slate-800 transition-all flex items-center gap-1.5"
+              className="ui-btn ui-btn-soft px-3 py-1.5 text-xs flex items-center gap-1.5"
             >
               <span>Gerir Equipa Técnica</span>
               <span>➔</span>
@@ -108,7 +108,7 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
               setStaffToEdit(null);
               setIsModalOpen(true);
             }}
-            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-[0_0_12px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all"
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase hover:brightness-110 active:scale-95 transition-all"
           >
             + Adicionar
           </button>
@@ -125,10 +125,10 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
                 setStaffToEdit(staff);
                 setIsModalOpen(true);
               }}
-              className="bg-slate-950/90 border border-cyan-500/30 hover:border-cyan-400 rounded-2xl p-3.5 flex items-center gap-3 transition-all hover:shadow-[0_0_20px_rgba(0,210,255,0.2)] hover:bg-slate-900 cursor-pointer group relative overflow-hidden"
+              className="ui-inset p-3.5 flex items-center gap-3 transition-all cursor-pointer group relative overflow-hidden"
             >
               {/* Photo Avatar */}
-              <div className="relative w-14 h-14 rounded-xl bg-slate-900 border border-cyan-500/40 flex items-center justify-center overflow-hidden shrink-0 shadow-sm group-hover:border-cyan-300 transition-colors">
+              <div className="ui-card relative w-14 h-14 flex items-center justify-center overflow-hidden shrink-0 transition-colors">
                 {staff.photoUrl ? (
                   <img
                     src={staff.photoUrl}
@@ -160,7 +160,7 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
           ))}
         </div>
       ) : (
-        <div className="bg-slate-950/70 border border-dashed border-cyan-500/30 rounded-2xl p-5 text-center flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="ui-inset p-5 text-center flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3 text-left">
             <span className="text-2xl">👔</span>
             <div>
@@ -177,7 +177,7 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
               setStaffToEdit(null);
               setIsModalOpen(true);
             }}
-            className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-[0_0_10px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all shrink-0"
+            className="ui-btn ui-btn-primary px-4 py-2 text-xs hover:brightness-110 shrink-0"
           >
             + Adicionar Elemento
           </button>

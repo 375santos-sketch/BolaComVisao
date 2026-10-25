@@ -36,7 +36,7 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
     return (
       <div
         id="today-focus-live-active-card"
-        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-rose-950 via-slate-900 to-rose-950/80 border-2 border-rose-500 shadow-2xl shadow-rose-950/50 flex flex-col md:flex-row md:items-center justify-between gap-5 animate-pulse"
+        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-rose-950 via-slate-900 to-rose-950/80 border-2 border-rose-500 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-5 animate-pulse"
       >
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500 flex items-center justify-center text-3xl shrink-0">
@@ -64,7 +64,7 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={() => onNavigate('jogo')}
-            className="w-full md:w-auto px-6 py-3 rounded-2xl bg-rose-500 hover:bg-rose-400 text-slate-950 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-sm transition-all shadow-lg shadow-rose-500/30 flex items-center justify-center gap-2"
+            className="ui-btn ui-btn-danger w-full md:w-auto px-6 py-3 text-sm flex items-center justify-center gap-2"
           >
             <span>Entrar no Modo Jogo</span>
             <span>➔</span>
@@ -82,7 +82,7 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
     return (
       <div
         id="today-focus-match-card"
-        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-cyan-950 via-slate-900 to-blue-950 border-2 border-cyan-500/80 shadow-2xl shadow-cyan-950/40 flex flex-col md:flex-row md:items-center justify-between gap-5"
+        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-cyan-950 via-slate-900 to-blue-950 border-2 border-cyan-500/80 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-5"
       >
         <div className="flex items-start sm:items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-500/60 flex items-center justify-center text-3xl shrink-0 shadow-inner">
@@ -108,15 +108,12 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <button
-            onClick={() => onNavigate('convocatoria')}
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs font-['Chakra_Petch'] uppercase tracking-wider transition-colors border border-slate-700"
-          >
+          <button onClick={() => onNavigate('convocatoria')} className="ui-btn ui-btn-secondary px-4 py-2.5 text-xs">
             📋 Ver Convocatória
           </button>
           <button
             onClick={() => onNavigate('jogo', todayMatch.id)}
-            className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-1.5"
+            className="ui-btn ui-btn-primary px-5 py-2.5 text-xs flex items-center gap-1.5"
           >
             <span>Iniciar Modo Jogo</span>
             <span>➔</span>
@@ -158,7 +155,7 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
         <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={() => onNavigate('treinos')}
-            className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-1.5"
+            className="ui-btn ui-btn-success px-5 py-2.5 text-xs flex items-center gap-1.5"
           >
             <span>Abrir Plano de Treino</span>
             <span>➔</span>
@@ -199,7 +196,7 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
         <div className="flex items-center gap-2.5 shrink-0">
           <button
             onClick={() => onNavigate('calendario')}
-            className="px-5 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs shadow-lg shadow-purple-500/20 transition-all"
+            className="px-5 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs shadow-lg transition-all"
           >
             Ver Detalhes
           </button>
@@ -212,12 +209,10 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
   return (
     <div
       id="today-focus-empty-card"
-      className="p-5 sm:p-6 rounded-3xl bg-slate-900/95 border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5"
+      className="ui-card p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5"
     >
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-2xl shrink-0">
-          ☕
-        </div>
+        <div className="ui-inset w-12 h-12 flex items-center justify-center text-2xl shrink-0">☕</div>
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
@@ -240,16 +235,10 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
       </div>
 
       <div className="flex items-center gap-2.5 shrink-0">
-        <button
-          onClick={() => onNavigate('jogo')}
-          className="px-4 py-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs transition-colors"
-        >
+        <button onClick={() => onNavigate('jogo')} className="ui-btn ui-btn-soft px-4 py-2.5 text-xs">
           🔴 Abrir Modo Jogo
         </button>
-        <button
-          onClick={() => onNavigate('calendario')}
-          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs transition-colors border border-slate-700"
-        >
+        <button onClick={() => onNavigate('calendario')} className="ui-btn ui-btn-secondary px-4 py-2.5 text-xs">
           📅 Calendário
         </button>
       </div>

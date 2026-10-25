@@ -1,19 +1,11 @@
-import { AppState, SyncState, OfflineMutation, UserAccount, SyncConflict } from '../types';
+import { AppState, SyncState, OfflineMutation } from '../types';
 import { uid } from './utils';
-import {
-  saveMasterClubState,
-  loadMasterClubState,
-  getFirestoreQuotaState,
-  FIRESTORE_UPGRADE_CONSOLE_URL
-} from '../services/firebase';
-
-export { getFirestoreQuotaState, FIRESTORE_UPGRADE_CONSOLE_URL };
+import { saveMasterClubState } from '../services/firebase';
 
 const IDB_NAME = 'BolaComVisao_DB';
 const IDB_VERSION = 1;
 const STORE_NAME = 'coach_state_store';
 const QUEUE_STORAGE_KEY = 'bolacomvisao_mutations_queue_v1';
-const CONFLICTS_STORAGE_KEY = 'bolacomvisao_conflicts_v1';
 
 // Default initial sync state
 export const defaultSyncState: SyncState = {
@@ -78,22 +70,6 @@ export async function saveToIndexedDB(key: string, data: any): Promise<boolean> 
   }
 }
 
-export async function loadFromIndexedDB(key: string): Promise<any | null> {
-  try {
-    const db = await openDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const req = store.get(key);
-      req.onsuccess = () => resolve(req.result ? req.result.data : null);
-      req.onerror = () => resolve(null);
-    });
-  } catch (err) {
-    console.warn('IndexedDB load fallback:', err);
-    return null;
-  }
-}
-
 /**
  * Removes every copy of club data kept on this device (IndexedDB backups, offline queue, conflicts, audit
  * cache, sync markers). Called on logout so the next person using the device (or "Modo Convidado") cannot
@@ -124,7 +100,7 @@ export async function clearDeviceClubData(): Promise<void> {
 }
 
 // Offline Mutations Queue Operations
-export function getOfflineQueue(): OfflineMutation[] {
+function getOfflineQueue(): OfflineMutation[] {
   try {
     const raw = localStorage.getItem(QUEUE_STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -133,112 +109,12 @@ export function getOfflineQueue(): OfflineMutation[] {
   }
 }
 
-export function saveOfflineQueue(queue: OfflineMutation[]): void {
+function saveOfflineQueue(queue: OfflineMutation[]): void {
   try {
     localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
   } catch (e) {
     console.warn('Erro ao guardar fila offline:', e);
   }
-}
-
-export function queueOfflineMutation(
-  user: UserAccount | null | undefined,
-  teamId: string,
-  entityType: any,
-  entityId: string,
-  action: 'create' | 'update' | 'delete',
-  payload: any
-): OfflineMutation {
-  const mutation: OfflineMutation = {
-    id: 'mut_' + uid(),
-    timestamp: Date.now(),
-    userId: user?.id || 'anon',
-    userName: user?.name || user?.username || 'Treinador',
-    teamId,
-    entityType,
-    entityId,
-    action,
-    payload,
-    status: 'queued',
-    retryCount: 0
-  };
-
-  const queue = getOfflineQueue();
-  queue.push(mutation);
-  saveOfflineQueue(queue);
-
-  return mutation;
-}
-
-export function clearResolvedMutations(mutationIds: string[]): void {
-  const current = getOfflineQueue();
-  const filtered = current.filter((m) => !mutationIds.includes(m.id));
-  saveOfflineQueue(filtered);
-}
-
-// Conflicts Management
-export function getStoredConflicts(): SyncConflict[] {
-  try {
-    const raw = localStorage.getItem(CONFLICTS_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function recordConflict(conflict: SyncConflict): void {
-  const current = getStoredConflicts();
-  const existingIndex = current.findIndex((c) => c.id === conflict.id);
-  if (existingIndex >= 0) {
-    current[existingIndex] = conflict;
-  } else {
-    current.push(conflict);
-  }
-  try {
-    localStorage.setItem(CONFLICTS_STORAGE_KEY, JSON.stringify(current));
-  } catch (e) {
-    console.warn('Erro ao guardar conflito:', e);
-  }
-}
-
-export function resolveStoredConflict(conflictId: string, choice: 'local' | 'remote' | 'merged'): void {
-  const current = getStoredConflicts();
-  const updated = current.map((c) => {
-    if (c.id === conflictId) {
-      return { ...c, resolved: true, resolutionChoice: choice };
-    }
-    return c;
-  });
-  try {
-    localStorage.setItem(CONFLICTS_STORAGE_KEY, JSON.stringify(updated.filter((c) => !c.resolved)));
-  } catch (e) {
-    console.warn('Erro ao resolver conflito:', e);
-  }
-}
-
-export async function getStorageDiagnostics(): Promise<{
-  usageKB: number;
-  quotaKB: number;
-  percentUsed: number;
-  isPersisted: boolean;
-}> {
-  if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.estimate) {
-    try {
-      const estimate = await navigator.storage.estimate();
-      const usage = estimate.usage || 0;
-      const quota = estimate.quota || 1;
-      const isPersisted = navigator.storage.persisted ? await navigator.storage.persisted() : false;
-      return {
-        usageKB: Math.round(usage / 1024),
-        quotaKB: Math.round(quota / 1024),
-        percentUsed: Math.min(100, Math.round((usage / quota) * 100)),
-        isPersisted
-      };
-    } catch {
-      // ignore
-    }
-  }
-  return { usageKB: 120, quotaKB: 500000, percentUsed: 1, isPersisted: true };
 }
 
 // Perform sync directly against official Firestore cloud database & process queue
@@ -292,35 +168,6 @@ export async function syncStateWithCloud(
       message: 'Guardado em base de dados offline local (IndexedDB).'
     };
   }
-}
-
-// Pull latest state directly from official Firestore cloud database
-export async function pullStateFromCloud(_syncId: string): Promise<{ success: boolean; data?: any; message: string }> {
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
-    const local = await loadFromIndexedDB('latest_cloud_synced_state');
-    if (local) {
-      return { success: true, data: local, message: 'Dados offline locais recuperados (IndexedDB).' };
-    }
-    return { success: false, message: 'Sem ligação à internet para descarregar dados da nuvem.' };
-  }
-
-  try {
-    // Direct read from official Firestore database
-    const cloudData = await loadMasterClubState();
-    if (cloudData) {
-      await saveToIndexedDB('latest_cloud_synced_state', cloudData);
-      return { success: true, data: cloudData, message: 'Dados descarregados do Firestore em tempo real!' };
-    }
-  } catch (err) {
-    console.warn('Erro ao ler do Firestore, a tentar IndexedDB:', err);
-  }
-
-  const local = await loadFromIndexedDB('latest_cloud_synced_state');
-  if (local) {
-    return { success: true, data: local, message: 'Recuperado da cache offline local (IndexedDB).' };
-  }
-
-  return { success: false, message: 'Nenhum dado encontrado no Firestore.' };
 }
 
 // Process and flush offline queued mutations when connection is restored

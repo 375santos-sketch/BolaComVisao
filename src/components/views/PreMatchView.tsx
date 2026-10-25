@@ -26,8 +26,7 @@ interface PreMatchViewProps {
   targetOpponentId?: string | null;
 }
 
-const field =
-  'w-full rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-sm p-2.5 placeholder-slate-500 focus:outline-none focus:border-cyan-400';
+const field = 'ui-input text-xs';
 const label = 'block text-[11px] font-bold uppercase tracking-wide';
 
 /** ⚡ Pré-jogo: a simple plan for the next game (nothing is saved until the coach saves). */
@@ -246,7 +245,7 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
         <button
           type="button"
           onClick={() => onSave(withPlan(), 'Pré-jogo guardado ✓')}
-          className="py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold"
+          className="ui-btn ui-btn-primary py-2.5 text-xs"
         >
           Guardar
         </button>
@@ -257,16 +256,11 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
               ? onSave(withPlan({ preMatchFinalized: false, preMatchFinalizedAt: undefined }), 'Plano reaberto')
               : onSave(withPlan({ preMatchFinalized: true, preMatchFinalizedAt: Date.now() }), 'Plano pronto ✓')
           }
-          className="py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold"
+          className="ui-btn ui-btn-success py-2.5 text-xs"
         >
           {game.preMatchFinalized ? 'Reabrir plano' : '✓ Plano pronto'}
         </button>
-        <button
-          type="button"
-          onClick={exportPdf}
-          disabled={busy}
-          className="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-bold disabled:opacity-40"
-        >
+        <button type="button" onClick={exportPdf} disabled={busy} className="ui-btn ui-btn-secondary py-2.5 text-xs">
           {busy ? 'A gerar…' : '📄 PDF'}
         </button>
         <button
@@ -277,7 +271,7 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
               '_blank'
             )
           }
-          className="py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold"
+          className="ui-btn ui-btn-success py-2.5 text-xs"
         >
           💬 WhatsApp
         </button>

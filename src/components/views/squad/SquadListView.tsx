@@ -39,7 +39,7 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
       <div
         key={player.id}
         onClick={() => onSelectPlayer(player.id)}
-        className="bg-slate-900/90 hover:bg-slate-850 border border-cyan-500/20 hover:border-cyan-400 rounded-xl px-3 py-2 sm:py-2.5 transition-all duration-150 flex items-center justify-between gap-3 group cursor-pointer shadow-sm hover:shadow-[0_0_15px_rgba(0,210,255,0.15)]"
+        className="ui-card px-3 py-2 sm:py-2.5 transition-all duration-150 flex items-center justify-between gap-3 group cursor-pointer"
       >
         <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
           {/* 1. FOTO */}
@@ -52,7 +52,7 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-950 border border-cyan-500/30 group-hover:border-cyan-400 flex items-center justify-center text-base sm:text-lg text-cyan-400 font-bold shadow-inner">
+              <div className="ui-inset w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-base sm:text-lg text-cyan-400 font-bold">
                 👤
               </div>
             )}
@@ -78,7 +78,7 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
               </h3>
               {hasLowAttendance && (
                 <span
-                  className="inline-flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.2 rounded-md font-bold bg-red-950 border border-red-500 text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse"
+                  className="inline-flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.2 rounded-md font-bold bg-red-950 border border-red-500 text-red-300 animate-pulse"
                   title={`Alerta: Menos de 50% de presenças nos treinos (${attendancePct}%)`}
                 >
                   <span>🚨</span>
@@ -122,7 +122,7 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
               e.stopPropagation();
               onSelectPlayer(player.id);
             }}
-            className="px-2 py-1 rounded-lg bg-slate-950 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 font-mono text-[11px] font-bold transition-colors hidden xs:inline-flex items-center gap-1"
+            className="ui-btn ui-btn-soft px-2 py-1 text-[11px] hidden xs:inline-flex items-center gap-1"
             title="Ver Ficha Completa"
           >
             <span>👁️</span>
@@ -134,7 +134,7 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
               e.stopPropagation();
               onEditPlayer(player);
             }}
-            className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-400 hover:text-white transition-colors text-xs"
+            className="ui-btn ui-btn-secondary p-1.5 text-xs"
             title="Editar Jogador"
           >
             ✏️
@@ -145,7 +145,7 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
               e.stopPropagation();
               onRemovePlayer(player.id);
             }}
-            className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 transition-colors text-xs"
+            className="ui-btn ui-btn-secondary p-1.5 text-xs"
             title="Remover Jogador"
           >
             🗑️

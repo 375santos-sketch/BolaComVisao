@@ -145,65 +145,6 @@ export async function exportConvocatoriaExcel(match: ScheduledMatch, calledPlaye
 }
 
 /**
- * Export Treinos & Assiduidade in Excel (.xlsx)
- */
-export async function exportTrainingsStatsExcel(state: AppState) {
-  const XLSX = await getXLSX();
-  const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : 'O Meu Clube';
-  const completedTrainings = (state.trainings || []).filter((tr) => tr.completed !== false);
-  const totalTrainings = completedTrainings.length;
-  const activePlayers = sortPlayerObjs(state.roster.filter((p) => p.active !== false));
-
-  const headers = [
-    'Nº',
-    'Nome do Jogador',
-    'Posição',
-    'Presenças',
-    'Faltas',
-    'Total Treinos Concluídos',
-    '% Assiduidade',
-    'Classificação Assiduidade'
-  ];
-
-  const rows = activePlayers.map((p) => {
-    const absences = completedTrainings.filter((tr) => (tr.absences || []).includes(p.id)).length;
-    const presences = Math.max(0, totalTrainings - absences);
-    const pct = totalTrainings > 0 ? Math.round((presences / totalTrainings) * 100) : 0;
-    const grade =
-      totalTrainings === 0
-        ? 'Sem dados'
-        : pct >= 85
-          ? 'Excelente'
-          : pct >= 70
-            ? 'Bom'
-            : pct >= 50
-              ? 'Regular'
-              : 'Baixa Assiduidade';
-
-    return [
-      p.number !== null && p.number !== undefined ? `#${p.number}` : '-',
-      p.name,
-      p.positions || 'Jogador',
-      presences,
-      absences,
-      totalTrainings,
-      totalTrainings > 0 ? `${pct}%` : '-',
-      grade
-    ];
-  });
-
-  const ws = createBolaComVisaoSheet(XLSX, 'Relatório de Assiduidade e Treinos', state, headers, rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Assiduidade');
-
-  const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '_');
-  XLSX.writeFile(
-    wb,
-    `Assiduidade_Treinos_BolaComVisao_${sanitize(myClub)}_${new Date().toISOString().slice(0, 10)}.xlsx`
-  );
-}
-
-/**
  * Export Plantel de Jogadores in Excel (.xlsx)
  */
 export async function exportSquadExcel(state: AppState) {

@@ -10,7 +10,7 @@ import { calcPlayerMinutes, seasonFromDate } from './utils';
  * Atletas, Jogos, Golos, MinutosPorJogo, Cartoes, Treinos, Presencas.
  * Only sports data: no contacts, birth dates or coach notes (the file may be shared).
  */
-export type PowerBiTables = Record<string, (string | number | boolean | null)[][]>;
+type PowerBiTables = Record<string, (string | number | boolean | null)[][]>;
 
 const yes = (b: boolean) => (b ? 'Sim' : 'Não');
 const resultOf = (scored: number, conceded: number) => (scored > conceded ? 'V' : scored < conceded ? 'D' : 'E');

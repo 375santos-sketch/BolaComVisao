@@ -76,8 +76,8 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-lg bg-slate-900 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(0,210,255,0.3)] max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+      <div className="w-full max-w-lg bg-slate-900 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden">
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20 mb-3 shrink-0">
           <h3 className="text-base sm:text-lg font-bold font-['Chakra_Petch'] uppercase text-white flex items-center gap-2">
@@ -85,7 +85,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
           </h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm active:scale-95 transition-colors"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
             title="Fechar"
           >
             ✕
@@ -96,7 +96,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
           {/* Scrollable Form Fields */}
           <div className="overflow-y-auto pr-1.5 space-y-4 flex-1 min-h-0 scrollbar-thin">
             {/* Photo Upload Section */}
-            <div className="bg-slate-950/80 border border-cyan-500/20 rounded-2xl p-3 text-center">
+            <div className="ui-inset p-3 text-center">
               <label className="block text-xs font-mono text-cyan-300 mb-2">📷 Fotografia do Jogador</label>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -138,7 +138,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     placeholder="ou cole o URL da foto..."
                     value={formPhotoUrl}
                     onChange={(e) => setFormPhotoUrl(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-[11px] text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-[11px]"
                   />
                 </div>
               </div>
@@ -160,7 +160,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                   placeholder="Ex: Cristiano Ronaldo"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-bold"
+                  className="ui-input w-full text-xs"
                 />
               </div>
 
@@ -172,7 +172,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     placeholder="Ex: 7"
                     value={formNumber}
                     onChange={(e) => setFormNumber(e.target.value)}
-                    className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono font-bold"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
 
@@ -181,7 +181,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as PlayerStatus)}
-                    className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-xs"
                   >
                     <option value="disponivel">🟢 Disponível</option>
                     <option value="lesionado">🏥 Lesionado</option>
@@ -202,7 +202,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                       type="date"
                       value={formStatusUntil}
                       onChange={(e) => setFormStatusUntil(e.target.value)}
-                      className="w-full bg-slate-950 border border-amber-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 font-mono"
+                      className="ui-input w-full text-xs"
                     />
                   </div>
                   <div>
@@ -216,7 +216,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                       placeholder={formStatus === 'lesionado' ? 'Ex: entorse' : 'Ex: 2 jogos'}
                       value={formStatusNote}
                       onChange={(e) => setFormStatusNote(e.target.value)}
-                      className="w-full bg-slate-950 border border-amber-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-amber-400 font-mono"
+                      className="ui-input w-full text-xs"
                     />
                   </div>
                   <p className="col-span-2 text-[10px] text-amber-200/80">
@@ -230,7 +230,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                 <select
                   value={formPosition}
                   onChange={(e) => setFormPosition(e.target.value)}
-                  className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">Selecione a posição principal...</option>
                   {POSITION_OPTIONS.map((pos) => (
@@ -255,7 +255,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     type="date"
                     value={formBirthDate}
                     onChange={(e) => setFormBirthDate(e.target.value)}
-                    className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
 
@@ -264,7 +264,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                   <select
                     value={formDominantFoot}
                     onChange={(e) => setFormDominantFoot(e.target.value as DominantFoot)}
-                    className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-xs"
                   >
                     <option value="Direito">Direito (Destro)</option>
                     <option value="Esquerdo">Esquerdo (Esquerdino)</option>
@@ -281,7 +281,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     placeholder="Ex: 1.82 m"
                     value={formHeight}
                     onChange={(e) => setFormHeight(e.target.value)}
-                    className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
 
@@ -292,7 +292,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     placeholder="Ex: 75 kg"
                     value={formWeight}
                     onChange={(e) => setFormWeight(e.target.value)}
-                    className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
               </div>
@@ -312,7 +312,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     placeholder="Ex: 912 345 678"
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
 
@@ -323,7 +323,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     placeholder="Ex: jogador@email.com"
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
-                    className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
               </div>
@@ -337,7 +337,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                   placeholder="Ex: Pai (Manuel Silva) - 961 234 567"
                   value={formEmergencyContact}
                   onChange={(e) => setFormEmergencyContact(e.target.value)}
-                  className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400"
+                  className="ui-input w-full text-xs"
                 />
               </div>
             </div>
@@ -348,14 +348,14 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 min-h-[48px] rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-mono text-xs font-bold hover:bg-slate-800 active:scale-95 transition-all flex items-center justify-center"
+              className="ui-btn ui-btn-secondary flex-1 py-3 min-h-[48px] text-xs flex items-center justify-center"
             >
               Cancelar
             </button>
 
             <button
               type="submit"
-              className="flex-1 py-3 min-h-[48px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              className="flex-1 py-3 min-h-[48px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs sm:text-sm uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5"
             >
               {editingPlayerId ? 'Guardar Alterações 💾' : 'Adicionar Atleta 🚀'}
             </button>

@@ -1,19 +1,192 @@
 @import 'tailwindcss';
 
+/*
+ * Design system (one look for the whole app). Tokens first, then the shared pieces:
+ *   ui-btn (+ ui-btn-primary | -secondary | -ghost | -danger | -success | -warning | -soft | -soft-danger |
+ *   -soft-success | -soft-warning), ui-card, ui-inset, ui-input, ui-overlay.
+ * Utilities written next to them (padding, text size, width…) still win, so a piece can be sized where it is used.
+ * Text marked "font-mono" uses the app's sans-serif with aligned numbers (no typewriter look).
+ */
+@theme {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Chakra Petch', 'Plus Jakarta Sans', sans-serif;
+
+  --color-ui-bg: #060e17;
+  --color-ui-surface: #0d1b2a;
+  --color-ui-surface-2: #12263a;
+  --color-ui-inset: #08131f;
+  --color-ui-line: #1c3247;
+  --color-ui-line-strong: #2a4763;
+  --color-ui-text: #e8f1f8;
+  --color-ui-muted: #8aa4bb;
+  --color-ui-brand: #22c3ee;
+  --color-ui-brand-strong: #0ea5d0;
+  --color-ui-brand-ink: #03131f;
+  --color-ui-danger: #f43f5e;
+  --color-ui-success: #10b981;
+  --color-ui-warning: #f59e0b;
+}
+
+@layer base {
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    word-spacing: 0.06em;
+  }
+}
+
+@layer components {
+  .ui-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.75rem;
+    border: 1px solid transparent;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.005em;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      transform 0.08s ease;
+  }
+  .ui-btn:active {
+    transform: scale(0.98);
+  }
+  .ui-btn:focus-visible {
+    outline: 2px solid var(--color-ui-brand);
+    outline-offset: 2px;
+  }
+  .ui-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .ui-btn-primary {
+    background: var(--color-ui-brand);
+    color: var(--color-ui-brand-ink);
+  }
+  .ui-btn-primary:hover:not(:disabled) {
+    background: #4fd3f3;
+  }
+  .ui-btn-success {
+    background: var(--color-ui-success);
+    color: #02140d;
+  }
+  .ui-btn-danger {
+    background: var(--color-ui-danger);
+    color: #ffffff;
+  }
+  .ui-btn-warning {
+    background: var(--color-ui-warning);
+    color: #1a0f00;
+  }
+  .ui-btn-secondary {
+    background: var(--color-ui-surface-2);
+    border-color: var(--color-ui-line-strong);
+    color: var(--color-ui-text);
+  }
+  .ui-btn-secondary:hover:not(:disabled) {
+    border-color: var(--color-ui-brand);
+  }
+  .ui-btn-ghost {
+    background: transparent;
+    color: var(--color-ui-muted);
+  }
+  .ui-btn-ghost:hover:not(:disabled) {
+    background: var(--color-ui-surface-2);
+    color: var(--color-ui-text);
+  }
+  .ui-btn-soft {
+    background: rgb(34 195 238 / 0.1);
+    border-color: rgb(34 195 238 / 0.35);
+    color: #8ee3f8;
+  }
+  .ui-btn-soft-success {
+    background: rgb(16 185 129 / 0.1);
+    border-color: rgb(16 185 129 / 0.35);
+    color: #6ee7b7;
+  }
+  .ui-btn-soft-danger {
+    background: rgb(244 63 94 / 0.1);
+    border-color: rgb(244 63 94 / 0.35);
+    color: #fda4af;
+  }
+  .ui-btn-soft-warning {
+    background: rgb(245 158 11 / 0.1);
+    border-color: rgb(245 158 11 / 0.35);
+    color: #fcd34d;
+  }
+
+  .ui-card {
+    background: var(--color-ui-surface);
+    border: 1px solid var(--color-ui-line);
+    border-radius: 1rem;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+  }
+  .ui-inset {
+    background: var(--color-ui-inset);
+    border: 1px solid var(--color-ui-line);
+    border-radius: 0.75rem;
+  }
+
+  .ui-input {
+    width: 100%;
+    background: var(--color-ui-inset);
+    border: 1px solid var(--color-ui-line-strong);
+    border-radius: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    color: var(--color-ui-text);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.35;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .ui-input::placeholder {
+    color: #5f7a91;
+  }
+  .ui-input:focus {
+    outline: none;
+    border-color: var(--color-ui-brand);
+    box-shadow: 0 0 0 3px rgb(34 195 238 / 0.18);
+  }
+  .ui-input:disabled {
+    opacity: 0.55;
+  }
+
+  .ui-overlay {
+    background: rgb(2 7 14 / 0.78);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+}
+
 :root {
   --bg: #060e17;
-  --surface: #0e2234;
-  --surface-2: #16324a;
+  --surface: #0d1b2a;
+  --surface-2: #12263a;
   --chalk: #ffffff;
-  --muted: #7dd3fc;
-  --gold: #00d2ff;
+  --muted: #8aa4bb;
+  --gold: #22c3ee;
   --gold-dim: #093f58;
   --red: #ef4444;
   --red-dim: #450a0a;
   --yellow: #f59e0b;
-  --green: #00e676;
+  --green: #10b981;
   --green-dim: #084d2a;
-  --line: rgba(0, 210, 255, 0.22);
+  --line: #1c3247;
   --btn-gold-txt: #041525;
   --btn-red-txt: #ffffff;
   --btn-green-txt: #041525;
@@ -81,7 +254,6 @@ h1,
 h2,
 h3,
 .disp,
-.btn,
 .panel-title,
 .home-sub,
 .home-btn,
@@ -90,7 +262,6 @@ h3,
 .badge-type,
 .badge-loc,
 .badge-open,
-.seg-btn,
 .card-mini-btn,
 .toast,
 .chrono-sub {
@@ -101,7 +272,8 @@ h3,
 }
 
 .mono {
-  font-family: 'Chakra Petch', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
 }
 
 .app-container {
@@ -182,7 +354,6 @@ svg {
   color: var(--chalk);
   font-weight: 700;
   letter-spacing: 0.05em;
-  text-shadow: 0 0 12px rgba(0, 210, 255, 0.3);
 }
 
 .topbar-home {
@@ -246,7 +417,8 @@ svg {
 }
 
 .score-num {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
   font-size: 40px;
   font-weight: 700;
   line-height: 1;
@@ -270,7 +442,8 @@ svg {
 .score-sep {
   font-size: 24px;
   color: var(--muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
 }
 
 .btn-row {
@@ -283,11 +456,10 @@ svg {
   flex: 1;
   min-height: 44px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 10px;
-  font-size: 13px;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 0.005em;
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -386,7 +558,8 @@ svg {
 .chrono-time {
   font-size: 38px;
   font-weight: 700;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
   color: var(--chalk);
   letter-spacing: 0.02em;
 }
@@ -401,7 +574,7 @@ svg {
 
 .panel {
   background: var(--surface-2);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 12px;
   margin-top: 10px;
   border: 1px solid var(--line);
@@ -429,7 +602,7 @@ svg {
 .chip {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 10px 8px;
   min-height: 40px;
   display: flex;
@@ -502,7 +675,7 @@ select {
   box-sizing: border-box;
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 12px 14px;
   color: var(--chalk);
   font-family: inherit;
@@ -525,7 +698,7 @@ select {
 .field select:focus {
   outline: none;
   border-color: var(--gold);
-  box-shadow: 0 0 12px rgba(0, 210, 255, 0.3);
+  box-shadow: 0 0 0 3px rgb(34 195 238 / 0.18);
 }
 
 .field textarea {
@@ -536,7 +709,7 @@ select {
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 12px;
   margin-bottom: 10px;
 }
@@ -559,7 +732,8 @@ select {
 }
 
 .match-score {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 16px;
 }
@@ -653,12 +827,10 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--surface-2);
   border: 1px solid var(--line);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 12px;
   color: var(--muted);
   cursor: pointer;
   transition: all 0.15s ease;
@@ -773,7 +945,8 @@ select {
 }
 
 .stat-box .num {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
   font-size: 28px;
   font-weight: 700;
 }
@@ -801,7 +974,8 @@ select {
 }
 
 .scorer-row .n {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--gold);
 }
@@ -1132,7 +1306,8 @@ select {
 }
 
 .profile-stat .val {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
   font-size: 18px;
   font-weight: 700;
   color: var(--chalk);

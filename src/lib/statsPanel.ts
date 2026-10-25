@@ -69,7 +69,7 @@ export function panelOptions(matches: Match[], season?: string) {
   };
 }
 
-export interface TeamGameRow {
+interface TeamGameRow {
   matchId: string;
   date: string;
   opponent: string;
@@ -112,7 +112,7 @@ const blockOf = (minute: string | number | null | undefined): number | null => {
   return Math.min(GOAL_BLOCKS.length - 1, Math.floor((n - 1) / 15));
 };
 
-export interface TeamPanel {
+interface TeamPanel {
   games: TeamGameRow[];
   played: number;
   wins: number;
@@ -180,7 +180,7 @@ export function teamPanel(rawMatches: Match[], roster: Player[]): TeamPanel {
   return p;
 }
 
-export interface PlayerGameRow {
+interface PlayerGameRow {
   matchId: string;
   date: string;
   opponent: string;
@@ -192,7 +192,7 @@ export interface PlayerGameRow {
   assists: number;
 }
 
-export interface PlayerPanel {
+interface PlayerPanel {
   games: PlayerGameRow[];
   calledUp: number;
   played: number;

@@ -22,19 +22,14 @@ export const SubstitutionEventsList: React.FC<SubstitutionEventsListProps> = ({
 
   if (subs.length === 0) {
     return (
-      <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 text-center text-sm text-slate-500">
-        Nenhuma substituição registada neste jogo.
-      </div>
+      <div className="ui-card p-4 text-center text-sm text-slate-500">Nenhuma substituição registada neste jogo.</div>
     );
   }
 
   return (
     <div className="space-y-2">
       {subs.map((s) => (
-        <div
-          key={s.id}
-          className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-blue-500/20 hover:border-blue-500/40 transition-colors"
-        >
+        <div key={s.id} className="ui-card flex items-center justify-between p-3 transition-colors">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 font-bold flex items-center justify-center text-sm">
               🔄

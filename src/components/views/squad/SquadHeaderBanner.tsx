@@ -32,7 +32,7 @@ export const SquadHeaderBanner: React.FC<SquadHeaderBannerProps> = ({
   onShowToast
 }) => {
   return (
-    <div className="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-4 mb-4 backdrop-blur-md shadow-[0_0_20px_rgba(0,210,255,0.1)]">
+    <div className="ui-card p-4 mb-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -51,7 +51,7 @@ export const SquadHeaderBanner: React.FC<SquadHeaderBannerProps> = ({
         {/* Action Buttons: Add Player + PDF/Excel Export + View Mode */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* View Mode Toggle */}
-          <div className="flex items-center bg-slate-950 border border-cyan-500/30 rounded-xl p-0.5 font-mono text-xs">
+          <div className="ui-inset flex items-center p-0.5 font-mono text-xs">
             <button
               onClick={() => setViewMode('lista')}
               className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all ${
@@ -83,7 +83,7 @@ export const SquadHeaderBanner: React.FC<SquadHeaderBannerProps> = ({
               generateSquadPDF(state);
               onShowToast('Plantel exportado em PDF com marca de água BolaComVisao! 📄');
             }}
-            className="px-3 py-2 rounded-xl bg-slate-950 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 font-mono text-xs font-bold hover:bg-slate-900 transition-all flex items-center gap-1.5"
+            className="ui-btn ui-btn-soft px-3 py-2 text-xs flex items-center gap-1.5"
             title="Gerar PDF do Plantel com marca de água BolaComVisao"
           >
             <span>📄 PDF</span>
@@ -101,7 +101,7 @@ export const SquadHeaderBanner: React.FC<SquadHeaderBannerProps> = ({
               await generateSeasonFinalReportPDF(players, state);
               onShowToast(`Relatórios de fim de época gerados (${players.length} atletas) 🏆`);
             }}
-            className="px-3 py-2 rounded-xl bg-slate-950 border border-amber-500/40 hover:border-amber-400 text-amber-300 font-mono text-xs font-bold hover:bg-slate-900 transition-all flex items-center gap-1.5"
+            className="ui-btn ui-btn-soft-warning px-3 py-2 text-xs flex items-center gap-1.5"
             title="Relatório de fim de época de todos os atletas (um PDF, uma página por atleta)"
           >
             <span>🏆 Fim de época</span>
@@ -118,7 +118,7 @@ export const SquadHeaderBanner: React.FC<SquadHeaderBannerProps> = ({
               exportSquadExcel(state);
               onShowToast('Plantel exportado para Excel (.xlsx) com sucesso! 📊');
             }}
-            className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-emerald-400 text-slate-300 hover:text-emerald-300 font-mono text-xs font-bold hover:bg-slate-900 transition-all flex items-center gap-1.5"
+            className="ui-btn ui-btn-secondary px-3 py-2 text-xs flex items-center gap-1.5"
             title="Exportar Plantel para Excel com marca de água BolaComVisao"
           >
             <span>📊 Exportar</span>
@@ -133,7 +133,7 @@ export const SquadHeaderBanner: React.FC<SquadHeaderBannerProps> = ({
                   onShowToast('Plantel limpo com sucesso.');
                 });
               }}
-              className="px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 font-mono text-xs transition-colors"
+              className="ui-btn ui-btn-secondary px-2.5 py-2 text-xs"
               title="Limpar todos os jogadores do plantel desta equipa"
             >
               <span>🗑️ Limpar</span>
@@ -143,7 +143,7 @@ export const SquadHeaderBanner: React.FC<SquadHeaderBannerProps> = ({
           {/* Import Excel Button */}
           <button
             onClick={onOpenImportExcel}
-            className="px-3.5 py-2 rounded-xl bg-emerald-950/90 border-2 border-emerald-400 hover:border-emerald-300 text-emerald-300 hover:text-white hover:bg-emerald-900 font-mono text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.35)] active:scale-95"
+            className="ui-btn ui-btn-soft-success px-3.5 py-2 text-xs flex items-center gap-1.5"
             title="Importar atletas de um ficheiro Excel (.xlsx, .xls, .csv)"
           >
             <span>📥</span>
@@ -153,7 +153,7 @@ export const SquadHeaderBanner: React.FC<SquadHeaderBannerProps> = ({
           {/* Add Player Button */}
           <button
             onClick={onOpenCreateModal}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 shrink-0"
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 shrink-0"
           >
             <span>➕ Novo</span>
           </button>

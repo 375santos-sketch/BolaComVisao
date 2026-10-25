@@ -13,7 +13,7 @@ export interface CoachViewPlayerStat {
   rank: number;
 }
 
-export interface CoachViewPlayerFullStat {
+interface CoachViewPlayerFullStat {
   playerId: string;
   playerName: string;
   playerNumber: number | null;
@@ -38,9 +38,9 @@ export interface CoachViewFilter {
   matchId?: string;
 }
 
-export type DeltaStatus = 'positive' | 'negative' | 'neutral' | 'insufficient';
+type DeltaStatus = 'positive' | 'negative' | 'neutral' | 'insufficient';
 
-export interface CoachViewIndicator {
+interface CoachViewIndicator {
   id: string;
   label: string;
   value: string;
@@ -53,7 +53,7 @@ export interface CoachViewIndicator {
   targetAnalysisTab?: string;
 }
 
-export interface CoachViewRecentMatch {
+interface CoachViewRecentMatch {
   matchId: string;
   opponent: string;
   date: string;
@@ -65,7 +65,7 @@ export interface CoachViewRecentMatch {
   badgeVariant: 'emerald' | 'rose' | 'amber';
 }
 
-export interface CoachViewTrendMatch {
+interface CoachViewTrendMatch {
   matchId: string;
   opponent: string;
   date: string;
@@ -74,7 +74,7 @@ export interface CoachViewTrendMatch {
   result: 'V' | 'E' | 'D';
 }
 
-export interface CoachViewTrend {
+interface CoachViewTrend {
   matches: CoachViewTrendMatch[];
   scoredBars: number[];
   concededBars: number[];
@@ -83,7 +83,7 @@ export interface CoachViewTrend {
   statusDescription: string;
 }
 
-export interface CoachViewStrength {
+interface CoachViewStrength {
   id: string;
   title: string;
   text: string;
@@ -91,7 +91,7 @@ export interface CoachViewStrength {
   targetTab?: string;
 }
 
-export interface CoachViewAttentionPoint {
+interface CoachViewAttentionPoint {
   id: string;
   title: string;
   text: string;
@@ -99,7 +99,7 @@ export interface CoachViewAttentionPoint {
   targetTab?: string;
 }
 
-export interface CoachViewFirstGoalStats {
+interface CoachViewFirstGoalStats {
   scoredFirstRate: number;
   scoredFirstCount: number;
   totalFinishedMatches: number;
@@ -110,7 +110,7 @@ export interface CoachViewFirstGoalStats {
   hasSufficientData: boolean;
 }
 
-export interface CoachViewSetPieceStats {
+interface CoachViewSetPieceStats {
   scoredCount: number;
   scoredRate: number;
   concededCount: number;
@@ -120,13 +120,13 @@ export interface CoachViewSetPieceStats {
   hasSufficientData: boolean;
 }
 
-export interface CoachViewTimingStats {
+interface CoachViewTimingStats {
   mostScoredPeriod: { label: string; count: number; percentage: number } | null;
   mostConcededPeriod: { label: string; count: number; percentage: number } | null;
   hasSufficientData: boolean;
 }
 
-export interface CoachViewData {
+interface CoachViewData {
   totalMatches: number;
   finishedMatchesCount: number;
   wins: number;

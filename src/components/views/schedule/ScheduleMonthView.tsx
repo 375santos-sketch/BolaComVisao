@@ -48,13 +48,13 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Month Header Navigator */}
-      <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2.5 shadow-md">
+      <div className="ui-card p-3 sm:p-3.5 flex flex-col sm:flex-row items-center justify-between gap-2.5">
         <div className="flex items-center justify-between w-full sm:w-auto gap-2">
           <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={handlePrevMonth}
-              className="p-2 px-3 min-h-[38px] rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-300 text-sm active:scale-95 touch-manipulation"
+              className="ui-btn ui-btn-secondary p-2 px-3 min-h-[38px] text-sm touch-manipulation"
               title="Mês Anterior"
             >
               ◀
@@ -63,7 +63,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={handleGoToday}
-              className="px-3 py-1.5 min-h-[38px] rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-cyan-300 text-xs font-['Chakra_Petch'] font-bold uppercase active:scale-95 touch-manipulation"
+              className="ui-btn ui-btn-secondary px-3 py-1.5 min-h-[38px] text-xs touch-manipulation"
             >
               Hoje
             </button>
@@ -71,7 +71,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={handleNextMonth}
-              className="p-2 px-3 min-h-[38px] rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-300 text-sm active:scale-95 touch-manipulation"
+              className="ui-btn ui-btn-secondary p-2 px-3 min-h-[38px] text-sm touch-manipulation"
               title="Próximo Mês"
             >
               ▶
@@ -97,7 +97,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
           <select
             value={activeMonth}
             onChange={(e) => setActiveMonth(parseInt(e.target.value, 10))}
-            className="p-1.5 px-2.5 min-h-[36px] rounded-xl bg-slate-950 border border-slate-800 text-cyan-300 text-xs font-mono"
+            className="ui-input min-h-[36px] text-xs"
           >
             {MONTH_NAMES_PT.map((mName, idx) => (
               <option key={idx} value={idx}>
@@ -110,7 +110,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenScheduleMatch(selectedDate)}
-              className="p-1.5 px-2.5 min-h-[36px] rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-1 transition-all active:scale-95 touch-manipulation"
+              className="ui-btn ui-btn-soft p-1.5 px-2.5 min-h-[36px] text-xs flex items-center gap-1 touch-manipulation"
               title="Agendar Jogo"
             >
               <span>⚽</span>
@@ -120,7 +120,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenScheduleTraining(selectedDate)}
-              className="p-1.5 px-2.5 min-h-[36px] rounded-xl bg-amber-950/80 hover:bg-amber-900 border border-amber-500/40 text-amber-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-1 transition-all active:scale-95 touch-manipulation"
+              className="ui-btn ui-btn-soft-warning p-1.5 px-2.5 min-h-[36px] text-xs flex items-center gap-1 touch-manipulation"
               title="Agendar Treino"
             >
               <span>⚡</span>
@@ -130,7 +130,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenClubEventModal(selectedDate)}
-              className="p-1.5 px-2 min-h-[36px] rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-500/40 text-purple-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-1 transition-all active:scale-95 touch-manipulation"
+              className="ui-btn ui-btn-soft p-1.5 px-2 min-h-[36px] text-xs flex items-center gap-1 touch-manipulation"
               title="Reunião / Formação"
             >
               <span>👥</span>
@@ -139,7 +139,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenScheduleStaff(selectedDate)}
-              className="p-1.5 px-2 min-h-[36px] rounded-xl bg-orange-950/80 hover:bg-orange-900 border border-orange-500/40 text-orange-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-1 transition-all active:scale-95 touch-manipulation"
+              className="ui-btn ui-btn-soft-warning p-1.5 px-2 min-h-[36px] text-xs flex items-center gap-1 touch-manipulation"
               title="Indisponível (Equipa Técnica)"
             >
               <span>🚫</span>
@@ -149,7 +149,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
       </div>
 
       {/* Monthly Matrix Grid */}
-      <div className="p-3 sm:p-4 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl overflow-hidden">
+      <div className="ui-card p-3 sm:p-4 overflow-hidden">
         {/* Weekday Headers */}
         <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center pb-2 mb-2 border-b border-slate-800 text-xs font-['Chakra_Petch'] font-bold uppercase text-slate-400">
           {WEEKDAY_SHORT_PT.map((wd, i) => (
@@ -165,12 +165,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <div key={wIdx} className="grid grid-cols-7 gap-1 sm:gap-2">
               {week.map((dayNum, dIdx) => {
                 if (dayNum === null) {
-                  return (
-                    <div
-                      key={`empty-${dIdx}`}
-                      className="min-h-[64px] sm:min-h-[85px] rounded-xl bg-slate-950/30 border border-slate-900/40 opacity-40"
-                    />
-                  );
+                  return <div key={`empty-${dIdx}`} className="ui-inset min-h-[64px] sm:min-h-[85px] opacity-40" />;
                 }
 
                 const dateStr = `${activeYear}-${String(activeMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(
@@ -217,26 +212,23 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
                       {/* Event Indicators / Dot badges */}
                       <div className="flex items-center gap-0.5">
                         {matchEvents.length > 0 && (
-                          <span
-                            className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(0,210,255,0.8)]"
-                            title={`${matchEvents.length} Jogos`}
-                          />
+                          <span className="w-2 h-2 rounded-full bg-cyan-400" title={`${matchEvents.length} Jogos`} />
                         )}
                         {trainingEvents.length > 0 && (
                           <span
-                            className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.8)]"
+                            className="w-2 h-2 rounded-full bg-amber-400"
                             title={`${trainingEvents.length} Treinos`}
                           />
                         )}
                         {clubEvents.length > 0 && (
                           <span
-                            className="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_6px_rgba(192,132,252,0.8)]"
+                            className="w-2 h-2 rounded-full bg-purple-400"
                             title={`${clubEvents.length} Reuniões/Formações`}
                           />
                         )}
                         {staffEvents.length > 0 && (
                           <span
-                            className="w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_6px_rgba(249,115,22,0.8)]"
+                            className="w-2 h-2 rounded-full bg-orange-400"
                             title={`${staffEvents.length} Indisponibilidades`}
                           />
                         )}
@@ -296,7 +288,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
       </div>
 
       {/* Selected Date Details Drawer below Month */}
-      <div className="p-4 rounded-3xl bg-slate-900/90 border border-cyan-500/40 shadow-xl">
+      <div className="ui-card p-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 mb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-base">📅</span>
@@ -319,7 +311,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenScheduleMatch(selectedDate)}
-              className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1"
+              className="ui-btn ui-btn-primary px-3 py-1.5 text-xs flex items-center gap-1"
             >
               <span>⚽</span>
               <span>＋ Jogo</span>
@@ -327,7 +319,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenScheduleTraining(selectedDate)}
-              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1"
+              className="ui-btn ui-btn-warning px-3 py-1.5 text-xs flex items-center gap-1"
             >
               <span>⚡</span>
               <span>＋ Treino</span>
@@ -354,7 +346,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
         {selectedDateEvents.length > 0 ? (
           <div className="space-y-3">{selectedDateEvents.map((ev) => renderEventCard(ev))}</div>
         ) : (
-          <div className="p-6 rounded-2xl bg-slate-950/60 border border-slate-800 text-center font-mono text-xs text-slate-400">
+          <div className="ui-inset p-6 text-center font-mono text-xs text-slate-400">
             Dia livre na agenda. Clica em <strong>"+ Jogo"</strong>, <strong>"+ Treino"</strong>,{' '}
             <strong>"+ Reunião / Formação"</strong> ou <strong>"+ Indisponível"</strong> para agendar eventos para esta
             data.

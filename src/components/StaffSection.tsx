@@ -110,7 +110,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
   return (
     <div className="staff-section space-y-4 animate-fade-in text-left">
       {/* Top Banner with Actions */}
-      <div className="bg-slate-900/90 border border-cyan-500/30 rounded-2xl p-4 backdrop-blur-md shadow-[0_0_20px_rgba(0,210,255,0.1)]">
+      <div className="ui-card p-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -130,7 +130,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={handleOpenAddModal}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5"
             >
               <span>+ Adicionar Elemento</span>
             </button>
@@ -183,7 +183,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
             return (
               <div
                 key={staff.id}
-                className="bg-slate-900/80 border border-cyan-500/30 hover:border-cyan-400/60 rounded-2xl p-4 transition-all duration-200 hover:shadow-[0_0_20px_rgba(0,210,255,0.15)] flex flex-col justify-between relative group overflow-hidden"
+                className="ui-card p-4 transition-all duration-200 flex flex-col justify-between relative group overflow-hidden"
               >
                 {/* Background ambient gradient glow */}
                 <div className="absolute -top-10 -right-10 w-28 h-28 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/10 transition-colors" />
@@ -223,7 +223,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
 
                   {/* Contacts if available */}
                   {(staff.phone || staff.email) && (
-                    <div className="space-y-1.5 text-[11px] font-mono text-slate-400 bg-slate-950/40 rounded-xl p-2 mb-3 border border-slate-900">
+                    <div className="ui-inset space-y-1.5 text-[11px] font-mono text-slate-400 p-2 mb-3">
                       {staff.phone && (
                         <div className="flex items-center gap-1.5 text-slate-300">
                           <span>📞</span>
@@ -251,7 +251,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleOpenEditModal(staff)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-950 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 font-mono text-xs font-bold hover:bg-slate-900 transition-all flex items-center gap-1"
+                      className="ui-btn ui-btn-soft px-2.5 py-1 text-xs flex items-center gap-1"
                       title="Editar elemento"
                     >
                       <span>✏️</span>
@@ -259,7 +259,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
                     </button>
                     <button
                       onClick={() => handleDeleteStaff(staff.id)}
-                      className="p-1 px-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 font-mono text-xs transition-all"
+                      className="ui-btn ui-btn-secondary p-1 px-2 text-xs"
                       title="Eliminar elemento"
                     >
                       🗑️
@@ -272,7 +272,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
         </div>
       ) : (
         /* Empty State */
-        <div className="bg-slate-900/60 border border-dashed border-cyan-500/30 rounded-2xl p-8 text-center max-w-lg mx-auto">
+        <div className="ui-card p-8 text-center max-w-lg mx-auto">
           <div className="w-16 h-16 rounded-2xl bg-cyan-950/60 border border-cyan-500/30 text-3xl flex items-center justify-center mx-auto mb-3 text-cyan-300">
             👔
           </div>
@@ -285,7 +285,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
           </p>
           <button
             onClick={handleOpenAddModal}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all inline-flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all inline-flex items-center gap-1.5"
           >
             <span>+ Adicionar Elemento Técnico</span>
           </button>

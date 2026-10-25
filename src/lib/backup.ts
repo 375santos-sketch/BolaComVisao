@@ -6,8 +6,8 @@ import { normalizeClubState } from './storage';
  * settings, and nothing device- or account-specific: no signed-in user, coaches' contacts, invitations or audit log.
  */
 
-export const BACKUP_FORMAT = 'bolacomvisao-backup';
-export const BACKUP_VERSION = 2;
+const BACKUP_FORMAT = 'bolacomvisao-backup';
+const BACKUP_VERSION = 2;
 export const BACKUP_INTERVAL_DAYS = 7;
 const LAST_BACKUP_KEY = 'bcv-last-backup-at';
 
@@ -44,7 +44,7 @@ const ACTIVE_TEAM_COPIES = [
   'season'
 ] as const;
 
-export interface ClubBackup {
+interface ClubBackup {
   format: typeof BACKUP_FORMAT;
   version: number;
   createdAt: string;
@@ -62,7 +62,7 @@ export function buildBackup(state: AppState, now = new Date()): ClubBackup {
   };
 }
 
-export type ParsedBackup = { kind: 'full'; backup: ClubBackup } | { kind: 'legacy'; data: Partial<AppState> };
+type ParsedBackup = { kind: 'full'; backup: ClubBackup } | { kind: 'legacy'; data: Partial<AppState> };
 
 /** Reads a backup file: the full format, or an older file (the whole app state of one device). */
 export function parseBackup(text: string): ParsedBackup {

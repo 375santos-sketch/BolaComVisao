@@ -1,4 +1,4 @@
-import { AppNotification, AppState, NotificationSettings, WeeklyTrainingSlot, UserAccount } from '../types';
+import { AppNotification, AppState, NotificationSettings, WeeklyTrainingSlot } from '../types';
 import { MASTER_ADMIN_EMAIL } from './constants';
 import {
   ABSENCE_STREAK_ALERT,
@@ -9,7 +9,7 @@ import {
   recentAttendance
 } from './attendanceAlerts';
 
-export const defaultWeeklyTrainings: WeeklyTrainingSlot[] = [
+const defaultWeeklyTrainings: WeeklyTrainingSlot[] = [
   { day: 2, time: '18:15', label: 'Terça-feira' },
   { day: 4, time: '18:15', label: 'Quinta-feira' }
 ];
@@ -52,7 +52,7 @@ export async function requestBrowserNotificationPermission(): Promise<boolean> {
 /**
  * Trigger an actual OS / Browser notification if permitted
  */
-export function sendBrowserNotification(title: string, body: string, icon?: string): void {
+function sendBrowserNotification(title: string, body: string, icon?: string): void {
   try {
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(title, {
@@ -477,36 +477,4 @@ export function openEmailRegistrationRequest(user: any, email?: string, clubName
   const body = buildRegistrationNotificationMessage(user, clubName);
   const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = mailtoUrl;
-}
-
-/**
- * Builds a persistent in-app notification for a pending coach registration
- */
-export function buildPendingRegistrationNotification(user: UserAccount): AppNotification {
-  const userRole = user.role || 'Treinador Principal';
-  const timestamp = user.createdAt
-    ? typeof user.createdAt === 'number'
-      ? user.createdAt
-      : new Date(user.createdAt).getTime() || Date.now()
-    : Date.now();
-
-  return {
-    id: `pending-reg-${user.id}`,
-    type: 'novo_registo',
-    title: `🛡️ Pedido de Acesso: ${user.name}`,
-    message: `${user.name} (@${user.username}) solicitou acesso como ${userRole} e aguarda autorização do Administrador.`,
-    timestamp,
-    read: false,
-    priority: 'alta',
-    category: 'Acessos & Utilizadores',
-    details: `Utilizador: @${user.username} | Função solicitada: ${userRole}`
-  };
-}
-
-/**
- * Resets and clears all system notifications, guaranteeing that alerts only trigger
- * when real data (teams, players, matches, trainings) is actually present and inserted.
- */
-export function resetAppNotifications(): AppNotification[] {
-  return [];
 }

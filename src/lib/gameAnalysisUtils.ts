@@ -26,28 +26,6 @@ export function computeAggregatedAnalysis(
   return computeGameAnalysis(matches, filters, categoryName);
 }
 
-/**
- * Backward-compatible TIME_PERIOD_LABELS map
- */
-export const TIME_PERIOD_LABELS: Record<string, string> = {
-  '0-5': '0–5 min',
-  '6-10': '6–10 min',
-  '11-15': '11–15 min',
-  '16-20': '16–20 min',
-  '21-25': '21–25 min',
-  '26-30': '26–30 min',
-  '31-35': '31–35 min',
-  '36-40': '36–40 min',
-  '41-45': '41–45 min',
-  '46-50': '46–50 min',
-  '51-55': '51–55 min',
-  '56-60': '56–60 min',
-  '60+': '60+ min',
-  '61-75': '61–75 min',
-  '76-90': '76–90 min',
-  '90+': '90+ min'
-};
-
 export { parseMinuteToNumber, formatDisplayMinute as formatMinute };
 
 /**

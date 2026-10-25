@@ -1,7 +1,7 @@
 import { AuditLogEntry, AuditActionType, AuditEntityType, UserAccount } from '../types';
 import { uid } from './utils';
 import { db, auth } from '../services/firebase';
-import { doc, setDoc, collection, onSnapshot, query, orderBy, limit, Unsubscribe } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 
 const AUDIT_STORAGE_KEY = 'bolacomvisao_audit_logs_v1';
 const MAX_AUDIT_ENTRIES = 500;
@@ -96,7 +96,7 @@ export function recordAuditLog(
 /**
  * Retrieves stored audit logs from local storage
  */
-export function getStoredAuditLogs(): AuditLogEntry[] {
+function getStoredAuditLogs(): AuditLogEntry[] {
   try {
     const raw = localStorage.getItem(AUDIT_STORAGE_KEY);
     if (raw) {
@@ -106,55 +106,6 @@ export function getStoredAuditLogs(): AuditLogEntry[] {
     console.warn('Erro ao carregar logs de auditoria:', e);
   }
   return [];
-}
-
-/**
- * Subscribes to real-time immutable audit logs from Firestore
- */
-export function subscribeToCloudAuditLogs(
-  onUpdate: (logs: AuditLogEntry[]) => void,
-  onError?: (err: Error) => void
-): Unsubscribe {
-  try {
-    const auditCol = collection(db, 'audit_logs');
-    const q = query(auditCol, orderBy('timestamp', 'desc'), limit(150));
-    return onSnapshot(
-      q,
-      (snapshot) => {
-        const cloudLogs: AuditLogEntry[] = [];
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          if (data && data.timestamp) {
-            cloudLogs.push({ ...data, id: docSnap.id } as AuditLogEntry);
-          }
-        });
-        if (cloudLogs.length > 0) {
-          // Update local cache
-          try {
-            const local = getStoredAuditLogs();
-            const map = new Map<string, AuditLogEntry>();
-            [...cloudLogs, ...local].forEach((l) => map.set(l.id, l));
-            const merged = Array.from(map.values())
-              .sort((a, b) => b.timestamp - a.timestamp)
-              .slice(0, MAX_AUDIT_ENTRIES);
-            localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(merged));
-          } catch (storageErr) {
-            console.warn('Aviso ao persistir cache de auditoria:', storageErr);
-          }
-          if (typeof onUpdate === 'function') {
-            onUpdate(cloudLogs);
-          }
-        }
-      },
-      (error) => {
-        console.warn('Subscrição de auditoria cloud (fallback local ativo):', error);
-        if (typeof onError === 'function') onError(error);
-      }
-    );
-  } catch (err) {
-    console.warn('Erro ao iniciar subscrição de auditoria:', err);
-    return () => {};
-  }
 }
 
 /**

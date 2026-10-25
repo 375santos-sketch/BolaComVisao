@@ -98,7 +98,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
   return (
     <div className="space-y-4 animate-fadeIn">
       {/* 1. Placar Rápido Minimalista */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl flex items-center justify-between">
+      <div className="ui-card p-4 sm:p-5 flex items-center justify-between">
         <div className="flex-1 text-center">
           <span className="text-[11px] text-slate-400 font-mono uppercase block truncate max-w-[130px] sm:max-w-none mx-auto">
             {myClubName}
@@ -120,7 +120,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={onQuickGoalScored}
-          className="p-4 rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 active:scale-95 transition-all"
+          className="p-4 rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
         >
           <span className="text-2xl">⚽</span>
           <span>+1 Golo Marcado</span>
@@ -128,7 +128,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
 
         <button
           onClick={onQuickGoalConceded}
-          className="p-4 rounded-3xl bg-gradient-to-br from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-rose-950/40 active:scale-95 transition-all"
+          className="p-4 rounded-3xl bg-gradient-to-br from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
         >
           <span className="text-2xl">🔴</span>
           <span>+1 Golo Sofrido</span>
@@ -137,10 +137,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
 
       {/* 2.1 Golo com um toque: tocar em quem marcou */}
       {onQuickGoalBy && playing && onPitch.length > 0 && (
-        <section
-          aria-label="Golo com um toque"
-          className="p-3 rounded-3xl bg-slate-900 border border-emerald-500/30 space-y-2"
-        >
+        <section aria-label="Golo com um toque" className="ui-card p-3 space-y-2">
           <div className="text-[11px] font-bold text-emerald-300 uppercase tracking-wider font-['Chakra_Petch']">
             ⚽ Golo com um toque · toque em quem marcou
           </div>
@@ -153,7 +150,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                   const goal = onQuickGoalBy(p.id);
                   if (goal) setLastQuick(goal);
                 }}
-                className="px-2 py-2.5 rounded-2xl bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-100 text-xs font-bold truncate active:scale-95 transition-all"
+                className="ui-btn ui-btn-soft-success px-2 py-2.5 text-xs truncate"
               >
                 {playerLabel(p)}
               </button>
@@ -173,7 +170,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                   <button
                     type="button"
                     onClick={() => onEditGoal(lastStillThere)}
-                    className="px-2 py-1 rounded-lg border border-emerald-400/50 font-bold"
+                    className="ui-btn ui-btn-soft-success px-2 py-1"
                   >
                     Assistência/origem
                   </button>
@@ -185,7 +182,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                       onUndoGoal(lastStillThere.id);
                       setLastQuick(null);
                     }}
-                    className="px-2 py-1 rounded-lg bg-rose-500/20 border border-rose-400/50 text-rose-100 font-bold"
+                    className="ui-btn ui-btn-soft-danger px-2 py-1"
                   >
                     Desfazer
                   </button>
@@ -200,7 +197,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={onQuickSub}
-          className="p-3.5 rounded-2xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 text-xs font-['Chakra_Petch'] font-bold flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+          className="ui-btn ui-btn-soft p-3.5 text-xs flex flex-col items-center justify-center gap-1"
         >
           <span className="text-xl">🔄</span>
           <span>Substituição</span>
@@ -208,7 +205,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
 
         <button
           onClick={onQuickCard}
-          className="p-3.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-['Chakra_Petch'] font-bold flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-sm"
+          className="ui-btn ui-btn-soft-warning p-3.5 text-xs flex flex-col items-center justify-center gap-1"
         >
           <span className="text-xl">🟨</span>
           <span>Cartão</span>
@@ -216,7 +213,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
       </div>
 
       {/* 4. CONTADORES DE REMATES: A FAVOR E CONTRA (DENTRO E FORA DA ÁREA) */}
-      <div className="p-4 rounded-3xl bg-slate-900 border border-cyan-500/30 space-y-3.5 shadow-xl">
+      <div className="ui-card p-4 space-y-3.5">
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <div className="flex items-center gap-2">
             <span className="text-base">🎯</span>
@@ -237,7 +234,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {/* Remates a Favor - Dentro da Área */}
-            <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-emerald-500/30 flex items-center justify-between">
+            <div className="ui-inset p-2.5 flex items-center justify-between">
               <div className="min-w-0 pr-1">
                 <span className="text-[10px] text-emerald-300 uppercase font-mono block truncate font-bold">
                   🎯 Dentro da Área
@@ -249,7 +246,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                   <button
                     onClick={onRemoveShotInBoxFor}
                     title="Decrementar Remate a Favor (Dentro da Área)"
-                    className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-black text-sm border border-slate-700 flex items-center justify-center transition-all active:scale-90"
+                    className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
                   >
                     -
                   </button>
@@ -257,7 +254,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                 <button
                   onClick={onAddShotInBoxFor}
                   title="Adicionar Remate a Favor (Dentro da Área)"
-                  className="w-9 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-base border border-emerald-500/40 flex items-center justify-center transition-all active:scale-90 shadow-md shadow-emerald-950"
+                  className="ui-btn ui-btn-success w-9 h-9 text-base flex items-center justify-center"
                 >
                   +1
                 </button>
@@ -265,7 +262,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
             </div>
 
             {/* Remates a Favor - Fora da Área */}
-            <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-teal-500/30 flex items-center justify-between">
+            <div className="ui-inset p-2.5 flex items-center justify-between">
               <div className="min-w-0 pr-1">
                 <span className="text-[10px] text-teal-300 uppercase font-mono block truncate font-bold">
                   🎯 Fora da Área
@@ -277,7 +274,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                   <button
                     onClick={onRemoveShotOutBoxFor}
                     title="Decrementar Remate a Favor (Fora da Área)"
-                    className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-black text-sm border border-slate-700 flex items-center justify-center transition-all active:scale-90"
+                    className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
                   >
                     -
                   </button>
@@ -285,7 +282,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                 <button
                   onClick={onAddShotOutBoxFor}
                   title="Adicionar Remate a Favor (Fora da Área)"
-                  className="w-9 h-9 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-black text-base border border-teal-500/40 flex items-center justify-center transition-all active:scale-90 shadow-md shadow-teal-950"
+                  className="ui-btn ui-btn-success w-9 h-9 text-base flex items-center justify-center"
                 >
                   +1
                 </button>
@@ -301,7 +298,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {/* Remates Contra - Dentro da Área */}
-            <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-rose-500/30 flex items-center justify-between">
+            <div className="ui-inset p-2.5 flex items-center justify-between">
               <div className="min-w-0 pr-1">
                 <span className="text-[10px] text-rose-300 uppercase font-mono block truncate font-bold">
                   🛡️ Dentro da Área
@@ -313,7 +310,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                   <button
                     onClick={onRemoveShotInBoxAgainst}
                     title="Decrementar Remate Contra (Dentro da Área)"
-                    className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-black text-sm border border-slate-700 flex items-center justify-center transition-all active:scale-90"
+                    className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
                   >
                     -
                   </button>
@@ -321,7 +318,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                 <button
                   onClick={onAddShotInBoxAgainst}
                   title="Adicionar Remate Contra (Dentro da Área)"
-                  className="w-9 h-9 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-base border border-rose-500/40 flex items-center justify-center transition-all active:scale-90 shadow-md shadow-rose-950"
+                  className="ui-btn ui-btn-danger w-9 h-9 text-base flex items-center justify-center"
                 >
                   +1
                 </button>
@@ -329,7 +326,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
             </div>
 
             {/* Remates Contra - Fora da Área */}
-            <div className="p-2.5 rounded-2xl bg-slate-950/80 border border-orange-500/30 flex items-center justify-between">
+            <div className="ui-inset p-2.5 flex items-center justify-between">
               <div className="min-w-0 pr-1">
                 <span className="text-[10px] text-orange-300 uppercase font-mono block truncate font-bold">
                   🛡️ Fora da Área
@@ -341,7 +338,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                   <button
                     onClick={onRemoveShotOutBoxAgainst}
                     title="Decrementar Remate Contra (Fora da Área)"
-                    className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-black text-sm border border-slate-700 flex items-center justify-center transition-all active:scale-90"
+                    className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
                   >
                     -
                   </button>
@@ -349,7 +346,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                 <button
                   onClick={onAddShotOutBoxAgainst}
                   title="Adicionar Remate Contra (Fora da Área)"
-                  className="w-9 h-9 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-black text-base border border-orange-500/40 flex items-center justify-center transition-all active:scale-90 shadow-md shadow-orange-950"
+                  className="ui-btn ui-btn-warning w-9 h-9 text-base flex items-center justify-center"
                 >
                   +1
                 </button>
@@ -362,7 +359,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
       {/* 5. Contadores Rápidos com + e -: Cantos & Faltas */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {/* Cantos Favor */}
-        <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+        <div className="ui-card p-3 flex items-center justify-between">
           <div className="min-w-0 pr-1">
             <span className="text-[10px] text-slate-400 uppercase font-mono block truncate">🚩 Cantos (Nós)</span>
             <span className="text-xl font-black font-mono text-cyan-400">{match.cantos || 0}</span>
@@ -372,7 +369,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
               <button
                 onClick={onRemoveCorner}
                 title="Decrementar Canto"
-                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-black text-sm border border-slate-700 flex items-center justify-center transition-all active:scale-90"
+                className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
               >
                 -
               </button>
@@ -380,7 +377,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
             <button
               onClick={onAddCorner}
               title="Adicionar Canto"
-              className="w-9 h-9 rounded-xl bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 font-black text-base border border-cyan-500/40 flex items-center justify-center transition-all active:scale-90"
+              className="ui-btn ui-btn-soft w-9 h-9 text-base flex items-center justify-center"
             >
               +1
             </button>
@@ -388,7 +385,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
         </div>
 
         {/* Cantos Adv */}
-        <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+        <div className="ui-card p-3 flex items-center justify-between">
           <div className="min-w-0 pr-1">
             <span className="text-[10px] text-slate-400 uppercase font-mono block truncate">🚩 Cantos (Adv)</span>
             <span className="text-xl font-black font-mono text-rose-400">{match.cantosAdv || 0}</span>
@@ -398,7 +395,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
               <button
                 onClick={onRemoveOpponentCorner}
                 title="Decrementar Canto Adv"
-                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-black text-sm border border-slate-700 flex items-center justify-center transition-all active:scale-90"
+                className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
               >
                 -
               </button>
@@ -406,7 +403,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
             <button
               onClick={onAddOpponentCorner}
               title="Adicionar Canto Adv"
-              className="w-9 h-9 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-slate-950 font-black text-base border border-rose-500/40 flex items-center justify-center transition-all active:scale-90"
+              className="ui-btn ui-btn-soft-danger w-9 h-9 text-base flex items-center justify-center"
             >
               +1
             </button>
@@ -414,7 +411,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
         </div>
 
         {/* Faltas Favor */}
-        <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+        <div className="ui-card p-3 flex items-center justify-between">
           <div className="min-w-0 pr-1">
             <span className="text-[10px] text-slate-400 uppercase font-mono block truncate">🚨 Faltas (Nós)</span>
             <span className="text-xl font-black font-mono text-amber-400">{match.faltas || 0}</span>
@@ -424,7 +421,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
               <button
                 onClick={onRemoveFoul}
                 title="Decrementar Falta"
-                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-black text-sm border border-slate-700 flex items-center justify-center transition-all active:scale-90"
+                className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
               >
                 -
               </button>
@@ -432,7 +429,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
             <button
               onClick={onAddFoul}
               title="Adicionar Falta"
-              className="w-9 h-9 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 font-black text-base border border-amber-500/40 flex items-center justify-center transition-all active:scale-90"
+              className="ui-btn ui-btn-soft-warning w-9 h-9 text-base flex items-center justify-center"
             >
               +1
             </button>
@@ -440,7 +437,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
         </div>
 
         {/* Faltas Adv */}
-        <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+        <div className="ui-card p-3 flex items-center justify-between">
           <div className="min-w-0 pr-1">
             <span className="text-[10px] text-slate-400 uppercase font-mono block truncate">🚨 Faltas (Adv)</span>
             <span className="text-xl font-black font-mono text-slate-300">{match.faltasAdv || 0}</span>
@@ -450,7 +447,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
               <button
                 onClick={onRemoveOpponentFoul}
                 title="Decrementar Falta Adv"
-                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-black text-sm border border-slate-700 flex items-center justify-center transition-all active:scale-90"
+                className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
               >
                 -
               </button>
@@ -458,7 +455,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
             <button
               onClick={onAddOpponentFoul}
               title="Adicionar Falta Adv"
-              className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-base border border-slate-700 flex items-center justify-center transition-all active:scale-90"
+              className="ui-btn ui-btn-secondary w-9 h-9 text-base flex items-center justify-center"
             >
               +1
             </button>
@@ -468,7 +465,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
 
       {/* 6. Mini Feed dos Últimos Golos do Jogo */}
       {recentGoals.length > 0 && (
-        <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-1.5">
+        <div className="ui-inset p-3 space-y-1.5">
           <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider block">
             Últimos Golos Registados:
           </span>

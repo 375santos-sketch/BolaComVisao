@@ -62,7 +62,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         />
 
         {/* Sub-Navigation: Planeamento & Jogos */}
-        <div className="grid grid-cols-3 gap-1 mb-4 p-1 bg-slate-900/90 border border-cyan-500/20 rounded-2xl shadow-sm text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
+        <div className="ui-card grid grid-cols-3 gap-1 mb-4 p-1 text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
           <button
             type="button"
             onClick={() => onNavigate('calendario')}
@@ -81,10 +81,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             <span>Treinos</span>
           </button>
 
-          <button
-            type="button"
-            className="py-2 px-1 rounded-xl bg-cyan-500 text-slate-950 font-black flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(0,210,255,0.4)]"
-          >
+          <button type="button" className="ui-btn ui-btn-primary py-2 px-1 flex items-center justify-center gap-1.5">
             <span>🏆</span>
             <span>Resultados</span>
           </button>
@@ -148,7 +145,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       />
 
       {/* Sub-Navigation: Planeamento & Jogos */}
-      <div className="grid grid-cols-3 gap-1 mb-4 p-1 bg-slate-900/90 border border-cyan-500/20 rounded-2xl shadow-sm text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
+      <div className="ui-card grid grid-cols-3 gap-1 mb-4 p-1 text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
         <button
           type="button"
           onClick={() => onNavigate('calendario')}
@@ -167,10 +164,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           <span>Treinos</span>
         </button>
 
-        <button
-          type="button"
-          className="py-2 px-1 rounded-xl bg-cyan-500 text-slate-950 font-black flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(0,210,255,0.4)]"
-        >
+        <button type="button" className="ui-btn ui-btn-primary py-2 px-1 flex items-center justify-center gap-1.5">
           <span>🏆</span>
           <span>Resultados</span>
         </button>
@@ -179,7 +173,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       <button
         type="button"
         onClick={() => setShowLeague(true)}
-        className="w-full mb-3 py-2.5 rounded-2xl border border-cyan-500/40 bg-slate-900/80 text-cyan-200 text-xs font-bold flex items-center justify-center gap-2"
+        className="ui-btn ui-btn-soft w-full mb-3 py-2.5 text-xs flex items-center justify-center gap-2"
       >
         📊 Classificação do campeonato
       </button>
@@ -368,7 +362,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                       <div className="space-y-2 my-2.5">
                         {/* Remates Bar */}
                         {(totFor > 0 || totAdv > 0) && (
-                          <div className="p-2 bg-slate-950/80 rounded-xl border border-cyan-500/30 flex items-center justify-between text-xs font-mono">
+                          <div className="ui-inset p-2 flex items-center justify-between text-xs font-mono">
                             <span className="text-[10px] text-cyan-300 font-bold uppercase">🎯 Remates à Baliza</span>
                             <div className="flex items-center gap-3">
                               <span className="text-cyan-400 font-bold">
@@ -382,7 +376,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                           </div>
                         )}
 
-                        <div className="grid grid-cols-4 gap-2 p-2 bg-slate-950/60 rounded-xl border border-slate-800 text-center">
+                        <div className="ui-inset grid grid-cols-4 gap-2 p-2 text-center">
                           <div>
                             <div className="text-[9px] text-slate-400 uppercase font-bold">Cantos</div>
                             <div className="text-xs sm:text-sm font-black font-mono text-cyan-400">
@@ -456,7 +450,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
                     <button
                       type="button"
-                      className="py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-['Chakra_Petch'] font-bold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95"
+                      className="ui-btn ui-btn-soft-success py-2.5 px-3 text-xs flex items-center justify-center gap-2"
                       onClick={async (e) => {
                         e.stopPropagation();
                         try {

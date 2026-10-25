@@ -31,12 +31,8 @@ export const TodayTrainingModal: React.FC<TodayTrainingModalProps> = ({
   const toggle = (id: string) => setAbsences((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 bg-slate-950/80 backdrop-blur-sm">
-      <div
-        role="dialog"
-        aria-label="Treino de hoje"
-        className="bg-slate-900 border border-emerald-500/40 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl"
-      >
+    <div className="ui-overlay fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3">
+      <div role="dialog" aria-label="Treino de hoje" className="ui-card w-full max-w-2xl max-h-[92vh] flex flex-col">
         <div className="p-4 border-b border-slate-800 flex items-start justify-between gap-3">
           <div>
             <h3 className="text-base font-bold text-white font-['Chakra_Petch'] uppercase tracking-wide">
@@ -64,7 +60,7 @@ export const TodayTrainingModal: React.FC<TodayTrainingModalProps> = ({
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-sm text-white normal-case font-normal"
+                className="ui-input mt-1 w-full text-sm normal-case font-normal"
               />
             </label>
             <label className="text-[11px] text-slate-400 uppercase font-bold">
@@ -74,7 +70,7 @@ export const TodayTrainingModal: React.FC<TodayTrainingModalProps> = ({
                 value={location}
                 placeholder="ex.: Sintético"
                 onChange={(e) => setLocation(e.target.value)}
-                className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-sm text-white normal-case font-normal"
+                className="ui-input mt-1 w-full text-sm normal-case font-normal"
               />
             </label>
           </div>
@@ -103,7 +99,7 @@ export const TodayTrainingModal: React.FC<TodayTrainingModalProps> = ({
                 completed: true
               })
             }
-            className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm"
+            className="ui-btn ui-btn-success px-5 py-2.5 text-sm"
           >
             {isNew ? 'Guardar treino' : 'Guardar presenças'}
           </button>

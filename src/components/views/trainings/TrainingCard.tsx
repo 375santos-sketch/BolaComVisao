@@ -61,7 +61,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
           </span>
 
           {/* Interactive Status Switch directly on the Card */}
-          <div className="inline-flex rounded-xl p-0.5 bg-slate-950 border border-slate-800 shadow-inner">
+          <div className="ui-inset inline-flex p-0.5">
             <button
               type="button"
               onClick={() => onSetStatus(tr.id, false)}
@@ -130,7 +130,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
               generateTrainingSessionPDF(tr, state);
               onShowToast('A gerar PDF do Plano de Treino... 📄');
             }}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1 shadow-sm"
+            className="ui-btn ui-btn-soft px-2.5 py-1.5 text-xs flex items-center gap-1"
             title="Exportar PDF do Plano de Treino"
           >
             <span>📄</span>
@@ -140,7 +140,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
           <button
             type="button"
             onClick={() => onRepeatTraining(tr.id)}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1 shadow-sm"
+            className="ui-btn ui-btn-soft-success px-2.5 py-1.5 text-xs flex items-center gap-1"
             title="Repetir este treino na semana seguinte"
           >
             <span>🔁</span>
@@ -150,7 +150,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
           <button
             type="button"
             onClick={() => onOpenEditForm(tr)}
-            className="px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/50 hover:bg-cyan-500/30 text-cyan-200 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1.5 shadow-sm"
+            className="ui-btn ui-btn-soft px-3 py-1.5 text-xs flex items-center gap-1.5"
             title="Editar Treino (Data, Hora, Local, Notas, Faltas)"
           >
             <span>✏️</span>
@@ -160,7 +160,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
           <button
             type="button"
             onClick={() => onDeleteTraining(tr.id)}
-            className="p-1.5 px-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 transition-colors text-xs"
+            className="ui-btn ui-btn-secondary p-1.5 px-2 text-xs"
             title="Eliminar Treino"
           >
             🗑️
@@ -191,7 +191,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
       {isExpanded && (
         <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-3 text-xs">
           {/* Interactive Attendance Quick Selector */}
-          <div className="p-3 rounded-2xl bg-slate-950/90 border border-cyan-500/30">
+          <div className="ui-inset p-3">
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
               <span className="text-cyan-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs flex items-center gap-1.5">
                 <span>👥</span>
@@ -214,7 +214,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
           {/* Session Plan Blocks Drawer Section */}
           {tr.sessionPlan &&
             (tr.sessionPlan.objective || (tr.sessionPlan.blocks && tr.sessionPlan.blocks.length > 0)) && (
-              <div className="p-3 rounded-xl bg-slate-950/90 border border-cyan-500/30 space-y-2 font-mono">
+              <div className="ui-inset p-3 space-y-2 font-mono">
                 <div className="flex items-center justify-between pb-1 border-b border-slate-800">
                   <span className="text-cyan-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs flex items-center gap-1.5">
                     <span>📋</span>
@@ -238,7 +238,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
                     {tr.sessionPlan.blocks.map((block, bIdx) => (
                       <div
                         key={block.id || bIdx}
-                        className="p-2 rounded-lg bg-slate-900 border border-slate-800 flex items-start justify-between gap-2 text-xs"
+                        className="ui-card p-2 flex items-start justify-between gap-2 text-xs"
                       >
                         <div className="space-y-0.5 min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
@@ -267,7 +267,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
             )}
 
           {tr.notes ? (
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 leading-relaxed font-mono">
+            <div className="ui-inset p-3 text-slate-300 leading-relaxed font-mono">
               <span className="text-cyan-400 font-bold block mb-1">📝 Observações Gerais:</span>
               {tr.notes}
             </div>

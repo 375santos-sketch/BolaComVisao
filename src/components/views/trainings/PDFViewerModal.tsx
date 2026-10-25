@@ -200,8 +200,8 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in text-left">
-      <div className="bg-slate-900 border-2 border-cyan-500/40 rounded-3xl w-full max-w-6xl h-[94vh] flex flex-col shadow-[0_0_50px_rgba(0,210,255,0.25)] overflow-hidden">
+    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in text-left">
+      <div className="bg-slate-900 border-2 border-cyan-500/40 rounded-3xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden">
         {/* HEADER BAR */}
         <div className="p-3 sm:p-4 border-b border-cyan-500/20 bg-slate-950 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
@@ -231,7 +231,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
             <button
               type="button"
               onClick={handleOpenInNewTab}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-cyan-300 text-xs font-mono font-bold flex items-center gap-1 transition-colors"
+              className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-xs flex items-center gap-1"
               title="Abrir em Nova Janela / Aba"
             >
               <span>↗️</span>
@@ -242,7 +242,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
               <button
                 type="button"
                 onClick={() => onDownload(docItem)}
-                className="px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/30 text-xs font-mono font-bold flex items-center gap-1.5 transition-colors"
+                className="ui-btn ui-btn-soft px-3 py-1.5 text-xs flex items-center gap-1.5"
                 title="Descarregar Ficheiro PDF Original"
               >
                 <span>📥</span>
@@ -253,7 +253,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-400 hover:text-white transition-colors"
+              className="ui-btn ui-btn-secondary p-1.5"
               title="Fechar Visualizador"
             >
               ✕
@@ -269,7 +269,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
               type="button"
               disabled={currentPage <= 1 || isLoading}
               onClick={handlePrevPage}
-              className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-30"
+              className="ui-btn ui-btn-secondary p-1.5"
               title="Página Anterior"
             >
               ◀
@@ -283,7 +283,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
               type="button"
               disabled={currentPage >= numPages || isLoading}
               onClick={handleNextPage}
-              className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white disabled:opacity-30"
+              className="ui-btn ui-btn-secondary p-1.5"
               title="Página Seguinte"
             >
               ▶
@@ -295,7 +295,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
             <button
               type="button"
               onClick={handleZoomOut}
-              className="p-1.5 px-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white"
+              className="ui-btn ui-btn-secondary p-1.5 px-2"
               title="Diminuir Zoom"
             >
               🔍-
@@ -304,7 +304,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
             <button
               type="button"
               onClick={handleZoomReset}
-              className="px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-cyan-300 font-bold min-w-[50px] text-center"
+              className="ui-btn ui-btn-secondary px-2 py-1 min-w-[50px] text-center"
               title="Repor Zoom (100%)"
             >
               {Math.round(scale * 100)}%
@@ -313,7 +313,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
             <button
               type="button"
               onClick={handleZoomIn}
-              className="p-1.5 px-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white"
+              className="ui-btn ui-btn-secondary p-1.5 px-2"
               title="Aumentar Zoom"
             >
               🔍+
@@ -321,12 +321,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
 
             <span className="text-slate-700">|</span>
 
-            <button
-              type="button"
-              onClick={handleRotate}
-              className="p-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white"
-              title="Rodar 90º"
-            >
+            <button type="button" onClick={handleRotate} className="ui-btn ui-btn-secondary p-1.5" title="Rodar 90º">
               🔄
             </button>
 
@@ -368,18 +363,14 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
               </div>
               <p className="text-xs font-mono text-slate-400">{loadError}</p>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleOpenInNewTab}
-                  className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs font-['Chakra_Petch'] uppercase"
-                >
+                <button type="button" onClick={handleOpenInNewTab} className="ui-btn ui-btn-primary px-4 py-2 text-xs">
                   Abrir noutra janela ↗️
                 </button>
                 {onDownload && (
                   <button
                     type="button"
                     onClick={() => onDownload(docItem)}
-                    className="px-4 py-2 rounded-xl bg-slate-800 text-white font-mono text-xs"
+                    className="ui-btn ui-btn-secondary px-4 py-2 text-xs"
                   >
                     Descarregar Ficheiro 📥
                   </button>
@@ -450,16 +441,12 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
               <button
                 type="button"
                 onClick={() => onEditMetadata(docItem)}
-                className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white"
+                className="ui-btn ui-btn-secondary px-3 py-1.5"
               >
                 ✏️ Editar Dados
               </button>
             )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-bold uppercase font-['Chakra_Petch'] hover:bg-cyan-400 transition-colors"
-            >
+            <button type="button" onClick={onClose} className="ui-btn ui-btn-primary px-4 py-1.5">
               Concluir / Fechar
             </button>
           </div>

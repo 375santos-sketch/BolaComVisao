@@ -11,8 +11,7 @@ interface SetPieceBookProps {
   onClose: () => void;
 }
 
-const input =
-  'w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-cyan-400 outline-none';
+const input = 'ui-input text-xs';
 
 /** 🎯 Caderno de bolas paradas: the team's rehearsed set pieces with a drawing and who does each job. */
 export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState, onShowToast, onClose }) => {
@@ -69,7 +68,7 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3 bg-slate-950/85 backdrop-blur-sm"
+      className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3"
       onClick={onClose}
     >
       <div
@@ -229,7 +228,7 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                className="ui-btn ui-btn-secondary px-4 py-2 text-xs"
               >
                 Cancelar
               </button>
@@ -237,7 +236,7 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
                 type="button"
                 onClick={saveEditing}
                 disabled={loadingImage}
-                className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase disabled:opacity-50"
+                className="ui-btn ui-btn-primary px-5 py-2 text-xs"
               >
                 Guardar
               </button>
@@ -248,7 +247,7 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
             <button
               type="button"
               onClick={() => setEditing(newSetPiece())}
-              className="w-full py-2.5 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase"
+              className="ui-btn ui-btn-primary w-full py-2.5 text-xs"
             >
               ➕ Nova bola parada
             </button>

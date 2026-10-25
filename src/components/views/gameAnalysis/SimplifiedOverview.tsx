@@ -88,7 +88,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 1. HEADER & INLINE FILTERS: [ Época ▼ ] [ 2026/27 ▼ ] */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl backdrop-blur-md">
+      <div className="ui-card p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                     }
                   }
                 }}
-                className="appearance-none bg-slate-950/90 border border-slate-700/80 hover:border-cyan-400 text-cyan-300 rounded-2xl pl-3 pr-8 py-2 text-xs font-bold font-['Chakra_Petch'] outline-none cursor-pointer transition-colors shadow-inner"
+                className="ui-input appearance-none text-xs"
               >
                 <option value="season">📅 Por Época</option>
                 <option value="last5">⚡ Últimos 5 Jogos</option>
@@ -138,7 +138,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                 <select
                   value={filters?.season || 'todas'}
                   onChange={(e) => onFilterChange && onFilterChange({ season: e.target.value })}
-                  className="appearance-none bg-slate-950/90 border border-cyan-500/40 hover:border-cyan-400 text-white rounded-2xl pl-3 pr-8 py-2 text-xs font-black font-['Chakra_Petch'] outline-none cursor-pointer transition-colors shadow-inner"
+                  className="ui-input appearance-none text-xs"
                 >
                   <option value="todas">Todas as Épocas</option>
                   {availableSeasons.map((s) => (
@@ -169,7 +169,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       {/* ──────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4" id="iphone-primary-metric-cards">
         {/* Card 1: ⚽ Marcados */}
-        <div className="bg-slate-900/95 border border-emerald-500/30 rounded-3xl p-4 sm:p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+        <div className="ui-card p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
           <div>
             <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
@@ -196,7 +196,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         </div>
 
         {/* Card 2: 🔴 Sofridos */}
-        <div className="bg-slate-900/95 border border-rose-500/30 rounded-3xl p-4 sm:p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+        <div className="ui-card p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-20 h-20 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
           <div>
             <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
@@ -223,7 +223,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         </div>
 
         {/* Card 3: 🚩 Cantos */}
-        <div className="bg-slate-900/95 border border-cyan-500/30 rounded-3xl p-4 sm:p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+        <div className="ui-card p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
           <div>
             <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
@@ -250,7 +250,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         </div>
 
         {/* Card 4: 🟨 Cartões */}
-        <div className="bg-slate-900/95 border border-amber-500/30 rounded-3xl p-4 sm:p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+        <div className="ui-card p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
           <div>
             <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
@@ -281,7 +281,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 3. ⚽ COMO MARCAMOS [gráfico] */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl">
+      <section className="ui-card p-5">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3.5">
           <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2 uppercase tracking-wide">
             <span className="text-emerald-400">⚽</span> Como Marcamos
@@ -326,7 +326,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                 <div
                   key={gt.type}
                   onClick={() => onSelectGoalType && onSelectGoalType(gt.type)}
-                  className="bg-slate-950/70 hover:bg-slate-800/80 p-2.5 rounded-2xl border border-slate-800/70 transition-colors cursor-pointer"
+                  className="ui-inset p-2.5 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <div className="flex items-center gap-2">
@@ -359,7 +359,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 4. 🔴 COMO SOFREMOS [gráfico] */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl">
+      <section className="ui-card p-5">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3.5">
           <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2 uppercase tracking-wide">
             <span className="text-rose-400">🔴</span> Como Sofremos
@@ -401,7 +401,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
             topConcededTypes.map((gt) => {
               const isSetPiece = gt.category === 'bola_parada';
               return (
-                <div key={gt.type} className="bg-slate-950/70 p-2.5 rounded-2xl border border-slate-800/70">
+                <div key={gt.type} className="ui-inset p-2.5">
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${isSetPiece ? 'bg-amber-400' : 'bg-rose-400'}`} />
@@ -433,7 +433,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 5. ⏱️ QUANDO MARCAMOS [gráfico] */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl">
+      <section className="ui-card p-5">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
           <div>
             <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2 uppercase tracking-wide">
@@ -465,7 +465,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
 
         {/* 1.ª vs 2.ª Parte Cards */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 text-center">
+          <div className="ui-inset p-3 text-center">
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
               1.ª Parte (0–{configuredHalfDuration}')
             </div>
@@ -486,7 +486,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
             </div>
           </div>
 
-          <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 text-center">
+          <div className="ui-inset p-3 text-center">
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
               2.ª Parte ({configuredHalfDuration + 1}–{configuredHalfDuration * 2}'+)
             </div>
@@ -515,10 +515,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
             const concededWidth = maxPeriodVal > 0 ? (p.conceded / maxPeriodVal) * 100 : 0;
 
             return (
-              <div
-                key={p.key}
-                className="bg-slate-950/50 p-2 rounded-xl border border-slate-800/60 flex items-center gap-2.5 text-xs"
-              >
+              <div key={p.key} className="ui-inset p-2 flex items-center gap-2.5 text-xs">
                 <span className="w-14 shrink-0 font-mono font-bold text-slate-300 text-[11px]" title={p.label}>
                   {shortPeriodLabel(p.label)}
                 </span>
@@ -620,7 +617,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
               <button
                 type="button"
                 onClick={onOpenCoachReport}
-                className="w-full sm:w-auto px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
+                className="ui-btn ui-btn-secondary w-full sm:w-auto px-4 py-3 text-xs flex items-center justify-center gap-2"
               >
                 <span>📄 Relatório PDF</span>
               </button>
@@ -629,7 +626,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
             <button
               type="button"
               onClick={onOpenDetailedAnalysis}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 transition-all transform active:scale-95 whitespace-nowrap cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all transform active:scale-95 whitespace-nowrap cursor-pointer"
             >
               <span>Ver Análise Detalhada</span>
               <span>➔</span>

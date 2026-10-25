@@ -28,9 +28,9 @@ export const AssistantCard: React.FC<{ state: AppState }> = ({ state }) => {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ex: quem jogou menos este mês?"
-          className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-sm focus:border-cyan-400 outline-none"
+          className="ui-input flex-1 min-w-0 text-sm"
         />
-        <button type="submit" className="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black">
+        <button type="submit" className="ui-btn ui-btn-primary px-3 py-2 text-xs">
           Perguntar
         </button>
       </form>
@@ -41,7 +41,7 @@ export const AssistantCard: React.FC<{ state: AppState }> = ({ state }) => {
               key={e}
               type="button"
               onClick={() => ask(e)}
-              className="px-2.5 py-1 rounded-full border border-slate-700 text-[11px] text-slate-300"
+              className="ui-btn ui-btn-secondary px-2.5 py-1 text-[11px]"
             >
               {e}
             </button>

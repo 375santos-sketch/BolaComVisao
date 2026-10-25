@@ -3,7 +3,7 @@ import { Exercise, ExerciseCategory } from '../../../types';
 import { compressImageFile } from '../../../lib/imageCompress';
 import { uid } from '../../../lib/utils';
 
-export const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
+const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
   { id: 'aquecimento', label: '🔥 Aquecimento' },
   { id: 'tecnica', label: '⚽ Técnica' },
   { id: 'tatica', label: '⚡ Tática' },
@@ -11,7 +11,7 @@ export const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
   { id: 'jogo', label: '🥅 Jogo' },
   { id: 'bolas_paradas', label: '🎯 Bolas paradas' }
 ];
-export const categoryLabel = (c?: ExerciseCategory) => EXERCISE_CATEGORIES.find((x) => x.id === c)?.label || '';
+const categoryLabel = (c?: ExerciseCategory) => EXERCISE_CATEGORIES.find((x) => x.id === c)?.label || '';
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];
@@ -19,8 +19,7 @@ interface ExerciseLibraryProps {
   onShowToast: (msg: string) => void;
 }
 
-const input =
-  'w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-cyan-400 outline-none';
+const input = 'ui-input text-xs';
 
 const blank = (): Exercise => ({
   id: uid(),
@@ -172,18 +171,14 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onS
         </div>
 
         <div className="flex justify-between gap-2 pt-1">
-          <button
-            type="button"
-            onClick={() => setEditing(null)}
-            className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
-          >
+          <button type="button" onClick={() => setEditing(null)} className="ui-btn ui-btn-secondary px-4 py-2 text-xs">
             Cancelar
           </button>
           <button
             type="button"
             onClick={save}
             disabled={loadingImage}
-            className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase disabled:opacity-50"
+            className="ui-btn ui-btn-primary px-5 py-2 text-xs"
           >
             Guardar exercício
           </button>
@@ -204,7 +199,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onS
         <button
           type="button"
           onClick={() => setEditing(blank())}
-          className="shrink-0 px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase"
+          className="ui-btn ui-btn-primary shrink-0 px-3 py-2 text-xs"
         >
           ➕ Novo exercício
         </button>
@@ -222,9 +217,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onS
               {e.image ? (
                 <img src={e.image} alt="" className="w-20 h-16 object-contain rounded-lg bg-white shrink-0" />
               ) : (
-                <div className="w-20 h-16 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center text-xl shrink-0">
-                  📋
-                </div>
+                <div className="ui-inset w-20 h-16 flex items-center justify-center text-xl shrink-0">📋</div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold text-white truncate">{e.name}</div>

@@ -96,8 +96,8 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
   const importantPending = checklist.filter((item) => !item.isComplete && item.important).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl space-y-5">
+    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      <div className="ui-card p-6 sm:p-7 max-w-lg w-full space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-3">
@@ -115,7 +115,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-sm font-bold"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
           >
             ✕
           </button>
@@ -227,10 +227,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-          <button
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs font-['Chakra_Petch'] uppercase tracking-wider transition-colors"
-          >
+          <button onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2.5 text-xs">
             Voltar ao Jogo
           </button>
           <button
@@ -238,7 +235,7 @@ export const GameChecklistModal: React.FC<GameChecklistModalProps> = ({
               onConfirmFinish();
               onClose();
             }}
-            className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs font-['Chakra_Petch'] uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-1.5"
+            className="ui-btn ui-btn-primary px-5 py-2.5 text-xs flex items-center gap-1.5"
           >
             <span>{importantPending > 0 ? 'Terminar mesmo assim' : 'Concluir e Ver Resumo'}</span>
             <span>➔</span>

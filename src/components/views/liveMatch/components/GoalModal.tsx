@@ -51,8 +51,8 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
     !editingGoal && !isModified && Boolean(suggestedMinute) && goalMinute.trim() === suggestedMinute?.trim();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      <div className="ui-card max-w-md w-full p-6 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <span className="text-xl">⚽</span>
@@ -73,7 +73,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
           <select
             value={goalScorerId}
             onChange={(e) => setGoalScorerId(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
+            className="ui-input w-full text-sm"
           >
             <option value="autogolo">⚠️ Auto Golo (Adversário)</option>
             <PlayerOptions players={eligiblePlayers} onPitchIds={onPitchIds} />
@@ -89,7 +89,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
             <select
               value={goalAssistId}
               onChange={(e) => setGoalAssistId(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
+              className="ui-input w-full text-sm"
             >
               <option value="none">Sem assistência direta</option>
               <PlayerOptions players={eligiblePlayers.filter((p) => p.id !== goalScorerId)} onPitchIds={onPitchIds} />
@@ -105,7 +105,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
           <select
             value={goalType}
             onChange={(e) => setGoalType(e.target.value as GoalType)}
-            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
+            className="ui-input w-full text-sm"
           >
             {STANDARD_GOAL_TYPES.map((gt) => (
               <option key={gt} value={gt}>
@@ -145,17 +145,10 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
-          >
+          <button onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2 text-sm">
             Cancelar
           </button>
-          <button
-            onClick={onSave}
-            disabled={!goalMinute.trim()}
-            className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold shadow-lg shadow-emerald-600/30 transition-all"
-          >
+          <button onClick={onSave} disabled={!goalMinute.trim()} className="ui-btn ui-btn-success px-5 py-2 text-sm">
             {editingGoal ? 'Guardar Alterações' : 'Confirmar Golo'}
           </button>
         </div>

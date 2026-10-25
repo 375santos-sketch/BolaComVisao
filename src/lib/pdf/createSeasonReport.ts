@@ -14,7 +14,7 @@ export function selectDashboardGames(
 }
 
 /** Which games a statistics report covers, in words (for the PDF heading). */
-export function describePanelFilter(f: PanelFilter, state: Pick<AppState, 'matches'>): string {
+function describePanelFilter(f: PanelFilter, state: Pick<AppState, 'matches'>): string {
   switch (f.scope) {
     case 'jogo': {
       const m = (state.matches || []).find((x) => x.id === f.matchId);

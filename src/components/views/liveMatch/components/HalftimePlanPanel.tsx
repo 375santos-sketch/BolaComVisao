@@ -26,10 +26,7 @@ export const HalftimePlanPanel: React.FC<HalftimePlanPanelProps> = ({
   const below = plan.rows.filter((r) => r.shareIfBenched < plan.target);
 
   return (
-    <section
-      aria-label="Sugestão para a 2.ª parte"
-      className="rounded-2xl bg-slate-900/80 border border-emerald-500/30 p-3 text-xs space-y-2"
-    >
+    <section aria-label="Sugestão para a 2.ª parte" className="ui-card p-3 text-xs space-y-2">
       <div className="font-bold text-emerald-300 font-['Chakra_Petch'] uppercase tracking-wide">
         ⚖️ Minutos na época · sugestão para a 2.ª parte
       </div>
@@ -68,7 +65,7 @@ export const HalftimePlanPanel: React.FC<HalftimePlanPanelProps> = ({
       <button
         type="button"
         onClick={() => onUseSuggestion(plan.suggested)}
-        className="w-full py-2.5 rounded-xl bg-emerald-500/20 border border-emerald-400/60 text-emerald-100 font-bold"
+        className="ui-btn ui-btn-soft-success w-full py-2.5"
       >
         Escolher os titulares da 2.ª parte com esta sugestão
       </button>

@@ -38,12 +38,12 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
   } = report;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-      <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl animate-scaleUp p-5 sm:p-8 space-y-6 text-slate-100">
+    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+      <div className="ui-card w-full max-w-3xl max-h-[92vh] overflow-y-auto animate-scaleUp p-5 sm:p-8 space-y-6 text-slate-100">
         {/* HEADER DO RELATÓRIO */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-2xl shadow-lg">
               🧠
             </div>
             <div>
@@ -66,7 +66,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
               <button
                 type="button"
                 onClick={onPrint}
-                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 border border-slate-700"
+                className="ui-btn ui-btn-secondary px-3 py-1.5 text-xs flex items-center gap-1.5"
               >
                 <span>🖨️</span>
                 <span>Imprimir / PDF</span>
@@ -75,7 +75,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold cursor-pointer transition-colors"
+              className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
             >
               ✕
             </button>
@@ -85,7 +85,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
         {/* 6 INDICADORES CHAVE DO TREINADOR (ESTRUTURA PEDIDA NO ITEM 6) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
           {/* 1. Ataque */}
-          <div className="bg-slate-950/70 border border-emerald-500/30 rounded-2xl p-3.5">
+          <div className="ui-inset p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 mb-1">
               <span>⚽</span> Ataque
             </div>
@@ -94,7 +94,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
           </div>
 
           {/* 2. Defesa */}
-          <div className="bg-slate-950/70 border border-rose-500/30 rounded-2xl p-3.5">
+          <div className="ui-inset p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-rose-400 mb-1">
               <span>🛡️</span> Defesa
             </div>
@@ -103,7 +103,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
           </div>
 
           {/* 3. Bola Parada */}
-          <div className="bg-slate-950/70 border border-amber-500/30 rounded-2xl p-3.5">
+          <div className="ui-inset p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400 mb-1">
               <span>🚩</span> Bola Parada
             </div>
@@ -114,7 +114,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
           </div>
 
           {/* 4. Maior Produção */}
-          <div className="bg-slate-950/70 border border-cyan-500/30 rounded-2xl p-3.5">
+          <div className="ui-inset p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-400 mb-1">
               <span>⏱️</span> Maior Produção
             </div>
@@ -129,7 +129,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
           </div>
 
           {/* 5. Maior Vulnerabilidade */}
-          <div className="bg-slate-950/70 border border-rose-500/30 rounded-2xl p-3.5">
+          <div className="ui-inset p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-rose-400 mb-1">
               <span>⚠️</span> Maior Vulnerabilidade
             </div>
@@ -144,7 +144,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
           </div>
 
           {/* 6. Disciplina */}
-          <div className="bg-slate-950/70 border border-slate-700/50 rounded-2xl p-3.5">
+          <div className="ui-inset p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300 mb-1">
               <span>🟨</span> Disciplina
             </div>
@@ -155,7 +155,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
 
         {/* COMPARAÇÃO TÁTICA RÁPIDA: QUANDO MARCÁMOS 1.º */}
         {firstGoalImpact.scoredFirstMatches > 0 && (
-          <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="ui-inset p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
               <span className="text-xl">🎯</span>
               <div>
@@ -177,7 +177,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
         {/* DESTAQUES INDIVIDUAIS: TOP 3 MARCADORES E TOP 3 ASSISTENTES */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {/* Top 3 Marcadores */}
-          <div className="bg-slate-950/70 border border-emerald-500/30 rounded-2xl p-4">
+          <div className="ui-inset p-4">
             <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <span className="text-base">⚽</span>
@@ -200,7 +200,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                   return (
                     <div
                       key={`modal-empty-scorer-${idx}`}
-                      className="flex items-center justify-between text-xs p-1.5 px-2.5 rounded-xl bg-slate-900/40 border border-slate-800/40 text-slate-500 font-mono"
+                      className="ui-card flex items-center justify-between text-xs p-1.5 px-2.5 text-slate-500 font-mono"
                     >
                       <div className="flex items-center gap-2 truncate">
                         <span className="text-xs shrink-0 opacity-50">{medal}</span>
@@ -213,7 +213,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                 return (
                   <div
                     key={`modal-scorer-${s.playerId || idx}`}
-                    className="flex items-center justify-between text-xs p-1.5 px-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60"
+                    className="ui-card flex items-center justify-between text-xs p-1.5 px-2.5"
                   >
                     <div className="flex items-center gap-2 truncate">
                       <span className="text-xs shrink-0">{medal}</span>
@@ -234,7 +234,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
           </div>
 
           {/* Top 3 Assistentes */}
-          <div className="bg-slate-950/70 border border-cyan-500/30 rounded-2xl p-4">
+          <div className="ui-inset p-4">
             <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <span className="text-base">🎯</span>
@@ -257,7 +257,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                   return (
                     <div
                       key={`modal-empty-assister-${idx}`}
-                      className="flex items-center justify-between text-xs p-1.5 px-2.5 rounded-xl bg-slate-900/40 border border-slate-800/40 text-slate-500 font-mono"
+                      className="ui-card flex items-center justify-between text-xs p-1.5 px-2.5 text-slate-500 font-mono"
                     >
                       <div className="flex items-center gap-2 truncate">
                         <span className="text-xs shrink-0 opacity-50">{medal}</span>
@@ -270,7 +270,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                 return (
                   <div
                     key={`modal-assister-${a.playerId || idx}`}
-                    className="flex items-center justify-between text-xs p-1.5 px-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60"
+                    className="ui-card flex items-center justify-between text-xs p-1.5 px-2.5"
                   >
                     <div className="flex items-center gap-2 truncate">
                       <span className="text-xs shrink-0">{medal}</span>
@@ -304,7 +304,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
             {keyConclusions.map((conclusion, idx) => (
               <div
                 key={idx}
-                className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-3 text-xs sm:text-[13px] text-slate-200 leading-relaxed font-medium flex items-start gap-3"
+                className="ui-card p-3 text-xs sm:text-[13px] text-slate-200 leading-relaxed font-medium flex items-start gap-3"
               >
                 <span className="w-5 h-5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-[10px] font-black font-mono shrink-0 mt-0.5">
                   {idx + 1}
@@ -318,11 +318,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
         {/* FOOTER DO MODAL */}
         <div className="flex items-center justify-between pt-2">
           <span className="text-[11px] text-slate-500 font-mono">BolaComVisão • Inteligência de Treino e Jogo</span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-2.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-cyan-500/20 cursor-pointer"
-          >
+          <button type="button" onClick={onClose} className="ui-btn ui-btn-primary px-6 py-2.5 text-xs">
             Concluir Análise
           </button>
         </div>

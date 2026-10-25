@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
             <img
               src={logoImg}
               alt="BolaComVisão Logo"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-cyan-400/80 shadow-[0_0_12px_rgba(0,210,255,0.3)]"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-cyan-400/80"
               referrerPolicy="no-referrer"
             />
             {hasActiveMatch && (
@@ -180,7 +180,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenNotifications}
-              className="relative p-1.5 w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 flex items-center justify-center transition-all active:scale-95 cursor-pointer touch-manipulation"
+              className="ui-btn ui-btn-secondary relative p-1.5 w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center touch-manipulation"
               title="Notificações & Alertas"
               aria-label="Notificações"
             >
@@ -198,7 +198,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenDatabase}
-              className="hidden sm:flex p-1.5 w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 items-center justify-center transition-all active:scale-95 cursor-pointer"
+              className="ui-btn ui-btn-secondary hidden sm:flex p-1.5 w-8 h-8 items-center justify-center"
               title="Base de Dados & Backup"
               aria-label="Base de Dados"
             >
@@ -210,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="p-1.5 w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 flex items-center justify-center transition-all active:scale-95 cursor-pointer touch-manipulation"
+            className="ui-btn ui-btn-secondary p-1.5 w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center touch-manipulation"
             title="Definições"
             aria-label="Definições"
           >

@@ -290,7 +290,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             <button
               type="button"
               onClick={handleStartEditing}
-              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 shrink-0"
+              className="ui-btn ui-btn-warning px-4 py-2 text-xs flex items-center justify-center gap-1.5 shrink-0"
               title="Reabrir convocatória para editar jogadores ou informações"
             >
               <span>✏️</span>
@@ -316,7 +316,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             <button
               type="button"
               onClick={handleFinalizeCallup}
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 shrink-0"
+              className="ui-btn ui-btn-success px-4 py-2 text-xs flex items-center justify-center gap-1.5 shrink-0"
               title="Concluir e finalizar convocatória"
             >
               <span>✓</span>
@@ -342,7 +342,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             <button
               type="button"
               onClick={handleFinalizeCallup}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 shrink-0"
+              className="ui-btn ui-btn-success px-3.5 py-1.5 text-xs flex items-center justify-center gap-1.5 shrink-0"
               title="Finalizar convocatória"
             >
               <span>✓</span>
@@ -456,7 +456,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
 
           <div className="flex flex-wrap items-center gap-1.5">
             <button
-              className="text-[10px] sm:text-xs font-bold text-cyan-300 bg-cyan-950/80 border border-cyan-500/40 px-3 py-1.5 min-h-[36px] rounded-lg hover:bg-cyan-900/60 hover:text-cyan-200 transition-colors flex items-center gap-1 active:scale-95 touch-manipulation cursor-pointer"
+              className="ui-btn ui-btn-soft text-[10px] sm:text-xs px-3 py-1.5 min-h-[36px] flex items-center gap-1 touch-manipulation"
               onClick={handleSelectByAttendance}
               title="Convocar automaticamente atletas com assiduidade ≥70%"
             >
@@ -464,13 +464,13 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
               <span>Por Assiduidade</span>
             </button>
             <button
-              className="text-[10px] sm:text-xs font-bold text-gold bg-gold-dim border border-gold-dim px-2.5 py-1.5 min-h-[36px] rounded-lg hover:bg-gold hover:text-black transition-colors active:scale-95 touch-manipulation cursor-pointer"
+              className="ui-btn ui-btn-secondary text-[10px] sm:text-xs text-gold border-gold-dim px-2.5 py-1.5 min-h-[36px] touch-manipulation"
               onClick={handleSelectAll}
             >
               Todos
             </button>
             <button
-              className="text-[10px] sm:text-xs font-bold text-muted bg-surface border border-line px-2.5 py-1.5 min-h-[36px] rounded-lg hover:text-chalk transition-colors active:scale-95 touch-manipulation cursor-pointer"
+              className="ui-btn ui-btn-secondary text-[10px] sm:text-xs text-muted border-line px-2.5 py-1.5 min-h-[36px] hover:text-chalk touch-manipulation"
               onClick={handleDeselectAll}
             >
               Limpar
@@ -526,7 +526,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSortByMinutes((v) => !v)}
-                className="text-[11px] font-bold text-cyan-300 bg-slate-950 border border-slate-700 px-2.5 py-1 rounded-lg"
+                className="ui-btn ui-btn-secondary text-[11px] px-2.5 py-1"
               >
                 {sortByMinutes ? '↕ Ordenar por número' : '↕ Quem jogou menos primeiro'}
               </button>
@@ -658,7 +658,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           <button
             type="button"
             onClick={handleStartEditing}
-            className="w-full py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95 cursor-pointer"
+            className="ui-btn ui-btn-warning w-full py-3.5 px-4 text-sm flex items-center justify-center gap-2"
           >
             <span>✏️</span>
             <span>Editar Convocatória (Reabrir)</span>
@@ -667,7 +667,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           <button
             type="button"
             onClick={handleFinalizeCallup}
-            className="w-full py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.35)] active:scale-95 cursor-pointer"
+            className="ui-btn ui-btn-success w-full py-3.5 px-4 text-sm flex items-center justify-center gap-2"
           >
             <span>✓</span>
             <span>Finalizar Convocatória</span>
@@ -684,7 +684,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           </button>
 
           <button
-            className="btn btn-outline w-full text-xs sm:text-sm font-bold py-3 flex items-center justify-center gap-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-950/40"
+            className="ui-btn ui-btn-soft-success btn btn-outline w-full text-xs sm:text-sm py-3 flex items-center justify-center gap-2"
             onClick={handleGenerateExcel}
           >
             <span>📊</span>

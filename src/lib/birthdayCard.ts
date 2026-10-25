@@ -3,7 +3,7 @@
  * coach's) birthday. The photo only goes in with the parents' permission; otherwise the shirt number or initials.
  */
 
-export interface BirthdayCardData {
+interface BirthdayCardData {
   clubName: string;
   category?: string;
   name: string;

@@ -166,17 +166,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const summary = seasonSummary(state);
   const nextDays = unifiedEvents.filter((e) => e.daysUntil <= 7);
 
-  const shortcuts: { icon: string; label: string; tab: TabType; targetId?: string; tone: string }[] = [
+  const shortcuts: { icon: string; label: string; tab: TabType; targetId?: string }[] = [
     {
       icon: '✅',
       label: 'Treino de hoje',
       tab: 'treinos',
-      targetId: 'hoje',
-      tone: 'border-emerald-500/40 text-emerald-300'
+      targetId: 'hoje'
     },
-    { icon: '📋', label: 'Convocatória', tab: 'convocatoria', tone: 'border-purple-500/40 text-purple-300' },
-    { icon: '⏱️', label: 'Modo Jogo', tab: 'jogo', tone: 'border-cyan-500/40 text-cyan-300' },
-    { icon: '👥', label: 'Plantel', tab: 'plantel', tone: 'border-amber-500/40 text-amber-300' }
+    { icon: '📋', label: 'Convocatória', tab: 'convocatoria' },
+    { icon: '⏱️', label: 'Modo Jogo', tab: 'jogo' },
+    { icon: '👥', label: 'Plantel', tab: 'plantel' }
   ];
 
   return (
@@ -241,7 +240,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             key={sc.label}
             type="button"
             onClick={() => onNavigate(sc.tab, sc.targetId)}
-            className={`py-3.5 px-3 rounded-2xl bg-slate-900/90 border ${sc.tone} hover:bg-slate-800 font-['Chakra_Petch'] font-bold text-sm uppercase flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all`}
+            className="ui-btn ui-btn-secondary py-3.5 px-3 rounded-2xl text-sm"
           >
             <span className="text-lg">{sc.icon}</span>
             <span>{sc.label}</span>
@@ -257,7 +256,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               key={n.id}
               type="button"
               onClick={() => onNavigate(n.tab, n.targetId)}
-              className="w-full text-left p-3 rounded-2xl bg-amber-950/40 border border-amber-500/30 hover:border-amber-400/70 text-sm text-amber-100 flex items-center justify-between gap-3 transition-all"
+              className="ui-btn ui-btn-soft-warning w-full text-left p-3 text-sm flex items-center justify-between gap-3"
             >
               <span className="flex items-center gap-2.5 min-w-0">
                 <span className="text-lg shrink-0">{n.icon}</span>
@@ -273,10 +272,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <AssistantCard state={state} />
 
       {/* 4. Season at a glance */}
-      <section
-        aria-label="Resumo da época"
-        className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center justify-between gap-3"
-      >
+      <section aria-label="Resumo da época" className="ui-card p-3.5 flex flex-wrap items-center justify-between gap-3">
         <div className="text-sm text-slate-200 font-mono">
           <span className="text-xs uppercase text-cyan-400 font-bold font-sans mr-2">Época {state.season}</span>
           {summary.played === 0 ? (
@@ -330,7 +326,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   className="py-3 px-2 hover:bg-slate-800/50 rounded-xl transition-colors cursor-pointer flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center shrink-0">
+                    <div className="ui-inset w-12 h-12 flex flex-col items-center justify-center shrink-0">
                       <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
                         {new Date(evt.date).toLocaleDateString('pt-PT', { month: 'short' })}
                       </span>

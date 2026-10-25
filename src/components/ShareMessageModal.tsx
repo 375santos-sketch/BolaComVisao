@@ -37,11 +37,11 @@ export const ShareMessageModal: React.FC<ShareMessageModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-3 bg-slate-950/85 backdrop-blur-sm"
+      className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-3"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-3xl bg-slate-950 border border-cyan-500/40 p-4 space-y-3 text-left"
+        className="ui-inset w-full max-w-md p-4 space-y-3 text-left"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label={title}
@@ -61,7 +61,7 @@ export const ShareMessageModal: React.FC<ShareMessageModalProps> = ({
           value={text}
           onChange={(e) => onTextChange(e.target.value)}
           rows={rows}
-          className="w-full rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs p-3 font-mono"
+          className="ui-input w-full text-xs"
           aria-label="Mensagem"
         />
 
@@ -69,7 +69,7 @@ export const ShareMessageModal: React.FC<ShareMessageModalProps> = ({
           <button
             type="button"
             onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank')}
-            className="py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold"
+            className="ui-btn ui-btn-success py-2 text-xs"
           >
             WhatsApp
           </button>
@@ -77,15 +77,11 @@ export const ShareMessageModal: React.FC<ShareMessageModalProps> = ({
             type="button"
             disabled={!canShare}
             onClick={() => navigator.share?.({ text }).catch(() => {})}
-            className="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-bold disabled:opacity-40"
+            className="ui-btn ui-btn-secondary py-2 text-xs"
           >
             Partilhar
           </button>
-          <button
-            type="button"
-            onClick={copy}
-            className="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-bold"
-          >
+          <button type="button" onClick={copy} className="ui-btn ui-btn-secondary py-2 text-xs">
             Copiar
           </button>
         </div>

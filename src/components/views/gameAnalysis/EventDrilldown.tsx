@@ -70,7 +70,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
   };
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+    <div className="ui-card p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
         <div>
           <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -98,11 +98,11 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
               <div
                 key={ev.id}
                 onClick={() => setSelectedEvent(ev)}
-                className="bg-slate-950/70 border border-slate-800/80 hover:border-cyan-500/50 rounded-2xl p-3.5 flex items-center justify-between transition-all cursor-pointer group"
+                className="ui-inset p-3.5 flex items-center justify-between transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3">
                   {/* Minute Pill */}
-                  <div className="bg-slate-900 border border-slate-700/80 text-cyan-400 font-mono font-black text-xs px-2.5 py-1.5 rounded-xl text-center min-w-[50px]">
+                  <div className="ui-card text-cyan-400 font-mono font-black text-xs px-2.5 py-1.5 text-center min-w-[50px]">
                     {ev.minute ? `${ev.minute}'` : '—'}
                   </div>
 
@@ -157,8 +157,8 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
 
       {/* Drilldown Modal (Item 1 & 12) */}
       {selectedEvent && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-5 w-full max-w-md shadow-2xl animate-scaleUp">
+        <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="ui-card p-5 w-full max-w-md animate-scaleUp">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
               <div className="text-base font-['Chakra_Petch'] font-bold text-white flex items-center gap-2">
                 <span>{getEventBadge(selectedEvent).icon}</span>
@@ -174,7 +174,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
             </div>
 
             <div className="space-y-3.5 text-xs text-slate-300">
-              <div className="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
+              <div className="ui-inset p-3.5">
                 <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Tipo de Lance</span>
                 <div className="text-sm font-bold text-white flex items-center gap-2">
                   <span>{getEventBadge(selectedEvent).label}</span>
@@ -182,14 +182,14 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
+                <div className="ui-inset p-3">
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">⏱️ Minuto</span>
                   <span className="text-sm font-mono font-bold text-cyan-400">
                     {selectedEvent.minute ? `${selectedEvent.minute}'` : 'N/D'} (Abs: {selectedEvent.absoluteMinute}')
                   </span>
                 </div>
 
-                <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
+                <div className="ui-inset p-3">
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Período</span>
                   <span className="text-sm font-bold text-white">
                     {selectedEvent.period || `${selectedEvent.half}.ª Parte`}
@@ -198,7 +198,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
               </div>
 
               {getPlayerName(selectedEvent.playerPrimaryId) && (
-                <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
+                <div className="ui-inset p-3">
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
                     👤 Jogador Principal
                   </span>
@@ -207,7 +207,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
               )}
 
               {getPlayerName(selectedEvent.playerSecondaryId) && (
-                <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
+                <div className="ui-inset p-3">
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
                     👟 Secundário / Assistência / Entrada
                   </span>
@@ -218,13 +218,13 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
               )}
 
               {selectedEvent.notes && (
-                <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
+                <div className="ui-inset p-3">
                   <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">📝 Observações</span>
                   <span className="text-xs text-slate-200">{selectedEvent.notes}</span>
                 </div>
               )}
 
-              <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
+              <div className="ui-inset p-3">
                 <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">🏟️ Contexto do Jogo</span>
                 <div className="text-xs font-bold text-white">
                   vs {selectedEvent.match.opponent} ({selectedEvent.match.location === 'casa' ? 'Casa' : 'Fora'})
@@ -237,7 +237,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
               <button
                 type="button"
                 onClick={() => setSelectedEvent(null)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
+                className="ui-btn ui-btn-secondary flex-1 py-2.5 text-xs"
               >
                 Fechar
               </button>
@@ -249,7 +249,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
                     setSelectedEvent(null);
                     onOpenMatch(mId);
                   }}
-                  className="flex-1 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs shadow-md"
+                  className="ui-btn ui-btn-primary flex-1 py-2.5 text-xs"
                 >
                   Abrir Jogo Completo ➔
                 </button>

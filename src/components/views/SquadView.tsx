@@ -151,7 +151,7 @@ export const SquadView: React.FC<SquadViewProps> = ({
 
           {/* Players Content Area */}
           {squad.sortedRoster.length === 0 ? (
-            <div className="p-8 text-center bg-slate-900/60 border border-slate-800 rounded-2xl my-4">
+            <div className="ui-card p-8 text-center my-4">
               <div className="text-3xl mb-2">⚽</div>
               <p className="text-sm font-['Chakra_Petch'] text-cyan-300 uppercase font-bold">
                 {squad.activeRoster.length === 0
@@ -165,15 +165,12 @@ export const SquadView: React.FC<SquadViewProps> = ({
               </p>
               {squad.activeRoster.length === 0 && (
                 <div className="flex items-center justify-center gap-3 flex-wrap">
-                  <button
-                    onClick={squad.handleOpenCreateModal}
-                    className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase font-['Chakra_Petch'] transition-all shadow-[0_0_15px_rgba(0,210,255,0.3)]"
-                  >
+                  <button onClick={squad.handleOpenCreateModal} className="ui-btn ui-btn-primary px-4 py-2.5 text-xs">
                     ➕ Criar Jogador Manualmente
                   </button>
                   <button
                     onClick={() => squad.setIsImportExcelOpen(true)}
-                    className="px-4 py-2.5 rounded-xl bg-slate-950 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 font-bold text-xs uppercase font-['Chakra_Petch'] transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                    className="ui-btn ui-btn-soft-success px-4 py-2.5 text-xs flex items-center gap-1.5"
                   >
                     <span>📥</span>
                     <span>Importar Plantel de Excel</span>

@@ -76,7 +76,7 @@ export function normalizeHeader(str: string): string {
 /**
  * Auto-detects columns from raw Excel headers for Match data
  */
-export function autoDetectMatchColumnMapping(headers: string[]): MatchColumnMapping {
+function autoDetectMatchColumnMapping(headers: string[]): MatchColumnMapping {
   const mapping: MatchColumnMapping = {
     opponent: '',
     date: '',
@@ -327,7 +327,7 @@ export function autoDetectMatchColumnMapping(headers: string[]): MatchColumnMapp
 /**
  * Parses and formats Date string / Excel serial into YYYY-MM-DD
  */
-export function parseExcelDate(val: any): string | null {
+function parseExcelDate(val: any): string | null {
   if (val === null || val === undefined || val === '') return null;
 
   if (typeof val === 'number') {
@@ -400,7 +400,7 @@ export function parseMatchType(val: any): MatchType {
 /**
  * Parses Match Location
  */
-export function parseMatchLocation(val: any): MatchLocation {
+function parseMatchLocation(val: any): MatchLocation {
   const norm = normalizeHeader(String(val || ''));
   if (norm.includes('fora') || norm.includes('visitante') || norm.includes('away') || norm === 'f') {
     return 'fora';

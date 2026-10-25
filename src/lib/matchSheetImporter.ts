@@ -8,7 +8,7 @@ import { parseMatchType } from './matchExcelImporter';
  * so that a match can be recovered from the Excel file the coach exported.
  */
 
-export const MATCH_SHEET_NAME = 'FICHA DE JOGO';
+const MATCH_SHEET_NAME = 'FICHA DE JOGO';
 
 export interface MatchSheetImportResult {
   match: Match;

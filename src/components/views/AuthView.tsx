@@ -43,7 +43,7 @@ const AuthErrorBanner: React.FC<{
 
   if (isUnauthorizedDomain) {
     return (
-      <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-red-950/80 border-2 border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.25)] text-xs font-mono space-y-2.5 my-2 animate-in fade-in">
+      <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-red-950/80 border-2 border-amber-500/60 text-xs font-mono space-y-2.5 my-2 animate-in fade-in">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 text-amber-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs">
             <span className="text-base">⚠️</span>
@@ -72,7 +72,7 @@ const AuthErrorBanner: React.FC<{
             <button
               type="button"
               onClick={copyDomain}
-              className="py-1.5 px-3 rounded-xl bg-cyan-950 border border-cyan-500/60 hover:bg-cyan-900 text-cyan-300 text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              className="ui-btn ui-btn-soft py-1.5 px-3 text-[11px] flex items-center gap-1.5"
             >
               <span>📋</span>
               <span>
@@ -86,7 +86,7 @@ const AuthErrorBanner: React.FC<{
             <button
               type="button"
               onClick={onGuestLogin}
-              className="py-1.5 px-3 rounded-xl bg-amber-500/20 border border-amber-500/60 hover:bg-amber-500/30 text-amber-200 text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              className="ui-btn ui-btn-soft-warning py-1.5 px-3 text-[11px] flex items-center gap-1.5"
             >
               <span>⚡</span>
               <span>Entrar como Convidado</span>
@@ -94,7 +94,7 @@ const AuthErrorBanner: React.FC<{
           )}
         </div>
 
-        <div className="bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-[10px] text-slate-400 leading-normal">
+        <div className="ui-inset p-2 text-[10px] text-slate-400 leading-normal">
           💡 <span className="text-slate-300">Como resolver no Firebase:</span> Aceda a{' '}
           <strong className="text-slate-200">
             Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains
@@ -464,7 +464,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Main Auth Container */}
-      <div className="w-full max-w-md bg-slate-900/95 border border-cyan-500/30 rounded-3xl p-4 sm:p-7 shadow-[0_0_50px_rgba(0,210,255,0.15)] backdrop-blur-xl relative z-10 text-left my-2">
+      <div className="ui-card w-full max-w-md p-4 sm:p-7 relative z-10 text-left my-2">
         {/* Glow corner decorations */}
         <div className="absolute -top-20 -left-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
@@ -476,7 +476,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             <img
               src={logoImg}
               alt="BolaComVisão Logo"
-              className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-cyan-400 shadow-[0_0_20px_rgba(0,210,255,0.5)]"
+              className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-cyan-400"
               referrerPolicy="no-referrer"
             />
           </div>
@@ -495,7 +495,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
         {/* PENDING APPROVAL SCREEN */}
         {mode === 'pending' && (
           <div className="text-center space-y-4 py-2 animate-in fade-in duration-300">
-            <div className="w-16 h-16 rounded-3xl bg-amber-500/20 border-2 border-amber-500/50 flex items-center justify-center text-3xl mx-auto shadow-[0_0_25px_rgba(245,158,11,0.3)] animate-pulse">
+            <div className="w-16 h-16 rounded-3xl bg-amber-500/20 border-2 border-amber-500/50 flex items-center justify-center text-3xl mx-auto animate-pulse">
               ⏳
             </div>
 
@@ -510,7 +510,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             </div>
 
             {pendingAccount && (
-              <div className="bg-slate-950/80 border border-amber-500/30 rounded-2xl p-3.5 text-left text-xs font-mono space-y-1.5 shadow-inner">
+              <div className="ui-inset p-3.5 text-left text-xs font-mono space-y-1.5">
                 <div className="text-slate-400">
                   Nome: <span className="text-white font-bold">{pendingAccount.name}</span>
                 </div>
@@ -528,7 +528,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
             {/* SEÇÃO 1: NOTIFICAR ADMINISTRADOR (WHATSAPP / EMAIL) */}
             {pendingAccount && (
-              <div className="bg-slate-950/90 border-2 border-emerald-500/40 rounded-2xl p-4 text-left space-y-2.5 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+              <div className="bg-slate-950/90 border-2 border-emerald-500/40 rounded-2xl p-4 text-left space-y-2.5">
                 <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-base">📲</span>
@@ -560,7 +560,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       );
                       onShowToast('A abrir WhatsApp com o pedido de aprovação... 💬');
                     }}
-                    className="py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-98 cursor-pointer"
+                    className="py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
                   >
                     <span>💬</span>
                     <span>Enviar por WhatsApp</span>
@@ -576,7 +576,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       );
                       onShowToast('A abrir cliente de e-mail... 📧');
                     }}
-                    className="py-3 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,210,255,0.3)] active:scale-98 cursor-pointer"
+                    className="py-3 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
                   >
                     <span>📧</span>
                     <span>Enviar por E-mail</span>
@@ -590,7 +590,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                     navigator.clipboard.writeText(msg);
                     onShowToast('Mensagem de pedido copiada para a área de transferência! 📋✓');
                   }}
-                  className="w-full py-2 px-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-400 text-slate-300 hover:text-white font-mono text-[11px] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="ui-btn ui-btn-secondary w-full py-2 px-3 text-[11px] flex items-center justify-center gap-1.5"
                 >
                   <span>📋</span>
                   <span>Copiar Mensagem do Pedido para Colar</span>
@@ -599,7 +599,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             )}
 
             {/* AVISO INFORMATIVO DE SEGURANÇA E ACESSO */}
-            <div className="bg-slate-950/90 border border-cyan-500/30 rounded-2xl p-4 text-left space-y-2 shadow-inner">
+            <div className="ui-inset p-4 text-left space-y-2">
               <div className="flex items-center gap-2 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider">
                 <span>🛡️</span>
                 <span>Processo de Autorização</span>
@@ -615,7 +615,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                 type="button"
                 onClick={handleCheckPendingStatus}
                 disabled={isLoading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.3)] active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -645,7 +645,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
         {mode !== 'pending' && (
           <>
             {/* Auth Switcher Tabs (Directly below Header) */}
-            <div className="flex rounded-2xl bg-slate-950 p-1 border border-cyan-500/30 mb-4 shadow-inner">
+            <div className="ui-inset flex p-1 mb-4">
               <button
                 type="button"
                 className={`flex-1 py-2.5 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all cursor-pointer ${
@@ -684,7 +684,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={isLoading}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold font-sans text-xs shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-all flex items-center justify-center gap-2.5 border border-slate-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                  className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold font-sans text-xs transition-all flex items-center justify-center gap-2.5 border border-slate-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                     <path
@@ -737,7 +737,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                         placeholder="ex: treinador ou treinador@email.com"
                         value={loginUsername}
                         onChange={(e) => setLoginUsername(e.target.value)}
-                        className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                        className="ui-input w-full text-xs"
                       />
                     </div>
                   </div>
@@ -752,7 +752,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                         placeholder="••••••••"
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
-                        className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                        className="ui-input w-full text-xs"
                       />
                     </div>
                   </div>
@@ -760,7 +760,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {isLoading ? (
                       <>
@@ -796,7 +796,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={isLoading}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold font-sans text-xs shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-all flex items-center justify-center gap-2.5 border border-slate-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                  className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold font-sans text-xs transition-all flex items-center justify-center gap-2.5 border border-slate-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 >
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                     <path
@@ -842,7 +842,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                 )}
 
                 <form onSubmit={handleRegister} className="space-y-2.5">
-                  <div className="p-2.5 rounded-xl bg-slate-900/60 border border-dashed border-cyan-500/30 space-y-1.5">
+                  <div className="ui-card p-2.5 space-y-1.5">
                     <label className="block text-xs text-cyan-300 font-mono">🎟️ Código de Convite (opcional)</label>
                     <div className="flex gap-1.5">
                       <input
@@ -854,13 +854,13 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                           setResolvedInvite(null);
                           setInviteCheckError(null);
                         }}
-                        className="flex-1 bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono uppercase"
+                        className="ui-input flex-1 text-xs"
                       />
                       <button
                         type="button"
                         onClick={handleCheckInviteCode}
                         disabled={isCheckingInvite || !regInviteCode.trim()}
-                        className="px-3 py-2 rounded-xl bg-cyan-950 border border-cyan-500/50 text-cyan-300 text-xs font-bold disabled:opacity-40"
+                        className="ui-btn ui-btn-soft px-3 py-2 text-xs"
                       >
                         {isCheckingInvite ? '...' : 'Verificar'}
                       </button>
@@ -887,7 +887,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       placeholder="Ex: Prof. Carlos Silva"
                       value={regName}
                       onChange={(e) => setRegName(e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     />
                   </div>
 
@@ -902,7 +902,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                         setRegUsername(e.target.value);
                         setRegError(null);
                       }}
-                      className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     />
                   </div>
 
@@ -918,7 +918,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                         setRegEmail(e.target.value);
                         setRegError(null);
                       }}
-                      className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     />
                   </div>
 
@@ -927,7 +927,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                     <select
                       value={regRole}
                       onChange={(e) => setRegRole(e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="Treinador Principal">Treinador Principal</option>
                       <option value="Treinador Adjunto">Treinador Adjunto</option>
@@ -948,7 +948,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                         placeholder="••••••••"
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
-                        className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                        className="ui-input w-full text-xs"
                       />
                     </div>
                     <div>
@@ -959,7 +959,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                         placeholder="••••••••"
                         value={regConfirmPassword}
                         onChange={(e) => setRegConfirmPassword(e.target.value)}
-                        className="w-full bg-slate-950 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                        className="ui-input w-full text-xs"
                       />
                     </div>
                   </div>
@@ -969,7 +969,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(0,210,255,0.4)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer border border-cyan-300/40"
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs sm:text-sm uppercase tracking-wider active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer border border-cyan-300/40"
                     >
                       {isLoading ? (
                         <>
@@ -1015,7 +1015,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             <button
               type="button"
               onClick={handleGuestLogin}
-              className="w-full py-2.5 rounded-xl bg-slate-950 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 hover:bg-slate-900 cursor-pointer"
+              className="ui-btn ui-btn-soft w-full py-2.5 text-xs flex items-center justify-center gap-2"
             >
               <span>⚡</span>
               <span>Entrar sem Registo (Modo Convidado)</span>

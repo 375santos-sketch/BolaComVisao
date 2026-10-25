@@ -13,7 +13,7 @@ export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSele
   return (
     <div className="space-y-6">
       {/* 1. Origem dos Golos Marcados: Bola Corrida vs Bola Parada (Item 7) */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+      <div className="ui-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
           <div>
             <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -97,7 +97,7 @@ export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSele
       </div>
 
       {/* 2. Como Sofremos os Golos (Item 9) */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+      <div className="ui-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
           <div>
             <h3 className="text-base font-['Chakra_Petch'] font-black text-rose-400 flex items-center gap-2">

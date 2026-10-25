@@ -34,12 +34,12 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Year Navigator */}
-      <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3 shadow-md">
+      <div className="ui-card p-4 flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setActiveYear((prev) => prev - 1)}
-            className="p-2 px-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-300 text-xs font-mono"
+            className="ui-btn ui-btn-secondary p-2 px-3 text-xs"
           >
             ◀ {activeYear - 1}
           </button>
@@ -47,7 +47,7 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
           <button
             type="button"
             onClick={() => setActiveYear(new Date().getFullYear())}
-            className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-cyan-300 text-xs font-['Chakra_Petch'] font-bold uppercase"
+            className="ui-btn ui-btn-secondary px-3 py-1.5 text-xs"
           >
             Ano Atual
           </button>
@@ -55,7 +55,7 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
           <button
             type="button"
             onClick={() => setActiveYear((prev) => prev + 1)}
-            className="p-2 px-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-300 text-xs font-mono"
+            className="ui-btn ui-btn-secondary p-2 px-3 text-xs"
           >
             {activeYear + 1} ▶
           </button>
@@ -74,7 +74,7 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
           <button
             type="button"
             onClick={onOpenScheduleMatch}
-            className="p-1.5 px-2.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-1 transition-all"
+            className="ui-btn ui-btn-soft p-1.5 px-2.5 text-xs flex items-center gap-1"
             title="Agendar Jogo"
           >
             <span>⚽</span>
@@ -83,7 +83,7 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
           <button
             type="button"
             onClick={onOpenScheduleTraining}
-            className="p-1.5 px-2.5 rounded-xl bg-amber-950/80 hover:bg-amber-900 border border-amber-500/40 text-amber-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-1 transition-all"
+            className="ui-btn ui-btn-soft-warning p-1.5 px-2.5 text-xs flex items-center gap-1"
             title="Agendar Treino"
           >
             <span>⚡</span>
@@ -92,7 +92,7 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
           <button
             type="button"
             onClick={onOpenClubEventModal}
-            className="p-1.5 px-2.5 rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-500/40 text-purple-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-1 transition-all"
+            className="ui-btn ui-btn-soft p-1.5 px-2.5 text-xs flex items-center gap-1"
             title="Reunião / Formação"
           >
             <span>👥</span>
@@ -101,7 +101,7 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
           <button
             type="button"
             onClick={onOpenScheduleStaff}
-            className="p-1.5 px-2.5 rounded-xl bg-orange-950/80 hover:bg-orange-900 border border-orange-500/40 text-orange-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-1 transition-all"
+            className="ui-btn ui-btn-soft-warning p-1.5 px-2.5 text-xs flex items-center gap-1"
             title="Indisponível (Equipa)"
           >
             <span>🚫</span>
@@ -132,7 +132,7 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
           return (
             <div
               key={mIdx}
-              className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/60 transition-all flex flex-col justify-between cursor-pointer"
+              className="ui-card p-3.5 transition-all flex flex-col justify-between cursor-pointer"
               onClick={() => {
                 setActiveMonth(mIdx);
                 setViewMode('mes');

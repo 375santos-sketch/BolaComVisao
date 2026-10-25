@@ -34,7 +34,7 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
                 setShowFabMenu(false);
                 onOpenScheduleMatch(selectedDate);
               }}
-              className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 flex items-center justify-center text-lg shadow-[0_0_15px_rgba(0,210,255,0.5)] transition-transform active:scale-95 border border-cyan-300/40"
+              className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 flex items-center justify-center text-lg transition-transform active:scale-95 border border-cyan-300/40"
               title="Agendar Jogo"
               id="fab-add-match"
             >
@@ -53,7 +53,7 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
                 setShowFabMenu(false);
                 onOpenScheduleTraining(selectedDate);
               }}
-              className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 flex items-center justify-center text-lg shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-transform active:scale-95 border border-amber-300/40"
+              className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 flex items-center justify-center text-lg transition-transform active:scale-95 border border-amber-300/40"
               title="Agendar Treino"
               id="fab-add-training"
             >
@@ -72,7 +72,7 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
                 setShowFabMenu(false);
                 onOpenClubEventModal(selectedDate);
               }}
-              className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white flex items-center justify-center text-lg shadow-[0_0_15px_rgba(147,51,234,0.5)] transition-transform active:scale-95 border border-purple-300/40"
+              className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white flex items-center justify-center text-lg transition-transform active:scale-95 border border-purple-300/40"
               title="Reunião / Formação"
               id="fab-add-clubevent"
             >
@@ -91,7 +91,7 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
                 setShowFabMenu(false);
                 onOpenScheduleStaff(selectedDate);
               }}
-              className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-orange-500 to-rose-600 hover:from-orange-400 hover:to-rose-500 text-white flex items-center justify-center text-lg shadow-[0_0_15px_rgba(249,115,22,0.5)] transition-transform active:scale-95 border border-orange-300/40"
+              className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-orange-500 to-rose-600 hover:from-orange-400 hover:to-rose-500 text-white flex items-center justify-center text-lg transition-transform active:scale-95 border border-orange-300/40"
               title="Indisponível (Equipa Técnica)"
               id="fab-add-staff"
             >

@@ -16,8 +16,7 @@ interface OpponentReportModalProps {
   onShowToast?: (msg: string) => void;
 }
 
-const field =
-  'w-full rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs p-2.5 placeholder-slate-500 focus:outline-none focus:border-cyan-400';
+const field = 'ui-input text-xs';
 
 /** 🛡️ Relatório do adversário pós-jogo: the match's numbers about the opponent + the coach's notes. */
 export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
@@ -78,7 +77,7 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
     );
 
   const stat = (label: string, value: React.ReactNode) => (
-    <div className="bg-slate-900/70 border border-slate-800 rounded-xl p-2 text-center">
+    <div className="ui-card p-2 text-center">
       <div className="text-[10px] text-slate-400 uppercase font-bold">{label}</div>
       <div className="text-sm font-black text-white">{value}</div>
     </div>
@@ -86,11 +85,11 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-3 bg-slate-950/85 backdrop-blur-sm"
+      className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-3"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl bg-slate-950 border border-cyan-500/40 p-4 space-y-3 text-left"
+        className="ui-inset w-full max-w-lg max-h-[92vh] overflow-y-auto p-4 space-y-3 text-left"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Relatório do adversário"
@@ -195,26 +194,13 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
         )}
 
         <div className="grid grid-cols-3 gap-2 pt-1">
-          <button
-            type="button"
-            onClick={save}
-            className="py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold"
-          >
+          <button type="button" onClick={save} className="ui-btn ui-btn-primary py-2 text-xs">
             Guardar
           </button>
-          <button
-            type="button"
-            onClick={exportPdf}
-            disabled={busy}
-            className="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-bold disabled:opacity-40"
-          >
+          <button type="button" onClick={exportPdf} disabled={busy} className="ui-btn ui-btn-secondary py-2 text-xs">
             {busy ? 'A gerar…' : 'PDF'}
           </button>
-          <button
-            type="button"
-            onClick={shareWhatsApp}
-            className="py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold"
-          >
+          <button type="button" onClick={shareWhatsApp} className="ui-btn ui-btn-success py-2 text-xs">
             WhatsApp
           </button>
         </div>

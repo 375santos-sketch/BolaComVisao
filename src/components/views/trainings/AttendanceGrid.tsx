@@ -44,7 +44,7 @@ export const AttendanceGrid: React.FC<AttendanceGridProps> = ({ players, absence
               aria-label={`Motivo da falta de ${p.name}`}
               value={reasons?.[p.id] || ''}
               onChange={(e) => onReason(p.id, (e.target.value || undefined) as AbsenceReason | undefined)}
-              className="w-full bg-slate-950 border-t border-red-500/40 rounded-b-lg px-2 py-1 text-[11px] text-red-100 focus:outline-none"
+              className="ui-input w-full border-t rounded-b-lg text-[11px]"
             >
               <option value="">Motivo (opcional)…</option>
               {ABSENCE_REASONS.map((r) => (

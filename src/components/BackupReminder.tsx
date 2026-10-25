@@ -38,14 +38,14 @@ export const BackupReminder: React.FC<BackupReminderProps> = ({ state, onShowToa
             setLastBackupAt(getLastBackupAt());
             onShowToast('Cópia de segurança guardada neste aparelho ✓');
           }}
-          className="px-3 py-2 rounded-xl bg-amber-400 text-slate-950 font-bold text-xs"
+          className="ui-btn ui-btn-warning px-3 py-2 text-xs"
         >
           Fazer cópia agora
         </button>
         <button
           type="button"
           onClick={() => setDismissed(true)}
-          className="px-3 py-2 rounded-xl border border-amber-500/40 text-amber-200 text-xs"
+          className="ui-btn ui-btn-soft-warning px-3 py-2 text-xs"
         >
           Mais tarde
         </button>

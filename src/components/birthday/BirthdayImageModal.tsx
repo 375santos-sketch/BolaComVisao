@@ -57,7 +57,7 @@ export const BirthdayImageModal: React.FC<BirthdayImageModalProps> = ({ person, 
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3 bg-slate-950/85 backdrop-blur-sm"
+      className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3"
       onClick={onClose}
     >
       <div
