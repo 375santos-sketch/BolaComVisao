@@ -173,3 +173,70 @@ describe('Classificação: colar resultados', () => {
     expect(mergeLeagueGames(merged, parseResults('Jornada 2\nAbrantes 1-0 Mação').games)).toHaveLength(2);
   });
 });
+
+describe('Classificação: página da FPF colada', () => {
+  // Text exactly as copied from resultados.fpf.pt (Série 10, jornada 3)
+  const page = [
+    'SÉRIE 10',
+    ' ',
+    'JORNADAS',
+    '12345',
+    'Ad Mação\t3 - 7',
+    '24 OUT',
+    'Casa Povo Pego',
+    'C Mun A P Carreira',
+    "Cdr Alferrarede 'A'\t7 - 3",
+    '24 OUT',
+    "S.Abrantes Benfica 'B'",
+    'Campo Cuf',
+    'Gdr Os Esparteiros\t1 - 21',
+    '24 OUT',
+    'Tramagal Su',
+    'Campo Da Lameira Redonda'
+  ].join('\n');
+
+  it('reads every game of the round, with the date in the season, ignoring headers and pitches', () => {
+    const { games, skipped } = parseResults(page, '2026/2027');
+    expect(games.map((g) => [g.date, g.home, g.homeGoals, g.awayGoals, g.away])).toEqual([
+      ['2026-10-24', 'Ad Mação', 3, 7, 'Casa Povo Pego'],
+      ['2026-10-24', "Cdr Alferrarede 'A'", 7, 3, "S.Abrantes Benfica 'B'"],
+      ['2026-10-24', 'Gdr Os Esparteiros', 1, 21, 'Tramagal Su']
+    ]);
+    expect(skipped).toEqual([]);
+    // A game not played yet (time instead of score) is ignored
+    expect(parseResults('Ad Mação\t11:00\n31 OUT\nTramagal Su\nCampo X', '2026/2027').games).toEqual([]);
+  });
+
+  it('recognises our team and the names the app already uses', async () => {
+    const { harmonizeTeams } = await import('../lib/leagueTable');
+    const { games, ourAlias } = harmonizeTeams(parseResults(page, '2026/2027').games, {
+      ourName: 'Dragões de Alferrarede - Sub11',
+      clubName: 'Dragões de Alferrarede - Sub11',
+      known: ['Esparteiros', 'Tramagal SU', 'Mação']
+    });
+    expect(ourAlias).toBe("Cdr Alferrarede 'A'");
+    expect(games.map((g) => `${g.home} ${g.homeGoals}-${g.awayGoals} ${g.away}`)).toEqual([
+      'Mação 3-7 Casa Povo Pego',
+      "Dragões de Alferrarede - Sub11 7-3 S.Abrantes Benfica 'B'",
+      'Esparteiros 1-21 Tramagal SU'
+    ]);
+  });
+
+  it('our pasted game counts when the app does not have it, and is not doubled when it does', () => {
+    const ourName = 'Dragões';
+    const pasted = {
+      id: 'x',
+      date: '2026-10-24',
+      home: 'Dragões',
+      away: "S.Abrantes Benfica 'B'",
+      homeGoals: 7,
+      awayGoals: 3
+    };
+    const league: LeagueSetup = { id: 'l', season: '2026/2027', teams: [], games: [pasted] };
+    expect(leagueGames(league, [], ourName)).toHaveLength(1);
+    const appGame = match('m9', "S.Abrantes Benfica 'B'", 'casa', 7, 3, { date: '2026-10-24' });
+    const both = leagueGames(league, [appGame], ourName);
+    expect(both).toHaveLength(1);
+    expect(both[0].fromApp).toBe(true);
+  });
+});

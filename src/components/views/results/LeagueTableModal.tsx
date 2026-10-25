@@ -1,6 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { AppState, LeagueGame, LeagueSetup } from '../../../types';
-import { computeStandings, leagueGames, mergeLeagueGames, parseResults, teamKey } from '../../../lib/leagueTable';
+import {
+  computeStandings,
+  harmonizeTeams,
+  leagueGames,
+  mergeLeagueGames,
+  parseResults,
+  teamKey
+} from '../../../lib/leagueTable';
 import { uid } from '../../../lib/utils';
 
 interface LeagueTableModalProps {
@@ -88,22 +95,22 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
   };
 
   const importPasted = () => {
-    const own = preview.games.filter(
-      (g) => teamKey(g.home) === teamKey(ourName) || teamKey(g.away) === teamKey(ourName)
-    ).length;
-    const others = preview.games.filter(
-      (g) => teamKey(g.home) !== teamKey(ourName) && teamKey(g.away) !== teamKey(ourName)
-    );
-    if (others.length === 0) {
-      onShowToast('Não encontrei resultados de outros jogos no texto colado.');
+    if (preview.games.length === 0) {
+      onShowToast('Não encontrei resultados no texto colado.');
       return;
     }
-    save({ ...league, games: mergeLeagueGames(league.games, others) });
+    // Names as the app already uses them: our team and opponents written differently on the site
+    const known = [
+      ...league.teams,
+      ...league.games.flatMap((g) => [g.home, g.away]),
+      ...(state.matches || []).map((m) => m.opponent),
+      ...(state.schedule || []).map((s) => s.opponent)
+    ].filter(Boolean);
+    const { games, ourAlias } = harmonizeTeams(preview.games, { ourName, clubName: state.myClubName, known });
+    save({ ...league, games: mergeLeagueGames(league.games, games) });
     setPasted('');
     setPanel('tabela');
-    onShowToast(
-      `${others.length} resultado(s) importado(s) ✓${own ? ` (${own} jogo(s) de ${ourName} ignorados: vêm da app)` : ''}`
-    );
+    onShowToast(`${games.length} resultado(s) importado(s) ✓${ourAlias ? ` ("${ourAlias}" é ${ourName})` : ''}`);
   };
 
   const tabBtn = (id: Panel, label: string) => (
@@ -329,8 +336,11 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
         {panel === 'colar' && (
           <div className="space-y-2">
             <p className="text-[11px] text-slate-300">
-              Copie os resultados do site da associação, de uma mensagem ou do Excel e cole aqui, um jogo por linha, com
-              a equipa da casa primeiro. Exemplos:
+              <b>Do site da FPF:</b> abra a série em resultados.fpf.pt, separador <b>Jogos</b>, escolha a jornada,
+              selecione tudo, copie e cole aqui (pode colar várias jornadas). A app reconhece a nossa equipa e os nomes
+              dos adversários.
+              <br />
+              Também aceita resultados de uma mensagem ou do Excel, um jogo por linha, com a equipa da casa primeiro:
             </p>
             <pre className="text-[10px] text-slate-400 bg-slate-950 rounded-xl p-2 whitespace-pre-wrap">
               {'Jornada 3\nMação 2-2 Abrantes\n12/10 Torres Novas 0 x 4 Riachense'}
