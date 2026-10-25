@@ -15,7 +15,7 @@ export const TrainingHeader: React.FC<TrainingHeaderProps> = ({
   completedCount
 }) => {
   return (
-    <div className="grid grid-cols-3 gap-1 mb-3.5 bg-slate-900/90 p-1 border border-cyan-500/20 rounded-2xl shadow-sm">
+    <div className="ui-card grid grid-cols-3 gap-1 mb-3.5 p-1">
       <button
         type="button"
         className={`font-['Chakra_Petch'] uppercase font-bold text-xs py-2 px-1 min-h-[42px] rounded-xl transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 ${

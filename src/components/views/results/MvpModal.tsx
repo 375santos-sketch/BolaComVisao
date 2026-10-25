@@ -83,7 +83,7 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3 bg-slate-950/85 backdrop-blur-sm"
+      className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3"
       onClick={onClose}
     >
       <div
@@ -111,7 +111,7 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
             <label className="block text-[11px] text-slate-400">
               Destaque
               <select
-                className="w-full mt-1 px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-sm"
+                className="ui-input w-full mt-1 text-sm"
                 value={playerId}
                 onChange={(e) => {
                   setPlayerId(e.target.value);
@@ -158,18 +158,10 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
             />
 
             <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={save}
-                className="py-2.5 rounded-xl border border-amber-400/60 text-amber-200 text-xs font-bold"
-              >
+              <button type="button" onClick={save} className="ui-btn ui-btn-soft-warning py-2.5 text-xs">
                 Guardar destaque
               </button>
-              <button
-                type="button"
-                onClick={share}
-                className="py-2.5 rounded-xl bg-amber-400 text-slate-950 text-xs font-black"
-              >
+              <button type="button" onClick={share} className="ui-btn ui-btn-warning py-2.5 text-xs">
                 📲 Partilhar imagem
               </button>
             </div>

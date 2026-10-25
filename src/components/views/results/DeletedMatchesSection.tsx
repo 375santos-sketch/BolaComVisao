@@ -36,7 +36,7 @@ export const DeletedMatchesSection: React.FC<DeletedMatchesSectionProps> = ({ st
       </button>
 
       {open && (
-        <div className="mt-2 rounded-2xl bg-slate-900/80 border border-slate-800 divide-y divide-slate-800">
+        <div className="ui-card mt-2 divide-y divide-slate-800">
           {deleted.map(({ data: m, deletedAt, deletedBy }) => {
             const scored = (m.goals || []).filter((g) => g.type === 'scored').length;
             const conceded = (m.goals || []).filter((g) => g.type === 'conceded').length;
@@ -58,7 +58,7 @@ export const DeletedMatchesSection: React.FC<DeletedMatchesSectionProps> = ({ st
                 <button
                   type="button"
                   onClick={() => onRestore(m)}
-                  className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold shrink-0"
+                  className="ui-btn ui-btn-primary px-3 py-1.5 shrink-0"
                 >
                   Recuperar
                 </button>

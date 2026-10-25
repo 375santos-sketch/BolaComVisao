@@ -198,8 +198,8 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+      <div className="ui-card max-w-lg w-full p-5 sm:p-6 space-y-4 max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3">
@@ -224,7 +224,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-sm font-bold transition-colors"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
           >
             ✕
           </button>
@@ -248,10 +248,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
               const otherInIds = pairs.filter((_, i) => i !== index).map((p) => p.inId);
 
               return (
-                <div
-                  key={pair.id || index}
-                  className="p-3.5 sm:p-4 rounded-2xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition-colors space-y-3 relative"
-                >
+                <div key={pair.id || index} className="ui-inset p-3.5 sm:p-4 transition-colors space-y-3 relative">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-800/60">
                     <div className="flex items-center gap-2">
                       <span className="w-5 h-5 rounded-full bg-blue-600/30 border border-blue-500/40 text-[11px] font-bold text-blue-300 flex items-center justify-center">
@@ -266,7 +263,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemovePair(index)}
-                        className="text-[11px] text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 px-2 py-1 rounded-lg border border-rose-500/30 transition-colors flex items-center gap-1"
+                        className="ui-btn ui-btn-soft-danger text-[11px] px-2 py-1 flex items-center gap-1"
                         title="Remover esta troca"
                       >
                         <span>✕</span>
@@ -284,7 +281,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
                       <select
                         value={pair.outId}
                         onChange={(e) => handleUpdatePair(index, 'outId', e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 hover:border-slate-600 rounded-xl px-3 py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                        className="ui-input w-full text-xs sm:text-sm"
                       >
                         <option value="" disabled>
                           Selecione o jogador que sai...
@@ -308,7 +305,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
                       <select
                         value={pair.inId}
                         onChange={(e) => handleUpdatePair(index, 'inId', e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 hover:border-slate-600 rounded-xl px-3 py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                        className="ui-input w-full text-xs sm:text-sm"
                       >
                         <option value="" disabled>
                           Selecione o jogador que entra...
@@ -340,7 +337,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
               <button
                 type="button"
                 onClick={handleAddPair}
-                className="w-full py-2.5 px-4 rounded-2xl bg-blue-950/40 hover:bg-blue-900/50 text-blue-300 font-bold text-xs uppercase tracking-wider font-['Chakra_Petch'] border border-blue-500/40 hover:border-blue-400 transition-all flex items-center justify-center gap-2 group"
+                className="ui-btn ui-btn-soft w-full py-2.5 px-4 text-xs flex items-center justify-center gap-2 group"
               >
                 <span className="text-base group-hover:scale-110 transition-transform">➕</span>
                 <span>Adicionar Outra Substituição em Simultâneo</span>
@@ -350,7 +347,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
           )}
 
           {/* Timing Section (Shared across simultaneous substitutions) */}
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950/40 border border-slate-800 space-y-3">
+          <div className="ui-inset p-3.5 sm:p-4 space-y-3">
             <div className="text-[11px] font-bold text-slate-300 uppercase tracking-wider font-['Chakra_Petch'] flex items-center justify-between">
               <span>⏱️ Momento da(s) Substituição(ões)</span>
               {pairs.length > 1 && (
@@ -421,7 +418,7 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
                     setSubMinute(e.target.value);
                     setIsModified(true);
                   }}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 font-mono"
+                  className="ui-input w-full text-xs sm:text-sm"
                 />
                 {!localMinute.trim() && <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>}
               </div>
@@ -431,18 +428,14 @@ const SubstitutionModalDialog: React.FC<SubstitutionModalProps> = ({
 
         {/* Footer Actions */}
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800 shrink-0">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors"
-          >
+          <button type="button" onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2.5 text-xs sm:text-sm">
             Cancelar
           </button>
           <button
             type="button"
             onClick={handleConfirm}
             disabled={!localMinute.trim()}
-            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 text-white text-xs sm:text-sm font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2"
+            className="ui-btn ui-btn-primary px-5 py-2.5 text-xs sm:text-sm flex items-center gap-2"
           >
             <span>🔄</span>
             <span>

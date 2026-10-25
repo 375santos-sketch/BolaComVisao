@@ -8,7 +8,7 @@ import { PlayerEvolutionCharts } from './PlayerEvolutionCharts';
 const ddmm = (iso: string) => iso.slice(0, 10).split('-').reverse().slice(0, 2).join('/');
 
 const Tile: React.FC<{ value: React.ReactNode; label: string; tone?: string }> = ({ value, label, tone }) => (
-  <div className="bg-slate-950 p-2 rounded-xl border border-slate-800">
+  <div className="ui-inset p-2">
     <div className={`text-lg font-extrabold ${tone || 'text-white'}`}>{value}</div>
     <div className="text-[9px] text-slate-500 uppercase">{label}</div>
   </div>

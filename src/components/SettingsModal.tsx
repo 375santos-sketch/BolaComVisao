@@ -254,7 +254,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               Autorize novos registos para a base de dados do clube, atribua funções e receba alertas de novos pedidos.
             </p>
 
-            <div className="space-y-2 mb-3 bg-slate-900/90 p-3 rounded-2xl border border-slate-800">
+            <div className="ui-card space-y-2 mb-3 p-3">
               <div className="text-[11px] font-['Chakra_Petch'] font-bold text-cyan-300 uppercase">
                 Contactos do Administrador para Notificações:
               </div>
@@ -266,7 +266,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     value={notifSettings.adminContactEmail || MASTER_ADMIN_EMAIL}
                     onChange={(e) => updateNotifSettings({ adminContactEmail: e.target.value })}
                     placeholder={MASTER_ADMIN_EMAIL}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white font-mono focus:border-cyan-400 focus:outline-none"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
                 <div>
@@ -278,7 +278,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     value={notifSettings.adminContactPhone || ''}
                     onChange={(e) => updateNotifSettings({ adminContactPhone: e.target.value })}
                     placeholder="+351 912 345 678"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white font-mono focus:border-cyan-400 focus:outline-none"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
               </div>
@@ -289,7 +289,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClose();
                 onOpenAdminUsers();
               }}
-              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.2)] cursor-pointer"
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>👥</span>
               <span>Abrir Painel de Gestão de Treinadores</span>
@@ -314,14 +314,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 exportJSONBackup(state);
                 if (onShowToast) onShowToast(t(state.lang, 'msg_bkp_exp'));
               }}
-              className="px-2.5 py-2 rounded-xl bg-slate-950 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 font-mono text-xs font-bold transition-all text-center"
+              className="ui-btn ui-btn-soft px-2.5 py-2 text-xs text-center"
             >
               Exportar JSON Backup
             </button>
 
             <button
               onClick={() => document.getElementById('settings-import-file-input')?.click()}
-              className="px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-cyan-400 text-slate-300 font-mono text-xs font-bold transition-all text-center"
+              className="ui-btn ui-btn-secondary px-2.5 py-2 text-xs text-center"
             >
               Importar JSON Backup
             </button>
@@ -331,7 +331,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 exportCSVStats(state, state.lang);
                 if (onShowToast) onShowToast(t(state.lang, 'msg_csv_exp'));
               }}
-              className="px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-cyan-400 text-slate-300 font-mono text-xs font-bold transition-all text-center"
+              className="ui-btn ui-btn-secondary px-2.5 py-2 text-xs text-center"
             >
               Exportar Excel / CSV
             </button>
@@ -341,7 +341,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 exportTXTReport(state, state.lang);
                 if (onShowToast) onShowToast(t(state.lang, 'msg_txt_exp'));
               }}
-              className="px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 hover:border-cyan-400 text-slate-300 font-mono text-xs font-bold transition-all text-center"
+              className="ui-btn ui-btn-secondary px-2.5 py-2 text-xs text-center"
             >
               Relatório TXT
             </button>

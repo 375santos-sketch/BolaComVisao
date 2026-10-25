@@ -148,8 +148,8 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-lg bg-slate-900 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-[0_0_40px_rgba(0,210,255,0.25)] max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto scrollbar-thin text-left pb-[max(1.5rem,env(safe-area-inset-bottom))] space-y-4">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+      <div className="w-full max-w-lg bg-slate-900 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto scrollbar-thin text-left pb-[max(1.5rem,env(safe-area-inset-bottom))] space-y-4">
         {/* Header / Avatar Box */}
         <div className="flex items-start justify-between border-b border-cyan-500/20 pb-4">
           <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-xs"
           >
             ✖
           </button>
@@ -212,7 +212,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
               👤 Perfil Físico & Pessoal
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-              <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+              <div className="ui-inset p-2.5">
                 <span className="text-slate-500 text-[10px] block">Idade / Data Nasc.</span>
                 <span className="font-bold text-white">
                   {computeAge(player.birthDate) ? `${computeAge(player.birthDate)} anos` : 'N/D'}
@@ -222,17 +222,17 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                 )}
               </div>
 
-              <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+              <div className="ui-inset p-2.5">
                 <span className="text-slate-500 text-[10px] block">Pé Dominante</span>
                 <span className="font-bold text-cyan-300">{player.dominantFoot || 'N/D'}</span>
               </div>
 
-              <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+              <div className="ui-inset p-2.5">
                 <span className="text-slate-500 text-[10px] block">Altura</span>
                 <span className="font-bold text-white">{player.height || 'N/D'}</span>
               </div>
 
-              <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+              <div className="ui-inset p-2.5">
                 <span className="text-slate-500 text-[10px] block">Peso</span>
                 <span className="font-bold text-white">{player.weight || 'N/D'}</span>
               </div>
@@ -244,7 +244,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
             <h4 className="text-xs font-['Chakra_Petch'] font-bold text-cyan-400 uppercase tracking-wider mb-2">
               📞 Contactos
             </h4>
-            <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2 text-xs font-mono">
+            <div className="ui-inset p-3 space-y-2 text-xs font-mono">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Telefone Atleta:</span>
                 <span className="font-bold text-cyan-300">{player.phone || 'Não registado'}</span>
@@ -262,11 +262,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
 
           {/* Season: games, minutes, goals, attendance with absence reasons, latest games */}
           <PlayerSeasonSection data={season} />
-          <button
-            type="button"
-            onClick={() => setShowPanel(true)}
-            className="w-full py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 font-mono text-xs font-bold hover:bg-cyan-500/30"
-          >
+          <button type="button" onClick={() => setShowPanel(true)} className="ui-btn ui-btn-soft w-full py-2.5 text-xs">
             📊 Painel do atleta (jogo a jogo, confrontos, fases, período)
           </button>
           {showPanel && (
@@ -280,7 +276,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
 
           {/* Real-time Player Intelligence & Evolution */}
           {evo && (
-            <div className="bg-slate-950/90 p-3.5 rounded-2xl border border-cyan-500/30 space-y-3">
+            <div className="ui-inset p-3.5 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-['Chakra_Petch'] font-bold text-cyan-400 uppercase tracking-wider">
                   📈 Inteligência & Evolução
@@ -303,7 +299,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                <div className="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
+                <div className="ui-card p-2.5">
                   <span className="text-slate-400 text-[10px] block">Assiduidade Global:</span>
                   <span className="font-bold text-white text-base">
                     {evo.totalTrainings > 0 ? `${evo.attendanceRate}%` : '—'}
@@ -315,7 +311,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                   </span>
                 </div>
 
-                <div className="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
+                <div className="ui-card p-2.5">
                   <span className="text-slate-400 text-[10px] block">Média Avaliação:</span>
                   <span className="font-bold text-amber-300 text-base">
                     {evo.avgRating > 0 ? evo.avgRating : 'N/D'}
@@ -338,7 +334,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                         m.rate >= 85 ? 'text-emerald-400' : m.rate >= 70 ? 'text-amber-400' : 'text-rose-400';
 
                       return (
-                        <div key={idx} className="bg-slate-900/80 p-2 rounded-xl border border-slate-800/80">
+                        <div key={idx} className="ui-card p-2">
                           <div className="flex items-center justify-between text-xs font-mono mb-1">
                             <span className="text-slate-300 font-medium">{m.monthName}</span>
                             <span className={`font-bold ${textColor}`}>
@@ -371,7 +367,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
           )}
 
           {/* Notas Confidenciais do Treinador */}
-          <div className="bg-slate-950/80 p-3.5 rounded-2xl border border-purple-500/30 space-y-2">
+          <div className="ui-inset p-3.5 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-['Chakra_Petch'] font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
                 <span>📝</span>
@@ -390,15 +386,12 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
               value={coachNotes}
               onChange={(e) => setCoachNotes(e.target.value)}
               placeholder="Ex: Ponto de trabalho no pé fraco, atitude positiva, acordo de horários..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors resize-none font-mono"
+              className="ui-input w-full text-xs resize-none"
             />
           </div>
 
           {/* Relatório de fim de época (para a família) */}
-          <section
-            aria-label="Relatório de fim de época"
-            className="bg-slate-950/80 p-3.5 rounded-2xl border border-amber-500/30 space-y-2"
-          >
+          <section aria-label="Relatório de fim de época" className="ui-inset p-3.5 space-y-2">
             <div className="text-xs font-['Chakra_Petch'] font-bold text-amber-300 uppercase tracking-wider">
               🏆 Relatório de fim de época {state.season ? `· ${state.season}` : ''}
             </div>
@@ -412,13 +405,13 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
               value={seasonMessage}
               onChange={(e) => setSeasonMessage(e.target.value)}
               placeholder="Ex: Foi uma época de grande evolução. O teu empenho nos treinos fez a diferença…"
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
+              className="ui-input w-full text-xs resize-none"
             />
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={handleSaveSeasonMessage}
-                className="py-2 rounded-xl border border-amber-500/50 text-amber-200 text-xs font-bold"
+                className="ui-btn ui-btn-soft-warning py-2 text-xs"
               >
                 Guardar mensagem
               </button>
@@ -430,7 +423,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                   await generateSeasonFinalReportPDF([withSeasonMessage(player, msg)], state);
                   onShowToast(`Relatório de fim de época de ${player.name} gerado 🏆`);
                 }}
-                className="py-2 rounded-xl bg-amber-500 text-slate-950 text-xs font-black"
+                className="ui-btn ui-btn-warning py-2 text-xs"
               >
                 📄 PDF fim de época
               </button>
@@ -445,7 +438,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                 generatePlayerProfilePDF(player, state);
                 onShowToast(`Ficha PDF de ${player.name} gerada com sucesso! 📄`);
               }}
-              className="w-full py-2 px-3 rounded-xl bg-slate-950 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 font-mono text-xs font-bold hover:bg-slate-900 transition-all flex items-center justify-center gap-1.5"
+              className="ui-btn ui-btn-soft w-full py-2 px-3 text-xs flex items-center justify-center gap-1.5"
             >
               <span>📄</span>
               <span>PDF Ficha do Atleta</span>
@@ -457,7 +450,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                 exportPlayerProfileExcel(player, stats, state);
                 onShowToast(`Ficha Excel de ${player.name} exportada! 📊`);
               }}
-              className="w-full py-2 px-3 rounded-xl bg-slate-950 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 font-mono text-xs font-bold hover:bg-slate-900 transition-all flex items-center justify-center gap-1.5"
+              className="ui-btn ui-btn-soft-success w-full py-2 px-3 text-xs flex items-center justify-center gap-1.5"
             >
               <span>📊</span>
               <span>Excel Ficha do Atleta</span>
@@ -471,15 +464,12 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                 onClose();
                 onEdit(player);
               }}
-              className="flex-1 py-2.5 rounded-xl bg-slate-950 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-bold hover:bg-slate-900"
+              className="ui-btn ui-btn-soft flex-1 py-2.5 text-xs"
             >
               ✏️ Editar Dados
             </button>
 
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-mono text-xs font-bold hover:bg-slate-900"
-            >
+            <button onClick={onClose} className="ui-btn ui-btn-secondary flex-1 py-2.5 text-xs">
               Fechar
             </button>
           </div>

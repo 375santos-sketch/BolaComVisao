@@ -69,7 +69,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
     <div className="space-y-3.5 text-left">
       {/* Top KPI Cards (Based ONLY on Completed Trainings) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-        <div className="bg-slate-900/80 border border-emerald-500/30 rounded-xl p-2.5 backdrop-blur-sm shadow-sm">
+        <div className="ui-card p-2.5">
           <div className="text-[10px] text-emerald-400 font-['Chakra_Petch'] uppercase font-semibold flex items-center justify-center gap-1">
             <span>🟢</span>
             <span>Treinos Realizados</span>
@@ -78,7 +78,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
           <div className="text-[9px] text-slate-400 font-mono">contabilizados</div>
         </div>
 
-        <div className="bg-slate-900/80 border border-amber-500/30 rounded-xl p-2.5 backdrop-blur-sm shadow-sm">
+        <div className="ui-card p-2.5">
           <div className="text-[10px] text-amber-400 font-['Chakra_Petch'] uppercase font-semibold flex items-center justify-center gap-1">
             <span>🟡</span>
             <span>Treinos Agendados</span>
@@ -87,7 +87,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
           <div className="text-[9px] text-slate-400 font-mono">a aguardar data</div>
         </div>
 
-        <div className="bg-slate-900/80 border border-cyan-500/30 rounded-xl p-2.5 backdrop-blur-sm shadow-sm">
+        <div className="ui-card p-2.5">
           <div className="text-[10px] text-cyan-400 font-['Chakra_Petch'] uppercase font-semibold">
             {t(state.lang, 'tr_avg_att')}
           </div>
@@ -101,7 +101,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
           <div className="text-[9px] text-slate-400 font-mono">média da equipa</div>
         </div>
 
-        <div className="bg-slate-900/80 border border-cyan-500/30 rounded-xl p-2.5 backdrop-blur-sm shadow-sm">
+        <div className="ui-card p-2.5">
           <div className="text-[10px] text-cyan-400 font-['Chakra_Petch'] uppercase font-semibold">
             {t(state.lang, 'tr_top_att')}
           </div>
@@ -118,7 +118,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <button
           type="button"
-          className="py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-['Chakra_Petch'] font-bold uppercase tracking-wider text-xs sm:text-sm shadow-[0_0_15px_rgba(0,210,255,0.25)] transition-all flex items-center justify-center gap-2 active:scale-98"
+          className="py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-['Chakra_Petch'] font-bold uppercase tracking-wider text-xs sm:text-sm transition-all flex items-center justify-center gap-2 active:scale-98"
           onClick={onExportPDF}
         >
           <span>📄</span>
@@ -127,7 +127,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
 
         <button
           type="button"
-          className="py-3 px-4 rounded-xl bg-slate-950 border border-emerald-500/50 hover:border-emerald-400 hover:bg-slate-900 text-emerald-300 font-['Chakra_Petch'] font-bold uppercase tracking-wider text-xs sm:text-sm shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all flex items-center justify-center gap-2 active:scale-98"
+          className="ui-btn ui-btn-soft-success py-3 px-4 text-xs sm:text-sm flex items-center justify-center gap-2"
           onClick={onExportExcel}
         >
           <span>📊</span>
@@ -136,7 +136,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
       </div>
 
       {/* Interactive Chart Section Card */}
-      <div className="bg-slate-900/90 border border-cyan-500/20 rounded-2xl p-3.5 backdrop-blur-sm">
+      <div className="ui-card p-3.5">
         <div className="flex items-center justify-between mb-3 pb-2 border-b border-cyan-500/20">
           <div className="font-['Chakra_Petch'] font-bold text-sm text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
             <span>📈</span>
@@ -152,14 +152,14 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
             placeholder="Pesquisar por nome ou nº do atleta..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-950/80 border border-cyan-500/30 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+            className="ui-input w-full text-xs"
           />
 
           <div className="flex gap-2">
             <select
               value={sortMode}
               onChange={(e) => setSortMode(e.target.value as any)}
-              className="bg-slate-950/80 border border-cyan-500/30 rounded-lg px-2 py-1 text-[11px] text-cyan-200 focus:outline-none"
+              className="ui-input text-[11px]"
             >
               <option value="pct">Ordenar por {t(state.lang, 'tr_sort_pct')}</option>
               <option value="num">Ordenar por {t(state.lang, 'tr_sort_num')}</option>
@@ -169,7 +169,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
             <select
               value={filterMode}
               onChange={(e) => setFilterMode(e.target.value as any)}
-              className="bg-slate-950/80 border border-cyan-500/30 rounded-lg px-2 py-1 text-[11px] text-cyan-200 focus:outline-none flex-1"
+              className="ui-input text-[11px] flex-1"
             >
               <option value="all">{t(state.lang, 'tr_filter_all')}</option>
               <option value="high">{t(state.lang, 'tr_filter_high')}</option>
@@ -180,7 +180,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
 
         {/* Attendance Chart Bars List */}
         {completedCount === 0 ? (
-          <div className="py-8 text-center bg-slate-950/50 rounded-xl border border-dashed border-slate-800 p-4">
+          <div className="ui-inset py-8 text-center p-4">
             <div className="text-3xl mb-2">⏱️</div>
             <p className="text-sm font-['Chakra_Petch'] text-cyan-300 font-bold uppercase">
               Ainda não existem treinos concluídos.
@@ -189,11 +189,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
               Tens {scheduledCount} treinos planeados na lista. Para passarem para as estatísticas, abre a lista e clica
               em "Concluir Treino" após a realização da sessão.
             </p>
-            <button
-              type="button"
-              onClick={onGoToList}
-              className="px-3 py-1.5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs uppercase"
-            >
+            <button type="button" onClick={onGoToList} className="ui-btn ui-btn-primary px-3 py-1.5 text-xs">
               Ver Lista de Treinos ➔
             </button>
           </div>
@@ -209,10 +205,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
               const isMed = st.pct >= 50 && st.pct < 80;
 
               return (
-                <div
-                  key={p.id}
-                  className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-cyan-500/40 transition-colors"
-                >
+                <div key={p.id} className="ui-inset p-2.5 transition-colors">
                   {/* Player Info Row: tap to see the trainings missed */}
                   <button
                     type="button"
@@ -243,7 +236,7 @@ export const TrainingAttendance: React.FC<TrainingAttendanceProps> = ({
 
                   {/* Visual Percentage Progress Bar */}
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 h-3 rounded-full bg-slate-900 border border-slate-800 overflow-hidden relative p-0.5">
+                    <div className="ui-card flex-1 h-3 overflow-hidden relative p-0.5">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
                           isHigh

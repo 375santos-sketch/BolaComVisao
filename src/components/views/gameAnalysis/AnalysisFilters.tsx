@@ -28,7 +28,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
   categoryDefaultHalfDuration
 }) => {
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 mb-6 shadow-xl backdrop-blur-md">
+    <div className="ui-card p-4 sm:p-5 mb-6">
       {/* Top Quick Bar: Search + Event Type + Filter Toggle + Reset */}
       <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         {/* Search & Event Quick Select */}
@@ -41,7 +41,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
               placeholder="Pesquisar por adversário, torneio..."
               value={filters.searchQuery || ''}
               onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
-              className="w-full bg-slate-950/80 border border-slate-700/80 rounded-2xl pl-9 pr-4 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-cyan-400 outline-none transition-all"
+              className="ui-input w-full text-xs"
             />
             {filters.searchQuery && (
               <button
@@ -120,7 +120,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
               type="button"
               onClick={onResetFilters}
               title="Repor todos os filtros"
-              className="px-3 py-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 text-xs font-bold transition-all"
+              className="ui-btn ui-btn-soft-danger px-3 py-2.5 text-xs"
             >
               ✕ Repor
             </button>
@@ -139,7 +139,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
             <select
               value={filters.season}
               onChange={(e) => onFilterChange({ season: e.target.value })}
-              className="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-400 outline-none"
+              className="ui-input w-full text-xs"
             >
               <option value="todas">Todas as Épocas</option>
               {availableSeasons.map((s) => (
@@ -156,7 +156,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
             <select
               value={filters.month}
               onChange={(e) => onFilterChange({ month: e.target.value })}
-              className="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-400 outline-none"
+              className="ui-input w-full text-xs"
             >
               <option value="todos">Todos os Meses</option>
               {availableMonths.map(([yyyymm, label]) => (
@@ -175,7 +175,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
             <select
               value={filters.opponent}
               onChange={(e) => onFilterChange({ opponent: e.target.value })}
-              className="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-400 outline-none"
+              className="ui-input w-full text-xs"
             >
               <option value="todos">Todos os Adversários</option>
               {availableOpponents.map((opp) => (
@@ -194,7 +194,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
             <select
               value={filters.matchType}
               onChange={(e) => onFilterChange({ matchType: e.target.value as MatchType | 'todos' })}
-              className="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-400 outline-none"
+              className="ui-input w-full text-xs"
             >
               <option value="todos">Todas as Competições</option>
               <option value="campeonato">Campeonato / Liga</option>
@@ -238,7 +238,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
             <select
               value={filters.halfDurationMinutes || categoryDefaultHalfDuration}
               onChange={(e) => onFilterChange({ halfDurationMinutes: parseInt(e.target.value, 10) })}
-              className="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-400 outline-none"
+              className="ui-input w-full text-xs"
             >
               <option value={20}>20 min / parte (Total 40' • Petizes/Traquinas)</option>
               <option value={25}>25 min / parte (Total 50' • Benjamins)</option>

@@ -106,7 +106,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
       id="coach-dashboard-view"
     >
       {/* 1. FILTER BAR (TOP CONTROLS) */}
-      <div className="bg-slate-900/90 border border-cyan-500/30 rounded-3xl p-3 sm:p-4 shadow-xl backdrop-blur-md flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="ui-card p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-xl shrink-0">
             🧠
@@ -168,7 +168,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                 }
               }}
               aria-label="Filtro de período para visão do treinador"
-              className="w-full bg-slate-950 border border-slate-700 hover:border-cyan-500/60 text-white text-xs font-bold font-['Chakra_Petch'] rounded-2xl px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer appearance-none"
+              className="ui-input w-full text-xs appearance-none"
             >
               <optgroup label="Período & Época">
                 {availableSeasons.map((s) => (
@@ -223,7 +223,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             <button
               type="button"
               onClick={handleResetFilter}
-              className="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-cyan-300 hover:text-white text-xs font-bold transition-colors border border-slate-700 cursor-pointer flex items-center gap-1.5 shrink-0"
+              className="ui-btn ui-btn-secondary px-3 py-2 text-xs flex items-center gap-1.5 shrink-0"
               title="Repor filtros para época atual"
             >
               <span>↺</span>
@@ -262,7 +262,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-mono text-slate-300 bg-slate-950/60 border border-slate-800/80 p-2.5 rounded-2xl sm:self-center">
+        <div className="ui-inset flex items-center gap-4 text-xs font-mono text-slate-300 p-2.5 sm:self-center">
           <div>
             <span className="text-slate-500 block text-[10px] uppercase">Marcados</span>
             <span className="text-emerald-400 font-bold text-sm">{coachData.goalsScoredTotal}</span>
@@ -293,7 +293,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           {/* INDICADOR 1: GOLOS POR JOGO */}
           <div
             onClick={() => handleOpenDetailed(coachData.indicators.goalsScored.targetAnalysisTab)}
-            className="bg-slate-900/90 border border-slate-800 hover:border-emerald-500/60 rounded-3xl p-4 shadow-md transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
+            className="ui-card p-4 transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
             id="coach-indicator-goals-scored"
           >
             <div>
@@ -329,7 +329,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           {/* INDICADOR 2: GOLOS SOFRIDOS POR JOGO */}
           <div
             onClick={() => handleOpenDetailed(coachData.indicators.goalsConceded.targetAnalysisTab)}
-            className="bg-slate-900/90 border border-slate-800 hover:border-rose-500/60 rounded-3xl p-4 shadow-md transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
+            className="ui-card p-4 transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
             id="coach-indicator-goals-conceded"
           >
             <div>
@@ -365,7 +365,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           {/* INDICADOR 3: TAXA DE VITÓRIA */}
           <div
             onClick={() => handleOpenDetailed(coachData.indicators.winRate.targetAnalysisTab)}
-            className="bg-slate-900/90 border border-slate-800 hover:border-cyan-500/60 rounded-3xl p-4 shadow-md transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
+            className="ui-card p-4 transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
             id="coach-indicator-win-rate"
           >
             <div>
@@ -399,7 +399,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           {/* INDICADOR 4: CANTOS POR JOGO */}
           <div
             onClick={() => handleOpenDetailed(coachData.indicators.corners.targetAnalysisTab)}
-            className="bg-slate-900/90 border border-slate-800 hover:border-amber-500/60 rounded-3xl p-4 shadow-md transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
+            className="ui-card p-4 transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
             id="coach-indicator-corners"
           >
             <div>
@@ -433,7 +433,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           {/* INDICADOR 5: MINUTO MÉDIO DO 1.º GOLO */}
           <div
             onClick={() => handleOpenDetailed(coachData.indicators.firstGoalMinute.targetAnalysisTab)}
-            className="bg-slate-900/90 border border-slate-800 hover:border-purple-500/60 rounded-3xl p-4 shadow-md transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
+            className="ui-card p-4 transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
             id="coach-indicator-first-goal"
           >
             <div>
@@ -461,7 +461,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
       {/* 2.5️⃣ DESTAQUES INDIVIDUAIS: OS 3 MELHORES MARCADORES E OS 3 MELHORES ASSISTENTES */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4" id="coach-top-players-section">
         {/* OS TRÊS MELHORES MARCADORES */}
-        <div className="bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col justify-between">
+        <div className="ui-card p-4 sm:p-5 flex flex-col justify-between">
           <div>
             <div
               onClick={() => {
@@ -503,7 +503,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                   return (
                     <div
                       key={`empty-scorer-${idx}`}
-                      className="p-2.5 sm:p-3 rounded-2xl border border-slate-800/50 bg-slate-950/30 flex items-center justify-between gap-3 text-slate-500 font-mono"
+                      className="ui-inset p-2.5 sm:p-3 flex items-center justify-between gap-3 text-slate-500 font-mono"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-base select-none shrink-0 opacity-50">{medal}</span>
@@ -570,7 +570,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               setGoalsAssistsModalTab('marcadores');
               setShowGoalsAssistsModal(true);
             }}
-            className="w-full mt-3 py-2 px-3 rounded-2xl bg-slate-950/80 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 hover:border-emerald-500/50 text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+            className="ui-btn ui-btn-soft-success w-full mt-3 py-2 px-3 text-xs flex items-center justify-center gap-1.5"
           >
             <span>Ver lista completa de golos e assistências</span>
             <span>➔</span>
@@ -578,7 +578,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         </div>
 
         {/* OS TRÊS MELHORES ASSISTENTES */}
-        <div className="bg-slate-900/90 border border-cyan-500/30 rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col justify-between">
+        <div className="ui-card p-4 sm:p-5 flex flex-col justify-between">
           <div>
             <div
               onClick={() => {
@@ -625,7 +625,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                   return (
                     <div
                       key={`empty-assister-${idx}`}
-                      className="p-2.5 sm:p-3 rounded-2xl border border-slate-800/50 bg-slate-950/30 flex items-center justify-between gap-3 text-slate-500 font-mono"
+                      className="ui-inset p-2.5 sm:p-3 flex items-center justify-between gap-3 text-slate-500 font-mono"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-base select-none shrink-0 opacity-50">{medal}</span>
@@ -694,7 +694,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               setGoalsAssistsModalTab('assistentes');
               setShowGoalsAssistsModal(true);
             }}
-            className="w-full mt-3 py-2 px-3 rounded-2xl bg-slate-950/80 hover:bg-cyan-500/20 text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 hover:border-cyan-500/50 text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+            className="ui-btn ui-btn-soft w-full mt-3 py-2 px-3 text-xs flex items-center justify-center gap-1.5"
           >
             <span>Ver lista completa de assistências e golos</span>
             <span>➔</span>
@@ -705,7 +705,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
       {/* 3️⃣ ÚLTIMOS 5 JOGOS & 4️⃣ TENDÊNCIA DA EQUIPA */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* ÚLTIMOS 5 JOGOS */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col justify-between">
+        <div className="ui-card p-4 sm:p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -729,7 +729,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                   <div
                     key={m.matchId}
                     onClick={() => handleOpenMatch(m.matchId)}
-                    className="p-2.5 rounded-2xl bg-slate-950/70 border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-900/80 transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                    className="ui-inset p-2.5 transition-all cursor-pointer flex items-center justify-between gap-3 group"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span
@@ -763,7 +763,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         </div>
 
         {/* TENDÊNCIA DA EQUIPA */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col justify-between">
+        <div className="ui-card p-4 sm:p-5 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -789,7 +789,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
 
             {/* Sparkline / Bar visualization */}
             {coachData.trend.matches.length > 0 ? (
-              <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-3">
+              <div className="ui-inset p-3">
                 <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-2">
                   <span>Golos Marcados (🟢) vs Sofridos (🔴)</span>
                   <span>Últimos Jogos</span>
@@ -839,7 +839,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
       {/* 5️⃣ PONTOS FORTES & 6️⃣ PONTOS DE ATENÇÃO */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* PONTOS FORTES */}
-        <div className="bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-4 sm:p-5 shadow-lg">
+        <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-base">🟢</span>
             <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 font-['Chakra_Petch']">
@@ -852,7 +852,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               <div
                 key={str.id}
                 onClick={() => handleOpenDetailed(str.targetTab)}
-                className="p-3 rounded-2xl bg-slate-950/60 border border-emerald-500/20 hover:border-emerald-500/50 transition-all cursor-pointer flex items-start gap-2.5 group"
+                className="ui-inset p-3 transition-all cursor-pointer flex items-start gap-2.5 group"
               >
                 <span className="text-lg shrink-0 mt-0.5">{str.icon}</span>
                 <div className="min-w-0 flex-1">
@@ -868,7 +868,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         </div>
 
         {/* PONTOS DE ATENÇÃO */}
-        <div className="bg-slate-900/90 border border-amber-500/30 rounded-3xl p-4 sm:p-5 shadow-lg">
+        <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-base">⚠️</span>
             <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400 font-['Chakra_Petch']">
@@ -881,7 +881,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               <div
                 key={att.id}
                 onClick={() => handleOpenDetailed(att.targetTab)}
-                className="p-3 rounded-2xl bg-slate-950/60 border border-amber-500/20 hover:border-amber-500/50 transition-all cursor-pointer flex items-start gap-2.5 group"
+                className="ui-inset p-3 transition-all cursor-pointer flex items-start gap-2.5 group"
               >
                 <span className="text-lg shrink-0 mt-0.5">{att.icon}</span>
                 <div className="min-w-0 flex-1">
@@ -902,7 +902,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         {/* 7️⃣ MARCÁMOS PRIMEIRO */}
         <div
           onClick={() => handleOpenDetailed('confronto')}
-          className="bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 rounded-3xl p-4 shadow-lg cursor-pointer transition-all hover:scale-[1.01] group flex flex-col justify-between"
+          className="ui-card p-4 cursor-pointer transition-all hover:scale-[1.01] group flex flex-col justify-between"
           id="coach-first-goal-card"
         >
           <div>
@@ -940,7 +940,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         {/* 8️⃣ BOLA PARADA */}
         <div
           onClick={() => handleOpenDetailed('bolas_paradas')}
-          className="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-3xl p-4 shadow-lg cursor-pointer transition-all hover:scale-[1.01] group flex flex-col justify-between"
+          className="ui-card p-4 cursor-pointer transition-all hover:scale-[1.01] group flex flex-col justify-between"
           id="coach-set-pieces-card"
         >
           <div>
@@ -987,7 +987,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         {/* 9️⃣ MOMENTO DO JOGO */}
         <div
           onClick={() => handleOpenDetailed('periodos')}
-          className="bg-slate-900/90 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-4 shadow-lg cursor-pointer transition-all hover:scale-[1.01] group flex flex-col justify-between"
+          className="ui-card p-4 cursor-pointer transition-all hover:scale-[1.01] group flex flex-col justify-between"
           id="coach-game-moment-card"
         >
           <div>
@@ -1000,7 +1000,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             </div>
 
             <div className="space-y-2">
-              <div className="p-2 rounded-xl bg-slate-950/60 border border-emerald-500/20 flex items-center justify-between">
+              <div className="ui-inset p-2 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] text-emerald-400 font-bold uppercase block">Mais Produtivo</span>
                   <span className="text-xs font-bold text-white">
@@ -1012,7 +1012,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                 </span>
               </div>
 
-              <div className="p-2 rounded-xl bg-slate-950/60 border border-rose-500/20 flex items-center justify-between">
+              <div className="ui-inset p-2 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] text-rose-400 font-bold uppercase block">Mais Vulnerável</span>
                   <span className="text-xs font-bold text-white">
@@ -1037,7 +1037,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => handleOpenDetailed()}
-          className="w-full py-4 px-6 rounded-3xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider shadow-xl shadow-cyan-500/20 hover:shadow-cyan-500/30 transition-all flex items-center justify-center gap-3 cursor-pointer group active:scale-[0.99]"
+          className="w-full py-4 px-6 rounded-3xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider shadow-xl transition-all flex items-center justify-center gap-3 cursor-pointer group active:scale-[0.99]"
           id="btn-ver-analise-completa"
         >
           <span>📊</span>

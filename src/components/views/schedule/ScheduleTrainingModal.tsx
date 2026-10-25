@@ -33,7 +33,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
   if (!showTrainingModal) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn text-left">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn text-left">
       <div className="bg-slate-900 border-t sm:border border-amber-500/40 rounded-t-3xl sm:rounded-3xl max-w-xl w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
         {/* Modal Header */}
         <div className="p-4 sm:p-5 pb-3 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-900/95">
@@ -59,7 +59,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
           <button
             type="button"
             onClick={() => setShowTrainingModal(false)}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-mono text-sm active:scale-95 transition-all"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
           >
             ✕
           </button>
@@ -68,7 +68,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
         {/* Mode Switcher when creating new */}
         {!editingTrainingId && (
           <div className="p-2 sm:px-5 bg-slate-950/70 border-b border-slate-800 shrink-0">
-            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-900 rounded-xl border border-slate-800">
+            <div className="ui-card grid grid-cols-2 gap-1.5 p-1">
               <button
                 type="button"
                 onClick={() => setModalMode('single')}
@@ -118,7 +118,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                     type="date"
                     value={trainingForm.date}
                     onChange={(e) => setTrainingForm({ ...trainingForm, date: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
                 <div>
@@ -127,7 +127,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                     type="time"
                     value={trainingForm.time}
                     onChange={(e) => setTrainingForm({ ...trainingForm, time: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
               </div>
@@ -138,7 +138,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                   <select
                     value={trainingForm.type}
                     onChange={(e) => setTrainingForm({ ...trainingForm, type: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   >
                     <option value="⚡ Tático">⚡ Tático</option>
                     <option value="🏃 Físico">🏃 Físico</option>
@@ -154,7 +154,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                     placeholder="Ex: Campo Principal"
                     value={trainingForm.location}
                     onChange={(e) => setTrainingForm({ ...trainingForm, location: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
               </div>
@@ -166,12 +166,12 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                   placeholder="Ex: Circulação de bola, transições defensivas e bolas paradas laterais..."
                   value={trainingForm.notes}
                   onChange={(e) => setTrainingForm({ ...trainingForm, notes: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                  className="ui-input w-full text-xs"
                 />
               </div>
 
               {/* Status Selector */}
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <div className="ui-inset p-3">
                 <span className="text-xs font-mono text-slate-400 block mb-2">Estado da Sessão:</span>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -211,7 +211,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                       setShowTrainingModal(false);
                     });
                   }}
-                  className="px-4 py-2.5 min-h-[44px] rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/60 text-red-300 hover:text-white text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
+                  className="ui-btn ui-btn-soft-danger px-4 py-2.5 min-h-[44px] text-xs flex items-center justify-center gap-1.5"
                   title="Eliminar este treino cancelado da agenda"
                 >
                   <span>🗑️</span>
@@ -225,21 +225,21 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowTrainingModal(false)}
-                  className="px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono font-semibold active:scale-95 transition-all"
+                  className="ui-btn ui-btn-secondary px-4 py-2.5 min-h-[44px] text-xs"
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSaveTrainingModal(false)}
-                  className="px-4 py-2.5 min-h-[44px] rounded-xl bg-amber-950 hover:bg-amber-900 border border-amber-500/60 text-amber-200 font-['Chakra_Petch'] font-bold text-xs uppercase active:scale-95 transition-all flex items-center justify-center"
+                  className="ui-btn ui-btn-soft-warning px-4 py-2.5 min-h-[44px] text-xs flex items-center justify-center"
                 >
                   📅 Guardar como Agendado
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSaveTrainingModal(true)}
-                  className="px-4 py-2.5 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-['Chakra_Petch'] font-black text-xs uppercase shadow-md active:scale-95 transition-all flex items-center justify-center"
+                  className="ui-btn ui-btn-success px-4 py-2.5 min-h-[44px] text-xs flex items-center justify-center"
                 >
                   ✅ Guardar & Concluir
                 </button>

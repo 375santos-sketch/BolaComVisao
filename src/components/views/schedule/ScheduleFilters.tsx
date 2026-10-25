@@ -29,7 +29,7 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
   const [quickAddDropdownOpen, setQuickAddDropdownOpen] = useState(false);
 
   return (
-    <div className="mb-4 bg-slate-950/90 border border-cyan-500/30 p-1.5 rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-2.5">
+    <div className="ui-inset mb-4 p-1.5 flex flex-col md:flex-row items-center justify-between gap-2.5">
       {/* Temporal Views */}
       <div className="grid grid-cols-5 gap-1 w-full md:w-auto">
         <button
@@ -179,7 +179,7 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
             </button>
 
             {quickAddDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-1.5 z-50 animate-fadeIn space-y-1">
+              <div className="ui-card absolute right-0 top-full mt-2 w-56 p-1.5 z-50 animate-fadeIn space-y-1">
                 {onOpenScheduleMatch && (
                   <button
                     type="button"
@@ -187,7 +187,7 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
                       setQuickAddDropdownOpen(false);
                       onOpenScheduleMatch(selectedDate);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-cyan-950/70 border border-transparent hover:border-cyan-500/40 text-cyan-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-2 transition-all"
+                    className="ui-btn ui-btn-secondary w-full text-left px-3 py-2 text-xs flex items-center gap-2"
                   >
                     <span className="text-base">⚽</span>
                     <span>＋ Agendar Jogo</span>
@@ -201,7 +201,7 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
                       setQuickAddDropdownOpen(false);
                       onOpenScheduleTraining(selectedDate);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-amber-950/70 border border-transparent hover:border-amber-500/40 text-amber-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-2 transition-all"
+                    className="ui-btn ui-btn-secondary w-full text-left px-3 py-2 text-xs flex items-center gap-2"
                   >
                     <span className="text-base">⚡</span>
                     <span>＋ Agendar Treino</span>
@@ -215,7 +215,7 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
                       setQuickAddDropdownOpen(false);
                       onOpenClubEventModal(selectedDate);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-950/70 border border-transparent hover:border-purple-500/40 text-purple-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-2 transition-all"
+                    className="ui-btn ui-btn-secondary w-full text-left px-3 py-2 text-xs flex items-center gap-2"
                   >
                     <span className="text-base">👥</span>
                     <span>＋ Reunião / Formação</span>
@@ -229,7 +229,7 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
                       setQuickAddDropdownOpen(false);
                       onOpenScheduleStaff(selectedDate);
                     }}
-                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-orange-950/70 border border-transparent hover:border-orange-500/40 text-orange-300 text-xs font-['Chakra_Petch'] font-bold flex items-center gap-2 transition-all"
+                    className="ui-btn ui-btn-secondary w-full text-left px-3 py-2 text-xs flex items-center gap-2"
                   >
                     <span className="text-base">🚫</span>
                     <span>＋ Indisponível (Equipa)</span>

@@ -19,19 +19,18 @@ export const Card: React.FC<CardProps> = ({
     lg: 'p-5 sm:p-6'
   };
 
+  // Shared look from the design system (index.css)
   const variantStyles = {
-    default: 'bg-slate-900/80 border-slate-800/80 shadow-md',
-    elevated: 'bg-slate-900/90 border-slate-700/80 shadow-xl',
-    spotlight:
-      'bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border-cyan-500/40 shadow-[0_0_20px_rgba(0,210,255,0.12)]',
-    outline: 'bg-transparent border-slate-800 hover:border-slate-700',
-    interactive:
-      'bg-slate-900/80 border-slate-800 hover:border-cyan-500/50 hover:bg-slate-900 cursor-pointer transition-all duration-200 active:scale-[0.99] shadow-md hover:shadow-cyan-500/5'
+    default: 'ui-card',
+    elevated: 'ui-card',
+    spotlight: 'ui-card border-cyan-500/40',
+    outline: 'ui-card bg-transparent',
+    interactive: 'ui-card cursor-pointer hover:border-cyan-500/50 active:scale-[0.99]'
   };
 
   return (
     <div
-      className={`rounded-2xl border backdrop-blur-sm transition-all duration-200 ${variantStyles[variant]} ${paddingStyles[padding]} ${className}`}
+      className={`transition-all duration-200 ${variantStyles[variant]} ${paddingStyles[padding]} ${className}`}
       {...props}
     >
       {children}

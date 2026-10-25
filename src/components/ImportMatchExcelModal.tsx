@@ -295,12 +295,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
   const selectedCount = parsedRows.filter((r) => r.selected && r.isValid).length;
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in text-left">
-      <div className="modal card max-w-5xl w-full max-h-[92dvh] overflow-y-auto bg-slate-950 border border-cyan-500/40 rounded-3xl p-4 sm:p-6 shadow-[0_0_50px_rgba(0,210,255,0.25)] flex flex-col scrollbar-thin">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-center justify-center p-2 sm:p-4 animate-fade-in text-left">
+      <div className="ui-inset modal card max-w-5xl w-full max-h-[92dvh] overflow-y-auto p-4 sm:p-6 flex flex-col scrollbar-thin">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-cyan-500/20 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-xl shadow-[0_0_15px_rgba(0,210,255,0.2)]">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-xl">
               ⚽
             </div>
             <div>
@@ -325,7 +325,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
         </div>
 
         {/* Progress Bar & Steps Tabs */}
-        <div className="flex items-center justify-between gap-2 mb-4 bg-slate-900/60 p-1.5 rounded-2xl border border-slate-800">
+        <div className="ui-card flex items-center justify-between gap-2 mb-4 p-1.5">
           <button
             onClick={() => setStep('upload')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
@@ -383,7 +383,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
         {/* FICHA DE JOGO: single match recovered from an exported match sheet */}
         {step === 'ficha' && sheetImport && (
           <div className="space-y-4 py-2">
-            <div className="p-4 rounded-2xl bg-slate-900/70 border border-cyan-500/30 space-y-2">
+            <div className="ui-card p-4 space-y-2">
               <div className="text-[11px] font-mono text-cyan-300 uppercase">Ficha de Jogo detetada</div>
               <div className="text-lg font-bold text-white">
                 vs {sheetImport.match.opponent}{' '}
@@ -424,7 +424,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                   setSheetImport(null);
                   setStep('upload');
                 }}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 bg-slate-900 border border-slate-700"
+                className="ui-btn ui-btn-secondary px-4 py-2 text-xs"
               >
                 Cancelar
               </button>
@@ -432,7 +432,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                 <button
                   type="button"
                   onClick={() => handleConfirmSheetImport(true)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-amber-400"
+                  className="ui-btn ui-btn-warning px-4 py-2 text-xs"
                 >
                   Substituir jogo existente
                 </button>
@@ -440,7 +440,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleConfirmSheetImport(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-cyan-400"
+                className="ui-btn ui-btn-primary px-4 py-2 text-xs"
               >
                 {sheetDuplicate ? 'Importar como novo' : 'Importar jogo'}
               </button>
@@ -493,7 +493,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                   }
                 }}
               />
-              <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-3xl mb-1 shadow-[0_0_20px_rgba(0,210,255,0.2)]">
+              <div className="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-3xl mb-1">
                 📥
               </div>
               <div className="font-['Chakra_Petch'] font-bold text-base text-white uppercase">
@@ -504,16 +504,13 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                 <span className="text-cyan-300 font-mono">.xls</span> ou{' '}
                 <span className="text-cyan-300 font-mono">.csv</span> com deteção automática de colunas.
               </div>
-              <button
-                type="button"
-                className="mt-2 px-5 py-2.5 rounded-xl bg-cyan-500 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:bg-cyan-400 transition-colors"
-              >
+              <button type="button" className="ui-btn ui-btn-primary mt-2 px-5 py-2.5 text-xs">
                 Procurar no Computador
               </button>
             </div>
 
             {/* Template Download Section */}
-            <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="ui-card p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📋</span>
                 <div>
@@ -528,7 +525,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               <button
                 type="button"
                 onClick={downloadMatchExcelTemplate}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 text-xs font-bold font-['Chakra_Petch'] uppercase transition-colors flex items-center gap-2 whitespace-nowrap"
+                className="ui-btn ui-btn-soft px-4 py-2 text-xs flex items-center gap-2 whitespace-nowrap"
               >
                 <span>💾 Descarregar Modelo Excel</span>
               </button>
@@ -541,12 +538,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
           <div className="space-y-4 flex-1">
             {/* Sheet Selector */}
             {workbookData.sheetNames.length > 1 && (
-              <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2">
+              <div className="ui-card p-3 flex items-center justify-between gap-2">
                 <span className="text-xs text-slate-300 font-bold">Folha do Excel Selecionada:</span>
                 <select
                   value={selectedSheet}
                   onChange={(e) => handleSheetChange(e.target.value)}
-                  className="bg-slate-950 border border-cyan-500/30 text-cyan-300 text-xs rounded-xl px-3 py-1.5"
+                  className="ui-input text-xs"
                 >
                   {workbookData.sheetNames.map((sn) => (
                     <option key={sn} value={sn}>
@@ -563,12 +560,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {/* Opponent */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="ui-card p-3">
                 <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">Adversário *</label>
                 <select
                   value={columnMapping.opponent}
                   onChange={(e) => setColumnMapping({ ...columnMapping, opponent: e.target.value })}
-                  className="w-full bg-slate-950 border border-cyan-500/30 rounded-lg p-2 text-xs text-white"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">-- Não Mapeado --</option>
                   {workbookData.rawHeaders.map((h) => (
@@ -580,12 +577,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               </div>
 
               {/* Date */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="ui-card p-3">
                 <label className="block text-[11px] font-bold text-cyan-300 uppercase mb-1">Data do Jogo *</label>
                 <select
                   value={columnMapping.date}
                   onChange={(e) => setColumnMapping({ ...columnMapping, date: e.target.value })}
-                  className="w-full bg-slate-950 border border-cyan-500/30 rounded-lg p-2 text-xs text-white"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">-- Não Mapeado --</option>
                   {workbookData.rawHeaders.map((h) => (
@@ -597,12 +594,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               </div>
 
               {/* Time */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="ui-card p-3">
                 <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Hora de Início</label>
                 <select
                   value={columnMapping.time}
                   onChange={(e) => setColumnMapping({ ...columnMapping, time: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">-- Não Mapeado --</option>
                   {workbookData.rawHeaders.map((h) => (
@@ -614,14 +611,14 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               </div>
 
               {/* Match Type */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="ui-card p-3">
                 <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">
                   Tipo de Jogo / Competição
                 </label>
                 <select
                   value={columnMapping.type}
                   onChange={(e) => setColumnMapping({ ...columnMapping, type: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">-- Não Mapeado --</option>
                   {workbookData.rawHeaders.map((h) => (
@@ -633,12 +630,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               </div>
 
               {/* Location */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="ui-card p-3">
                 <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Local (Casa / Fora)</label>
                 <select
                   value={columnMapping.location}
                   onChange={(e) => setColumnMapping({ ...columnMapping, location: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">-- Não Mapeado --</option>
                   {workbookData.rawHeaders.map((h) => (
@@ -650,14 +647,14 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               </div>
 
               {/* Goals Scored / Score */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="ui-card p-3">
                 <label className="block text-[11px] font-bold text-emerald-400 uppercase mb-1">
                   Golos Marcados (ou Resultado ex: 3-1)
                 </label>
                 <select
                   value={columnMapping.goalsScored}
                   onChange={(e) => setColumnMapping({ ...columnMapping, goalsScored: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">-- Não Mapeado --</option>
                   {workbookData.rawHeaders.map((h) => (
@@ -669,12 +666,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               </div>
 
               {/* Goals Conceded */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="ui-card p-3">
                 <label className="block text-[11px] font-bold text-rose-400 uppercase mb-1">Golos Sofridos</label>
                 <select
                   value={columnMapping.goalsConceded}
                   onChange={(e) => setColumnMapping({ ...columnMapping, goalsConceded: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">-- Não Mapeado --</option>
                   {workbookData.rawHeaders.map((h) => (
@@ -686,12 +683,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               </div>
 
               {/* Phase / Round */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="ui-card p-3">
                 <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Jornada / Fase</label>
                 <select
                   value={columnMapping.phase}
                   onChange={(e) => setColumnMapping({ ...columnMapping, phase: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">-- Não Mapeado --</option>
                   {workbookData.rawHeaders.map((h) => (
@@ -703,12 +700,12 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               </div>
 
               {/* Corners For */}
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="ui-card p-3">
                 <label className="block text-[11px] font-bold text-slate-300 uppercase mb-1">Cantos a Favor</label>
                 <select
                   value={columnMapping.cornersFor}
                   onChange={(e) => setColumnMapping({ ...columnMapping, cornersFor: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white"
+                  className="ui-input w-full text-xs"
                 >
                   <option value="">-- Não Mapeado --</option>
                   {workbookData.rawHeaders.map((h) => (
@@ -724,15 +721,11 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               <button
                 type="button"
                 onClick={() => setStep('upload')}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                className="ui-btn ui-btn-secondary px-4 py-2 text-xs"
               >
                 Voltar
               </button>
-              <button
-                type="button"
-                onClick={handleApplyMapping}
-                className="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:bg-cyan-400"
-              >
+              <button type="button" onClick={handleApplyMapping} className="ui-btn ui-btn-primary px-5 py-2 text-xs">
                 Aplicar Mapeamento & Pré-visualizar ➔
               </button>
             </div>
@@ -743,7 +736,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
         {step === 'preview' && (
           <div className="space-y-4 flex-1 flex flex-col">
             {/* EXPLICIT VALIDATION DIAGNOSTICS BANNER (Point 8) */}
-            <div className="p-4 rounded-2xl bg-slate-900/90 border border-cyan-500/40 shadow-xl space-y-3">
+            <div className="ui-card p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-base">📋</span>
@@ -782,7 +775,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                         onChange={(e) => {
                           if (e.target.value) handleSetAllDuplicateActions(e.target.value as MatchDuplicateAction);
                         }}
-                        className="mt-1 bg-slate-900 border border-amber-500/40 text-amber-300 text-[10px] rounded px-1.5 py-0.5"
+                        className="ui-input mt-1 text-[10px]"
                       >
                         <option value="">Aplicar a todos…</option>
                         <option value="replace">Substituir Existentes</option>
@@ -812,7 +805,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
             </div>
 
             {/* Filter Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-800">
+            <div className="ui-card flex flex-wrap items-center justify-between gap-2 p-2">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -860,7 +853,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                   placeholder="Pesquisar..."
                   value={searchInPreview}
                   onChange={(e) => setSearchInPreview(e.target.value)}
-                  className="bg-slate-950 border border-slate-700 text-xs text-white rounded-lg px-2.5 py-1"
+                  className="ui-input text-xs"
                 />
                 <button
                   type="button"
@@ -880,7 +873,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
             </div>
 
             {/* Table */}
-            <div className="flex-1 max-h-[360px] overflow-y-auto border border-slate-800 rounded-2xl bg-slate-950/60 scrollbar-thin">
+            <div className="ui-inset flex-1 max-h-[360px] overflow-y-auto scrollbar-thin">
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="sticky top-0 bg-slate-900 text-slate-300 border-b border-slate-800 font-mono text-[11px]">
                   <tr>
@@ -948,7 +941,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                           <select
                             value={row.duplicateAction}
                             onChange={(e) => handleSetDuplicateAction(row.id, e.target.value as MatchDuplicateAction)}
-                            className="bg-slate-900 border border-amber-500/40 text-amber-300 text-[11px] rounded px-2 py-1"
+                            className="ui-input text-[11px]"
                           >
                             <option value="replace">Substituir Existente</option>
                             <option value="skip">Ignorar (Manter Atual)</option>
@@ -969,7 +962,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
               <button
                 type="button"
                 onClick={() => setStep('mapping')}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                className="ui-btn ui-btn-secondary px-4 py-2 text-xs"
               >
                 Voltar ao Mapeamento
               </button>
@@ -982,7 +975,7 @@ export const ImportMatchExcelModal: React.FC<ImportMatchExcelModalProps> = ({
                   type="button"
                   disabled={selectedCount === 0}
                   onClick={handleConfirmImport}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-[0_0_20px_rgba(0,210,255,0.4)] hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Concluir & Importar Jogos ➔
                 </button>

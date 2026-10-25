@@ -358,12 +358,12 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-slate-900 border-t sm:border border-cyan-500/30 rounded-t-3xl sm:rounded-3xl w-full max-w-2xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col shadow-[0_0_50px_rgba(0,210,255,0.2)] overflow-hidden text-left">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+      <div className="bg-slate-900 border-t sm:border border-cyan-500/30 rounded-t-3xl sm:rounded-3xl w-full max-w-2xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden text-left">
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-cyan-500/20 flex items-center justify-between bg-slate-950/80 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 flex items-center justify-center text-xl shadow-[0_0_15px_rgba(0,210,255,0.2)]">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 flex items-center justify-center text-xl">
               👥
             </div>
             <div>
@@ -383,7 +383,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-slate-800/80 border border-slate-700 hover:border-cyan-400 text-slate-400 hover:text-white flex items-center justify-center transition-all active:scale-95 text-lg cursor-pointer"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-lg"
           >
             ✕
           </button>
@@ -465,7 +465,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                   <span>A carregar pedidos na nuvem...</span>
                 </div>
               ) : pendingUsers.length === 0 ? (
-                <div className="py-12 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40 p-6">
+                <div className="ui-inset py-12 text-center p-6">
                   <div className="text-3xl mb-2">✨</div>
                   <div className="text-sm font-bold text-white font-['Chakra_Petch'] uppercase">
                     Não há pedidos pendentes
@@ -505,7 +505,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                     return (
                       <div
                         key={user.id}
-                        className="bg-slate-950 border-2 border-amber-500/40 rounded-2xl p-4 transition-all hover:border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.1)] flex flex-col gap-3.5"
+                        className="bg-slate-950 border-2 border-amber-500/40 rounded-2xl p-4 transition-all hover:border-amber-400 flex flex-col gap-3.5"
                       >
                         {/* Header & User identity */}
                         <div className="flex items-start justify-between gap-2">
@@ -551,7 +551,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                 );
                                 onShowToast('A abrir WhatsApp... 💬');
                               }}
-                              className="p-1.5 px-2 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900 text-xs transition-all flex items-center gap-1 cursor-pointer"
+                              className="ui-btn ui-btn-soft-success p-1.5 px-2 text-xs flex items-center gap-1"
                               title="Contactar via WhatsApp"
                             >
                               <span>💬</span>
@@ -568,7 +568,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                 );
                                 onShowToast('A abrir cliente de e-mail... 📧');
                               }}
-                              className="p-1.5 px-2 rounded-xl bg-cyan-950/70 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-900 text-xs transition-all flex items-center gap-1 cursor-pointer"
+                              className="ui-btn ui-btn-soft p-1.5 px-2 text-xs flex items-center gap-1"
                               title="Contactar via E-mail"
                             >
                               <span>📧</span>
@@ -578,7 +578,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                         </div>
 
                         {/* Authorization Settings Section */}
-                        <div className="bg-slate-900/90 border border-cyan-500/30 rounded-xl p-3 space-y-3">
+                        <div className="ui-card p-3 space-y-3">
                           {/* Role Selection */}
                           <div>
                             <label className="block text-[11px] font-mono text-cyan-300 font-bold mb-1">
@@ -587,7 +587,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                             <select
                               value={currentSelectedRole}
                               onChange={(e) => setSelectedRoles((prev) => ({ ...prev, [user.id]: e.target.value }))}
-                              className="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
+                              className="ui-input w-full text-xs"
                             >
                               {AVAILABLE_ROLES.map((r) => (
                                 <option key={r} value={r}>
@@ -642,7 +642,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                           <button
                             onClick={() => handleApprove(user)}
                             disabled={isProcessing}
-                            className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                            className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                           >
                             {isProcessing ? 'A processar...' : '✅ Autorizar Acesso'}
                           </button>
@@ -650,7 +650,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                           <button
                             onClick={() => handleReject(user)}
                             disabled={isProcessing}
-                            className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-red-950/80 border border-red-500/50 text-red-300 font-['Chakra_Petch'] font-bold text-xs uppercase hover:bg-red-900 hover:text-white active:scale-98 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                            className="ui-btn ui-btn-soft-danger w-full sm:w-auto py-2.5 px-4 text-xs flex items-center justify-center gap-1.5"
                             title="Recusar pedido de acesso"
                           >
                             <span>❌</span>
@@ -717,7 +717,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
               </div>
 
               {/* Strict Rule Notice */}
-              <div className="bg-slate-950/80 border border-cyan-500/20 rounded-xl px-3 py-2 text-[11px] font-mono text-slate-300 flex items-center gap-2">
+              <div className="ui-inset px-3 py-2 text-[11px] font-mono text-slate-300 flex items-center gap-2">
                 <span className="text-amber-400 font-bold">🔒 Gestão de Permissões:</span>
                 <span>
                   O Administrador Principal é <strong>inviolável</strong> ({ADMIN_EMAIL}). Podem ser promovidos outros
@@ -741,7 +741,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                   return (
                     <div
                       key={user.id}
-                      className="bg-slate-950 border-2 border-amber-500/40 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[0_0_15px_rgba(245,158,11,0.1)]"
+                      className="bg-slate-950 border-2 border-amber-500/40 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-lg shrink-0">
@@ -776,7 +776,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                             <button
                               onClick={() => handleDemoteAdmin(user)}
                               disabled={isProcessing}
-                              className="px-3 py-1.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 hover:bg-red-900 text-xs font-mono font-bold transition-all cursor-pointer disabled:opacity-50"
+                              className="ui-btn ui-btn-soft-danger px-3 py-1.5 text-xs"
                               title="Remover Privilégios de Administrador"
                             >
                               {isProcessing ? '...' : '⛔ Remover Privilégios'}
@@ -790,7 +790,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
               </div>
 
               {isAdmin && coachUsers.length > 0 && (
-                <div className="p-3 rounded-2xl bg-slate-950/60 border border-dashed border-amber-500/30">
+                <div className="ui-inset p-3">
                   <div className="text-xs font-bold text-amber-300 font-['Chakra_Petch'] uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <span>👑</span>
                     <span>Promover a Administrador</span>
@@ -801,7 +801,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                         key={user.id}
                         onClick={() => handlePromoteToAdmin(user)}
                         disabled={processingId === user.id}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-amber-500/30 text-amber-200 text-[11px] font-mono hover:bg-amber-950/60 transition-all disabled:opacity-50"
+                        className="ui-btn ui-btn-soft-warning px-2.5 py-1.5 text-[11px]"
                         title={`Promover ${user.name} a Administrador`}
                       >
                         + {user.name}
@@ -826,7 +826,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                 </div>
 
                 {coachUsers.length === 0 ? (
-                  <div className="p-5 rounded-2xl bg-slate-950/60 border border-dashed border-slate-800 text-center text-xs text-slate-400 font-mono">
+                  <div className="ui-inset p-5 text-center text-xs text-slate-400 font-mono">
                     Ainda não existem treinadores adicionais autorizados. Quando outros treinadores se registarem,
                     aprove-os na aba <strong>Pedidos Pendentes</strong>.
                   </div>
@@ -861,10 +861,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                     };
 
                     return (
-                      <div
-                        key={user.id}
-                        className="bg-slate-950 border border-cyan-500/20 rounded-2xl p-4 flex flex-col gap-3 hover:border-cyan-500/40 transition-all"
-                      >
+                      <div key={user.id} className="ui-inset p-4 flex flex-col gap-3 transition-all">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-lg shrink-0">
@@ -894,7 +891,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                               value={user.role || 'Treinador Principal'}
                               onChange={(e) => handleChangeRole(user, e.target.value)}
                               disabled={!isAdmin || isProcessing}
-                              className="bg-slate-900 border border-cyan-500/30 rounded-xl px-2.5 py-1.5 text-xs text-cyan-200 font-mono focus:outline-none focus:border-cyan-400 disabled:opacity-60 cursor-pointer"
+                              className="ui-input text-xs disabled:opacity-60"
                             >
                               {AVAILABLE_ROLES.map((r) => (
                                 <option key={r} value={r}>
@@ -908,7 +905,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                 <button
                                   onClick={() => handleReject(user)}
                                   disabled={isProcessing}
-                                  className="p-1.5 rounded-xl bg-amber-950/60 border border-amber-500/40 text-amber-300 hover:bg-amber-900 text-xs transition-all cursor-pointer"
+                                  className="ui-btn ui-btn-soft-warning p-1.5 text-xs"
                                   title="Suspender Acesso"
                                 >
                                   ⏸️
@@ -916,7 +913,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                 <button
                                   onClick={() => handleDelete(user)}
                                   disabled={isProcessing}
-                                  className="p-1.5 rounded-xl bg-red-950/60 border border-red-500/40 text-red-300 hover:bg-red-900 text-xs transition-all cursor-pointer"
+                                  className="ui-btn ui-btn-soft-danger p-1.5 text-xs"
                                   title="Eliminar Conta"
                                 >
                                   🗑️
@@ -936,7 +933,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                               <button
                                 onClick={() => handleSaveAssignedTeams(user)}
                                 disabled={isProcessing}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-['Chakra_Petch'] font-bold text-[11px] uppercase transition-all shadow-[0_0_10px_rgba(16,185,129,0.3)] cursor-pointer"
+                                className="ui-btn ui-btn-success px-2.5 py-1 text-[11px]"
                               >
                                 {isProcessing ? 'A guardar...' : '💾 Guardar Autorizações'}
                               </button>
@@ -1009,10 +1006,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                   </div>
                   <div className="space-y-2">
                     {rejectedUsers.map((user) => (
-                      <div
-                        key={user.id}
-                        className="bg-slate-950/60 border border-red-500/20 rounded-xl p-2.5 flex items-center justify-between text-xs"
-                      >
+                      <div key={user.id} className="ui-inset p-2.5 flex items-center justify-between text-xs">
                         <div>
                           <span className="font-bold text-slate-300">{user.name}</span>
                           <span className="text-slate-500 font-mono ml-2">(@{user.username})</span>
@@ -1020,13 +1014,13 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleApprove(user)}
-                            className="px-2 py-1 rounded-lg bg-emerald-950 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900 font-mono text-[10px] cursor-pointer"
+                            className="ui-btn ui-btn-soft-success px-2 py-1 text-[10px]"
                           >
                             Reautorizar
                           </button>
                           <button
                             onClick={() => handleDelete(user)}
-                            className="p-1 rounded-lg bg-red-950 border border-red-500/40 text-red-300 hover:bg-red-900 text-[10px] cursor-pointer"
+                            className="ui-btn ui-btn-soft-danger p-1 text-[10px]"
                           >
                             🗑️
                           </button>
@@ -1051,7 +1045,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                 </div>
               </div>
 
-              <div className="bg-slate-950 border border-cyan-500/30 rounded-2xl p-4 space-y-3.5">
+              <div className="ui-inset p-4 space-y-3.5">
                 <div>
                   <label className="block text-xs font-mono text-cyan-300 font-bold mb-1">
                     Nome Completo do Treinador: *
@@ -1062,7 +1056,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="Ex: João Pereira"
-                    className="w-full bg-slate-900 border border-cyan-500/40 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
 
@@ -1077,7 +1071,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       placeholder="treinador@exemplo.com ou j.pereira"
-                      className="w-full bg-slate-900 border border-cyan-500/40 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                      className="ui-input w-full text-xs"
                     />
                   </div>
 
@@ -1092,7 +1086,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Mínimo 6 caracteres"
-                      className="w-full bg-slate-900 border border-cyan-500/40 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                      className="ui-input w-full text-xs"
                     />
                   </div>
                 </div>
@@ -1104,7 +1098,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value)}
-                    className="w-full bg-slate-900 border border-cyan-500/40 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
+                    className="ui-input w-full text-xs"
                   >
                     {AVAILABLE_ROLES.map((r) => (
                       <option key={r} value={r}>
@@ -1155,7 +1149,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                   <button
                     type="submit"
                     disabled={isCreatingUser}
-                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {isCreatingUser ? (
                       <>
@@ -1177,7 +1171,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
           {/* TAB 4: CLOUD & MULTI-DEVICE STATUS */}
           {activeTab === 'cloud' && (
             <div className="space-y-4 text-xs">
-              <div className="bg-slate-950 border border-cyan-500/20 rounded-2xl p-4 space-y-3">
+              <div className="ui-inset p-4 space-y-3">
                 <div className="flex items-center gap-2 text-sm font-bold text-white font-['Chakra_Petch']">
                   <span>☁️ Base de Dados Partilhada do Clube</span>
                 </div>
@@ -1187,18 +1181,18 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                   prancha tática) são sincronizadas em tempo real.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800 font-mono text-[11px]">
-                  <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                  <div className="ui-card p-2.5">
                     <span className="text-slate-400 block">Segurança:</span>
                     <span className="text-emerald-400 font-bold">✓ Autorização Obrigatória por {ADMIN_EMAIL}</span>
                   </div>
-                  <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                  <div className="ui-card p-2.5">
                     <span className="text-slate-400 block">Sincronização:</span>
                     <span className="text-cyan-300 font-bold">✓ Firestore Cloud em Tempo Real</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-slate-950 border border-cyan-500/20 rounded-2xl p-4 flex items-center justify-between gap-3">
+              <div className="ui-inset p-4 flex items-center justify-between gap-3">
                 <div>
                   <div className="font-bold text-white font-['Chakra_Petch']">Forçar Sincronização Master</div>
                   <p className="text-[11px] text-slate-400 font-mono">
@@ -1208,7 +1202,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                 <button
                   onClick={handleForceMasterSync}
                   disabled={processingId === 'sync_master'}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold uppercase text-xs hover:brightness-110 active:scale-95 transition-all shadow-[0_0_12px_rgba(0,210,255,0.3)] shrink-0 disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold uppercase text-xs hover:brightness-110 active:scale-95 transition-all shrink-0 disabled:opacity-50 cursor-pointer"
                 >
                   {processingId === 'sync_master' ? 'A Sincronizar...' : 'Forçar Sync Master 🚀'}
                 </button>
@@ -1224,7 +1218,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 min-h-[40px] rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all active:scale-95 cursor-pointer flex items-center justify-center"
+            className="ui-btn ui-btn-secondary px-4 py-2 min-h-[40px] flex items-center justify-center"
           >
             Fechar
           </button>

@@ -35,7 +35,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <div className="flex flex-col gap-4">
       {/* Top Header Card */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl relative overflow-hidden backdrop-blur-sm">
+      <div className="ui-card p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
         {/* Club Brand Info */}
@@ -45,11 +45,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <img
                 src={state.clubLogoUrl}
                 alt="Emblema do Clube"
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-cyan-500/40 shadow-lg shadow-cyan-500/10 bg-slate-950 p-1"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-cyan-500/40 shadow-lg bg-slate-950 p-1"
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-slate-900 to-cyan-950 border-2 border-cyan-500/40 flex flex-col items-center justify-center shadow-lg shadow-cyan-500/10">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-slate-900 to-cyan-950 border-2 border-cyan-500/40 flex flex-col items-center justify-center shadow-lg">
                 <span className="text-xl">⚽</span>
                 <span className="text-[9px] font-mono text-cyan-400 font-bold tracking-tighter mt-0.5">BCV</span>
               </div>
@@ -88,7 +88,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <button
               id="dashboard-notifications-btn"
               onClick={onOpenNotifications}
-              className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white transition-colors"
+              className="ui-btn ui-btn-secondary relative p-2"
               title="Notificações do Sistema"
             >
               <span className="text-base">🔔</span>
@@ -105,7 +105,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <button
               id="dashboard-admin-users-btn"
               onClick={onOpenAdminUsers}
-              className="relative p-2 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/40 text-cyan-300 transition-colors flex items-center gap-1.5 px-3"
+              className="ui-btn ui-btn-soft relative p-2 flex items-center gap-1.5 px-3"
               title="Gestão de Utilizadores e Treinadores"
             >
               <span className="text-sm">👥</span>
@@ -122,7 +122,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <button
             id="dashboard-backup-btn"
             onClick={onExportBackup}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-cyan-300 transition-colors"
+            className="ui-btn ui-btn-secondary p-2"
             title="Exportar Backup JSON Completo"
           >
             <span className="text-base">💾</span>
@@ -132,7 +132,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <button
             id="dashboard-settings-btn"
             onClick={onOpenSettings}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-cyan-300 transition-colors"
+            className="ui-btn ui-btn-secondary p-2"
             title="Definições da Aplicação"
           >
             <span className="text-base">⚙️</span>

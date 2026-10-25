@@ -27,7 +27,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
   if (!showMatchModal) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
       <div className="bg-slate-900 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
         {/* Modal Header */}
         <div className="p-4 sm:p-5 pb-3 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-900/95">
@@ -40,7 +40,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
           <button
             type="button"
             onClick={() => setShowMatchModal(false)}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-mono text-sm active:scale-95 transition-all"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
           >
             ✕
           </button>
@@ -99,7 +99,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                   placeholder="Ex: Torneio de Verão de Sintra"
                   value={matchForm.tournamentName}
                   onChange={(e) => setMatchForm({ ...matchForm, tournamentName: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                  className="ui-input w-full text-xs"
                 />
               </div>
 
@@ -108,7 +108,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                   Jogos do Torneio:
                 </span>
                 {matchForm.games.map((g, i) => (
-                  <div key={g.id} className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                  <div key={g.id} className="ui-inset p-3 space-y-2">
                     <div className="flex items-center justify-between text-xs font-mono text-slate-400">
                       <span>Jogo {i + 1}</span>
                       <button
@@ -135,7 +135,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                           );
                           setMatchForm({ ...matchForm, games: newG });
                         }}
-                        className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono"
+                        className="ui-input text-xs"
                       />
                       <input
                         type="text"
@@ -145,7 +145,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                           const newG = matchForm.games.map((x) => (x.id === g.id ? { ...x, opp: e.target.value } : x));
                           setMatchForm({ ...matchForm, games: newG });
                         }}
-                        className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono"
+                        className="ui-input text-xs"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -156,7 +156,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                           const newG = matchForm.games.map((x) => (x.id === g.id ? { ...x, date: e.target.value } : x));
                           setMatchForm({ ...matchForm, games: newG });
                         }}
-                        className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-cyan-300 text-xs font-mono"
+                        className="ui-input text-xs"
                       />
                       <input
                         type="time"
@@ -165,7 +165,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                           const newG = matchForm.games.map((x) => (x.id === g.id ? { ...x, time: e.target.value } : x));
                           setMatchForm({ ...matchForm, games: newG });
                         }}
-                        className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-cyan-300 text-xs font-mono"
+                        className="ui-input text-xs"
                       />
                     </div>
                   </div>
@@ -189,7 +189,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                       ]
                     });
                   }}
-                  className="w-full py-2.5 rounded-xl bg-slate-950 border border-dashed border-cyan-500/50 hover:border-cyan-400 text-cyan-300 text-xs font-mono"
+                  className="ui-btn ui-btn-soft w-full py-2.5 text-xs"
                 >
                   ＋ Adicionar Outro Jogo ao Torneio
                 </button>
@@ -204,7 +204,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                   placeholder="Nome da equipa adversária"
                   value={matchForm.opp}
                   onChange={(e) => setMatchForm({ ...matchForm, opp: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                  className="ui-input w-full text-xs"
                 />
               </div>
 
@@ -215,7 +215,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                     type="date"
                     value={matchForm.date}
                     onChange={(e) => setMatchForm({ ...matchForm, date: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-300 text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
                 <div>
@@ -224,7 +224,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                     type="time"
                     value={matchForm.time}
                     onChange={(e) => setMatchForm({ ...matchForm, time: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-300 text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
               </div>
@@ -264,7 +264,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                   <select
                     value={matchForm.type}
                     onChange={(e) => setMatchForm({ ...matchForm, type: e.target.value as MatchType })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   >
                     <option value="amigavel">Amigável</option>
                     <option value="campeonato">Campeonato</option>
@@ -281,7 +281,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                     placeholder="Ex: Torneio de Páscoa"
                     value={matchForm.tournamentName}
                     onChange={(e) => setMatchForm({ ...matchForm, tournamentName: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
               )}
@@ -294,7 +294,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                     placeholder="Ex: Jornada 4 ou Quartos de Final"
                     value={matchForm.phase}
                     onChange={(e) => setMatchForm({ ...matchForm, phase: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
               )}
@@ -307,7 +307,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                     placeholder="Ex: Campo Municipal"
                     value={matchForm.venue}
                     onChange={(e) => setMatchForm({ ...matchForm, venue: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
                 <div>
@@ -316,7 +316,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                     type="time"
                     value={matchForm.meetingTime}
                     onChange={(e) => setMatchForm({ ...matchForm, meetingTime: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 text-xs font-mono"
+                    className="ui-input w-full text-xs"
                   />
                 </div>
               </div>
@@ -335,7 +335,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                   setShowMatchModal(false);
                 });
               }}
-              className="px-4 py-2.5 min-h-[44px] rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/60 text-red-300 hover:text-white text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1.5 active:scale-95 shadow-sm"
+              className="ui-btn ui-btn-soft-danger px-4 py-2.5 min-h-[44px] text-xs flex items-center gap-1.5"
               title="Eliminar este jogo cancelado da agenda"
             >
               <span>🗑️</span>
@@ -349,14 +349,14 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
             <button
               type="button"
               onClick={() => setShowMatchModal(false)}
-              className="px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono font-semibold active:scale-95 transition-all"
+              className="ui-btn ui-btn-secondary px-4 py-2.5 min-h-[44px] text-xs"
             >
               Cancelar
             </button>
             <button
               type="button"
               onClick={handleSaveMatch}
-              className="px-5 py-2.5 min-h-[44px] rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase shadow-[0_0_15px_rgba(0,210,255,0.4)] active:scale-95 transition-all flex items-center justify-center"
+              className="ui-btn ui-btn-primary px-5 py-2.5 min-h-[44px] text-xs flex items-center justify-center"
             >
               {editingMatchId ? 'Guardar Alterações 💾' : 'Guardar no Calendário ⚽'}
             </button>

@@ -20,7 +20,7 @@ export const SquadTabsNav: React.FC<SquadTabsNavProps> = ({
   todayBirthdaysCount
 }) => {
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2 mb-4 bg-slate-900/90 border border-cyan-500/30 p-1.5 rounded-2xl backdrop-blur-md shadow-[0_0_15px_rgba(0,210,255,0.1)] overflow-x-auto no-scrollbar scroll-smooth">
+    <div className="ui-card flex items-center gap-1.5 sm:gap-2 mb-4 p-1.5 overflow-x-auto no-scrollbar scroll-smooth">
       <button
         onClick={() => setActiveSquadTab('jogadores')}
         className={`shrink-0 min-h-[42px] py-2 sm:py-2.5 px-3 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 ${

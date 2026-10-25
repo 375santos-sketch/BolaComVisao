@@ -131,7 +131,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in"
+      className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -140,7 +140,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         {/* Header */}
         <div className="p-4 bg-slate-950/90 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 text-lg shadow-[0_0_12px_rgba(0,210,255,0.3)]">
+            <div className="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 text-lg">
               🔔
             </div>
             <div>
@@ -149,7 +149,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                   Centro de Notificações
                 </h3>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-red-500/90 text-white font-mono text-xs font-black shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-pulse">
+                  <span className="px-2 py-0.5 rounded-full bg-red-500/90 text-white font-mono text-xs font-black animate-pulse">
                     {unreadCount} novas
                   </span>
                 )}
@@ -162,7 +162,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-400 text-slate-400 hover:text-white flex items-center justify-center text-sm transition-colors"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
             title="Fechar"
           >
             ✕
@@ -175,7 +175,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             {!browserPermitted ? (
               <button
                 onClick={handleEnableBrowserNotifications}
-                className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-bold transition-all flex items-center gap-1.5"
+                className="ui-btn ui-btn-soft px-2.5 py-1 flex items-center gap-1.5"
                 title="Receber notificações no computador/telemóvel mesmo fora do ecrã"
               >
                 <span>🔔</span>
@@ -192,7 +192,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 text-cyan-300 text-[11px] font-bold hover:text-white transition-colors"
+                className="ui-btn ui-btn-secondary px-2 py-1 text-[11px]"
                 title="Marcar todas as notificações como lidas"
               >
                 Marcar lidas ✓
@@ -202,7 +202,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             {notifications.some((n) => n.read) && (
               <button
                 onClick={handleClearRead}
-                className="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-400 hover:text-red-400 text-[11px] transition-colors"
+                className="ui-btn ui-btn-secondary px-2 py-1 text-[11px]"
                 title="Limpar todas as notificações que já foram lidas"
               >
                 Limpar lidas 🗑️
@@ -212,7 +212,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             {notifications.length > 0 && (
               <button
                 onClick={handleResetAllNotifications}
-                className="px-2 py-1 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-500/40 text-red-300 hover:text-white text-[11px] font-bold transition-colors"
+                className="ui-btn ui-btn-soft-danger px-2 py-1 text-[11px]"
                 title="Reiniciar e limpar todos os alertas"
               >
                 Reiniciar Alertas 🔄
@@ -313,7 +313,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         {/* Notifications Scroll List */}
         <div className="p-4 space-y-2.5 overflow-y-auto flex-1 max-h-[60vh] scrollbar-thin">
           {filteredNotifications.length === 0 ? (
-            <div className="py-12 text-center bg-slate-950/40 border border-slate-800 rounded-2xl">
+            <div className="ui-inset py-12 text-center">
               <div className="text-4xl mb-3">✨</div>
               <p className="text-sm font-['Chakra_Petch'] text-cyan-300 font-bold uppercase">
                 Tudo em dia! Sem notificações pendentes
@@ -391,7 +391,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                       <p className="text-xs font-mono text-slate-300 leading-relaxed">{notif.message}</p>
 
                       {notif.details && (
-                        <div className="text-[11px] font-mono text-cyan-400/80 mt-1 bg-slate-950/80 px-2 py-1 rounded-lg border border-cyan-500/20 inline-block">
+                        <div className="ui-inset text-[11px] font-mono text-cyan-400/80 mt-1 px-2 py-1 inline-block">
                           ℹ️ {notif.details}
                         </div>
                       )}
@@ -446,7 +446,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
                     <button
                       onClick={(e) => handleDelete(notif.id, e)}
-                      className="p-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-500 hover:text-red-400 text-xs transition-colors"
+                      className="ui-btn ui-btn-secondary p-1.5 text-xs"
                       title="Apagar notificação"
                     >
                       🗑️
@@ -467,7 +467,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
           <button
             onClick={onClose}
-            className="px-4 py-2 min-h-[40px] rounded-xl bg-slate-900 border border-slate-700 hover:border-cyan-400 text-white font-bold transition-colors active:scale-95 flex items-center justify-center"
+            className="ui-btn ui-btn-secondary px-4 py-2 min-h-[40px] flex items-center justify-center"
           >
             Fechar
           </button>

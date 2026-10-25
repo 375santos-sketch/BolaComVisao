@@ -39,12 +39,12 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Day Navigation Controls */}
-      <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+      <div className="ui-card p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handlePrevDay}
-            className="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-300 text-sm"
+            className="ui-btn ui-btn-secondary p-2 text-sm"
             title="Dia Anterior"
           >
             ◀
@@ -65,7 +65,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
           <button
             type="button"
             onClick={handleNextDay}
-            className="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-300 text-sm"
+            className="ui-btn ui-btn-secondary p-2 text-sm"
             title="Próximo Dia"
           >
             ▶
@@ -93,7 +93,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
                 setActiveMonth(dt.getMonth());
               }
             }}
-            className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-300 text-xs font-mono"
+            className="ui-input text-xs"
           />
         </div>
       </div>
@@ -104,7 +104,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
           {selectedDateEvents.map((ev) => renderEventCard(ev))}
 
           {/* Quick Actions Footer for Day View */}
-          <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+          <div className="ui-card p-3.5 flex items-center justify-between gap-2 flex-wrap">
             <span className="text-xs font-mono text-slate-400">
               Adicionar outro evento para <strong className="text-white">{formattedSelectedDate}</strong>:
             </span>
@@ -112,7 +112,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenScheduleMatch(selectedDate)}
-                className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
+                className="ui-btn ui-btn-primary px-3 py-1.5 text-xs flex items-center gap-1"
               >
                 <span>⚽</span>
                 <span>＋ Jogo</span>
@@ -120,7 +120,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenScheduleTraining(selectedDate)}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
+                className="ui-btn ui-btn-warning px-3 py-1.5 text-xs flex items-center gap-1"
               >
                 <span>⚡</span>
                 <span>＋ Treino</span>
@@ -158,7 +158,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenScheduleMatch(selectedDate)}
-              className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1.5"
+              className="ui-btn ui-btn-primary px-4 py-2 text-xs flex items-center gap-1.5"
             >
               <span>⚽</span>
               <span>＋ Agendar Jogo</span>
@@ -166,7 +166,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenScheduleTraining(selectedDate)}
-              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1.5"
+              className="ui-btn ui-btn-warning px-4 py-2 text-xs flex items-center gap-1.5"
             >
               <span>⚡</span>
               <span>＋ Agendar Treino</span>

@@ -280,9 +280,9 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
       <div
-        className={`modal card ${activeTab === 'team_database' ? 'max-w-5xl' : 'max-w-lg'} w-full max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto bg-slate-950 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 shadow-[0_0_50px_rgba(0,210,255,0.3)] text-left pb-[max(1.5rem,env(safe-area-inset-bottom))] scrollbar-thin transition-all`}
+        className={`modal card ${activeTab === 'team_database' ? 'max-w-5xl' : 'max-w-lg'} w-full max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto bg-slate-950 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 text-left pb-[max(1.5rem,env(safe-area-inset-bottom))] scrollbar-thin transition-all`}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-cyan-500/20">
@@ -296,7 +296,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-900/90 border border-slate-800 rounded-xl mb-4">
+        <div className="ui-card flex items-center gap-1.5 p-1 mb-4">
           <button
             type="button"
             onClick={() => setActiveTab('team_database')}
@@ -332,7 +332,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                 {teams.length} {teams.length === 1 ? 'Equipa Registada' : 'Equipas / Épocas Registadas'}
               </span>
               <button
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-[0_0_10px_rgba(0,210,255,0.3)] transition-all hover:brightness-110 active:scale-95"
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all hover:brightness-110 active:scale-95"
                 onClick={() => setIsCreating(true)}
               >
                 + Nova Equipa / Época
@@ -344,7 +344,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowImportPlayers(true)}
-                className="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 text-left transition-all group"
+                className="ui-btn ui-btn-secondary p-2.5 text-left group"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-base">👥</span>
@@ -360,7 +360,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowImportMatches(true)}
-                className="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 text-left transition-all group"
+                className="ui-btn ui-btn-secondary p-2.5 text-left group"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-base">⚽</span>
@@ -407,7 +407,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                       }
                     )
                   }
-                  className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold"
+                  className="ui-btn ui-btn-warning px-3 py-1.5"
                 >
                   Limpar dados inventados
                 </button>
@@ -497,7 +497,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
 
                 if (isEditing) {
                   return (
-                    <div key={team.id} className="p-3 rounded-xl bg-slate-900 border border-cyan-400/60 space-y-2">
+                    <div key={team.id} className="ui-card p-3 space-y-2">
                       <div className="text-xs font-bold font-['Chakra_Petch'] text-cyan-300 uppercase">
                         Editar Dados da Equipa
                       </div>
@@ -506,7 +506,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                         placeholder="Nome do Clube"
                         value={editClubName}
                         onChange={(e) => setEditClubName(e.target.value)}
-                        className="w-full bg-slate-950 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                        className="ui-input w-full text-xs"
                       />
                       <div className="grid grid-cols-2 gap-2">
                         <input
@@ -514,14 +514,14 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                           placeholder="Categoria / Escalão"
                           value={editCategory}
                           onChange={(e) => setEditCategory(e.target.value)}
-                          className="bg-slate-950 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                          className="ui-input text-xs"
                         />
                         <input
                           type="text"
                           placeholder="Época (ex: 2025/2026)"
                           value={editSeason}
                           onChange={(e) => setEditSeason(e.target.value)}
-                          className="bg-slate-950 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                          className="ui-input text-xs"
                         />
                       </div>
                       <input
@@ -529,18 +529,18 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                         placeholder="URL do Emblema / Logo (Opcional)"
                         value={editLogoUrl}
                         onChange={(e) => setEditLogoUrl(e.target.value)}
-                        className="w-full bg-slate-950 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                        className="ui-input w-full text-xs"
                       />
 
                       <div className="flex gap-2 pt-1">
                         <button
-                          className="flex-1 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-bold text-xs"
+                          className="ui-btn ui-btn-primary flex-1 py-1.5 text-xs"
                           onClick={() => handleSaveEdit(team.id)}
                         >
                           Guardar Alterações
                         </button>
                         <button
-                          className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs"
+                          className="ui-btn ui-btn-secondary px-3 py-1.5 text-xs"
                           onClick={() => setEditingTeamId(null)}
                         >
                           Cancelar
@@ -631,7 +631,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                       <div className="flex flex-col gap-1.5 text-right">
                         {!isActive ? (
                           <button
-                            className="px-3 py-1 rounded-lg bg-cyan-500 text-slate-950 font-bold text-xs hover:bg-cyan-400 transition-colors"
+                            className="ui-btn ui-btn-primary px-3 py-1 text-xs"
                             onClick={() => handleSwitchTeam(team.id)}
                           >
                             Ativar ➔
@@ -642,21 +642,21 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
 
                         <div className="flex gap-1 justify-end mt-1">
                           <button
-                            className="p-1 text-xs bg-slate-900 border border-slate-700 rounded hover:border-cyan-400 text-cyan-300"
+                            className="ui-btn ui-btn-secondary p-1 text-xs"
                             title="Editar Dados"
                             onClick={() => handleStartEdit(team)}
                           >
                             ✏️
                           </button>
                           <button
-                            className="p-1 text-xs bg-slate-900 border border-slate-700 rounded hover:border-cyan-400 text-cyan-300"
+                            className="ui-btn ui-btn-secondary p-1 text-xs"
                             title="Duplicar para Nova Época"
                             onClick={() => handleDuplicateToNewSeason(team)}
                           >
                             📋
                           </button>
                           <button
-                            className="p-1 text-xs bg-slate-900 border border-slate-700 rounded hover:border-red-500 text-red-400"
+                            className="ui-btn ui-btn-secondary p-1 text-xs"
                             title="Apagar Equipa"
                             onClick={() => handleDeleteTeam(team.id)}
                           >
@@ -685,7 +685,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                 placeholder="Ex: GD São Roque, SL Benfica Sub-19..."
                 value={newClubName}
                 onChange={(e) => setNewClubName(e.target.value)}
-                className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                className="ui-input w-full text-xs"
               />
             </div>
 
@@ -697,7 +697,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                   placeholder="Ex: Sub-19, Seniores, Sub-17..."
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                  className="ui-input w-full text-xs"
                 />
               </div>
 
@@ -708,7 +708,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                   placeholder="Ex: 2025/2026"
                   value={newSeason}
                   onChange={(e) => setNewSeason(e.target.value)}
-                  className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                  className="ui-input w-full text-xs"
                 />
               </div>
             </div>
@@ -720,7 +720,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                 placeholder="https://..."
                 value={newLogoUrl}
                 onChange={(e) => setNewLogoUrl(e.target.value)}
-                className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                className="ui-input w-full text-xs"
               />
             </div>
 
@@ -729,7 +729,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
               <select
                 value={copyFromTeamId}
                 onChange={(e) => setCopyFromTeamId(e.target.value)}
-                className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400"
+                className="ui-input w-full text-xs"
               >
                 <option value="none">✨ Iniciar com plantel em branco (Sem jogadores)</option>
                 {teams.map((t) => (
@@ -743,13 +743,13 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
             <div className="flex gap-2 pt-2">
               <button
                 type="submit"
-                className="flex-1 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95"
+                className="flex-1 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase hover:brightness-110 active:scale-95"
               >
                 Criar e Ativar Equipa 🚀
               </button>
               <button
                 type="button"
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                className="ui-btn ui-btn-secondary px-4 py-2 text-xs"
                 onClick={() => setIsCreating(false)}
               >
                 Cancelar

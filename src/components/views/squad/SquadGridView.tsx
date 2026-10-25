@@ -29,7 +29,7 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
     return (
       <div
         key={player.id}
-        className="bg-slate-900/95 border border-cyan-500/30 hover:border-cyan-400 rounded-2xl p-3.5 transition-all duration-200 hover:shadow-[0_0_20px_rgba(0,210,255,0.18)] flex flex-col justify-between gap-3 group relative text-left"
+        className="ui-card p-3.5 transition-all duration-200 flex flex-col justify-between gap-3 group relative text-left"
       >
         <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -42,14 +42,14 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
           <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => onEditPlayer(player)}
-              className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-400 hover:text-white transition-colors text-xs"
+              className="ui-btn ui-btn-secondary p-1.5 text-xs"
               title="Editar Jogador"
             >
               ✏️
             </button>
             <button
               onClick={() => onRemovePlayer(player.id)}
-              className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 transition-colors text-xs"
+              className="ui-btn ui-btn-secondary p-1.5 text-xs"
               title="Remover Jogador"
             >
               🗑️
@@ -67,7 +67,7 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-12 h-12 rounded-xl bg-slate-950 border border-cyan-500/30 group-hover:border-cyan-400 flex items-center justify-center text-lg text-cyan-400 font-bold shadow-inner transition-colors">
+              <div className="ui-inset w-12 h-12 flex items-center justify-center text-lg text-cyan-400 font-bold transition-colors">
                 👤
               </div>
             )}
@@ -94,7 +94,7 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
 
         <button
           onClick={() => onSelectPlayer(player.id)}
-          className="w-full py-1.5 px-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/40 hover:border-cyan-300 text-cyan-300 font-mono text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+          className="ui-btn ui-btn-soft w-full py-1.5 px-3 text-xs flex items-center justify-center gap-1.5"
         >
           <span>👁️</span>
           <span>Ver Ficha Completa</span>

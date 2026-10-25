@@ -70,7 +70,7 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
                 <button
                   type="button"
                   onClick={() => setFixing(m)}
-                  className="shrink-0 px-2.5 py-1 rounded-lg bg-rose-500/20 border border-rose-400/50 text-rose-100 font-bold"
+                  className="ui-btn ui-btn-soft-danger shrink-0 px-2.5 py-1"
                 >
                   Indicar titulares
                 </button>

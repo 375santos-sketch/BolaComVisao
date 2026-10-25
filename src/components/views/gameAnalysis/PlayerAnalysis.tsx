@@ -50,7 +50,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 1. Melhores Marcadores */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md flex flex-col justify-between">
+        <div className="ui-card p-5 flex flex-col justify-between">
           <div>
             <div
               onClick={() => {
@@ -93,7 +93,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                         setModalTab('marcadores');
                         setShowModal(true);
                       }}
-                      className="bg-slate-950/60 border border-slate-800/80 hover:border-emerald-500/50 rounded-2xl p-3 flex items-center justify-between transition-all cursor-pointer group"
+                      className="ui-inset p-3 flex items-center justify-between transition-all cursor-pointer group"
                       title="Clique para ver detalhes do atleta na lista completa"
                     >
                       <div className="flex items-center gap-3">
@@ -145,7 +145,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
               setModalTab('marcadores');
               setShowModal(true);
             }}
-            className="w-full mt-4 py-2 px-3 rounded-2xl bg-slate-950/80 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+            className="ui-btn ui-btn-soft-success w-full mt-4 py-2 px-3 text-xs flex items-center justify-center gap-1.5"
           >
             <span>Ver lista completa de marcadores e assistências ({activePlayers.length} atletas)</span>
             <span>➔</span>
@@ -153,7 +153,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
         </div>
 
         {/* 2. Melhores Assistentes */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md flex flex-col justify-between">
+        <div className="ui-card p-5 flex flex-col justify-between">
           <div>
             <div
               onClick={() => {
@@ -198,7 +198,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                         setModalTab('assistentes');
                         setShowModal(true);
                       }}
-                      className="bg-slate-950/60 border border-slate-800/80 hover:border-cyan-500/50 rounded-2xl p-3 flex items-center justify-between transition-all cursor-pointer group"
+                      className="ui-inset p-3 flex items-center justify-between transition-all cursor-pointer group"
                       title="Clique para ver detalhes do atleta na lista completa"
                     >
                       <div className="flex items-center gap-3">
@@ -252,7 +252,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
               setModalTab('assistentes');
               setShowModal(true);
             }}
-            className="w-full mt-4 py-2 px-3 rounded-2xl bg-slate-950/80 hover:bg-cyan-500/20 text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+            className="ui-btn ui-btn-soft w-full mt-4 py-2 px-3 text-xs flex items-center justify-center gap-1.5"
           >
             <span>Ver lista completa de assistências e golos ({activePlayers.length} atletas)</span>
             <span>➔</span>
@@ -262,7 +262,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
 
       {/* 3. Registo Disciplinar por Atleta */}
       {squadCardedPlayers.length > 0 && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl backdrop-blur-md">
+        <div className="ui-card p-5">
           <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
             <div>
               <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
@@ -283,7 +283,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                 <div
                   key={cp.playerId}
                   onClick={() => onOpenPlayer && onOpenPlayer(cp.playerId)}
-                  className="bg-slate-950/60 border border-slate-800/80 hover:border-amber-500/50 rounded-2xl p-3 flex items-center justify-between transition-all cursor-pointer"
+                  className="ui-inset p-3 flex items-center justify-between transition-all cursor-pointer"
                 >
                   <div>
                     <div className="text-xs font-bold text-white flex items-center gap-1.5">

@@ -120,12 +120,12 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fade-in"
+      className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="ui-card w-full max-w-4xl flex flex-col max-h-[92vh] overflow-hidden">
         {/* MODAL HEADER */}
         <div className="p-4 sm:p-6 border-b border-slate-800 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
@@ -159,7 +159,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
           <div className="flex items-center gap-2 self-end sm:self-center">
             <button
               onClick={() => window.print()}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-mono font-semibold transition-all flex items-center gap-1.5 border border-slate-700"
+              className="ui-btn ui-btn-secondary px-3 py-1.5 text-xs flex items-center gap-1.5"
               title="Imprimir listagem"
             >
               <span>🖨️</span>
@@ -167,7 +167,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
             </button>
             <button
               onClick={onClose}
-              className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-sm font-bold transition-all border border-slate-700"
+              className="ui-btn ui-btn-secondary w-9 h-9 flex items-center justify-center text-sm"
               aria-label="Fechar"
             >
               ✕
@@ -177,7 +177,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
 
         {/* METRICS SUMMARY STRIP */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 sm:p-4 bg-slate-950/60 border-b border-slate-800/80">
-          <div className="bg-slate-900/80 border border-emerald-500/20 rounded-2xl p-2.5 flex items-center gap-3">
+          <div className="ui-card p-2.5 flex items-center gap-3">
             <span className="text-2xl">⚽</span>
             <div>
               <div className="text-[10px] font-mono uppercase text-slate-400 font-bold">Total de Golos</div>
@@ -187,7 +187,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
             </div>
           </div>
 
-          <div className="bg-slate-900/80 border border-cyan-500/20 rounded-2xl p-2.5 flex items-center gap-3">
+          <div className="ui-card p-2.5 flex items-center gap-3">
             <span className="text-2xl">🎯</span>
             <div>
               <div className="text-[10px] font-mono uppercase text-slate-400 font-bold">Total Assistências</div>
@@ -197,7 +197,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
             </div>
           </div>
 
-          <div className="bg-slate-900/80 border border-purple-500/20 rounded-2xl p-2.5 flex items-center gap-3">
+          <div className="ui-card p-2.5 flex items-center gap-3">
             <span className="text-2xl">⭐</span>
             <div>
               <div className="text-[10px] font-mono uppercase text-slate-400 font-bold">Participações (G+A)</div>
@@ -207,7 +207,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
             </div>
           </div>
 
-          <div className="bg-slate-900/80 border border-blue-500/20 rounded-2xl p-2.5 flex items-center gap-3">
+          <div className="ui-card p-2.5 flex items-center gap-3">
             <span className="text-2xl">👥</span>
             <div>
               <div className="text-[10px] font-mono uppercase text-slate-400 font-bold">Plantel Ativo</div>
@@ -277,7 +277,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Pesquisar atleta ou nº..."
-              className="w-full pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono transition-colors"
+              className="ui-input w-full text-xs"
             />
             {searchQuery && (
               <button
@@ -337,7 +337,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
                         className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-mono font-bold text-xs text-slate-300 shrink-0">
+                      <div className="ui-inset w-10 h-10 flex items-center justify-center font-mono font-bold text-xs text-slate-300 shrink-0">
                         {player.playerNumber != null ? `#${player.playerNumber}` : '⚽'}
                       </div>
                     )}
@@ -424,7 +424,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
                           onSelectPlayer(player.playerId);
                           onClose();
                         }}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 text-xs font-bold transition-all border border-slate-700 shrink-0"
+                        className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-xs shrink-0"
                         title="Ver perfil completo do atleta"
                       >
                         Ver Atleta ➔
@@ -447,10 +447,7 @@ export const SquadGoalsAndAssistsModal: React.FC<SquadGoalsAndAssistsModalProps>
             </span>
           </div>
 
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono text-xs font-bold transition-all w-full sm:w-auto text-center"
-          >
+          <button onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2 text-xs w-full sm:w-auto text-center">
             Fechar
           </button>
         </div>

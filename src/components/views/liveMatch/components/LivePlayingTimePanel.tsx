@@ -54,7 +54,7 @@ export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({ matc
   const notPlayedYet = rows.filter((r) => r.minutes === 0 && !r.isOnPitch);
 
   return (
-    <div className="rounded-2xl bg-slate-900/80 border border-slate-800 text-xs">
+    <div className="ui-card text-xs">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}

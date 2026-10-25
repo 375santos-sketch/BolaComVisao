@@ -277,7 +277,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           <img
             src={logoImg}
             alt="BolaComVisão Logo"
-            className="w-10 h-10 rounded-xl object-cover border-2 border-cyan-400 shadow-[0_0_15px_rgba(0,210,255,0.4)]"
+            className="w-10 h-10 rounded-xl object-cover border-2 border-cyan-400"
             referrerPolicy="no-referrer"
           />
           <div className="text-left">
@@ -294,7 +294,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           {onOpenSync && <SyncStatusBadge onClick={onOpenSync} fallbackSyncInfo={syncInfo} />}
 
           {state.currentUser && (
-            <div className="hidden sm:flex items-center gap-1.5 bg-slate-900 border border-cyan-500/30 rounded-xl px-2.5 py-1 text-xs font-mono text-cyan-200">
+            <div className="ui-card hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono text-cyan-200">
               <span>👤</span>
               <span className="font-bold text-white">{state.currentUser.name}</span>
             </div>
@@ -312,7 +312,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             >
               <span>👥</span>
               {pendingUsersCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-amber-500 text-slate-950 font-mono text-[9px] font-black rounded-full flex items-center justify-center border border-slate-950 shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-bounce">
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-amber-500 text-slate-950 font-mono text-[9px] font-black rounded-full flex items-center justify-center border border-slate-950 animate-bounce">
                   {pendingUsersCount}
                 </span>
               )}
@@ -321,7 +321,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
           <button
             onClick={onOpenSettings}
-            className="p-2 rounded-xl bg-slate-900 border border-cyan-500/30 text-cyan-300 hover:scale-105 transition-transform text-sm"
+            className="ui-btn ui-btn-soft p-2 transition-transform text-sm"
             title="Definições do Sistema"
           >
             ⚙️
@@ -335,7 +335,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                   onLogout();
                 });
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950/70 hover:bg-rose-900/80 border border-rose-500/50 text-rose-200 hover:text-white transition-all text-xs font-mono font-bold shadow-[0_0_10px_rgba(244,63,94,0.2)] cursor-pointer"
+              className="ui-btn ui-btn-soft-danger flex items-center gap-1.5 px-3 py-1.5 text-xs"
               title="Terminar Sessão e Sair"
               id="header-logout-btn"
             >
@@ -368,7 +368,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
         {isUserAdmin && (
           <button
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-[0_0_15px_rgba(0,210,255,0.3)] transition-all hover:brightness-110 active:scale-95 flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all hover:brightness-110 active:scale-95 flex items-center gap-1.5 cursor-pointer"
             onClick={() => setIsCreating(true)}
           >
             <span>➕</span>
@@ -379,16 +379,13 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
       {/* Form: Create New Team */}
       {isCreating && (
-        <form
-          onSubmit={handleCreateTeam}
-          className="bg-slate-950 border border-cyan-500/40 rounded-2xl p-5 mb-6 shadow-[0_0_25px_rgba(0,210,255,0.2)] text-left space-y-4"
-        >
+        <form onSubmit={handleCreateTeam} className="ui-inset p-5 mb-6 text-left space-y-4">
           <div className="font-['Chakra_Petch'] font-bold text-sm text-cyan-300 uppercase pb-2 border-b border-cyan-500/20 flex justify-between items-center">
             <span>➕ Criar Nova Equipa</span>
             <button
               type="button"
               onClick={() => setIsCreating(false)}
-              className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg bg-slate-900 border border-slate-700"
+              className="ui-btn ui-btn-secondary text-xs px-2 py-1"
             >
               ✕ Cancelar
             </button>
@@ -402,7 +399,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               placeholder="Ex: Futebol Clube ABC, GD São Roque, etc."
               value={newClubName}
               onChange={(e) => setNewClubName(e.target.value)}
-              className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-medium"
+              className="ui-input w-full text-xs font-medium"
             />
           </div>
 
@@ -415,7 +412,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                   setNewCategory(e.target.value);
                   setNewTeamDesignation(e.target.value);
                 }}
-                className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2.5 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400"
+                className="ui-input w-full text-xs"
               >
                 <option value="Sub-7">Sub-7 (Petizes)</option>
                 <option value="Sub-9">Sub-9 (Traquinas)</option>
@@ -443,7 +440,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                 placeholder="Ex: 2026/27 ou 2025/26"
                 value={newSeason}
                 onChange={(e) => setNewSeason(e.target.value)}
-                className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                className="ui-input w-full text-xs"
               />
             </div>
           </div>
@@ -456,7 +453,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                 placeholder="Ex: João Silva"
                 value={newHeadCoach}
                 onChange={(e) => setNewHeadCoach(e.target.value)}
-                className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                className="ui-input w-full text-xs"
               />
             </div>
 
@@ -467,7 +464,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               <select
                 value={newTacticFormat}
                 onChange={(e) => setNewTacticFormat(Number(e.target.value) as any)}
-                className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2.5 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400"
+                className="ui-input w-full text-xs"
               >
                 <option value={11}>Futebol 11 (11 vs 11)</option>
                 <option value={9}>Futebol 9 (9 vs 9)</option>
@@ -487,7 +484,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               placeholder="https://..."
               value={newLogoUrl}
               onChange={(e) => setNewLogoUrl(e.target.value)}
-              className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+              className="ui-input w-full text-xs"
             />
           </div>
 
@@ -497,7 +494,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               <select
                 value={copyFromTeamId}
                 onChange={(e) => setCopyFromTeamId(e.target.value)}
-                className="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2.5 text-xs text-cyan-200 focus:outline-none focus:border-cyan-400"
+                className="ui-input w-full text-xs"
               >
                 <option value="none">✨ Iniciar com plantel em branco (Sem jogadores)</option>
                 {teams.map((t) => (
@@ -512,13 +509,13 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           <div className="flex gap-2 pt-2">
             <button
               type="submit"
-              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all"
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all"
             >
               Criar e Entrar na Equipa 🚀
             </button>
             <button
               type="button"
-              className="px-4 py-3 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold hover:bg-slate-700"
+              className="ui-btn ui-btn-secondary px-4 py-3 text-xs"
               onClick={() => setIsCreating(false)}
             >
               Cancelar
@@ -530,8 +527,8 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
       {/* List of Teams Cards or Empty State */}
       {teams.length === 0 && !isCreating ? (
         isUserAdmin ? (
-          <div className="bg-slate-950/90 border border-cyan-500/40 rounded-3xl p-8 my-6 text-center shadow-[0_0_30px_rgba(0,210,255,0.2)] animate-fade-in">
-            <div className="w-20 h-20 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 text-cyan-300 text-4xl flex items-center justify-center mx-auto mb-5 shadow-[0_0_25px_rgba(0,210,255,0.3)]">
+          <div className="ui-inset p-8 my-6 text-center animate-fade-in">
+            <div className="w-20 h-20 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 text-cyan-300 text-4xl flex items-center justify-center mx-auto mb-5">
               ⚽
             </div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono tracking-widest uppercase mb-3 font-bold">
@@ -547,7 +544,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
                 onClick={() => setIsCreating(true)}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(0,210,255,0.5)] hover:brightness-110 active:scale-95 transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
                 id="empty-state-create-team-btn"
               >
                 <span className="text-base font-bold">+</span>
@@ -563,7 +560,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                       onLogout();
                     });
                   }}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-900/90 hover:bg-rose-950/70 border border-slate-700 hover:border-rose-500/50 text-slate-300 hover:text-rose-200 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider transition-all inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  className="ui-btn ui-btn-secondary w-full sm:w-auto px-6 py-3.5 text-xs inline-flex items-center justify-center gap-2"
                   id="empty-state-logout-btn"
                   title="Terminar Sessão e Sair"
                 >
@@ -574,8 +571,8 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             </div>
           </div>
         ) : (
-          <div className="bg-slate-950/90 border border-amber-500/40 rounded-3xl p-8 my-6 text-center shadow-[0_0_30px_rgba(245,158,11,0.15)] animate-fade-in">
-            <div className="w-20 h-20 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-4xl flex items-center justify-center mx-auto mb-5 shadow-[0_0_25px_rgba(245,158,11,0.2)]">
+          <div className="ui-inset p-8 my-6 text-center animate-fade-in">
+            <div className="w-20 h-20 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-4xl flex items-center justify-center mx-auto mb-5">
               🔒
             </div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-950/80 border border-amber-400/40 text-amber-300 text-[11px] font-mono tracking-widest uppercase mb-3 font-bold">
@@ -599,7 +596,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                       onLogout();
                     });
                   }}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-900/90 hover:bg-rose-950/70 border border-slate-700 hover:border-rose-500/50 text-slate-300 hover:text-rose-200 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider transition-all inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  className="ui-btn ui-btn-secondary w-full sm:w-auto px-6 py-3.5 text-xs inline-flex items-center justify-center gap-2"
                   id="empty-state-logout-btn"
                   title="Terminar Sessão e Sair"
                 >
@@ -693,10 +690,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
             if (isEditing) {
               return (
-                <div
-                  key={team.id}
-                  className="p-4 rounded-2xl bg-slate-950 border border-cyan-400/60 text-left space-y-2"
-                >
+                <div key={team.id} className="ui-inset p-4 text-left space-y-2">
                   <div className="text-xs font-bold font-['Chakra_Petch'] text-cyan-300 uppercase">
                     Editar Dados da Equipa
                   </div>
@@ -705,7 +699,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                     placeholder="Nome do Clube"
                     value={editClubName}
                     onChange={(e) => setEditClubName(e.target.value)}
-                    className="w-full bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                    className="ui-input w-full text-xs"
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <input
@@ -713,14 +707,14 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                       placeholder="Categoria / Escalão"
                       value={editCategory}
                       onChange={(e) => setEditCategory(e.target.value)}
-                      className="bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      className="ui-input text-xs"
                     />
                     <input
                       type="text"
                       placeholder="Época (ex: 2025/2026)"
                       value={editSeason}
                       onChange={(e) => setEditSeason(e.target.value)}
-                      className="bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                      className="ui-input text-xs"
                     />
                   </div>
                   <input
@@ -728,18 +722,18 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                     placeholder="URL do Emblema / Logo (Opcional)"
                     value={editLogoUrl}
                     onChange={(e) => setEditLogoUrl(e.target.value)}
-                    className="w-full bg-slate-900 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white"
+                    className="ui-input w-full text-xs"
                   />
 
                   <div className="flex gap-2 pt-2">
                     <button
-                      className="flex-1 py-2 rounded-lg bg-cyan-500 text-slate-950 font-bold text-xs"
+                      className="ui-btn ui-btn-primary flex-1 py-2 text-xs"
                       onClick={() => handleSaveEdit(team.id)}
                     >
                       Guardar Alterações
                     </button>
                     <button
-                      className="px-3 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs"
+                      className="ui-btn ui-btn-secondary px-3 py-2 text-xs"
                       onClick={() => setEditingTeamId(null)}
                     >
                       Cancelar
@@ -762,7 +756,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   {/* Left Section: Logo & Name Info */}
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-slate-900 border border-cyan-500/30 flex items-center justify-center overflow-hidden shrink-0">
+                    <div className="ui-card w-12 h-12 flex items-center justify-center overflow-hidden shrink-0">
                       {currentLogo ? (
                         <img
                           src={currentLogo}
@@ -846,7 +840,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
-                      className="flex-1 sm:flex-none px-5 py-2.5 min-h-[42px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider shadow-[0_0_12px_rgba(0,210,255,0.3)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 touch-manipulation"
+                      className="flex-1 sm:flex-none px-5 py-2.5 min-h-[42px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 touch-manipulation"
                       onClick={() => onSelectTeam(team.id)}
                     >
                       <span>Entrar no Painel</span>
@@ -856,21 +850,21 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                     {isUserAdmin && (
                       <div className="flex items-center gap-1.5">
                         <button
-                          className="px-2.5 py-1.5 min-h-[34px] text-xs bg-slate-900 border border-slate-700 rounded-lg hover:border-cyan-400 text-cyan-300 cursor-pointer active:scale-95 touch-manipulation"
+                          className="ui-btn ui-btn-secondary px-2.5 py-1.5 min-h-[34px] text-xs touch-manipulation"
                           title="Editar Informações"
                           onClick={() => handleStartEdit(team)}
                         >
                           ✏️ Editar
                         </button>
                         <button
-                          className="px-2.5 py-1.5 min-h-[34px] text-xs bg-slate-900 border border-slate-700 rounded-lg hover:border-cyan-400 text-cyan-300 cursor-pointer active:scale-95 touch-manipulation"
+                          className="ui-btn ui-btn-secondary px-2.5 py-1.5 min-h-[34px] text-xs touch-manipulation"
                           title="Duplicar para Nova Época"
                           onClick={() => handleDuplicateToNewSeason(team)}
                         >
                           📋 Duplicar
                         </button>
                         <button
-                          className="px-2.5 py-1.5 min-h-[34px] text-xs bg-slate-900 border border-slate-700 rounded-lg hover:border-red-500 text-red-400 cursor-pointer active:scale-95 touch-manipulation"
+                          className="ui-btn ui-btn-secondary px-2.5 py-1.5 min-h-[34px] text-xs touch-manipulation"
                           title="Apagar Equipa"
                           onClick={() => handleDeleteTeam(team.id)}
                         >

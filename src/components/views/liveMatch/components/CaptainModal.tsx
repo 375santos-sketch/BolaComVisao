@@ -20,8 +20,8 @@ export const CaptainModal: React.FC<CaptainModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      <div className="ui-card max-w-md w-full p-6 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <span className="text-xl text-amber-400 font-bold">©</span>
@@ -78,10 +78,7 @@ export const CaptainModal: React.FC<CaptainModalProps> = ({
         </div>
 
         <div className="flex justify-end pt-3 border-t border-slate-800">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
-          >
+          <button onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2 text-sm">
             Fechar
           </button>
         </div>

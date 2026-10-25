@@ -35,7 +35,7 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
+    <div className="ui-card p-5 sm:p-6 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-xl shadow-inner">
@@ -63,7 +63,7 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
             <button
               key={idx}
               onClick={() => handleAsk(q)}
-              className="px-3 py-1.5 rounded-xl bg-slate-950/80 hover:bg-cyan-950/50 border border-slate-800 hover:border-cyan-500/40 text-xs text-slate-300 hover:text-cyan-300 transition-all text-left"
+              className="ui-btn ui-btn-secondary px-3 py-1.5 text-xs text-left"
             >
               💡 {q}
             </button>
@@ -78,12 +78,9 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
           value={queryInput}
           onChange={(e) => setQueryInput(e.target.value)}
           placeholder="Ex: Como estamos nos últimos jogos? / Rendimento de cantos..."
-          className="flex-1 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-cyan-500 transition-colors placeholder:text-slate-500"
+          className="ui-input flex-1 text-sm"
         />
-        <button
-          type="submit"
-          className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2 shrink-0 font-['Chakra_Petch']"
-        >
+        <button type="submit" className="ui-btn ui-btn-primary px-5 py-2.5 text-sm flex items-center gap-2 shrink-0">
           <span>Consultar</span>
           <span>➔</span>
         </button>
@@ -91,7 +88,7 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
 
       {/* Response Card */}
       {currentResponse && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/90 border border-cyan-500/30 space-y-4 animate-fadeIn shadow-inner">
+        <div className="ui-inset p-4 sm:p-5 space-y-4 animate-fadeIn">
           <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
             <span className="text-xs font-mono text-cyan-400 font-bold">🔍 "{currentResponse.query}"</span>
             <span className="text-[10px] text-slate-400 font-mono">Dados Verificados ✓</span>

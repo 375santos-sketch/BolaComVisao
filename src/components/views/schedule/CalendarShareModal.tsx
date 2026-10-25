@@ -88,13 +88,13 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-3 bg-slate-950/85 backdrop-blur-sm"
+      className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-3"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-label="Calendário para os pais"
-        className="w-full max-w-md bg-slate-900 border border-cyan-500/40 rounded-3xl p-5 space-y-3 max-h-[92vh] overflow-y-auto"
+        className="ui-card w-full max-w-md p-5 space-y-3 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -112,17 +112,12 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
         </p>
 
         {!links ? (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={create}
-            className="w-full py-3 rounded-xl bg-cyan-500 text-slate-950 text-sm font-black uppercase disabled:opacity-50"
-          >
+          <button type="button" disabled={busy} onClick={create} className="ui-btn ui-btn-primary w-full py-3 text-sm">
             {busy ? 'A criar…' : 'Criar link do calendário'}
           </button>
         ) : (
           <>
-            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-700">
+            <div className="ui-inset p-2.5">
               <div className="text-[10px] text-slate-400 mb-1">
                 Link do calendário ({events.length} jogos e treinos)
               </div>

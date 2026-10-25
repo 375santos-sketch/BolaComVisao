@@ -101,7 +101,7 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
 
   if (items.length === 0) {
     return (
-      <div className="p-6 rounded-2xl bg-slate-950/80 border border-slate-800 text-center text-xs font-mono text-slate-500">
+      <div className="ui-inset p-6 text-center text-xs font-mono text-slate-500">
         Nenhum evento registado na cronologia do jogo.
       </div>
     );

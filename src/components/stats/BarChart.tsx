@@ -116,7 +116,7 @@ export const BarChart: React.FC<BarChartProps> = ({ title, categories, details, 
         {active !== null && (
           <div
             role="status"
-            className="absolute top-1 pointer-events-none px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-[11px] text-slate-100 shadow-lg whitespace-nowrap"
+            className="ui-inset absolute top-1 pointer-events-none px-2.5 py-1.5 text-[11px] text-slate-100 whitespace-nowrap"
             style={{ left: Math.min(Math.max(0, pad.left + active * groupW - 20), width - 150) }}
           >
             <div className="font-bold">{details?.[active] || categories[active]}</div>

@@ -439,12 +439,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
   });
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-      <div className="bg-slate-900 border-t sm:border-2 border-cyan-500/40 rounded-t-3xl sm:rounded-3xl w-full max-w-5xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col shadow-[0_0_50px_rgba(0,210,255,0.3)] overflow-hidden">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+      <div className="bg-slate-900 border-t sm:border-2 border-cyan-500/40 rounded-t-3xl sm:rounded-3xl w-full max-w-5xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-cyan-500/30 flex items-center justify-between bg-slate-950/90 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-xl shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-xl shrink-0">
               📊
             </div>
             <div>
@@ -472,7 +472,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
             <button
               type="button"
               onClick={() => downloadExcelPlayerTemplate(state.myClubName)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold transition-all"
+              className="ui-btn ui-btn-soft hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs"
               title="Descarregar folha de cálculo modelo .xlsx pré-configurada"
             >
               <span>📥</span>
@@ -481,7 +481,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
 
             <button
               onClick={onClose}
-              className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 hover:border-red-500/50 hover:bg-red-950/80 text-slate-400 hover:text-red-300 flex items-center justify-center font-mono text-sm transition-all"
+              className="ui-btn ui-btn-secondary w-9 h-9 flex items-center justify-center text-sm"
             >
               ✕
             </button>
@@ -498,7 +498,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
               </span>
               <span className="text-cyan-400 font-bold">{processingProgress}%</span>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-cyan-500/30">
+            <div className="ui-inset w-full h-2 overflow-hidden">
               <div
                 className="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full transition-all duration-300 rounded-full"
                 style={{ width: `${processingProgress}%` }}
@@ -604,13 +604,13 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Sheet Selection */}
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                <div className="ui-card p-2.5 space-y-1">
                   <span className="text-slate-400 block text-[11px]">📑 Folha Ativa:</span>
                   {workbookData.sheetNames.length > 1 ? (
                     <select
                       value={selectedSheet}
                       onChange={(e) => handleSheetChange(e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-1.5 text-white font-mono text-xs"
+                      className="ui-input w-full text-xs"
                     >
                       {workbookData.sheetNames.map((s) => (
                         <option key={s} value={s}>
@@ -624,13 +624,13 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                 </div>
 
                 {/* Header Row Index Selector */}
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                <div className="ui-card p-2.5 space-y-1">
                   <span className="text-slate-400 block text-[11px]">🎯 Linha do Cabeçalho:</span>
                   <div className="flex items-center gap-2">
                     <select
                       value={selectedHeaderRowIdx}
                       onChange={(e) => handleHeaderRowChange(Number(e.target.value))}
-                      className="w-full bg-slate-950 border border-amber-500/50 rounded-lg p-1.5 text-amber-300 font-mono text-xs font-bold"
+                      className="ui-input w-full text-xs"
                     >
                       {Array.from({ length: Math.min(25, workbookData.totalRawRows || 1) }, (_, i) => (
                         <option key={i} value={i}>
@@ -642,7 +642,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                 </div>
 
                 {/* Status of Key Fields */}
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                <div className="ui-card p-2.5 space-y-1">
                   <span className="text-slate-400 block text-[11px]">👤 Coluna 'Nome':</span>
                   <div>
                     {columnMapping.name ? (
@@ -691,7 +691,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   <button
                     type="button"
                     onClick={() => setStep('mapping')}
-                    className="px-3 py-1 bg-amber-500 text-slate-950 font-bold rounded-lg hover:bg-amber-400 text-xs"
+                    className="ui-btn ui-btn-warning px-3 py-1 text-xs"
                   >
                     Mapear Agora ➔
                   </button>
@@ -725,7 +725,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   className="hidden"
                 />
 
-                <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(16,185,129,0.25)] animate-pulse">
+                <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-3xl animate-pulse">
                   📄
                 </div>
 
@@ -745,7 +745,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                       e.stopPropagation();
                       fileInputRef.current?.click();
                     }}
-                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(16,185,129,0.5)] active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                   >
                     <span>📥</span>
                     <span>Selecionar e Ler Ficheiro Excel</span>
@@ -754,7 +754,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
               </div>
 
               {/* Template Download & Field List Info */}
-              <div className="bg-slate-950 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
+              <div className="ui-inset p-4 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="text-xs font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5">
                     <span>📋</span>
@@ -764,7 +764,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   <button
                     type="button"
                     onClick={() => downloadExcelPlayerTemplate(state.myClubName)}
-                    className="px-3.5 py-1.5 rounded-xl bg-emerald-950 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-900 font-mono text-xs font-bold transition-all flex items-center gap-1.5 self-start sm:self-auto shadow-sm"
+                    className="ui-btn ui-btn-soft-success px-3.5 py-1.5 text-xs flex items-center gap-1.5 self-start sm:self-auto"
                   >
                     <span>📥</span>
                     <span>Descarregar Modelo Excel (.xlsx)</span>
@@ -772,35 +772,35 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono text-slate-300">
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5">
+                  <div className="ui-card p-2 flex items-center gap-1.5">
                     <span className="text-cyan-400">👤</span>
                     <span>Nome Completo *</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5">
+                  <div className="ui-card p-2 flex items-center gap-1.5">
                     <span className="text-cyan-400">🔢</span>
                     <span>Nº de Camisola</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5">
+                  <div className="ui-card p-2 flex items-center gap-1.5">
                     <span className="text-cyan-400">⚽</span>
                     <span>Posição em Campo</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5">
+                  <div className="ui-card p-2 flex items-center gap-1.5">
                     <span className="text-cyan-400">📅</span>
                     <span>Data de Nascimento</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5">
+                  <div className="ui-card p-2 flex items-center gap-1.5">
                     <span className="text-cyan-400">🦶</span>
                     <span>Pé dominante</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5">
+                  <div className="ui-card p-2 flex items-center gap-1.5">
                     <span className="text-cyan-400">📏</span>
                     <span>Altura</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5">
+                  <div className="ui-card p-2 flex items-center gap-1.5">
                     <span className="text-cyan-400">⚖️</span>
                     <span>Peso</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5">
+                  <div className="ui-card p-2 flex items-center gap-1.5">
                     <span className="text-cyan-400">🚨</span>
                     <span>Contacto Emergência</span>
                   </div>
@@ -812,7 +812,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
           {/* ================= STEP 2: COLUMN MAPPING ================= */}
           {step === 'mapping' && workbookData && (
             <div className="space-y-4">
-              <div className="bg-slate-950 border border-cyan-500/30 rounded-2xl p-4">
+              <div className="ui-inset p-4">
                 <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                   <div>
                     <div className="text-xs font-bold text-white font-['Chakra_Petch'] uppercase">
@@ -833,7 +833,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                         setParsedRows(reParsed);
                         onShowToast('Mapeamento automático restaurado!');
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-cyan-300 hover:bg-slate-800 text-[11px] font-mono"
+                      className="ui-btn ui-btn-secondary px-2.5 py-1 text-[11px]"
                     >
                       ⚡ Auto-Detetar
                     </button>
@@ -851,7 +851,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                     <select
                       value={columnMapping.name}
                       onChange={(e) => handleMappingChange('name', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Selecionar Coluna --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -869,12 +869,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Nº de Camisola */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">🔢 Nº de Camisola:</label>
                     <select
                       value={columnMapping.number}
                       onChange={(e) => handleMappingChange('number', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear (Vazio) --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -894,12 +894,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Posição em Campo */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">⚽ Posição em Campo:</label>
                     <select
                       value={columnMapping.positions}
                       onChange={(e) => handleMappingChange('positions', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -919,12 +919,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Data de Nascimento */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">📅 Data de Nascimento:</label>
                     <select
                       value={columnMapping.birthDate}
                       onChange={(e) => handleMappingChange('birthDate', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -944,12 +944,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Pé dominante */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">🦶 Pé dominante:</label>
                     <select
                       value={columnMapping.dominantFoot}
                       onChange={(e) => handleMappingChange('dominantFoot', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear (Direito) --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -969,12 +969,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Altura */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">📏 Altura:</label>
                     <select
                       value={columnMapping.height}
                       onChange={(e) => handleMappingChange('height', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -986,12 +986,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Peso */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">⚖️ Peso:</label>
                     <select
                       value={columnMapping.weight}
                       onChange={(e) => handleMappingChange('weight', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -1003,12 +1003,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Nome e Contato de Emergência */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">🚨 Contacto de Emergência:</label>
                     <select
                       value={columnMapping.emergencyContact}
                       onChange={(e) => handleMappingChange('emergencyContact', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -1020,12 +1020,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Telefone do Atleta */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">📱 Telefone do Atleta:</label>
                     <select
                       value={columnMapping.phone}
                       onChange={(e) => handleMappingChange('phone', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -1037,12 +1037,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Email do Atleta */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">✉️ Email do Atleta:</label>
                     <select
                       value={columnMapping.email}
                       onChange={(e) => handleMappingChange('email', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -1054,12 +1054,12 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   </div>
 
                   {/* Estado / Disponibilidade */}
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="ui-card p-3 space-y-1">
                     <label className="block text-cyan-300 font-bold">🟢 Estado / Disponibilidade:</label>
                     <select
                       value={columnMapping.status}
                       onChange={(e) => handleMappingChange('status', e.target.value)}
-                      className="w-full bg-slate-950 border border-cyan-500/40 rounded-lg p-2 text-white font-mono text-xs focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     >
                       <option value="">-- Não Mapear (Disponível) --</option>
                       {workbookData.rawHeaders.map((h) => (
@@ -1075,7 +1075,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                   <button
                     type="button"
                     onClick={() => setStep('preview')}
-                    className="px-5 py-2.5 rounded-xl bg-cyan-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider hover:bg-cyan-400 shadow-[0_0_15px_rgba(0,210,255,0.3)] transition-all flex items-center gap-2"
+                    className="ui-btn ui-btn-primary px-5 py-2.5 text-xs flex items-center gap-2"
                   >
                     <span>Ver Pré-visualização & Duplicados</span>
                     <span>➔</span>
@@ -1089,7 +1089,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
           {step === 'preview' && workbookData && (
             <div className="space-y-4">
               {/* Top Banner: Stats & Bulk Actions */}
-              <div className="bg-slate-950 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
+              <div className="ui-inset p-4 space-y-3">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                   <div>
                     <div className="text-sm font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-2 flex-wrap">
@@ -1179,7 +1179,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                       <button
                         type="button"
                         onClick={() => applyBulkDuplicateAction('replace')}
-                        className="px-3 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-bold text-[11px] flex items-center gap-1.5"
+                        className="ui-btn ui-btn-soft-warning px-3 py-1 text-[11px] flex items-center gap-1.5"
                       >
                         <span>🔄</span>
                         <span>Atualizar Dados dos Existentes</span>
@@ -1187,7 +1187,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                       <button
                         type="button"
                         onClick={() => applyBulkDuplicateAction('skip')}
-                        className="px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[11px] flex items-center gap-1.5"
+                        className="ui-btn ui-btn-secondary px-3 py-1 text-[11px] flex items-center gap-1.5"
                       >
                         <span>🚫</span>
                         <span>Ignorar (Manter Atuais)</span>
@@ -1204,7 +1204,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                       placeholder="Pesquisar por nome, número ou posição..."
                       value={searchInPreview}
                       onChange={(e) => setSearchInPreview(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white font-mono placeholder:text-slate-500 focus:border-cyan-400"
+                      className="ui-input w-full text-xs"
                     />
                     {searchInPreview && (
                       <button
@@ -1237,7 +1237,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
               </div>
 
               {/* Data Table Preview */}
-              <div className="border border-cyan-500/30 rounded-2xl overflow-hidden bg-slate-950 shadow-inner">
+              <div className="ui-inset overflow-hidden">
                 <div className="overflow-x-auto max-h-[46vh]">
                   <table className="w-full text-left text-xs font-mono">
                     <thead className="bg-slate-900 text-cyan-300 sticky top-0 z-10 border-b border-cyan-500/30 text-[11px] uppercase tracking-wider">
@@ -1268,7 +1268,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                                 <button
                                   type="button"
                                   onClick={() => setStep('mapping')}
-                                  className="px-4 py-2 bg-cyan-500 text-slate-950 font-bold rounded-xl text-xs uppercase font-['Chakra_Petch']"
+                                  className="ui-btn ui-btn-primary px-4 py-2 text-xs"
                                 >
                                   Ajustar Mapeamento de Colunas
                                 </button>
@@ -1382,7 +1382,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                                       onChange={(e) =>
                                         handleRowDuplicateAction(row.id, e.target.value as DuplicateAction)
                                       }
-                                      className="bg-slate-900 border border-amber-500/40 rounded-lg px-2 py-1 text-[11px] text-amber-300 font-mono font-bold"
+                                      className="ui-input text-[11px]"
                                     >
                                       <option value="replace">🔄 Atualizar Dados</option>
                                       <option value="skip">🚫 Ignorar (Manter)</option>
@@ -1432,7 +1432,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-initial px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 text-xs font-mono transition-all flex items-center justify-center"
+              className="ui-btn ui-btn-secondary flex-1 sm:flex-initial px-4 py-2.5 min-h-[44px] text-xs flex items-center justify-center"
             >
               Cancelar
             </button>
@@ -1442,7 +1442,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
                 type="button"
                 onClick={handleConfirmImport}
                 disabled={selectedCount === 0 || loading}
-                className="flex-1 sm:flex-initial px-5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 sm:flex-initial px-5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>✅</span>
                 <span>Confirmar e Importar ({selectedCount})</span>

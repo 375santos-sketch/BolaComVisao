@@ -45,8 +45,8 @@ const CardModalInner: React.FC<CardModalProps> = ({
     !editingCard && !isModified && Boolean(suggestedMinute) && cardMinute.trim() === suggestedMinute?.trim();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+      <div className="ui-card max-w-md w-full p-6 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <span className="text-xl">{cardColor === 'Vermelho' ? '🟥' : '🟨'}</span>
@@ -67,7 +67,7 @@ const CardModalInner: React.FC<CardModalProps> = ({
           <select
             value={cardPlayerId}
             onChange={(e) => setCardPlayerId(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500"
+            className="ui-input w-full text-sm"
           >
             <PlayerOptions players={eligiblePlayers} onPitchIds={onPitchIds} />
           </select>
@@ -126,17 +126,14 @@ const CardModalInner: React.FC<CardModalProps> = ({
               setCardMinute(e.target.value);
               setIsModified(true);
             }}
-            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
+            className="ui-input w-full text-sm"
           />
           {!cardMinute.trim() && <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>}
         </div>
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
-          >
+          <button onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2 text-sm">
             Cancelar
           </button>
           <button

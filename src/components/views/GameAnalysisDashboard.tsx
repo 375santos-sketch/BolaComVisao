@@ -267,7 +267,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
       />
 
       {/* TOP VIEW MODE TOGGLE & QUICK ACTIONS */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 mb-4 bg-slate-900/70 border border-slate-800 p-2 rounded-3xl shadow-md">
+      <div className="ui-card flex flex-wrap items-center justify-between gap-2.5 mb-4 p-2">
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
@@ -320,7 +320,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             type="button"
             onClick={handleExportPDF}
             disabled={exporting}
-            className="text-xs bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-colors font-bold border border-slate-700/50 cursor-pointer disabled:opacity-50"
+            className="ui-btn ui-btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
             title="Exportar Relatório PDF"
           >
             <span>📄</span>
@@ -330,7 +330,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             type="button"
             onClick={handleExportExcel}
             disabled={exporting}
-            className="text-xs bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-colors font-bold border border-slate-700/50 cursor-pointer disabled:opacity-50"
+            className="ui-btn ui-btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
             title="Exportar Excel"
           >
             <span>📊</span>
@@ -525,8 +525,8 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
 
       {/* MODAL: DRILLDOWN DE PERÍODO ESPECÍFICO */}
       {selectedPeriodModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl animate-scaleUp">
+        <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="ui-card p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto animate-scaleUp">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
               <div>
                 <h4 className="text-base font-['Chakra_Petch'] font-bold text-white flex items-center gap-2">
@@ -552,10 +552,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             ) : (
               <div className="space-y-2">
                 {selectedPeriodModal.scoredEvents.map((ev, i) => (
-                  <div
-                    key={`sc-${i}`}
-                    className="bg-slate-950/70 border border-emerald-500/30 rounded-2xl p-3 flex items-center justify-between"
-                  >
+                  <div key={`sc-${i}`} className="ui-inset p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/50 border border-emerald-500/30 px-2 py-1 rounded-lg">
                         {ev.goal.minute ? `${ev.goal.minute}'` : '—'}
@@ -575,10 +572,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                   </div>
                 ))}
                 {selectedPeriodModal.concededEvents.map((ev, i) => (
-                  <div
-                    key={`co-${i}`}
-                    className="bg-slate-950/70 border border-rose-500/30 rounded-2xl p-3 flex items-center justify-between"
-                  >
+                  <div key={`co-${i}`} className="ui-inset p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <span className="text-xs font-mono font-bold text-rose-400 bg-rose-950/50 border border-rose-500/30 px-2 py-1 rounded-lg">
                         {ev.goal.minute ? `${ev.goal.minute}'` : '—'}
@@ -604,7 +598,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedPeriodModal(null)}
-                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer"
+                className="ui-btn ui-btn-secondary w-full py-2.5 text-xs"
               >
                 Fechar
               </button>

@@ -44,7 +44,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
+      className="ui-overlay fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn"
       onClick={onClose}
     >
       <div
@@ -71,7 +71,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
           >
             ✕
           </button>
@@ -109,7 +109,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
           <button
             type="button"
             onClick={() => handleAction(() => onNavigate('teams'))}
-            className="w-full p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-3 transition-colors text-left"
+            className="ui-btn ui-btn-secondary w-full p-3 flex items-center justify-between gap-3 text-left"
           >
             <div className="flex items-center gap-2.5">
               <span className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-base">
@@ -128,7 +128,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
             <button
               type="button"
               onClick={() => handleAction(onOpenSeasons)}
-              className="w-full p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-3 transition-colors text-left"
+              className="ui-btn ui-btn-secondary w-full p-3 flex items-center justify-between gap-3 text-left"
             >
               <div className="flex items-center gap-2.5">
                 <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-base">
@@ -153,7 +153,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
             <button
               type="button"
               onClick={() => handleAction(onOpenInviteStaff)}
-              className="w-full p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-3 transition-colors text-left"
+              className="ui-btn ui-btn-secondary w-full p-3 flex items-center justify-between gap-3 text-left"
             >
               <div className="flex items-center gap-2.5">
                 <span className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-base">
@@ -173,7 +173,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
             <button
               type="button"
               onClick={() => handleAction(onOpenAdminUsers)}
-              className="w-full p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-3 transition-colors text-left"
+              className="ui-btn ui-btn-secondary w-full p-3 flex items-center justify-between gap-3 text-left"
             >
               <div className="flex items-center gap-2.5">
                 <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30 text-base">
@@ -199,7 +199,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
           <button
             type="button"
             onClick={() => handleAction(onOpenDatabase)}
-            className="w-full p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-3 transition-colors text-left"
+            className="ui-btn ui-btn-secondary w-full p-3 flex items-center justify-between gap-3 text-left"
           >
             <div className="flex items-center gap-2.5">
               <span className="p-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 text-base">💾</span>
@@ -215,7 +215,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
           <button
             type="button"
             onClick={() => handleAction(onOpenSettings)}
-            className="w-full p-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 flex items-center justify-between gap-3 transition-colors text-left"
+            className="ui-btn ui-btn-secondary w-full p-3 flex items-center justify-between gap-3 text-left"
           >
             <div className="flex items-center gap-2.5">
               <span className="p-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 text-base">⚙️</span>

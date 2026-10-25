@@ -191,17 +191,14 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
         />
         <div className="text-center mt-12 px-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md mx-auto shadow-xl">
+          <div className="ui-card p-8 max-w-md mx-auto">
             <span className="text-4xl block mb-3">⏱️</span>
             <h3 className="text-lg font-bold text-white mb-2">Nenhum jogo em direto a decorrer</h3>
             <p className="text-sm text-slate-400 mb-6">
               Inicie um jogo a partir do calendário ou crie uma nova partida para acompanhar os acontecimentos ao
               minuto.
             </p>
-            <button
-              className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition-all w-full"
-              onClick={() => onNavigate('calendario')}
-            >
+            <button className="ui-btn ui-btn-warning px-6 py-3 text-sm w-full" onClick={() => onNavigate('calendario')}>
               {t(state.lang, 'match_goto_sch')}
             </button>
           </div>
@@ -338,7 +335,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
       />
 
       {/* PAINEL DE FASE E BOTÃO ÚNICO DE ESTADO (Visível nos 3 modos: Rápido, Detalhado, Cronologia) */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-3.5">
+      <div className="ui-card p-4 sm:p-5 space-y-3.5">
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           {/* Badge do Estado Atual */}
           <div className="flex items-center gap-2">
@@ -373,7 +370,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <button
               onClick={() => setShowLineupFirstHalfModal(true)}
-              className="px-3 py-1.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition-all flex items-center gap-1.5 font-mono shadow-sm"
+              className="ui-btn ui-btn-secondary px-3 py-1.5 flex items-center gap-1.5"
               title={`Gerir ${lineupSize} Titulares da 1.ª Parte`}
             >
               <span>👥 Titulares 1.ª P:</span>
@@ -385,7 +382,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
             {(match.lineupSecondHalf?.length || 0) > 0 && (
               <button
                 onClick={() => setShowLineupSecondHalfModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-slate-950/80 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition-all flex items-center gap-1.5 font-mono shadow-sm"
+                className="ui-btn ui-btn-secondary px-3 py-1.5 flex items-center gap-1.5"
                 title={`Ver ${lineupSize} Titulares da 2.ª Parte`}
               >
                 <span>👥 Titulares 2.ª P:</span>
@@ -460,7 +457,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         {matchPhase === 'parte1' && (
           <button
             onClick={handleGoToHalftime}
-            className="w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:opacity-95 text-slate-950 shadow-xl shadow-amber-500/25 transition-all active:scale-98 flex items-center justify-center gap-2.5"
+            className="w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:opacity-95 text-slate-950 shadow-xl transition-all active:scale-98 flex items-center justify-center gap-2.5"
           >
             <span className="text-xl">⏸️</span>
             <span>Intervalo</span>
@@ -486,7 +483,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
               setSecondHalfPreset(null);
               setShowLineupSecondHalfModal(true);
             }}
-            className="w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:opacity-95 text-slate-950 shadow-xl shadow-emerald-500/25 transition-all active:scale-98 flex items-center justify-center gap-2.5 animate-pulse"
+            className="w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:opacity-95 text-slate-950 shadow-xl transition-all active:scale-98 flex items-center justify-center gap-2.5 animate-pulse"
           >
             <span className="text-xl">▶️</span>
             <span>Iniciar 2.ª parte</span>
@@ -497,7 +494,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
       </div>
 
       {/* Mode Switcher: Modo Rápido (Banco) vs Modo Detalhado vs Cronologia */}
-      <div className="flex items-center justify-between p-1 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-lg">
+      <div className="ui-card flex items-center justify-between p-1">
         <button
           onClick={() => setMatchMode('quick')}
           className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold font-['Chakra_Petch'] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
@@ -583,7 +580,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           />
 
           {/* Interactive Tabs Navigation */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto">
+          <div className="ui-card flex items-center gap-1.5 p-1 overflow-x-auto">
             <button
               onClick={() => setActiveTab('events')}
               className={`flex-1 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 ${
@@ -715,7 +712,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
       )}
 
       {matchMode === 'timeline' && (
-        <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl animate-fadeIn space-y-3">
+        <div className="ui-card p-5 animate-fadeIn space-y-3">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider font-['Chakra_Petch']">
             Cronologia Ao Minuto
           </h3>
@@ -736,7 +733,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         </div>
         <button
           onClick={() => setShowChecklistModal(true)}
-          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black text-sm font-['Chakra_Petch'] uppercase tracking-wider shadow-lg shadow-cyan-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black text-sm font-['Chakra_Petch'] uppercase tracking-wider shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           <span>📋</span>
           <span>Validar e Terminar Jogo</span>

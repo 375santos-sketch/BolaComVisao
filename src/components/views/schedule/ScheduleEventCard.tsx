@@ -64,10 +64,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
     const m = ev.rawFinishedMatch;
 
     return (
-      <div
-        key={ev.id}
-        className="p-4 rounded-2xl bg-slate-900/90 border border-cyan-500/30 hover:border-cyan-400 transition-all shadow-md space-y-3"
-      >
+      <div key={ev.id} className="ui-card p-4 transition-all space-y-3">
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800">
           <div className="flex items-center gap-2.5 flex-wrap">
@@ -108,7 +105,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               <button
                 type="button"
                 onClick={() => handleConvertScheduledToLiveMatch(s.id)}
-                className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all flex items-center gap-1"
+                className="ui-btn ui-btn-success px-3 py-1.5 text-xs flex items-center gap-1"
                 title="Começar Jogo no Cronómetro"
               >
                 <span>▶</span>
@@ -120,7 +117,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               <button
                 type="button"
                 onClick={() => handleEditMatch(s)}
-                className="p-1.5 px-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-300 text-xs font-mono"
+                className="ui-btn ui-btn-secondary p-1.5 px-2.5 text-xs"
                 title="Editar Jogo"
               >
                 ✏️ Editar
@@ -135,7 +132,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                     handleDeleteScheduledMatch(s.id)
                   );
                 }}
-                className="p-1.5 px-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 text-xs"
+                className="ui-btn ui-btn-secondary p-1.5 px-2 text-xs"
                 title="Eliminar Jogo Cancelado"
               >
                 🗑️
@@ -150,7 +147,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                     handleDeleteScheduledMatch(m.id)
                   );
                 }}
-                className="p-1.5 px-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 text-xs"
+                className="ui-btn ui-btn-secondary p-1.5 px-2 text-xs"
                 title="Eliminar Jogo"
               >
                 🗑️
@@ -188,7 +185,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   e.stopPropagation();
                   onNavigate('jogos', m.id);
                 }}
-                className="px-3 py-1.5 rounded-xl bg-cyan-950/80 border border-cyan-500/50 hover:bg-cyan-900 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1"
+                className="ui-btn ui-btn-soft px-3 py-1.5 text-xs flex items-center gap-1"
               >
                 <span>📊</span>
                 <span>Ver Ficha de Jogo</span>
@@ -201,7 +198,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                     handleDeleteScheduledMatch(m.id)
                   );
                 }}
-                className="px-3 py-1.5 rounded-xl bg-red-950/70 border border-red-500/50 hover:bg-red-900 text-red-300 hover:text-white font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all"
+                className="ui-btn ui-btn-soft-danger px-3 py-1.5 text-xs flex items-center gap-1"
                 title="Eliminar este jogo da agenda"
               >
                 <span>🗑️</span>
@@ -217,7 +214,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             <button
               type="button"
               onClick={() => handleEditMatch(s)}
-              className="px-3 py-1.5 rounded-xl bg-slate-950 border border-cyan-500/50 hover:bg-cyan-950 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1"
+              className="ui-btn ui-btn-soft px-3 py-1.5 text-xs flex items-center gap-1"
               title="Abrir e editar dados do jogo"
             >
               <span>✏️</span>
@@ -264,7 +261,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             <button
               type="button"
               onClick={() => setShareCallup(s)}
-              className="px-3 py-1.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 hover:bg-emerald-900 text-emerald-300 font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1"
+              className="ui-btn ui-btn-soft-success px-3 py-1.5 text-xs flex items-center gap-1"
             >
               <span>💬</span>
               <span>WhatsApp</span>
@@ -277,7 +274,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   handleDeleteScheduledMatch(s.id)
                 );
               }}
-              className="px-3 py-1.5 rounded-xl bg-red-950/70 border border-red-500/50 hover:bg-red-900 text-red-300 hover:text-white font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all ml-auto"
+              className="ui-btn ui-btn-soft-danger px-3 py-1.5 text-xs flex items-center gap-1 ml-auto"
               title="Eliminar este jogo cancelado da agenda"
             >
               <span>🗑️</span>
@@ -296,10 +293,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
     const formattedEndDate = u?.endDate ? u.endDate.split('-').reverse().join('/') : null;
 
     return (
-      <div
-        key={ev.id}
-        className="p-4 rounded-2xl bg-slate-900/90 border border-orange-500/40 hover:border-orange-400 transition-all shadow-md space-y-3"
-      >
+      <div key={ev.id} className="ui-card p-4 transition-all space-y-3">
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800">
           <div className="flex items-center gap-2.5 flex-wrap">
@@ -320,7 +314,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               <button
                 type="button"
                 onClick={() => handleEditStaff(u)}
-                className="p-1.5 px-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-orange-400 text-orange-300 text-xs font-mono"
+                className="ui-btn ui-btn-secondary p-1.5 px-2.5 text-xs"
                 title="Editar Indisponibilidade"
               >
                 ✏️ Editar
@@ -333,7 +327,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                     handleDeleteStaff(u.id)
                   );
                 }}
-                className="p-1.5 px-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 text-xs"
+                className="ui-btn ui-btn-secondary p-1.5 px-2 text-xs"
                 title="Apagar Indisponibilidade"
               >
                 🗑️
@@ -369,7 +363,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             <button
               type="button"
               onClick={() => handleEditStaff(u)}
-              className="px-3 py-1.5 rounded-xl bg-slate-950 border border-orange-500/50 hover:bg-orange-950 text-orange-300 font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1"
+              className="ui-btn ui-btn-soft-warning px-3 py-1.5 text-xs flex items-center gap-1"
             >
               <span>✏️</span>
               <span>Abrir / Editar Indisponibilidade</span>
@@ -382,7 +376,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   handleDeleteStaff(u.id)
                 );
               }}
-              className="px-3 py-1.5 rounded-xl bg-red-950/70 border border-red-500/50 hover:bg-red-900 text-red-300 hover:text-white font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all ml-auto"
+              className="ui-btn ui-btn-soft-danger px-3 py-1.5 text-xs flex items-center gap-1 ml-auto"
               title="Eliminar indisponibilidade da equipa técnica"
             >
               <span>🗑️</span>
@@ -431,7 +425,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           <div className="flex items-center gap-2.5 flex-wrap">
             {/* Interactive Status Switch (Agendado vs Concluído) */}
             {c && handleToggleClubEventStatus && (
-              <div className="inline-flex rounded-xl p-0.5 bg-slate-950 border border-slate-800 shadow-inner">
+              <div className="ui-inset inline-flex p-0.5">
                 <button
                   type="button"
                   onClick={() => {
@@ -506,7 +500,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               <button
                 type="button"
                 onClick={() => handleEditClubEvent(c)}
-                className="p-1.5 px-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-purple-400 text-purple-300 text-xs font-mono"
+                className="ui-btn ui-btn-secondary p-1.5 px-2.5 text-xs"
                 title="Editar Evento"
               >
                 ✏️ Editar
@@ -520,7 +514,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                     () => handleDeleteClubEvent(c.id)
                   );
                 }}
-                className="p-1.5 px-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 text-xs"
+                className="ui-btn ui-btn-secondary p-1.5 px-2 text-xs"
                 title={`Eliminar ${singleNoun} Cancelada`}
               >
                 🗑️
@@ -569,7 +563,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           </div>
 
           {c?.notes && (
-            <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs font-mono text-slate-300 whitespace-pre-wrap">
+            <div className="ui-inset p-3 text-xs font-mono text-slate-300 whitespace-pre-wrap">
               <div className="text-[10px] uppercase text-purple-400 font-bold mb-1">📋 Ordem de Trabalhos / Notas:</div>
               {c.notes}
             </div>
@@ -595,7 +589,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             <button
               type="button"
               onClick={() => handleEditClubEvent(c)}
-              className="px-3 py-1.5 rounded-xl bg-slate-950 border border-purple-500/50 hover:bg-purple-950 text-purple-300 font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1"
+              className="ui-btn ui-btn-soft px-3 py-1.5 text-xs flex items-center gap-1"
             >
               <span>✏️</span>
               <span>Abrir / Editar {typeLabel}</span>
@@ -609,7 +603,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   () => handleDeleteClubEvent(c.id)
                 );
               }}
-              className="px-3 py-1.5 rounded-xl bg-red-950/70 border border-red-500/50 hover:bg-red-900 text-red-300 hover:text-white font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all ml-auto"
+              className="ui-btn ui-btn-soft-danger px-3 py-1.5 text-xs flex items-center gap-1 ml-auto"
               title={`Eliminar ${singleNoun.toLowerCase()} cancelada da agenda`}
             >
               <span>🗑️</span>
@@ -638,7 +632,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800">
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Interactive Status Switch */}
-          <div className="inline-flex rounded-xl p-0.5 bg-slate-950 border border-slate-800 shadow-inner">
+          <div className="ui-inset inline-flex p-0.5">
             <button
               type="button"
               onClick={() => {
@@ -698,7 +692,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           <button
             type="button"
             onClick={() => handleEditTraining(tr)}
-            className="p-1.5 px-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-cyan-300 text-xs font-mono"
+            className="ui-btn ui-btn-secondary p-1.5 px-2.5 text-xs"
             title="Editar Treino"
           >
             ✏️ Editar
@@ -711,7 +705,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                 handleDeleteTraining(tr.id)
               );
             }}
-            className="p-1.5 px-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 text-xs"
+            className="ui-btn ui-btn-secondary p-1.5 px-2 text-xs"
             title="Eliminar Treino Cancelado"
           >
             🗑️
@@ -754,7 +748,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
         <button
           type="button"
           onClick={() => handleEditTraining(tr)}
-          className="px-3 py-1.5 rounded-xl bg-slate-950 border border-amber-500/50 hover:bg-amber-950 text-amber-300 font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1"
+          className="ui-btn ui-btn-soft-warning px-3 py-1.5 text-xs flex items-center gap-1"
           title="Abrir detalhes do treino, presenças e notas"
         >
           <span>✏️</span>
@@ -764,7 +758,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
         <button
           type="button"
           onClick={() => onNavigate('treinos')}
-          className="px-3 py-1.5 rounded-xl bg-cyan-950/80 border border-cyan-500/50 hover:bg-cyan-900 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1"
+          className="ui-btn ui-btn-soft px-3 py-1.5 text-xs flex items-center gap-1"
           title="Ir para o painel completo de Treinos"
         >
           <span>📋</span>
@@ -778,7 +772,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               handleDeleteTraining(tr.id)
             );
           }}
-          className="px-3 py-1.5 rounded-xl bg-red-950/70 border border-red-500/50 hover:bg-red-900 text-red-300 hover:text-white font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all ml-auto"
+          className="ui-btn ui-btn-soft-danger px-3 py-1.5 text-xs flex items-center gap-1 ml-auto"
           title="Eliminar este treino cancelado da agenda"
         >
           <span>🗑️</span>
@@ -790,7 +784,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
       {isExpanded && (
         <div className="mt-3 pt-3 border-t border-slate-800 text-xs space-y-2">
           {tr.notes ? (
-            <div className="p-3 rounded-xl bg-slate-950/90 border border-slate-800 text-slate-300 font-mono leading-relaxed">
+            <div className="ui-inset p-3 text-slate-300 font-mono leading-relaxed">
               <span className="text-cyan-400 font-bold block mb-1">📝 Objetivos & Exercícios:</span>
               {tr.notes}
             </div>

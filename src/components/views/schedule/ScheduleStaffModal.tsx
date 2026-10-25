@@ -28,8 +28,8 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
   if (!showStaffModal) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-orange-500/50 rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl animate-scaleUp max-h-[90vh] overflow-y-auto">
+    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="ui-card max-w-lg w-full p-5 space-y-4 animate-scaleUp max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">🚫</span>
@@ -63,7 +63,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
               placeholder="Ex: Treinador Principal, Treinador Adjunto..."
               value={staffForm.name}
               onChange={(e) => setStaffForm({ ...staffForm, name: e.target.value })}
-              className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 focus:border-orange-400 text-white text-sm font-['Chakra_Petch'] font-bold focus:outline-none"
+              className="ui-input w-full text-sm"
               autoFocus
             />
 
@@ -76,7 +76,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
                     key={member.id}
                     type="button"
                     onClick={() => setStaffForm({ ...staffForm, name: member.name })}
-                    className="px-2 py-0.5 rounded bg-slate-950 hover:bg-orange-950 border border-slate-800 text-[10px] font-mono text-orange-300 hover:border-orange-500 transition-all"
+                    className="ui-btn ui-btn-secondary px-2 py-0.5 text-[10px]"
                   >
                     👤 {member.name} ({member.role})
                   </button>
@@ -95,7 +95,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
                 type="date"
                 value={staffForm.date}
                 onChange={(e) => setStaffForm({ ...staffForm, date: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-orange-400 text-orange-300 text-xs font-mono focus:outline-none"
+                className="ui-input w-full text-xs"
               />
             </div>
 
@@ -106,7 +106,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
                 min={staffForm.date}
                 value={staffForm.endDate}
                 onChange={(e) => setStaffForm({ ...staffForm, endDate: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-orange-400 text-orange-300 text-xs font-mono focus:outline-none"
+                className="ui-input w-full text-xs"
               />
               <span className="text-[10px] font-mono text-slate-500 mt-1 block">
                 Deixar vazio para indisponibilidade de apenas 1 dia
@@ -122,7 +122,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
               placeholder="Ex: Motivos profissionais, Formação UEFA, Pessoais..."
               value={staffForm.reason}
               onChange={(e) => setStaffForm({ ...staffForm, reason: e.target.value })}
-              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-orange-400 text-white text-xs font-mono focus:outline-none"
+              className="ui-input w-full text-xs"
             />
           </div>
 
@@ -140,7 +140,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
                     }
                   );
                 }}
-                className="px-4 py-2 min-h-[40px] rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/60 text-red-300 hover:text-white text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1.5 active:scale-95 shadow-sm"
+                className="ui-btn ui-btn-soft-danger px-4 py-2 min-h-[40px] text-xs flex items-center gap-1.5"
                 title="Eliminar indisponibilidade"
               >
                 <span>🗑️</span>
@@ -154,13 +154,13 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowStaffModal(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-['Chakra_Petch'] font-bold uppercase transition-all"
+                className="ui-btn ui-btn-secondary px-4 py-2 text-xs"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-400 hover:to-rose-500 text-white text-xs font-['Chakra_Petch'] font-black uppercase shadow-[0_0_15px_rgba(249,115,22,0.4)] transition-all"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-400 hover:to-rose-500 text-white text-xs font-['Chakra_Petch'] font-black uppercase transition-all"
               >
                 {editingStaffId ? 'Guardar Alterações' : 'Registar Indisponibilidade'}
               </button>

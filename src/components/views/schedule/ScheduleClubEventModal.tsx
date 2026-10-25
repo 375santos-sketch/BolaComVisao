@@ -26,7 +26,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
   if (!showClubEventModal) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
       <div className="bg-slate-900 border-t sm:border border-purple-500/50 rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
         {/* Modal Header */}
         <div className="p-4 sm:p-5 pb-3 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-900/95">
@@ -44,7 +44,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
           <button
             type="button"
             onClick={() => setShowClubEventModal(false)}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-mono text-sm active:scale-95 transition-all"
+            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
           >
             ✕
           </button>
@@ -93,7 +93,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
               placeholder="Ex: Reunião Técnica Semanal, Ação de Formação UEFA..."
               value={clubEventForm.title}
               onChange={(e) => setClubEventForm({ ...clubEventForm, title: e.target.value })}
-              className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 focus:border-purple-400 text-white text-sm font-['Chakra_Petch'] font-bold focus:outline-none"
+              className="ui-input w-full text-sm"
               autoFocus
             />
 
@@ -111,7 +111,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                   key={sug}
                   type="button"
                   onClick={() => setClubEventForm({ ...clubEventForm, title: sug })}
-                  className="px-2 py-0.5 rounded-lg bg-slate-950 hover:bg-purple-950/60 border border-slate-800 text-[10px] font-mono text-slate-400 hover:text-purple-300 hover:border-purple-500/40 transition-all"
+                  className="ui-btn ui-btn-secondary px-2 py-0.5 text-[10px]"
                 >
                   + {sug}
                 </button>
@@ -129,7 +129,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                 type="date"
                 value={clubEventForm.date}
                 onChange={(e) => setClubEventForm({ ...clubEventForm, date: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-purple-400 text-purple-300 text-xs font-mono focus:outline-none"
+                className="ui-input w-full text-xs"
               />
             </div>
 
@@ -140,7 +140,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                 min={clubEventForm.date}
                 value={clubEventForm.endDate}
                 onChange={(e) => setClubEventForm({ ...clubEventForm, endDate: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-purple-400 text-purple-300 text-xs font-mono focus:outline-none"
+                className="ui-input w-full text-xs"
               />
               <span className="text-[10px] font-mono text-slate-500 mt-1 block">Deixar vazio para evento de 1 dia</span>
             </div>
@@ -154,7 +154,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                 type="time"
                 value={clubEventForm.time}
                 onChange={(e) => setClubEventForm({ ...clubEventForm, time: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-purple-400 text-white text-xs font-mono focus:outline-none"
+                className="ui-input w-full text-xs"
               />
             </div>
 
@@ -164,7 +164,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                 type="time"
                 value={clubEventForm.endTime}
                 onChange={(e) => setClubEventForm({ ...clubEventForm, endTime: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-purple-400 text-white text-xs font-mono focus:outline-none"
+                className="ui-input w-full text-xs"
               />
             </div>
           </div>
@@ -178,7 +178,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                 placeholder="Ex: Sala de Reuniões, Auditório..."
                 value={clubEventForm.location}
                 onChange={(e) => setClubEventForm({ ...clubEventForm, location: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-purple-400 text-white text-xs font-mono focus:outline-none"
+                className="ui-input w-full text-xs"
               />
             </div>
 
@@ -189,7 +189,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                 placeholder="Ex: Equipa Técnica, Pais, Plantel..."
                 value={clubEventForm.attendees}
                 onChange={(e) => setClubEventForm({ ...clubEventForm, attendees: e.target.value })}
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-purple-400 text-white text-xs font-mono focus:outline-none"
+                className="ui-input w-full text-xs"
               />
             </div>
           </div>
@@ -197,7 +197,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
           {/* Status Switcher (Agendado vs Concluído) */}
           <div>
             <label className="text-xs font-mono text-slate-300 block mb-1.5">Estado do Compromisso</label>
-            <div className="inline-flex rounded-xl p-1 bg-slate-950 border border-slate-800 w-full sm:w-auto gap-1">
+            <div className="ui-inset inline-flex p-1 w-full sm:w-auto gap-1">
               <button
                 type="button"
                 onClick={() => setClubEventForm({ ...clubEventForm, isCompleted: false })}
@@ -235,7 +235,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
               placeholder="Ex: 1. Balanço dos jogos do fim de semana; 2. Planeamento microciclo; 3. Logística de transporte..."
               value={clubEventForm.notes}
               onChange={(e) => setClubEventForm({ ...clubEventForm, notes: e.target.value })}
-              className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 focus:border-purple-400 text-white text-xs font-mono focus:outline-none resize-none"
+              className="ui-input w-full text-xs resize-none"
             />
           </div>
         </div>
@@ -257,7 +257,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                   setShowClubEventModal(false);
                 });
               }}
-              className="px-4 py-2.5 min-h-[44px] rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-500/60 text-red-300 hover:text-white text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1.5 active:scale-95 shadow-sm"
+              className="ui-btn ui-btn-soft-danger px-4 py-2.5 min-h-[44px] text-xs flex items-center gap-1.5"
               title="Eliminar evento cancelado da agenda"
             >
               <span>🗑️</span>
@@ -279,7 +279,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
             <button
               type="button"
               onClick={() => setShowClubEventModal(false)}
-              className="px-4 py-2.5 min-h-[44px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono font-semibold active:scale-95 transition-all"
+              className="ui-btn ui-btn-secondary px-4 py-2.5 min-h-[44px] text-xs"
             >
               Cancelar
             </button>

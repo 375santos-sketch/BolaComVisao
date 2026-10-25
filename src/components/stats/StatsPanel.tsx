@@ -29,7 +29,7 @@ const ddmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 const short = (name: string) => (name.length > 9 ? `${name.slice(0, 8)}…` : name);
 
 const Tile: React.FC<{ value: React.ReactNode; label: string }> = ({ value, label }) => (
-  <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+  <div className="ui-inset p-2.5 text-center">
     <div className="text-lg font-extrabold text-white font-mono">{value}</div>
     <div className="text-[10px] text-slate-400 uppercase">{label}</div>
   </div>
@@ -85,7 +85,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
   const select = 'w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white';
 
   return (
-    <div className="fixed inset-0 z-[100000] bg-slate-950/90 backdrop-blur-sm flex items-end sm:items-center justify-center">
+    <div className="ui-overlay fixed inset-0 z-[100000] flex items-end sm:items-center justify-center">
       <div
         role="dialog"
         aria-label="Painel de estatísticas"
@@ -318,18 +318,10 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
             PDF e Excel destes jogos com gráficos. O Excel traz também as tabelas para o Power BI (sem contactos nem
             datas de nascimento).
           </p>
-          <button
-            type="button"
-            onClick={exportPdf}
-            className="px-3 py-2 rounded-xl bg-slate-950 border border-cyan-500/50 hover:border-cyan-400 text-cyan-200 text-xs font-bold"
-          >
+          <button type="button" onClick={exportPdf} className="ui-btn ui-btn-soft px-3 py-2 text-xs">
             📄 PDF destes jogos
           </button>
-          <button
-            type="button"
-            onClick={exportExcel}
-            className="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold"
-          >
+          <button type="button" onClick={exportExcel} className="ui-btn ui-btn-warning px-3 py-2 text-xs">
             📊 Excel com gráficos (+ Power BI)
           </button>
         </div>

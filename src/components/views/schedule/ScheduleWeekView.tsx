@@ -48,12 +48,8 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Week Header Navigator */}
-      <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-2 shadow-md">
-        <button
-          type="button"
-          onClick={handlePrevWeek}
-          className="p-2 px-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-300 text-xs font-mono"
-        >
+      <div className="ui-card p-3.5 flex items-center justify-between gap-2">
+        <button type="button" onClick={handlePrevWeek} className="ui-btn ui-btn-secondary p-2 px-3 text-xs">
           ◀ Semana Anterior
         </button>
 
@@ -66,11 +62,7 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
           <div className="text-[11px] font-mono text-cyan-400">Semana da Época Desportiva</div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleNextWeek}
-          className="p-2 px-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-400 text-slate-300 text-xs font-mono"
-        >
+        <button type="button" onClick={handleNextWeek} className="ui-btn ui-btn-secondary p-2 px-3 text-xs">
           Próxima Semana ▶
         </button>
       </div>
@@ -168,7 +160,7 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
                     e.stopPropagation();
                     onOpenScheduleMatch(wd.dateStr);
                   }}
-                  className="p-1 rounded-lg bg-slate-950 hover:bg-cyan-950 border border-slate-800 text-[10px] text-cyan-300 hover:border-cyan-500 text-center"
+                  className="ui-btn ui-btn-secondary p-1 text-[10px] text-center"
                   title="Adicionar Jogo"
                 >
                   + ⚽
@@ -179,7 +171,7 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
                     e.stopPropagation();
                     onOpenScheduleTraining(wd.dateStr);
                   }}
-                  className="p-1 rounded-lg bg-slate-950 hover:bg-amber-950 border border-slate-800 text-[10px] text-amber-300 hover:border-amber-500 text-center"
+                  className="ui-btn ui-btn-secondary p-1 text-[10px] text-center"
                   title="Adicionar Treino"
                 >
                   + ⚡
@@ -190,7 +182,7 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
                     e.stopPropagation();
                     onOpenClubEventModal(wd.dateStr);
                   }}
-                  className="p-1 rounded-lg bg-slate-950 hover:bg-purple-950 border border-slate-800 text-[10px] text-purple-300 hover:border-purple-500 text-center"
+                  className="ui-btn ui-btn-secondary p-1 text-[10px] text-center"
                   title="Adicionar Reunião / Formação"
                 >
                   + 👥
@@ -201,7 +193,7 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
                     e.stopPropagation();
                     onOpenScheduleStaff(wd.dateStr);
                   }}
-                  className="p-1 rounded-lg bg-slate-950 hover:bg-orange-950 border border-slate-800 text-[10px] text-orange-300 hover:border-orange-500 text-center"
+                  className="ui-btn ui-btn-secondary p-1 text-[10px] text-center"
                   title="Adicionar Indisponibilidade"
                 >
                   + 🚫
@@ -214,7 +206,7 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
 
       {/* Selected Day Event Drawer below week */}
       {selectedDateEvents.length > 0 && (
-        <div className="mt-4 p-4 rounded-2xl bg-slate-900/90 border border-cyan-500/30">
+        <div className="ui-card mt-4 p-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 mb-3 border-b border-slate-800">
             <div className="text-sm font-['Chakra_Petch'] font-bold uppercase text-white flex items-center gap-2">
               <span>📅</span>
@@ -225,7 +217,7 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenScheduleMatch(selectedDate)}
-                className="px-2.5 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
+                className="ui-btn ui-btn-primary px-2.5 py-1 text-xs flex items-center gap-1"
               >
                 <span>⚽</span>
                 <span>＋ Jogo</span>
@@ -233,7 +225,7 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenScheduleTraining(selectedDate)}
-                className="px-2.5 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
+                className="ui-btn ui-btn-warning px-2.5 py-1 text-xs flex items-center gap-1"
               >
                 <span>⚡</span>
                 <span>＋ Treino</span>

@@ -28,8 +28,7 @@ interface LeagueTableModalProps {
 
 type Panel = 'tabela' | 'resultados' | 'colar' | 'equipas';
 
-const input =
-  'w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:border-cyan-400 outline-none';
+const input = 'ui-input text-xs';
 const ddmm = (iso?: string) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}` : '');
 const ddmmyyyy = (iso?: string) => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '');
 
@@ -251,7 +250,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
 
   return (
     <div
-      className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3 bg-slate-950/85 backdrop-blur-sm"
+      className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3"
       onClick={onClose}
     >
       <div
@@ -290,17 +289,14 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
           <button
             type="button"
             onClick={() => setNewPhase(newPhase ? null : { name: '', startDate: '' })}
-            className="px-2.5 py-1 rounded-full text-[11px] font-bold border border-dashed border-cyan-500/60 text-cyan-200"
+            className="ui-btn ui-btn-soft px-2.5 py-1 text-[11px]"
           >
             ➕ Nova fase
           </button>
         </div>
 
         {newPhase && (
-          <section
-            aria-label="Nova fase"
-            className="space-y-2 p-3 rounded-2xl bg-slate-950/60 border border-cyan-500/40"
-          >
+          <section aria-label="Nova fase" className="ui-inset space-y-2 p-3">
             <p className="text-[11px] text-slate-300">
               A fase atual fica guardada como está. A nova fase começa com a tabela a zeros, novas equipas e novas
               jornadas; os jogos de {ourName} a partir do dia indicado contam para ela.
@@ -325,11 +321,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 />
               </label>
             </div>
-            <button
-              type="button"
-              onClick={createPhase}
-              className="w-full py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase"
-            >
+            <button type="button" onClick={createPhase} className="ui-btn ui-btn-primary w-full py-2 text-xs">
               Criar fase
             </button>
           </section>
@@ -351,7 +343,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
           </div>
         )}
 
-        <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-slate-950/70 border border-slate-800">
+        <div className="ui-inset grid grid-cols-4 gap-1 p-1">
           {tabBtn('tabela', 'Tabela')}
           {tabBtn('resultados', 'Resultados')}
           {tabBtn('colar', 'Colar')}
@@ -418,10 +410,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 <option key={n} value={n} />
               ))}
             </datalist>
-            <section
-              aria-label="Novo resultado"
-              className="space-y-2 p-3 rounded-2xl bg-slate-950/60 border border-slate-800"
-            >
+            <section aria-label="Novo resultado" className="ui-inset space-y-2 p-3">
               <div className="grid grid-cols-2 gap-2">
                 <label className="text-[10px] text-slate-400">
                   Jornada
@@ -479,11 +468,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                   />
                 </label>
               </div>
-              <button
-                type="button"
-                onClick={addGame}
-                className="w-full py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase"
-              >
+              <button type="button" onClick={addGame} className="ui-btn ui-btn-primary w-full py-2 text-xs">
                 Guardar resultado
               </button>
             </section>
@@ -524,10 +509,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
 
         {panel === 'colar' && (
           <div className="space-y-2">
-            <section
-              aria-label="Importar print"
-              className="space-y-2 p-3 rounded-2xl bg-slate-950/60 border border-cyan-500/40"
-            >
+            <section aria-label="Importar print" className="ui-inset space-y-2 p-3">
               <input
                 ref={fileRef}
                 type="file"
@@ -540,7 +522,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 type="button"
                 disabled={reading}
                 onClick={() => fileRef.current?.click()}
-                className="w-full py-2.5 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase disabled:opacity-50"
+                className="ui-btn ui-btn-primary w-full py-2.5 text-xs"
               >
                 {reading ? 'A ler o print…' : '📷 Importar print da jornada'}
               </button>
@@ -574,7 +556,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                     <button
                       type="button"
                       onClick={() => setPrintGames(null)}
-                      className="py-2 rounded-xl border border-slate-700 text-slate-300 text-xs font-bold"
+                      className="ui-btn ui-btn-secondary py-2 text-xs"
                     >
                       Cancelar
                     </button>
@@ -582,7 +564,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                       type="button"
                       onClick={importPrint}
                       disabled={printGames.games.length === 0}
-                      className="py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase disabled:opacity-40"
+                      className="ui-btn ui-btn-primary py-2 text-xs"
                     >
                       Importar {printGames.games.length} jogo(s)
                     </button>
@@ -623,7 +605,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
               type="button"
               onClick={importPasted}
               disabled={preview.games.length === 0}
-              className="w-full py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase disabled:opacity-40"
+              className="ui-btn ui-btn-primary w-full py-2 text-xs"
             >
               Importar resultados
             </button>
@@ -703,7 +685,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 onShowToast(`Equipas da série guardadas (${teams.length}) ✓`);
                 setPanel('tabela');
               }}
-              className="w-full py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black uppercase"
+              className="ui-btn ui-btn-primary w-full py-2 text-xs"
             >
               Guardar equipas
             </button>
@@ -712,11 +694,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
               maiúsculas (Mação = MACAO).
             </p>
             {stored && phases.length > 1 && (
-              <button
-                type="button"
-                onClick={deletePhase}
-                className="w-full py-2 rounded-xl border border-rose-500/50 text-rose-300 text-xs font-bold"
-              >
+              <button type="button" onClick={deletePhase} className="ui-btn ui-btn-soft-danger w-full py-2 text-xs">
                 Apagar esta fase
               </button>
             )}

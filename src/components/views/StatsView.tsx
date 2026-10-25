@@ -265,11 +265,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
       {state.seasons && state.seasons.length > 1 && (
         <div className="flex items-center gap-2 mb-3 px-1 text-xs font-mono">
           <span className="text-slate-400">Época:</span>
-          <select
-            value={seasonFilter}
-            onChange={(e) => setSeasonFilter(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs focus:border-cyan-400 outline-none"
-          >
+          <select value={seasonFilter} onChange={(e) => setSeasonFilter(e.target.value)} className="ui-input text-xs">
             <option value="todas">Todas as Épocas</option>
             {state.seasons.map((sn) => (
               <option key={sn.id} value={sn.name}>
@@ -300,7 +296,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
         <button
           type="button"
           onClick={() => onNavigate('analise_jogos')}
-          className="w-full sm:w-auto px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center justify-center gap-1.5 shrink-0"
+          className="ui-btn ui-btn-primary w-full sm:w-auto px-4 py-2 text-xs flex items-center justify-center gap-1.5 shrink-0"
         >
           <span>Abrir Análise</span>
           <span>➔</span>
@@ -315,7 +311,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
             await generateGamesDashboardPDF(state);
             onShowToast('Estatísticas da Época exportadas em PDF (BolaComVisao)! 📄');
           }}
-          className="py-2.5 px-3 rounded-xl bg-slate-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 font-['Chakra_Petch'] font-bold uppercase text-xs transition-all flex items-center justify-center gap-2"
+          className="ui-btn ui-btn-soft py-2.5 px-3 text-xs flex items-center justify-center gap-2"
         >
           <span>📄</span>
           <span>Exportar PDF (BolaComVisao)</span>
@@ -327,7 +323,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
             exportGamesDashboardExcel(state);
             onShowToast('Estatísticas da Época exportadas em Excel (.xlsx)! 📊');
           }}
-          className="py-2.5 px-3 rounded-xl bg-slate-900 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 font-['Chakra_Petch'] font-bold uppercase text-xs transition-all flex items-center justify-center gap-2"
+          className="ui-btn ui-btn-soft-success py-2.5 px-3 text-xs flex items-center justify-center gap-2"
         >
           <span>📊</span>
           <span>Exportar Excel (.xlsx)</span>

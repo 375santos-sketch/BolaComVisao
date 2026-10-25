@@ -692,7 +692,7 @@ export default function App() {
 
         {/* Toast Feedback */}
         {toastMessage && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[999999] bg-slate-900/95 border border-cyan-500/50 text-white px-5 py-3 rounded-2xl shadow-[0_0_30px_rgba(0,210,255,0.3)] font-mono text-xs animate-in fade-in slide-in-from-bottom-5 backdrop-blur-md flex items-center gap-2.5 max-w-[90vw] text-center">
+          <div className="ui-card fixed bottom-6 left-1/2 -translate-x-1/2 z-[999999] text-white px-5 py-3 font-mono text-xs animate-in fade-in slide-in-from-bottom-5 flex items-center gap-2.5 max-w-[90vw] text-center">
             <span className="text-cyan-400 text-sm">⚽</span>
             <span>{toastMessage}</span>
           </div>
@@ -1085,7 +1085,7 @@ export default function App() {
 
         {/* Floating Toast Notification */}
         {toastMessage && (
-          <div className="fixed bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 z-[999999] bg-slate-900/95 border border-cyan-500/50 text-white px-5 py-3 rounded-2xl shadow-[0_0_30px_rgba(0,210,255,0.3)] font-mono text-xs animate-in fade-in slide-in-from-bottom-5 backdrop-blur-md flex items-center gap-2.5 max-w-[90vw] text-center">
+          <div className="ui-card fixed bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 z-[999999] text-white px-5 py-3 font-mono text-xs animate-in fade-in slide-in-from-bottom-5 flex items-center gap-2.5 max-w-[90vw] text-center">
             <span className="text-cyan-400 text-sm">⚽</span>
             <span>{toastMessage}</span>
           </div>

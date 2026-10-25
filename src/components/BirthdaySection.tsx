@@ -140,7 +140,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
             setPeriodFilter('7dias');
             setTypeFilter('todos');
           }}
-          className="p-3.5 rounded-2xl bg-slate-900/80 border border-cyan-500/20 hover:border-cyan-400/50 cursor-pointer transition-all hover:scale-[1.02]"
+          className="ui-card p-3.5 cursor-pointer transition-all hover:scale-[1.02]"
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-xl">⚡</span>
@@ -158,7 +158,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
             setPeriodFilter('30dias');
             setTypeFilter('todos');
           }}
-          className="p-3.5 rounded-2xl bg-slate-900/80 border border-cyan-500/20 hover:border-cyan-400/50 cursor-pointer transition-all hover:scale-[1.02]"
+          className="ui-card p-3.5 cursor-pointer transition-all hover:scale-[1.02]"
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-xl">📅</span>
@@ -176,7 +176,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
             setPeriodFilter('todos');
             setTypeFilter('todos');
           }}
-          className="p-3.5 rounded-2xl bg-slate-900/80 border border-cyan-500/20 hover:border-cyan-400/50 cursor-pointer transition-all hover:scale-[1.02]"
+          className="ui-card p-3.5 cursor-pointer transition-all hover:scale-[1.02]"
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-xl">👥</span>
@@ -193,7 +193,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
       {/* 2. FESTIVE BANNER: ANIVERSÁRIOS DE HOJE                                   */}
       {/* ========================================================================= */}
       {todayBirthdays.length > 0 && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-fuchsia-950/95 via-purple-950/90 to-slate-950 border-2 border-fuchsia-500 shadow-[0_0_30px_rgba(217,70,239,0.35)] relative overflow-hidden">
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-fuchsia-950/95 via-purple-950/90 to-slate-950 border-2 border-fuchsia-500 relative overflow-hidden">
           {/* Subtle party icon decorations */}
           <div className="absolute top-2 right-3 text-4xl opacity-20 pointer-events-none select-none">🎉🎈✨</div>
 
@@ -215,14 +215,11 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
             {todayBirthdays.map((person) => (
-              <div
-                key={person.id}
-                className="bg-slate-950/80 border border-fuchsia-400/50 rounded-xl p-3 flex items-center justify-between gap-3 shadow-inner"
-              >
+              <div key={person.id} className="ui-inset p-3 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   {/* Photo / Avatar */}
                   <div className="relative shrink-0">
-                    <div className="w-12 h-12 rounded-xl bg-slate-900 border-2 border-fuchsia-400 flex items-center justify-center overflow-hidden shadow-[0_0_10px_rgba(217,70,239,0.4)]">
+                    <div className="w-12 h-12 rounded-xl bg-slate-900 border-2 border-fuchsia-400 flex items-center justify-center overflow-hidden">
                       {person.photoUrl ? (
                         <img
                           src={person.photoUrl}
@@ -273,7 +270,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                   <button
                     type="button"
                     onClick={() => handleShareWhatsApp(person)}
-                    className="px-2.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase shadow transition-all flex items-center gap-1"
+                    className="ui-btn ui-btn-success px-2.5 py-1.5 text-xs flex items-center gap-1"
                     title="Felicitar pelo WhatsApp"
                   >
                     <span>💬</span>
@@ -283,7 +280,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                   <button
                     type="button"
                     onClick={() => handleCopyGreeting(person)}
-                    className="p-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-fuchsia-300 border border-fuchsia-500/30 text-xs transition-colors"
+                    className="ui-btn ui-btn-soft p-1.5 text-xs"
                     title="Copiar mensagem de felicitação"
                   >
                     📋
@@ -293,7 +290,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                     <button
                       type="button"
                       onClick={() => onEditPlayer(person.rawPlayer!)}
-                      className="p-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs transition-colors"
+                      className="ui-btn ui-btn-secondary p-1.5 text-xs"
                       title="Ver Ficha do Jogador"
                     >
                       👤
@@ -304,7 +301,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                     <button
                       type="button"
                       onClick={() => onEditStaff(person.rawStaff!)}
-                      className="p-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs transition-colors"
+                      className="ui-btn ui-btn-secondary p-1.5 text-xs"
                       title="Ver Ficha da Equipa Técnica"
                     >
                       👔
@@ -320,7 +317,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
       {/* ========================================================================= */}
       {/* 3. FILTERS & SEARCH TOOLBAR                                              */}
       {/* ========================================================================= */}
-      <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/30 shadow-md space-y-3">
+      <div className="ui-card p-3.5 space-y-3">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Filter 1: Type (Todos | Jogadores | Equipa Técnica) */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
@@ -379,7 +376,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
               placeholder="Pesquisar por nome ou cargo..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950 border border-cyan-500/30 focus:border-cyan-400 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none font-mono"
+              className="ui-input w-full text-xs"
             />
             {searchTerm && (
               <button
@@ -489,7 +486,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                 setTypeFilter('todos');
                 setSearchTerm('');
               }}
-              className="px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-mono text-xs font-bold hover:bg-cyan-500/30 transition-all"
+              className="ui-btn ui-btn-soft px-3 py-1.5 text-xs"
             >
               Ver Todos os Aniversários
             </button>
@@ -576,7 +573,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                     </div>
 
                     {/* Birthday Info Card */}
-                    <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1.5 mb-3">
+                    <div className="ui-inset p-2.5 space-y-1.5 mb-3">
                       <div className="flex items-center justify-between text-xs font-mono">
                         <span className="text-slate-400 flex items-center gap-1">
                           <span>🎂 Data:</span>
@@ -606,7 +603,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                       <button
                         type="button"
                         onClick={() => setImagePerson(person)}
-                        className="px-2.5 py-1 rounded-xl bg-fuchsia-950/80 border border-fuchsia-500/50 text-fuchsia-200 text-xs font-bold"
+                        className="ui-btn ui-btn-soft px-2.5 py-1 text-xs"
                         title="Imagem de parabéns para partilhar"
                         aria-label={`Imagem de parabéns para ${person.name}`}
                       >
@@ -615,7 +612,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                       <button
                         type="button"
                         onClick={() => handleShareWhatsApp(person)}
-                        className="px-2.5 py-1 rounded-xl bg-emerald-950/80 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 hover:text-white text-xs font-mono font-bold transition-all flex items-center gap-1"
+                        className="ui-btn ui-btn-soft-success px-2.5 py-1 text-xs flex items-center gap-1"
                         title="Enviar mensagem no WhatsApp"
                       >
                         <span>💬</span>
@@ -625,7 +622,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                       <button
                         type="button"
                         onClick={() => handleCopyGreeting(person)}
-                        className="p-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs transition-colors"
+                        className="ui-btn ui-btn-secondary p-1.5 text-xs"
                         title="Copiar texto de parabéns"
                       >
                         📋
@@ -636,7 +633,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                       <button
                         type="button"
                         onClick={() => onEditPlayer(person.rawPlayer!)}
-                        className="px-2.5 py-1 rounded-xl bg-slate-950 hover:bg-slate-800 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono font-bold transition-colors"
+                        className="ui-btn ui-btn-soft px-2.5 py-1 text-[11px]"
                         title="Editar ficha do jogador"
                       >
                         Ficha ➔
@@ -647,7 +644,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                       <button
                         type="button"
                         onClick={() => onEditStaff(person.rawStaff!)}
-                        className="px-2.5 py-1 rounded-xl bg-slate-950 hover:bg-slate-800 border border-amber-500/30 text-amber-300 text-[11px] font-mono font-bold transition-colors"
+                        className="ui-btn ui-btn-soft-warning px-2.5 py-1 text-[11px]"
                         title="Editar ficha técnica"
                       >
                         Ficha ➔
@@ -665,7 +662,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
       {/* 5. HELPER ALERT: MISSING BIRTHDAYS NOTICE                                 */}
       {/* ========================================================================= */}
       {totalMissing > 0 && (
-        <div className="p-4 rounded-2xl bg-slate-950/90 border border-amber-500/30 space-y-2">
+        <div className="ui-inset p-4 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-amber-400 text-base">⚠️</span>
@@ -692,7 +689,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
           {showMissingAlert && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800 animate-fadeIn">
               {playersMissingDate.length > 0 && (
-                <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                <div className="ui-card p-2.5">
                   <span className="text-[11px] font-mono font-bold text-cyan-400 block mb-1">
                     🏃 Jogadores ({playersMissingDate.length}):
                   </span>
@@ -718,7 +715,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
               )}
 
               {staffMissingDate.length > 0 && (
-                <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                <div className="ui-card p-2.5">
                   <span className="text-[11px] font-mono font-bold text-amber-400 block mb-1">
                     👔 Equipa Técnica ({staffMissingDate.length}):
                   </span>

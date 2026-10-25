@@ -144,7 +144,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
         />
 
         {/* Top Sticky Quick Action Bar for Mobile & Desktop */}
-        <div className="sticky top-0 z-30 p-3 mb-3.5 rounded-2xl bg-slate-950/95 border border-cyan-500/40 shadow-xl backdrop-blur-md flex items-center justify-between gap-2">
+        <div className="ui-inset sticky top-0 z-30 p-3 mb-3.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xl shrink-0">{isEdit ? '✏️' : creationMode === 'batch' ? '📅' : '⚽'}</span>
             <div className="min-w-0">
@@ -180,7 +180,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
             <button
               type="button"
               onClick={() => setTrainingForm(null)}
-              className="px-2.5 py-2 min-h-[38px] rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white font-mono text-xs font-bold active:scale-95 transition-all"
+              className="ui-btn ui-btn-secondary px-2.5 py-2 min-h-[38px] text-xs"
               title="Cancelar"
             >
               ✕
@@ -190,7 +190,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
               <button
                 type="button"
                 onClick={() => onSaveTraining(trainingForm.completed)}
-                className="px-3.5 py-2 min-h-[38px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(0,210,255,0.4)] flex items-center gap-1.5 active:scale-95 transition-all hover:brightness-110"
+                className="px-3.5 py-2 min-h-[38px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-all hover:brightness-110"
               >
                 <span>💾</span>
                 <span>Guardar</span>
@@ -201,8 +201,8 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
 
         {/* Mode Switcher when creating new training */}
         {!isEdit && (
-          <div className="p-2 rounded-2xl bg-slate-900 border border-cyan-500/30 mb-3.5 shadow-lg">
-            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+          <div className="ui-card p-2 mb-3.5">
+            <div className="ui-inset grid grid-cols-2 gap-1.5 p-1">
               <button
                 type="button"
                 onClick={() => setCreationMode('single')}
@@ -242,7 +242,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
         ) : (
           <>
             {/* Status Selection Pill */}
-            <div className="p-4 rounded-2xl bg-slate-900 border border-cyan-500/30 mb-3.5 shadow-lg">
+            <div className="ui-card p-4 mb-3.5">
               <label className="block text-xs font-['Chakra_Petch'] font-bold text-cyan-400 uppercase tracking-wider mb-2">
                 🚦 Estado do Treino
               </label>
@@ -288,7 +288,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
             {/* Core Date & Details Card */}
             <div className="card space-y-3.5 mb-3.5">
               {trainingForm.trainingNumber && (
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-amber-500/30">
+                <div className="ui-inset flex items-center justify-between p-2.5">
                   <div className="flex items-center gap-2">
                     <span className="text-base">🏋️</span>
                     <div>
@@ -438,7 +438,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                 <button
                   type="button"
                   onClick={handleAddCustomBlock}
-                  className="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
+                  className="ui-btn ui-btn-primary px-3 py-2 text-xs hover:brightness-110 flex items-center gap-1.5"
                 >
                   <span>➕</span>
                   <span>Adicionar exercício</span>
@@ -446,7 +446,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowLibrary((v) => !v)}
-                  className="px-3 py-2 rounded-xl border border-cyan-500/60 text-cyan-200 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider active:scale-95 transition-all flex items-center gap-1.5"
+                  className="ui-btn ui-btn-soft px-3 py-2 text-xs flex items-center gap-1.5"
                   aria-expanded={showLibrary}
                 >
                   <span>📚</span>
@@ -458,7 +458,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                 <div
                   aria-label="Escolher da biblioteca"
                   role="group"
-                  className="mb-3 p-2 rounded-2xl bg-slate-950/80 border border-cyan-500/30 space-y-1.5 max-h-72 overflow-y-auto"
+                  className="ui-inset mb-3 p-2 space-y-1.5 max-h-72 overflow-y-auto"
                 >
                   {library.length === 0 ? (
                     <p className="text-[11px] text-slate-400 p-2">
@@ -497,7 +497,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
 
               {/* Blocks List */}
               {trainingForm.sessionBlocks.length === 0 ? (
-                <div className="py-6 text-center bg-slate-950/40 rounded-2xl border border-dashed border-slate-800 p-4 space-y-2">
+                <div className="ui-inset py-6 text-center p-4 space-y-2">
                   <div className="text-2xl">📋</div>
                   <div className="text-xs font-mono text-slate-400">
                     Nenhum bloco ou exercício adicionado a esta sessão.
@@ -509,10 +509,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
               ) : (
                 <div className="space-y-2.5">
                   {trainingForm.sessionBlocks.map((block, idx) => (
-                    <div
-                      key={block.id}
-                      className="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 space-y-2.5 transition-all hover:border-cyan-500/30"
-                    >
+                    <div key={block.id} className="ui-inset p-3 space-y-2.5 transition-all">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         {/* Index & Title */}
                         <div className="flex items-center gap-2 flex-1 min-w-[200px]">
@@ -524,14 +521,14 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                             placeholder="Nome do bloco / exercício (Ex: Rondo 4v2)"
                             value={block.title}
                             onChange={(e) => handleUpdateBlock(block.id, { title: e.target.value })}
-                            className="flex-1 text-xs font-bold text-white font-['Chakra_Petch'] bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 focus:border-cyan-500 focus:outline-none"
+                            className="ui-input flex-1 text-xs"
                           />
                         </div>
 
                         {/* Duration & Category & Actions */}
                         <div className="flex items-center gap-2 shrink-0">
                           {/* Duration */}
-                          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1">
+                          <div className="ui-card flex items-center gap-1 px-2 py-1">
                             <span className="text-[10px] text-slate-400 font-mono">⏱️</span>
                             <input
                               type="number"
@@ -557,7 +554,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                                 category: (e.target.value as ExerciseCategory) || undefined
                               })
                             }
-                            className="bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-[11px] font-mono text-slate-300 focus:border-cyan-500 focus:outline-none"
+                            className="ui-input text-[11px]"
                           >
                             <option value="">Sem categoria</option>
                             <option value="aquecimento">🔥 Aquecimento</option>
@@ -573,7 +570,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                               type="button"
                               onClick={() => handleMoveBlock(idx, -1)}
                               disabled={idx === 0}
-                              className="p-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-30 text-xs"
+                              className="ui-btn ui-btn-secondary p-1 text-xs"
                               title="Mover para cima"
                             >
                               ▲
@@ -582,7 +579,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                               type="button"
                               onClick={() => handleMoveBlock(idx, 1)}
                               disabled={idx === trainingForm.sessionBlocks.length - 1}
-                              className="p-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hover:text-white disabled:opacity-30 text-xs"
+                              className="ui-btn ui-btn-secondary p-1 text-xs"
                               title="Mover para baixo"
                             >
                               ▼
@@ -593,7 +590,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                           <button
                             type="button"
                             onClick={() => handleRemoveBlock(block.id)}
-                            className="p-1.5 rounded-md bg-slate-900 border border-slate-800 text-red-400 hover:border-red-500 text-xs transition-colors"
+                            className="ui-btn ui-btn-secondary p-1.5 text-xs"
                             title="Remover Bloco"
                           >
                             ✕
@@ -631,7 +628,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                           <button
                             type="button"
                             onClick={() => handleOpenBlockPDF(block.pdfId!)}
-                            className="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-[11px] font-mono shrink-0 transition-colors"
+                            className="ui-btn ui-btn-primary px-2.5 py-1 text-[11px] shrink-0"
                           >
                             👁️ Ver PDF
                           </button>
@@ -644,7 +641,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                         placeholder="Instruções específicas para este bloco, regras de espaço, rotações..."
                         value={block.notes || ''}
                         onChange={(e) => handleUpdateBlock(block.id, { notes: e.target.value })}
-                        className="w-full text-xs font-mono bg-slate-900/60 border border-slate-800/80 rounded-xl px-2.5 py-1.5 text-slate-300 placeholder-slate-600 focus:border-cyan-500 focus:outline-none"
+                        className="ui-input w-full text-xs"
                       />
                     </div>
                   ))}
@@ -711,7 +708,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
               <div className="flex flex-col sm:flex-row gap-2.5">
                 <button
                   type="button"
-                  className="flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 active:scale-95 transition-all min-h-[48px]"
+                  className="flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 active:scale-95 transition-all min-h-[48px]"
                   onClick={() => onSaveTraining(true)}
                 >
                   <span>✅</span>
@@ -720,7 +717,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
 
                 <button
                   type="button"
-                  className="py-3 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/70 text-amber-200 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center justify-center gap-2 shadow-sm min-h-[48px] active:scale-95"
+                  className="ui-btn ui-btn-soft-warning py-3 px-4 text-xs flex items-center justify-center gap-2 min-h-[48px]"
                   onClick={() => onSaveTraining(false)}
                 >
                   <span>📅</span>
@@ -729,7 +726,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
 
                 <button
                   type="button"
-                  className="py-3 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-mono text-xs font-bold min-h-[48px] active:scale-95 transition-all"
+                  className="ui-btn ui-btn-secondary py-3 px-5 text-xs min-h-[48px]"
                   onClick={() => setTrainingForm(null)}
                 >
                   {t(state.lang, 'cancel')}
