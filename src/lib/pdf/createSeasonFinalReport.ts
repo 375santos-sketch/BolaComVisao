@@ -35,7 +35,7 @@ const joinPt = (items: string[]) =>
   items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} e ${items[items.length - 1]}`;
 
 /** The coach's message for that season (empty when not written). */
-export function seasonMessageOf(player: Player, season?: string): string {
+function seasonMessageOf(player: Player, season?: string): string {
   return (season && player.seasonMessages?.[season]?.trim()) || '';
 }
 

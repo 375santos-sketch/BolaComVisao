@@ -272,8 +272,6 @@ export type AlertCategory =
   | 'aniversarios'
   | 'dados';
 
-export type DashboardContextMode = 'match_day' | 'pre_match' | 'post_match' | 'training_day' | 'club_event' | 'normal';
-
 export type AttendancePeriod = '7d' | '30d' | '90d' | 'season';
 export type AttendanceTrend = 'melhorou' | 'diminuiu' | 'estavel' | 'insuficiente';
 export type AttendanceCategory = 'excelente' | 'boa' | 'atencao' | 'baixa';
@@ -378,54 +376,6 @@ export interface PlayerEvolutionMetrics {
   };
   summaryText: string;
   confidence: 'alta' | 'media' | 'insuficiente';
-}
-
-export interface PlayerStats {
-  golos: number;
-  assistencias: number;
-  amarelos: number;
-  vermelhos: number;
-  media: string;
-  faltasTreino: number;
-  jogosTitular: number; // Jogos a titular (1.ª parte)
-  titularSegundaParte: number; // Titular 2.ª parte
-  partesTitular: number; // Partes a titular (0 a 2)
-  minutos: number;
-  jogosRealizados?: number;
-}
-
-export interface SmartAlert {
-  id: string;
-  title: string;
-  message: string;
-  reason: string; // Explicação detalhada da origem da recomendação/alerta
-  category: AlertCategory;
-  priority: SmartPriority;
-  timestamp: number;
-  read?: boolean;
-  targetTab?:
-    'treinos' | 'convocatoria' | 'plantel' | 'calendario' | 'stats' | 'jogo' | 'jogos' | 'prejogo' | 'teams' | 'home';
-  targetId?: string;
-  actionLabel?: string;
-  relatedCount?: number;
-  relatedPlayerIds?: string[];
-  resolved?: boolean;
-}
-
-export interface SmartRecommendation {
-  id: string;
-  title: string;
-  message: string;
-  rationale: string; // Explicação do porquê baseada em dados reais
-  category: AlertCategory;
-  priority: SmartPriority;
-  confidence: 'alta' | 'media' | 'insuficiente';
-  targetTab?:
-    'treinos' | 'convocatoria' | 'plantel' | 'calendario' | 'stats' | 'jogo' | 'jogos' | 'prejogo' | 'teams' | 'home';
-  targetId?: string;
-  actionLabel: string;
-  metricLabel?: string;
-  metricValue?: string;
 }
 
 export interface AppNotification {
@@ -593,8 +543,6 @@ export interface ClubEvent {
   createdAt: string;
 }
 
-export type StaffRole = 'Treinador Principal' | 'Treinador Adjunto' | 'Treinador de Guarda-Redes' | 'Diretor' | string;
-
 export interface StaffMember {
   id: string;
   name: string;
@@ -607,9 +555,9 @@ export interface StaffMember {
   createdAt?: string;
 }
 
-export type StaffMessageType = 'recado' | 'reuniao' | 'urgente' | 'geral' | 'treino_jogo' | 'indisponibilidade';
+type StaffMessageType = 'recado' | 'reuniao' | 'urgente' | 'geral' | 'treino_jogo' | 'indisponibilidade';
 
-export interface StaffMeetingConfirmation {
+interface StaffMeetingConfirmation {
   staffId: string;
   staffName: string;
   staffRole?: string;
@@ -618,7 +566,7 @@ export interface StaffMeetingConfirmation {
   notes?: string;
 }
 
-export interface StaffMeetingDetails {
+interface StaffMeetingDetails {
   title: string;
   date: string; // YYYY-MM-DD
   time: string; // HH:MM
@@ -630,7 +578,7 @@ export interface StaffMeetingDetails {
   clubEventId?: string;
 }
 
-export interface StaffChatReply {
+interface StaffChatReply {
   id: string;
   senderId: string;
   senderName: string;
@@ -661,8 +609,6 @@ export interface StaffChatMessage {
   alertSentVia?: ('push' | 'whatsapp' | 'sms' | 'share')[];
   readBy?: string[];
 }
-
-export type PreMatchReport = OpponentScouting;
 
 export interface SquadProfile {
   id: string;
@@ -696,7 +642,7 @@ export interface SquadProfile {
 }
 
 /** A piece on the tactics board: our player, an opponent or the ball. */
-export interface BoardPiece {
+interface BoardPiece {
   id: string;
   kind: 'own' | 'opp' | 'ball';
   /** Shirt number or letter shown on the piece. */
@@ -705,7 +651,7 @@ export interface BoardPiece {
 }
 
 /** One step of a play: where each piece is (percent of the pitch: x left→right, y top→bottom). */
-export interface PlayFrame {
+interface PlayFrame {
   positions: Record<string, { x: number; y: number }>;
   note?: string;
 }
@@ -906,41 +852,6 @@ export interface SyncConflict {
   resolutionChoice?: 'local' | 'remote' | 'merged';
 }
 
-export interface TeamComparisonMetric {
-  teamId: string;
-  teamName: string;
-  category: string;
-  totalPlayers: number;
-  activePlayers: number;
-  totalMatches: number;
-  wins: number;
-  draws: number;
-  losses: number;
-  winRate: number; // 0-100%
-  goalsScored: number;
-  goalsConceded: number;
-  goalDiff: number;
-  totalTrainings: number;
-  avgAttendanceRate: number; // 0-100%
-  staffCount: number;
-  avgPlayerRating: number;
-}
-
-export interface ClubBoardSummary {
-  clubName: string;
-  season: string;
-  totalTeams: number;
-  totalPlayers: number;
-  totalStaff: number;
-  totalMatches: number;
-  totalTrainings: number;
-  overallWinRate: number;
-  overallAttendanceRate: number;
-  teamsComparison: TeamComparisonMetric[];
-  lowAttendanceTeams: { teamName: string; rate: number }[];
-  topScoringTeams: { teamName: string; goals: number }[];
-}
-
 export type SyncStatus = 'synced' | 'pending' | 'syncing' | 'offline' | 'error';
 
 export interface SyncState {
@@ -999,21 +910,7 @@ export interface AppState {
   version?: number;
 }
 
-export type SubscriptionTierId = 'free_trial' | 'coach_pro' | 'club_standard' | 'academy_elite';
-
-export interface CommercialPlan {
-  id: SubscriptionTierId;
-  name: string;
-  badge: string;
-  tagline: string;
-  monthlyPriceEUR: number;
-  yearlyPriceEUR: number;
-  maxTeams: number;
-  maxPlayersPerTeam: number;
-  maxStaffAccounts: number;
-  features: string[];
-  recommended?: boolean;
-}
+type SubscriptionTierId = 'free_trial' | 'coach_pro' | 'club_standard' | 'academy_elite';
 
 export interface ClubSubscription {
   planId: SubscriptionTierId;
@@ -1029,32 +926,6 @@ export interface ClubSubscription {
   maxTeams: number;
   maxPlayers: number;
   isLifetime?: boolean;
-}
-
-export interface GeneratedLicenseKey {
-  key: string;
-  planId: SubscriptionTierId;
-  planName: string;
-  customerName: string;
-  customerEmail?: string;
-  durationMonths: number;
-  createdAt: string;
-  expiresAt: string;
-  maxTeams: number;
-  used?: boolean;
-  usedByClubId?: string;
-  usedAt?: string;
-}
-
-// ==============================================================================
-// TEAM DATABASE (Per-Team Excel Database Model)
-// ==============================================================================
-export interface TeamDatabaseMeta {
-  clubId: string;
-  name: string;
-  createdBy: string;
-  updatedAt: number;
-  updatedBy?: string;
 }
 
 export interface TeamDataset {

@@ -218,21 +218,6 @@ export function getCurrentPlayersOnPitch(match: Match): string[] {
   return Array.from(pitch);
 }
 
-/**
- * Retorna os jogadores divididos entre "em campo" e "no banco"
- * para o modal de substituição.
- */
-export function getSubstitutionsPitchContext(
-  match: Match,
-  eligiblePlayers: Player[]
-): { onPitch: Player[]; onBench: Player[] } {
-  const onPitchIds = new Set(getCurrentPlayersOnPitch(match));
-  const onPitch = eligiblePlayers.filter((p) => onPitchIds.has(p.id));
-  const onBench = eligiblePlayers.filter((p) => !onPitchIds.has(p.id));
-
-  return { onPitch, onBench };
-}
-
 /** Players called up for the match (the convocatória), falling back to the Agenda copy kept in the match. */
 export function getMatchCallup(match: Match): string[] {
   return match.convocados?.length ? match.convocados : match.originalSchedule?.callup || [];

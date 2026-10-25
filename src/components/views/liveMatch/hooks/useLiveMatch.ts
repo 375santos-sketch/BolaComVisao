@@ -15,7 +15,7 @@ import {
   computeMinuteInHalf
 } from '../../../../lib/matchPhaseUtils';
 
-export interface UseLiveMatchProps {
+interface UseLiveMatchProps {
   state: AppState;
   onUpdateState: (updates: Partial<AppState>) => void;
   onShowToast?: (msg: string) => void;

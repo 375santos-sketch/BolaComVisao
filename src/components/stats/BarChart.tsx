@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export interface BarSeries {
+interface BarSeries {
   name: string;
   color: string;
   values: number[];

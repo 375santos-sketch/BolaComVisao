@@ -3,10 +3,6 @@ import {
   auth,
   saveMasterClubState,
   loadMasterClubState,
-  subscribeToMasterClubState,
-  saveAppStateToCloud,
-  loadAppStateFromCloud,
-  subscribeToCloudState,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -29,15 +25,13 @@ import {
   getDocs,
   Unsubscribe
 } from 'firebase/firestore';
-import { AppState, UserAccount, UserStatus, SquadProfile, TeamInvitation } from '../types';
+import { AppState, UserAccount, UserStatus, TeamInvitation } from '../types';
 import { MASTER_ADMIN_EMAIL, MASTER_ADMIN_USERNAME } from '../lib/constants';
-import { createDefaultTrialSubscription, validateAndActivateLicense } from '../lib/licensingEngine';
-import { uid as generateUid, defaultSeason } from '../lib/utils';
-import { initialDefaultState } from '../lib/storage';
+import { uid as generateUid } from '../lib/utils';
 
-export const LOCAL_SESSION_KEY = 'bolacomvisao_user_session_v1';
+const LOCAL_SESSION_KEY = 'bolacomvisao_user_session_v1';
 
-export interface AuditLogEntry {
+interface AuditLogEntry {
   id?: string;
   userId: string;
   userName: string;
@@ -83,7 +77,7 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
  * Deep sanitizes an object by stripping any undefined properties recursively
  * to ensure 100% compatibility with the Firestore Web SDK.
  */
-export function cleanFirestoreData<T>(obj: T): T {
+function cleanFirestoreData<T>(obj: T): T {
   if (obj === null || obj === undefined) return obj;
   try {
     return JSON.parse(JSON.stringify(obj, (_key, value) => (value === undefined ? undefined : value)));
@@ -110,7 +104,7 @@ export function isStrictAdminEmail(email?: string | null): boolean {
 /**
  * Formats Firebase Authentication errors into clear, friendly Portuguese messages with actionable advice.
  */
-export function formatFirebaseAuthError(err: any): string {
+function formatFirebaseAuthError(err: any): string {
   const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
   const code = err?.code || '';
   const rawMsg = err?.message || String(err || '');
@@ -456,136 +450,6 @@ export async function checkCurrentAuthUser(): Promise<{
       resolve(null);
     });
   });
-}
-
-/**
- * Creates a brand new Club / Organization account for a commercial customer / buyer.
- * Automatically provisions an isolated workspace and initializes the subscription.
- */
-export async function registerNewClubAndAdmin(
-  clubName: string,
-  adminFullName: string,
-  username: string,
-  pass: string,
-  userEmail?: string,
-  licenseKey?: string
-): Promise<{ success: boolean; user?: UserAccount; cloudState?: AppState; error?: string }> {
-  try {
-    const cleanClub = clubName.trim();
-    const cleanName = adminFullName.trim();
-    const cleanUsername = username.trim().toLowerCase().replace(/\s+/g, '.');
-    const cleanPass = pass.trim();
-
-    if (!cleanClub || !cleanName || !cleanUsername || !cleanPass) {
-      return { success: false, error: 'Por favor preencha todos os campos obrigatórios do novo Clube.' };
-    }
-
-    if (cleanPass.length < 6) {
-      return { success: false, error: 'A palavra-passe deve ter pelo menos 6 caracteres.' };
-    }
-
-    const email =
-      userEmail && userEmail.trim().includes('@')
-        ? userEmail.trim().toLowerCase()
-        : `${cleanUsername}@bolacomvisao.app`;
-
-    // 1. Create Firebase Auth user
-    const userCred = await createUserWithEmailAndPassword(auth, email, cleanPass);
-    const uid = userCred.user.uid;
-
-    // 2. Generate unique slugified club ID
-    const clubSlug = cleanClub
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '_')
-      .substring(0, 20);
-    const clubId = `club_${clubSlug}_${uid.substring(0, 6)}`;
-
-    // 3. Determine Subscription
-    let sub = createDefaultTrialSubscription(cleanClub, cleanName, email);
-    if (licenseKey && licenseKey.trim()) {
-      const actRes = validateAndActivateLicense(licenseKey, cleanName, email);
-      if (actRes.success && actRes.subscription) {
-        sub = actRes.subscription;
-      }
-    }
-
-    // 4. Create Initial Team for this new club
-    const initialTeamId = `team_${generateUid()}`;
-    const initialTeam: SquadProfile = {
-      id: initialTeamId,
-      clubName: cleanClub,
-      category: 'Seniores',
-      season: defaultSeason(),
-      createdAt: new Date().toISOString(),
-      roster: [],
-      matches: [],
-      trainings: [],
-      schedule: [],
-      tactics: [],
-      tacticFormat: 11
-    };
-
-    // 5. Build Initial App State for the new club workspace
-    const newClubState: AppState = {
-      ...initialDefaultState,
-      activeTeamId: initialTeamId,
-      teams: [initialTeam],
-      roster: [],
-      myClubName: cleanClub,
-      subscription: sub,
-      currentUser: null
-    };
-
-    // 6. Build UserAccount for this club's Administrator
-    const account: UserAccount = {
-      id: uid,
-      username: cleanUsername,
-      email,
-      name: cleanName,
-      role: 'Administrador',
-      status: 'approved',
-      approvedBy: 'Auto-Registo Comercial',
-      approvedAt: Date.now(),
-      clubId,
-      assignedTeams: ['all'],
-      createdAt: new Date().toISOString()
-    };
-
-    // 7. Save user doc
-    const userDocRef = doc(db, 'users', uid);
-    await setDoc(
-      userDocRef,
-      cleanFirestoreData({
-        account,
-        clubId,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-      }),
-      { merge: true }
-    );
-
-    // 8. Provision the new club workspace in Firestore
-    await saveMasterClubState(clubId, newClubState, uid, cleanName, true);
-
-    // 9. Save local session
-    try {
-      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(account));
-    } catch (storageErr) {
-      console.warn('Aviso de persistência local:', storageErr);
-    }
-
-    return {
-      success: true,
-      user: account,
-      cloudState: newClubState
-    };
-  } catch (err: any) {
-    console.error('Erro ao registar novo clube comercial:', err);
-    const msg = formatFirebaseAuthError(err);
-    return { success: false, error: msg };
-  }
 }
 
 /**
@@ -1415,33 +1279,6 @@ export async function lookupInvitationByCode(
 }
 
 /**
- * Real-time listener for current user account changes (e.g. approved, rejected, assignedTeams updated by Admin)
- */
-export function subscribeToUserAccount(
-  userId: string,
-  onUpdate: (account: UserAccount | null) => void,
-  onError?: (err: Error) => void
-): Unsubscribe {
-  if (!userId) return () => {};
-  const userDocRef = doc(db, 'users', userId);
-  return onSnapshot(
-    userDocRef,
-    (snap) => {
-      if (snap.exists()) {
-        const acc = snap.data().account as UserAccount;
-        onUpdate(acc);
-      } else {
-        onUpdate(null);
-      }
-    },
-    (err) => {
-      console.warn('Erro ao subscrever conta do utilizador:', err);
-      onError?.(err);
-    }
-  );
-}
-
-/**
  * Logout coach user from Firebase and local cache
  */
 export async function logoutCoachUser(): Promise<void> {
@@ -1457,14 +1294,4 @@ export async function logoutCoachUser(): Promise<void> {
   }
 }
 
-export {
-  saveMasterClubState,
-  loadMasterClubState,
-  subscribeToMasterClubState,
-  saveAppStateToCloud,
-  loadAppStateFromCloud,
-  subscribeToCloudState,
-  getFirestoreQuotaState,
-  isQuotaExceededError,
-  markQuotaExhausted
-};
+export { saveMasterClubState, getFirestoreQuotaState };

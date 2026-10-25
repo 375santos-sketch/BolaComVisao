@@ -8,7 +8,7 @@ import { calculateMatchScore, isSeasonMatching, seasonFromDate, uid } from './ut
  * goals scored), then overall goal difference, goals scored and name.
  */
 
-export interface StandingRow {
+interface StandingRow {
   team: string;
   ours: boolean;
   played: number;
@@ -23,7 +23,7 @@ export interface StandingRow {
 }
 
 /** Game used in the table (the team's own games are marked `fromApp`). */
-export interface TableGame extends LeagueGame {
+interface TableGame extends LeagueGame {
   fromApp?: boolean;
 }
 
@@ -38,7 +38,7 @@ export const teamKey = (name: string) =>
     .trim();
 
 /** Dates of a phase (YYYY-MM-DD): from `from` (inclusive) up to `to` (exclusive); open ends have no limit. */
-export interface PhaseRange {
+interface PhaseRange {
   from?: string;
   to?: string;
 }
@@ -217,7 +217,7 @@ export function computeStandings(games: TableGame[], teams: string[], ourName: s
 
 // ---------- Import (paste from the association's site, WhatsApp or Excel) ----------
 
-export interface ParsedResults {
+interface ParsedResults {
   games: LeagueGame[];
   /** Lines that were not understood (shown to the coach). */
   skipped: string[];
@@ -259,7 +259,7 @@ const FPF_DATE = /^(\d{1,2})\s+(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)
  * one line ("Cdr Alferrarede 'A'⇥7 - 3"), the date ("24 OUT"), the away team and the pitch. Headers, round numbers
  * and pitches are ignored; games not played yet (no score) too.
  */
-export function parseFpfPage(text: string, season?: string): LeagueGame[] {
+function parseFpfPage(text: string, season?: string): LeagueGame[] {
   const lines = (text || '')
     .split(/\r?\n/)
     .map((l) => l.replace(/\s+/g, ' ').trim())
@@ -356,7 +356,7 @@ function acronymOf(short: ReturnType<typeof teamParts>, long: ReturnType<typeof 
  * inside the other's ("Mação" in "Ad Mação"), 0 different teams. Different letters ('A' and 'B') are never the same
  * team, and a lettered team is never matched by words only ("Benfica" is not "S.Abrantes Benfica 'B'").
  */
-export function teamMatch(a: string, b: string): number {
+function teamMatch(a: string, b: string): number {
   if (teamKey(a) === teamKey(b)) return 3;
   const pa = teamParts(a);
   const pb = teamParts(b);
@@ -371,8 +371,6 @@ export function teamMatch(a: string, b: string): number {
     (pa.words.every((w) => pb.words.includes(w)) || pb.words.every((w) => pa.words.includes(w)));
   return inside ? 1 : 0;
 }
-
-export const sameTeam = (a: string, b: string) => teamMatch(a, b) > 0;
 
 /**
  * The name the app uses for a team: the surest match wins; on a tie the earlier list (the calendar before names that

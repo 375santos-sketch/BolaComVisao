@@ -136,18 +136,6 @@ export function normalizeAndMigrateTrainings(
 }
 
 /**
- * Formats display label for a training.
- * e.g., "Treino 24" or "TREINO Nº 24"
- */
-export function formatTrainingTitle(training: Partial<Training>, uppercase: boolean = false): string {
-  const num = training.trainingNumber;
-  if (typeof num === 'number' && num > 0) {
-    return uppercase ? `TREINO ${num}` : `Treino ${num}`;
-  }
-  return uppercase ? 'TREINO' : 'Treino';
-}
-
-/**
  * Checks if search query matches a training by its number (e.g. "24", "Treino 24", "T24").
  */
 export function matchesTrainingNumberSearch(training: Partial<Training>, query: string): boolean {

@@ -2,7 +2,7 @@ import { UserAccount, UserClubRole, SquadProfile } from '../types';
 import { isStrictAdminEmail } from '../services/cloudAuthService';
 import { MASTER_ADMIN_USERNAME } from './constants';
 
-export type PermissionAction =
+type PermissionAction =
   | 'manage_club' // Criar/eliminar equipas, gerir épocas, configurações globais
   | 'manage_users' // Aprovar/suspender utilizadores, alterar funções globais
   | 'view_audit_logs' // Consultar histórico de auditoria
@@ -290,18 +290,6 @@ export function isAdminAccount(user: UserAccount | null | undefined): boolean {
   if (!user || user.status !== 'approved') return false;
   const userEmail = (user.email || '').toLowerCase().trim();
   return isStrictAdminEmail(userEmail) || user.role === 'Administrador' || user.username === MASTER_ADMIN_USERNAME;
-}
-
-/**
- * Checks if user is eligible to see the Director / Board workspace
- */
-export function canAccessBoardReports(user: UserAccount | null | undefined): boolean {
-  if (!user || user.status !== 'approved') return false;
-  const userEmail = (user.email || '').toLowerCase().trim();
-  if (isStrictAdminEmail(userEmail) || user.role === 'Administrador' || user.role === 'Diretor') {
-    return true;
-  }
-  return false;
 }
 
 /**

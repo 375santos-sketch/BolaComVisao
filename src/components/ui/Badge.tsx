@@ -1,9 +1,9 @@
 import React from 'react';
 
-export type BadgeVariant = 'cyan' | 'emerald' | 'amber' | 'rose' | 'slate' | 'purple' | 'indigo';
-export type BadgeSize = 'xs' | 'sm' | 'md';
+type BadgeVariant = 'cyan' | 'emerald' | 'amber' | 'rose' | 'slate' | 'purple' | 'indigo';
+type BadgeSize = 'xs' | 'sm' | 'md';
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
   size?: BadgeSize;
   dot?: boolean;

@@ -38,27 +38,6 @@ function openPDFDB(): Promise<IDBDatabase> {
   });
 }
 
-export async function getAllPDFDocuments(): Promise<PDFDocumentItem[]> {
-  try {
-    const db = await openPDFDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const req = store.getAll();
-      req.onsuccess = () => {
-        const results: PDFDocumentItem[] = req.result || [];
-        // Sort by uploadedAt descending
-        results.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
-        resolve(results);
-      };
-      req.onerror = () => resolve([]);
-    });
-  } catch (err) {
-    console.error('Error fetching PDF documents from IndexedDB:', err);
-    return [];
-  }
-}
-
 export async function getPDFDocumentById(id: string): Promise<PDFDocumentItem | null> {
   try {
     const db = await openPDFDB();
@@ -72,54 +51,6 @@ export async function getPDFDocumentById(id: string): Promise<PDFDocumentItem | 
   } catch (err) {
     console.error('Error getting PDF document by ID:', err);
     return null;
-  }
-}
-
-export async function savePDFDocument(doc: PDFDocumentItem): Promise<boolean> {
-  try {
-    const db = await openPDFDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      store.put(doc);
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => resolve(false);
-    });
-  } catch (err) {
-    console.error('Error saving PDF document to IndexedDB:', err);
-    return false;
-  }
-}
-
-export async function deletePDFDocument(id: string): Promise<boolean> {
-  try {
-    const db = await openPDFDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      store.delete(id);
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => resolve(false);
-    });
-  } catch (err) {
-    console.error('Error deleting PDF document from IndexedDB:', err);
-    return false;
-  }
-}
-
-export async function clearAllPDFDocuments(): Promise<boolean> {
-  try {
-    const db = await openPDFDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      store.clear();
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => resolve(false);
-    });
-  } catch (err) {
-    console.error('Error clearing PDF documents:', err);
-    return false;
   }
 }
 

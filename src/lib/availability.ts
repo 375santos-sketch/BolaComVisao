@@ -6,7 +6,7 @@ import { Player } from '../types';
  * no need to change the record). No return date = unavailable until the coach changes the status.
  */
 
-export interface Availability {
+interface Availability {
   available: boolean;
   status: 'lesionado' | 'suspenso' | 'inativo' | 'disponivel';
   /** Return date (YYYY-MM-DD), when known. */

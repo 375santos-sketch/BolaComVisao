@@ -1052,4 +1052,3 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
     </div>
   );
 };
-export default TeamDatabaseView;

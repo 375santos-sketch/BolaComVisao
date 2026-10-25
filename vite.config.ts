@@ -28,12 +28,6 @@ export default defineConfig(() => {
               if (id.includes('react') || id.includes('react-dom')) {
                 return 'vendor-react';
               }
-              if (id.includes('motion')) {
-                return 'vendor-motion';
-              }
-              if (id.includes('lucide-react')) {
-                return 'vendor-icons';
-              }
               // Excel (xlsx) and PDF (jspdf) are not grouped here on purpose: they are only loaded when a file is
               // imported/exported, and a manual chunk would also capture shared helpers the entry needs at start-up.
               if (id.includes('firebase')) {

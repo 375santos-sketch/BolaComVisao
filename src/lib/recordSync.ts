@@ -18,7 +18,7 @@ export type EntityKind =
 export type RecordKind = EntityKind | 'club';
 
 /** Team array that holds each kind of record. */
-export const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppState> = {
+const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppState> = {
   player: 'roster',
   match: 'matches',
   training: 'trainings',
@@ -110,7 +110,7 @@ export function canonicalJson(value: unknown): string {
 }
 
 /** cyrb53 string hash (53-bit), compact enough to keep one per record in localStorage. */
-export function hashString(str: string): string {
+function hashString(str: string): string {
   let h1 = 0xdeadbeef;
   let h2 = 0x41c6ce57;
   for (let i = 0; i < str.length; i++) {
@@ -180,7 +180,7 @@ const TEAM_DEFAULTS = (): Record<string, unknown> => ({
 });
 
 /** The shared club document: the state without per-record arrays and without device-only fields. */
-export function clubDataOf(state: AppState): Partial<AppState> {
+function clubDataOf(state: AppState): Partial<AppState> {
   const club: Record<string, unknown> = { ...state };
   DEVICE_ONLY_FIELDS.forEach((f) => delete club[f]);
   ACTIVE_TEAM_COPIES.forEach((f) => delete club[f]);
@@ -280,7 +280,7 @@ export function setSynced(synced: SyncedHashes, id: string, data: Record<string,
  * Club record changed on both sides: merge it field by field and team by team against the last synced version.
  * Only a field (or team) changed on both sides is decided by the newer change, as for any other record.
  */
-export function mergeClubData(
+function mergeClubData(
   local: Record<string, unknown>,
   remote: Record<string, unknown>,
   synced: SyncedHashes,
@@ -313,7 +313,7 @@ export function mergeClubData(
 
 // ---------- Three-way merge ----------
 
-export interface MergeResult {
+interface MergeResult {
   /** Records after the merge (absent = deleted). */
   records: Map<string, LocalRecord>;
   /** Records where this device's version must be sent to the cloud (upsert, or tombstone if absent). */
@@ -424,6 +424,3 @@ export function buildCloudWrite(
     ...(updatedBy ? { updatedBy } : {})
   };
 }
-
-export const recordHash = (r: LocalRecord | undefined): string => (r ? hashData(r.data) : ABSENT);
-export const ABSENT_HASH = ABSENT;

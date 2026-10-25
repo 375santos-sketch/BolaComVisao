@@ -15,7 +15,7 @@ export const SET_PIECE_TYPES: { id: SetPieceType; label: string; icon: string; r
   { id: 'pontape_saida', label: 'Pontapé de saída', icon: '⭕', roles: ['Dá a saída', 'Recebe'] }
 ];
 
-export const SIDE_LABEL: Record<string, string> = { esquerda: 'esquerda', direita: 'direita', central: 'central' };
+const SIDE_LABEL: Record<string, string> = { esquerda: 'esquerda', direita: 'direita', central: 'central' };
 
 export const setPieceType = (t: SetPieceType) => SET_PIECE_TYPES.find((x) => x.id === t) || SET_PIECE_TYPES[0];
 
@@ -35,14 +35,14 @@ export function setPieceTitle(sp: SetPiece): string {
   return sp.name.trim() ? `${sp.name.trim()} (${base.toLowerCase()})` : base;
 }
 
-export interface RoleLine {
+interface RoleLine {
   role: SetPieceRole;
   player?: Player;
   /** The athlete with this job is not called up for the game. */
   missing: boolean;
 }
 
-export interface SetPieceAssignment {
+interface SetPieceAssignment {
   setPiece: SetPiece;
   lines: RoleLine[];
 }

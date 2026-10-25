@@ -1,13 +1,13 @@
 import * as XLSX from 'xlsx';
-import { collection, doc, getDocs, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, writeBatch } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
 import { TeamDataset, TeamDatabaseRow, UserAccount } from '../types';
 import { sanitizeExcelText } from './utils';
 
 export const MAX_COLUMNS_LIMIT = 40;
-export const MAX_ROWS_LIMIT = 5000;
+const MAX_ROWS_LIMIT = 5000;
 export const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB
-export const MAX_STRING_LENGTH = 500;
+const MAX_STRING_LENGTH = 500;
 
 enum OperationType {
   CREATE = 'create',
@@ -66,7 +66,7 @@ function getLocalCacheKey(teamId: string, datasetId: string): string {
   return `${LOCAL_CACHE_PREFIX}${teamId}_${datasetId}`;
 }
 
-export function saveToLocalCache(teamId: string, dataset: TeamDataset, rows: TeamDatabaseRow[]): void {
+function saveToLocalCache(teamId: string, dataset: TeamDataset, rows: TeamDatabaseRow[]): void {
   try {
     const key = getLocalCacheKey(teamId, dataset.id);
     const payload = JSON.stringify({ dataset, rows, cachedAt: Date.now() });
@@ -76,7 +76,7 @@ export function saveToLocalCache(teamId: string, dataset: TeamDataset, rows: Tea
   }
 }
 
-export function loadFromLocalCache(
+function loadFromLocalCache(
   teamId: string,
   datasetId: string
 ): { dataset: TeamDataset; rows: TeamDatabaseRow[] } | null {
@@ -101,7 +101,7 @@ export interface ParsedExcelSheet {
   totalRows: number;
 }
 
-export interface ExcelWorkbookInspection {
+interface ExcelWorkbookInspection {
   sheetNames: string[];
   sheets: Record<string, ParsedExcelSheet>;
 }
@@ -405,36 +405,6 @@ export async function saveTeamDatasetWithRows(
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `team_databases/${teamId}/datasets/${dataset.id}/rows`);
     }
-  }
-}
-
-/**
- * Deletes a single row from a dataset
- */
-export async function deleteTeamDatabaseRow(teamId: string, datasetId: string, rowId: string): Promise<void> {
-  const path = `team_databases/${teamId}/datasets/${datasetId}/rows/${rowId}`;
-  try {
-    await deleteDoc(doc(db, path));
-  } catch (err) {
-    handleFirestoreError(err, OperationType.DELETE, path);
-  }
-}
-
-/**
- * Deletes an entire dataset (Admin-only in firestore.rules)
- */
-export async function deleteTeamDataset(teamId: string, datasetId: string): Promise<void> {
-  const path = `team_databases/${teamId}/datasets/${datasetId}`;
-  try {
-    // Delete rows in subcollection first
-    const rowsSnap = await getDocs(collection(db, `${path}/rows`));
-    const batch = writeBatch(db);
-    rowsSnap.forEach((r) => batch.delete(r.ref));
-    await batch.commit();
-
-    await deleteDoc(doc(db, path));
-  } catch (err) {
-    handleFirestoreError(err, OperationType.DELETE, path);
   }
 }
 

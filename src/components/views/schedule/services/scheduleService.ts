@@ -1,28 +1,11 @@
 import { AppState, Player } from '../../../../types';
 import { CalendarEvent, EventFilterType } from '../types';
-
-export const MONTH_NAMES_PT = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro'
-];
-
-export const WEEKDAY_NAMES_PT = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 export const WEEKDAY_SHORT_PT = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 /**
  * Returns array of YYYY-MM-DD strings between start and end (inclusive)
  */
-export function getDatesInRange(startDateStr: string, endDateStr?: string): string[] {
+function getDatesInRange(startDateStr: string, endDateStr?: string): string[] {
   if (!endDateStr || endDateStr <= startDateStr) {
     return [startDateStr];
   }

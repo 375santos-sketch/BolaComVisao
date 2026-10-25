@@ -291,5 +291,3 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
     </div>
   );
 };
-
-export default TeamInviteModal;

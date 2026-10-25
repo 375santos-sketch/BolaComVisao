@@ -17,10 +17,10 @@ const STORAGE_KEY = 'coach-app-data-v1';
 // Placeholder matches injected by older versions that must never be shown or synced again.
 const REMOVED_PLACEHOLDER_MATCH_IDS = ['match_tramagal_20261017', 'match_ouriense_20261010'];
 
-export const defaultClubSeasons = buildDefaultSeasons();
+const defaultClubSeasons = buildDefaultSeasons();
 
 /** Shown when a club has no name yet. */
-export const DEFAULT_CLUB_NAME = 'O Meu Clube';
+const DEFAULT_CLUB_NAME = 'O Meu Clube';
 
 /**
  * Demo squad that older versions injected into every club ("Atleta Dragão 1..12"). Kept only to recognise
@@ -526,7 +526,7 @@ const seasonStart = (season?: string) => Number(normalizeSeasonString(season).sl
  * - the season list covers the seasons in use plus previous/current/next by today's date.
  * Runs once (bumps `version`), so a season the coach picks afterwards is respected.
  */
-export function migrateSeasonsFromDates(state: AppState): AppState {
+function migrateSeasonsFromDates(state: AppState): AppState {
   const today = new Date().toISOString().slice(0, 10);
   const fixMatch = <T extends Match | ScheduledMatch>(m: T): T =>
     m && isIsoDate(m.date) ? { ...m, season: seasonFromDate(m.date) } : m;

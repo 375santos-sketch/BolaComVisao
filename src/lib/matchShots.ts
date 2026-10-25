@@ -18,7 +18,7 @@ export function getMatchShots(m: Match): {
   };
 }
 
-export interface ShotStats {
+interface ShotStats {
   /** Matches where shots were recorded (all the figures below come from these matches only). */
   matchesCount: number;
   shotsFor: number;

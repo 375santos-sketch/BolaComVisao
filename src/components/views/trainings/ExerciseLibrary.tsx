@@ -3,7 +3,7 @@ import { Exercise, ExerciseCategory } from '../../../types';
 import { compressImageFile } from '../../../lib/imageCompress';
 import { uid } from '../../../lib/utils';
 
-export const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
+const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
   { id: 'aquecimento', label: '🔥 Aquecimento' },
   { id: 'tecnica', label: '⚽ Técnica' },
   { id: 'tatica', label: '⚡ Tática' },
@@ -11,7 +11,7 @@ export const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
   { id: 'jogo', label: '🥅 Jogo' },
   { id: 'bolas_paradas', label: '🎯 Bolas paradas' }
 ];
-export const categoryLabel = (c?: ExerciseCategory) => EXERCISE_CATEGORIES.find((x) => x.id === c)?.label || '';
+const categoryLabel = (c?: ExerciseCategory) => EXERCISE_CATEGORIES.find((x) => x.id === c)?.label || '';
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];

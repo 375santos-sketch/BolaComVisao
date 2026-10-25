@@ -5,9 +5,6 @@ import {
   doc,
   setDoc,
   getDoc,
-  getDocFromServer,
-  collection,
-  getDocs,
   onSnapshot,
   Unsubscribe,
   connectFirestoreEmulator
@@ -21,13 +18,8 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
-  signInAnonymously,
   setPersistence,
   browserLocalPersistence,
-  User,
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
   connectAuthEmulator
 } from 'firebase/auth';
 import config from '../../firebase-applet-config.json';
@@ -60,7 +52,7 @@ if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_EMULATORS === 'true') {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
 }
 
-export const FIRESTORE_UPGRADE_CONSOLE_URL = `https://console.firebase.google.com/project/${config.projectId}/firestore/databases/${config.firestoreDatabaseId || '(default)'}/data?openUpgradeDialog=true`;
+const FIRESTORE_UPGRADE_CONSOLE_URL = `https://console.firebase.google.com/project/${config.projectId}/firestore/databases/${config.firestoreDatabaseId || '(default)'}/data?openUpgradeDialog=true`;
 
 // Centralized quota status tracking to prevent continuous retry storms when free daily limits are hit
 const QUOTA_STORAGE_KEY = 'FIRESTORE_QUOTA_COOLDOWN_UNTIL';
@@ -125,7 +117,7 @@ export function markQuotaExhausted(cooldownMinutes = 30) {
   );
 }
 
-export enum OperationType {
+enum OperationType {
   CREATE = 'create',
   UPDATE = 'update',
   DELETE = 'delete',
@@ -134,7 +126,7 @@ export enum OperationType {
   WRITE = 'write'
 }
 
-export interface FirestoreErrorInfo {
+interface FirestoreErrorInfo {
   error: string;
   operationType: OperationType;
   path: string | null;
@@ -152,11 +144,7 @@ export interface FirestoreErrorInfo {
   };
 }
 
-export function handleFirestoreError(
-  error: unknown,
-  operationType: OperationType,
-  path: string | null
-): FirestoreErrorInfo {
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): FirestoreErrorInfo {
   const isQuota = isQuotaExceededError(error);
   if (isQuota) {
     markQuotaExhausted(15);
@@ -187,24 +175,6 @@ export function handleFirestoreError(
     console.error('Firestore Security / Operation Error: ', JSON.stringify(errInfo));
   }
   return errInfo;
-}
-
-export async function testConnection(): Promise<boolean> {
-  if (isFirestoreQuotaExhausted && Date.now() < quotaExhaustedCooldownUntil) {
-    return false;
-  }
-  try {
-    await getDocFromServer(doc(db, 'system', 'connection'));
-    return true;
-  } catch (error) {
-    if (isQuotaExceededError(error)) {
-      markQuotaExhausted(15);
-    }
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Verificação de rede Firestore: cliente em modo offline.');
-    }
-    return false;
-  }
 }
 
 export interface CloudSyncResult {
@@ -399,114 +369,11 @@ export function subscribeToLegacyClubDocument(
   );
 }
 
-/**
- * Subscribes to real-time updates from the shared master club database
- */
-export function subscribeToMasterClubState(
-  workspaceId: string = 'main',
-  onUpdate: (
-    cloudState: AppState,
-    meta: { lastUpdatedBy?: string; lastUpdatedByName?: string; updatedAt?: number }
-  ) => void,
-  onError?: (err: Error) => void
-): Unsubscribe {
-  // If not authenticated in Firebase Auth or quota is exhausted, return a no-op unsubscribe function
-  if (!auth.currentUser || (isFirestoreQuotaExhausted && Date.now() < quotaExhaustedCooldownUntil)) {
-    return () => {};
-  }
-
-  const cleanWorkspaceId = workspaceId && workspaceId.trim() ? workspaceId.trim() : 'main';
-  const path = `club_workspace/${cleanWorkspaceId}`;
-  const clubDocRef = doc(db, 'club_workspace', cleanWorkspaceId);
-  return onSnapshot(
-    clubDocRef,
-    (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        if (data && data.state) {
-          const normalized = normalizeClubState({
-            ...(data.state as AppState),
-            updatedAt: data.updatedAt || (data.state as any)?.updatedAt
-          });
-          if (typeof onUpdate === 'function') {
-            onUpdate(normalized, {
-              lastUpdatedBy: data.lastUpdatedBy,
-              lastUpdatedByName: data.lastUpdatedByName,
-              updatedAt: data.updatedAt
-            });
-          }
-        }
-      }
-    },
-    (error) => {
-      if (isQuotaExceededError(error)) {
-        markQuotaExhausted(30);
-      } else {
-        handleFirestoreError(error, OperationType.GET, path);
-      }
-      if (onError) onError(error);
-    }
-  );
-}
-
-/**
- * Saves complete app state to Firestore under the authenticated user's profile
- */
-export async function saveAppStateToCloud(userId: string, state: AppState): Promise<CloudSyncResult> {
-  const clubId = state.currentUser?.clubId || 'main';
-  return saveMasterClubState(clubId, state, userId, state.currentUser?.name);
-}
-
-/**
- * Fetches the user's latest cloud state
- */
-export async function loadAppStateFromCloud(userId: string, clubId: string = 'main'): Promise<AppState | null> {
-  const master = await loadMasterClubState(clubId);
-  if (master) return master;
-
-  if (!userId) return null;
-  const path = `users/${userId}`;
-  try {
-    const userDocRef = doc(db, 'users', userId);
-    const snap = await getDoc(userDocRef);
-    if (snap.exists()) {
-      const data = snap.data();
-      return (data.state as AppState) || null;
-    }
-    return null;
-  } catch (error) {
-    handleFirestoreError(error, OperationType.GET, path);
-    return null;
-  }
-}
-
-/**
- * Subscribes to real-time updates from cloud for multi-device live synchronization
- */
-export function subscribeToCloudState(
-  userId: string,
-  clubId: string = 'main',
-  onUpdate: (cloudState: AppState) => void,
-  onError?: (err: Error) => void
-): Unsubscribe {
-  return subscribeToMasterClubState(clubId, (state) => onUpdate(state), onError);
-}
-
 export {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
-  signInAnonymously,
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  collection,
-  getDocs,
-  doc,
-  setDoc,
-  getDoc
+  signInWithPopup
 };
-export type { User };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SubEvent, Player, MatchPeriod } from '../../../../types';
 import { PlayerOptions } from './PlayerOptions';
 
-export interface SubPair {
+interface SubPair {
   id: string;
   outId: string;
   inId: string;

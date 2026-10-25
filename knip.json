@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "src/vote/main.ts",
+    "server.ts",
+    "src/__emulator__/*.emulator.ts",
+    "e2e/**/*.ts",
+    "public/sw.js",
+    "src/__tests__/**/*.test.ts",
+    "src/**/*.test.{ts,tsx}"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "server.ts", "e2e/**/*.ts"],
+  "ignoreDependencies": ["tailwindcss"]
+}

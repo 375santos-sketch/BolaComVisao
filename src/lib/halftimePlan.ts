@@ -10,7 +10,7 @@ import { isSeasonMatching, playerLabel, seasonFromDate } from './utils';
  * minutes to whoever is furthest behind. The coach decides; the suggestion only pre-fills the 2nd-half picker.
  */
 
-export interface HalftimeRow {
+interface HalftimeRow {
   playerId: string;
   label: string;
   /** Minutes in this game's first half. */

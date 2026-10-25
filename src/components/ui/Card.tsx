@@ -1,6 +1,6 @@
 import React from 'react';
 
-export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'elevated' | 'spotlight' | 'outline' | 'interactive';
   padding?: 'none' | 'sm' | 'md' | 'lg';
 }
@@ -38,50 +38,3 @@ export const Card: React.FC<CardProps> = ({
     </div>
   );
 };
-
-export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, className = '', ...props }) => (
-  <div
-    className={`flex items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-800/80 ${className}`}
-    {...props}
-  >
-    {children}
-  </div>
-);
-
-export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
-  children,
-  className = '',
-  ...props
-}) => (
-  <h3
-    className={`text-sm sm:text-base font-bold font-['Chakra_Petch'] uppercase tracking-wider text-white ${className}`}
-    {...props}
-  >
-    {children}
-  </h3>
-);
-
-export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({
-  children,
-  className = '',
-  ...props
-}) => (
-  <p className={`text-xs text-slate-400 font-mono ${className}`} {...props}>
-    {children}
-  </p>
-);
-
-export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, className = '', ...props }) => (
-  <div className={`${className}`} {...props}>
-    {children}
-  </div>
-);
-
-export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, className = '', ...props }) => (
-  <div
-    className={`mt-3.5 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 ${className}`}
-    {...props}
-  >
-    {children}
-  </div>
-);

@@ -15,7 +15,7 @@ export interface VoteCandidate {
   label: string;
 }
 
-export interface VoteTally {
+interface VoteTally {
   candidate: VoteCandidate;
   votes: number;
 }

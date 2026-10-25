@@ -8,7 +8,7 @@ export interface TabItem {
   badgeVariant?: 'cyan' | 'emerald' | 'amber' | 'rose' | 'slate';
 }
 
-export interface SubNavTabsProps {
+interface SubNavTabsProps {
   tabs: TabItem[];
   activeTab: string;
   onChange: (tabId: string) => void;

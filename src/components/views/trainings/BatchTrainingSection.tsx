@@ -3,20 +3,6 @@ import { Training } from '../../../types';
 import { uid } from '../../../lib/utils';
 import { WEEKDAY_CONFIG, QUICK_TIMES, calculateBatchTrainings } from './batchTrainingUtils';
 
-export interface BatchTrainingSettings {
-  startDate: string;
-  endDate: string;
-  selectedDays: number[]; // 0 = Dom, 1 = Seg, 2 = Ter, 3 = Qua, 4 = Qui, 5 = Sex, 6 = Sáb
-  defaultTime: string;
-  useCustomDayTimes: boolean;
-  dayTimes: Record<number, string>; // dayOfWeek -> "HH:MM"
-  location: string;
-  type: string;
-  durationMinutes: number;
-  notes: string;
-  completed: boolean;
-}
-
 export interface GeneratedTrainingPreview {
   date: string;
   formattedDate: string;

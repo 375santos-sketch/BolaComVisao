@@ -59,7 +59,7 @@ export function parseModelJson(text: string | undefined): unknown {
   return [];
 }
 
-export type GeminiErrorKind = 'key' | 'quota' | 'blocked' | 'model' | 'other';
+type GeminiErrorKind = 'key' | 'quota' | 'blocked' | 'model' | 'other';
 
 /** What went wrong with a Gemini call: bad key, too many requests, no access, model not available, or other. */
 export function geminiErrorKind(err: unknown): GeminiErrorKind {
@@ -87,7 +87,7 @@ export function geminiErrorMessage(kind: GeminiErrorKind): string {
 }
 
 /** A game as read from the picture (date still as written). */
-export interface PrintGame {
+interface PrintGame {
   home: string;
   away: string;
   homeGoals: number;

@@ -171,5 +171,3 @@ export const SeasonSelectorModal: React.FC<SeasonSelectorModalProps> = ({
     </div>
   );
 };
-
-export default SeasonSelectorModal;

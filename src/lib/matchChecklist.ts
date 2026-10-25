@@ -45,7 +45,7 @@ export function minutesBalance(match: Match, category?: string) {
   return { total, expected, gameMinutes, lineupSize, sentOff, ok };
 }
 
-export interface MatchCheck {
+interface MatchCheck {
   id: string;
   label: string;
   ok: boolean;

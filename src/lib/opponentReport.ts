@@ -27,7 +27,7 @@ export function isSameOpponent(a: string | undefined, b: string | undefined): bo
   return short.length >= 4 && ` ${long} `.includes(` ${short} `);
 }
 
-export interface OpponentMatchFacts {
+interface OpponentMatchFacts {
   scored: number;
   conceded: number;
   /** Goals the opponent scored: minute and origin as recorded. */

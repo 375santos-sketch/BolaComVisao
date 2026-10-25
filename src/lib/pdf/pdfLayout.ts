@@ -7,12 +7,12 @@ export async function getJsPDF() {
   return mod.default || (mod as any).jsPDF || mod;
 }
 
-export type jsPDF = any;
+type jsPDF = any;
 
 /**
  * Draws the Club Emblem / Shield in the top-left corner
  */
-export function drawClubEmblem(doc: jsPDF, x: number, y: number, size: number, clubName: string, logoUrl?: string) {
+function drawClubEmblem(doc: jsPDF, x: number, y: number, size: number, clubName: string, logoUrl?: string) {
   if (logoUrl) {
     try {
       doc.addImage(logoUrl, x, y, size, size);
@@ -61,7 +61,7 @@ export function drawClubEmblem(doc: jsPDF, x: number, y: number, size: number, c
 /**
  * Draws the BolaComVisao Symbol / Logo in the top-right corner
  */
-export function drawBolaComVisaoEmblem(doc: jsPDF, x: number, y: number, size: number) {
+function drawBolaComVisaoEmblem(doc: jsPDF, x: number, y: number, size: number) {
   let rendered = false;
   if (bolacomvisaoLogoImg) {
     try {
@@ -202,13 +202,6 @@ export function addBolaComVisaoPageFooters(doc: jsPDF) {
       align: 'center'
     });
   }
-}
-
-/**
- * Backwards compatible alias
- */
-export function addBolaComVisaoWatermark(doc: jsPDF) {
-  addBolaComVisaoPageFooters(doc);
 }
 
 /**

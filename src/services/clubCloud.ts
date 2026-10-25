@@ -30,7 +30,7 @@ import {
  *   stays as a backup (deleting records/club in the console falls back to it).
  */
 
-export type CloudMode = 'unknown' | 'legacy' | 'records';
+type CloudMode = 'unknown' | 'legacy' | 'records';
 
 const RECORD_KINDS: RecordKind[] = [
   'club',
@@ -52,7 +52,7 @@ const MASS_DELETE_GUARD = 0.5;
 const modeByWorkspace = new Map<string, CloudMode>();
 const remoteByWorkspace = new Map<string, Map<string, CloudRecord>>();
 
-export const cleanWorkspaceId = (ws?: string | null) => (ws && ws.trim() ? ws.trim() : 'main');
+const cleanWorkspaceId = (ws?: string | null) => (ws && ws.trim() ? ws.trim() : 'main');
 const recordsCollection = (ws: string) => collection(db, 'club_workspace', ws, 'records');
 
 export function getCloudMode(workspaceId?: string | null): CloudMode {
@@ -63,7 +63,7 @@ export function getCloudMode(workspaceId?: string | null): CloudMode {
 
 const syncedKey = (ws: string) => `bcv-synced-records-${ws}`;
 
-export function loadSyncedHashes(ws: string): SyncedHashes | null {
+function loadSyncedHashes(ws: string): SyncedHashes | null {
   try {
     const raw = localStorage.getItem(syncedKey(ws));
     return raw ? (JSON.parse(raw) as SyncedHashes) : null;
@@ -239,7 +239,7 @@ export async function migrateClubToRecords(workspaceId: string | null | undefine
 
 // ---------- Deleted records (recovery) ----------
 
-export interface DeletedRecord<T = Record<string, unknown>> {
+interface DeletedRecord<T = Record<string, unknown>> {
   data: T;
   deletedAt: number;
   deletedBy?: string;
@@ -264,7 +264,7 @@ export function getDeletedRecords<T = Record<string, unknown>>(
 
 // ---------- Real-time ----------
 
-export interface ClubCloudHandlers {
+interface ClubCloudHandlers {
   /** Current state on this device. */
   getLocal: () => AppState;
   /** Replace the state on this device with a merged/cloud version. */

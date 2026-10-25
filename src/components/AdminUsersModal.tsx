@@ -1233,5 +1233,3 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
     </div>
   );
 };
-
-export default AdminUsersModal;

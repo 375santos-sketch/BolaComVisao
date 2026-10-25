@@ -9,8 +9,5 @@ export * from './MatchComparison';
 export * from './PlayerAnalysis';
 export * from './EventDrilldown';
 export * from './AnalysisExport';
-export * from './FirstGoalSection';
-export * from './OutcomeComparison';
-export * from './SetPieceDetailedSection';
 export * from './CoachReportModal';
 export * from './AskDataSection';

@@ -107,7 +107,7 @@ export function repeatTraining(
   };
 }
 
-export interface PlayerAbsence {
+interface PlayerAbsence {
   trainingId: string;
   trainingNumber?: number;
   date: string;

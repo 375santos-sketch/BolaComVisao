@@ -1,6 +1,6 @@
 import { PlayerStatus } from '../../../types';
 
-export interface PositionGroup {
+interface PositionGroup {
   id: string;
   label: string;
   ranks: number[];
@@ -66,20 +66,3 @@ export type SquadTab = 'jogadores' | 'assiduidade' | 'equipa_tecnica' | 'anivers
 export type SquadViewMode = 'lista' | 'grelha';
 export type SquadSortBy = 'posicao' | 'numero' | 'nome';
 export type SquadSortDirection = 'asc' | 'desc';
-
-export interface PlayerStatsSummary {
-  golos: number;
-  assistencias: number;
-  amarelos: number;
-  vermelhos: number;
-  mediaAvaliacao: string;
-  faltasTreino: number;
-  presencasTreino: number;
-  taxaAssiduidadeTreino: string;
-  jogosTitular: number;
-  titularSegundaParte: number;
-  partesTitular: number;
-  minutos: number;
-  totalJogosRealizados: number;
-  totalTreinosRealizados: number;
-}

@@ -5,7 +5,7 @@ import { isSeasonMatching } from './utils';
 /** How many of the latest games are checked for players who were left out. */
 export const RECENT_GAMES = 3;
 
-export interface CallupPlayingTime extends PlayerPlayingTime {
+interface CallupPlayingTime extends PlayerPlayingTime {
   /** Of the last RECENT_GAMES games held, in how many the player was not called up. */
   leftOutRecently: number;
 }

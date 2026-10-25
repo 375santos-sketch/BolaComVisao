@@ -6,7 +6,7 @@ import { Badge } from './ui/Badge';
 import logoImg from '../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { defaultSeason } from '../lib/utils';
 
-export interface MoreDrawerProps {
+interface MoreDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   state: AppState;

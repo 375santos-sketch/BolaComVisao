@@ -2,14 +2,14 @@ import { Player, Match, GoalEvent, CardEvent, SubEvent, Training, ScheduledMatch
 import { normalizeGoalType } from './gameAnalysis/constants';
 import { uid, seasonFromDate } from './utils';
 
-export interface ValidationIssue {
+interface ValidationIssue {
   field: string;
   message: string;
   severity: 'error' | 'warning';
   entityId?: string;
 }
 
-export interface ValidationResult<T> {
+interface ValidationResult<T> {
   isValid: boolean;
   sanitized: T;
   errors: string[];
@@ -21,7 +21,7 @@ export interface ValidationResult<T> {
  * Validates and sanitizes a single GoalEvent.
  * Guarantees standard goalType normalization and prevents null/undefined corruption.
  */
-export function validateAndSanitizeGoalEvent(raw: any, _index = 0): GoalEvent | null {
+function validateAndSanitizeGoalEvent(raw: any, _index = 0): GoalEvent | null {
   if (!raw || typeof raw !== 'object') return null;
 
   const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : uid();
@@ -58,7 +58,7 @@ export function validateAndSanitizeGoalEvent(raw: any, _index = 0): GoalEvent | 
 /**
  * Validates and sanitizes a SubEvent.
  */
-export function validateAndSanitizeSubEvent(raw: any): SubEvent | null {
+function validateAndSanitizeSubEvent(raw: any): SubEvent | null {
   if (!raw || typeof raw !== 'object') return null;
   const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : uid();
   const outId = typeof raw.outId === 'string' ? raw.outId.trim() : '';
@@ -77,7 +77,7 @@ export function validateAndSanitizeSubEvent(raw: any): SubEvent | null {
 /**
  * Validates and sanitizes a CardEvent.
  */
-export function validateAndSanitizeCardEvent(raw: any): CardEvent | null {
+function validateAndSanitizeCardEvent(raw: any): CardEvent | null {
   if (!raw || typeof raw !== 'object') return null;
   const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : uid();
   const playerId = typeof raw.playerId === 'string' ? raw.playerId.trim() : '';
@@ -94,7 +94,7 @@ export function validateAndSanitizeCardEvent(raw: any): CardEvent | null {
 /**
  * Validates and sanitizes a Player entity.
  */
-export function validateAndSanitizePlayer(raw: any): ValidationResult<Player> {
+function validateAndSanitizePlayer(raw: any): ValidationResult<Player> {
   const issues: ValidationIssue[] = [];
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -169,7 +169,7 @@ export function validateAndSanitizePlayer(raw: any): ValidationResult<Player> {
 /**
  * Validates and sanitizes a Match entity.
  */
-export function validateAndSanitizeMatch(raw: any): ValidationResult<Match> {
+function validateAndSanitizeMatch(raw: any): ValidationResult<Match> {
   const issues: ValidationIssue[] = [];
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -271,7 +271,7 @@ export function validateAndSanitizeMatch(raw: any): ValidationResult<Match> {
 /**
  * Validates and sanitizes a Training entity.
  */
-export function validateAndSanitizeTraining(raw: any): ValidationResult<Training> {
+function validateAndSanitizeTraining(raw: any): ValidationResult<Training> {
   const errors: string[] = [];
   const warnings: string[] = [];
   const issues: ValidationIssue[] = [];

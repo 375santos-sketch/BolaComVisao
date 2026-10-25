@@ -92,21 +92,6 @@ export function uid(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
-export function escapeHTML(str: string): string {
-  if (!str) return '';
-  return String(str).replace(
-    /[&<>'"]/g,
-    (match) =>
-      ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        "'": '&#39;',
-        '"': '&quot;'
-      })[match] || match
-  );
-}
-
 export function computeAge(birthDateStr: string | null): number | null {
   if (!birthDateStr) return null;
   const b = new Date(birthDateStr);
@@ -267,11 +252,11 @@ export function getMatchElapsedMs(m: Match): number {
   return total;
 }
 
-export function getMatchMinute(m: Match): number {
+function getMatchMinute(m: Match): number {
   return Math.floor(getMatchElapsedMs(m) / 60000);
 }
 
-export function timeToMins(tStr?: string): number {
+function timeToMins(tStr?: string): number {
   if (!tStr) return 0;
   const parts = tStr.split(':');
   return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
@@ -310,7 +295,7 @@ export function getHalfDuration(m: Match, half: 1 | 2): number {
  * one in its half (minute after the end of the 1st half → 2nd half, counted from the start of that half), so the
  * minutes played are not computed as if every change happened in the 1st half.
  */
-export function withSubHalves(m: Match): Match {
+function withSubHalves(m: Match): Match {
   const subs = m.subs || [];
   if (!subs.some((s) => s.half == null && s.minuteInHalf == null && !s.isHalftime)) return m;
   const half1 = getHalfDuration(m, 1);
@@ -426,7 +411,7 @@ export function calcPlayerMinutes(match: Match, pId: string): number {
   return Math.max(0, mins);
 }
 
-export const themes: Record<ThemeName, Record<string, string>> = {
+const themes: Record<ThemeName, Record<string, string>> = {
   original: {
     '--bg': '#08141e',
     '--surface': '#0f2232',
@@ -493,7 +478,7 @@ export function applyThemeCSS(themeName: ThemeName) {
   if (metaColor) metaColor.setAttribute('content', th['--bg']);
 }
 
-export interface MatchCompetitionDetails {
+interface MatchCompetitionDetails {
   type: MatchType;
   typeLabel: string; // "Campeonato", "Jogo Amigável", "Torneio"
   phase: string; // e.g. "Jornada 5", "Fase de Grupos", "1ª Jornada"

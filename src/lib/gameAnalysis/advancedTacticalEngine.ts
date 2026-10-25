@@ -13,10 +13,7 @@ import { withUnifiedSetPieces } from '../matchSetPieces';
  * Computes deep first goal metrics with win/draw/loss distribution
  * and comeback rates.
  */
-export function computeDetailedFirstGoalImpact(
-  matches: Match[],
-  defaultHalfDuration: number
-): FirstGoalDetailedAnalysis {
+function computeDetailedFirstGoalImpact(matches: Match[], defaultHalfDuration: number): FirstGoalDetailedAnalysis {
   let scoredFirstMatches = 0;
   let scoredFirstWins = 0;
   let scoredFirstDraws = 0;
@@ -138,7 +135,7 @@ export function computeDetailedFirstGoalImpact(
 /**
  * Calculates outcome profile stats for a specific subgroup of matches (Wins, Draws, or Losses)
  */
-export function computeOutcomeGroupProfile(
+function computeOutcomeGroupProfile(
   matchesSubset: Match[],
   totalFinishedMatches: number,
   defaultHalfDuration: number
@@ -322,7 +319,7 @@ export function computeOutcomeGroupProfile(
 /**
  * Computes dedicated Set Piece statistics (Scored vs Conceded across Corner, Freekick, Penalty)
  */
-export function computeSetPieceDetailedBreakdown(
+function computeSetPieceDetailedBreakdown(
   goalTypes: AggregatedAnalysis['goalTypes'],
   concededGoalTypes: AggregatedAnalysis['concededGoalTypes'],
   totalGoalsScored: number,
