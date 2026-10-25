@@ -315,38 +315,117 @@ const GENERIC = new Set(
     ' '
   )
 );
-const teamWords = (name: string) =>
-  teamKey(name)
-    .split(' ')
-    .filter((w) => w.length >= 3 && !GENERIC.has(w));
+const teamWords = (name: string) => teamParts(name).words;
 
 /**
- * Names of a pasted list matched to the app's: our team (a name sharing a distinctive word with the club, e.g.
- * "Cdr Alferrarede 'A'" for "Dragões de Alferrarede") becomes `ourName`, and an opponent whose distinctive words
- * match exactly one name already in use ("Gdr Os Esparteiros" ↔ "Esparteiros") takes that name. Returns the games
+ * A team name in parts: every word (dots and quotes split words: "S.Abrantes" = "s abrantes"), the distinctive words
+ * and the team letter at the end ("'B'" in "S.Abrantes Benfica 'B'").
+ */
+function teamParts(name: string) {
+  let tokens = (name || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[.,'"«»“”‘’()-]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  let letter: string | undefined;
+  if (tokens.length > 1 && /^[a-e]$/.test(tokens[tokens.length - 1])) {
+    letter = tokens[tokens.length - 1];
+    tokens = tokens.slice(0, -1);
+  }
+  return { tokens, letter, words: tokens.filter((w) => w.length >= 3 && !GENERIC.has(w)) };
+}
+
+/** "SAB" stands for a run of words of the other name ("S Abrantes Benfica"), and its other words are there too. */
+function acronymOf(short: ReturnType<typeof teamParts>, long: ReturnType<typeof teamParts>) {
+  return short.tokens.some((t) => {
+    if (t.length < 2 || t.length > 5) return false;
+    const runs = long.tokens.some((_, i) =>
+      Array.from({ length: long.tokens.length - i }, (_, n) => long.tokens.slice(i, i + n + 1)).some(
+        (run) => run.length === t.length && run.map((w) => w[0]).join('') === t
+      )
+    );
+    return runs && short.words.filter((w) => w !== t).every((w) => long.tokens.includes(w));
+  });
+}
+
+/**
+ * How surely two names are the same team: 3 same name, 2 same distinctive words or an acronym ("Gdr Os Esparteiros"
+ * = "GRD OS ESPARTEIROS", "Casa Povo Pego" = "CP Pego", "S.Abrantes Benfica 'B'" = "SAB 'B'"), 1 one name's words
+ * inside the other's ("Mação" in "Ad Mação"), 0 different teams. Different letters ('A' and 'B') are never the same
+ * team, and a lettered team is never matched by words only ("Benfica" is not "S.Abrantes Benfica 'B'").
+ */
+export function teamMatch(a: string, b: string): number {
+  if (teamKey(a) === teamKey(b)) return 3;
+  const pa = teamParts(a);
+  const pb = teamParts(b);
+  if (pa.letter && pb.letter && pa.letter !== pb.letter) return 0;
+  const sameWords =
+    pa.words.length > 0 && pa.words.length === pb.words.length && pa.words.every((w) => pb.words.includes(w));
+  if (sameWords || acronymOf(pa, pb) || acronymOf(pb, pa)) return 2;
+  if (pa.letter !== pb.letter) return 0;
+  const inside =
+    pa.words.length > 0 &&
+    pb.words.length > 0 &&
+    (pa.words.every((w) => pb.words.includes(w)) || pb.words.every((w) => pa.words.includes(w)));
+  return inside ? 1 : 0;
+}
+
+export const sameTeam = (a: string, b: string) => teamMatch(a, b) > 0;
+
+/**
+ * The name the app uses for a team: the surest match wins; on a tie the earlier list (the calendar before names that
+ * only came from imported results), and two equally sure names in the same list leave the name as it is.
+ */
+export function canonicalTeam(name: string, ...lists: string[][]): string {
+  for (const strength of [3, 2, 1]) {
+    for (const list of lists) {
+      const found = Array.from(new Map(list.filter(Boolean).map((n) => [teamKey(n), n.trim()])).values()).filter(
+        (k) => teamMatch(k, name) === strength
+      );
+      if (found.length === 1) return found[0];
+      if (found.length > 1) return name;
+    }
+  }
+  return name;
+}
+
+/**
+ * Names of a pasted list (or a picture) matched to the app's: our team (a name sharing a distinctive word with the
+ * club, e.g. "Cdr Alferrarede 'A'" for "Dragões de Alferrarede") becomes `ourName`, and an opponent takes the name
+ * the app already uses for it (`official` lists in order, e.g. calendar then series teams; then `known`). Returns the games
  * with the names changed and the pasted name recognised as ours.
  */
 export function harmonizeTeams(
   games: LeagueGame[],
-  opts: { ourName: string; clubName?: string; known: string[] }
+  opts: { ourName: string; clubName?: string; known: string[]; official?: string[][] }
 ): { games: LeagueGame[]; ourAlias?: string } {
   const clubWords = new Set([...teamWords(opts.ourName), ...teamWords(opts.clubName || '')]);
   const pasted = Array.from(new Set(games.flatMap((g) => [g.home, g.away])));
   const oursCandidates = pasted.filter((n) => teamWords(n).some((w) => clubWords.has(w)));
   const ourAlias = oursCandidates.length === 1 ? oursCandidates[0] : undefined;
-  const known = Array.from(new Set(opts.known.filter((k) => k && teamKey(k) !== teamKey(opts.ourName))));
+  const notOurs = (list: string[] = []) => list.filter((k) => k && teamKey(k) !== teamKey(opts.ourName));
   const alias = (name: string) => {
     if (ourAlias && teamKey(name) === teamKey(ourAlias)) return opts.ourName;
-    if (known.some((k) => teamKey(k) === teamKey(name))) return known.find((k) => teamKey(k) === teamKey(name))!;
-    const words = teamWords(name);
-    if (!words.length) return name;
-    const matches = known.filter((k) => {
-      const kw = teamWords(k);
-      return kw.length > 0 && (kw.every((w) => words.includes(w)) || words.every((w) => kw.includes(w)));
-    });
-    return matches.length === 1 ? matches[0] : name;
+    return canonicalTeam(name, ...(opts.official || []).map(notOurs), notOurs(opts.known));
   };
   return { games: games.map((g) => ({ ...g, home: alias(g.home), away: alias(g.away) })), ourAlias };
+}
+
+/**
+ * The series' games with every team under the app's name, so a team written two ways is one line in the table;
+ * a game that becomes a repeat of another (imported twice under different names) is kept once.
+ */
+export function normalizeLeagueGames(games: LeagueGame[], official: string[][], ourName: string): LeagueGame[] {
+  const fix = (n: string) => (teamKey(n) === teamKey(ourName) ? n : canonicalTeam(n, ...official));
+  const seen = new Map<string, LeagueGame>();
+  (games || []).forEach((g) => {
+    const game = { ...g, home: fix(g.home), away: fix(g.away) };
+    const key = `${teamKey(game.home)}|${teamKey(game.away)}|${game.date || `j${game.round ?? ''}`}`;
+    seen.set(key, seen.has(key) ? { ...game, id: seen.get(key)!.id } : game);
+  });
+  return [...seen.values()];
 }
 
 /**
