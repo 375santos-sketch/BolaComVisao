@@ -40,6 +40,52 @@ export const PRINT_SCHEMA = {
   required: ['games']
 } as const;
 
+/** Gemini models tried in order (the first that exists is used). */
+export const PRINT_MODELS = ['gemini-flash-latest', 'gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+
+/** The model's answer as JSON (tolerates a ```json … ``` block or text around it). */
+export function parseModelJson(text: string | undefined): unknown {
+  const t = (text || '').trim();
+  const candidates = [t, t.replace(/^```(?:json)?\s*|\s*```$/g, '')];
+  const obj = /\{[\s\S]*\}|\[[\s\S]*\]/.exec(t);
+  if (obj) candidates.push(obj[0]);
+  for (const c of candidates) {
+    try {
+      return JSON.parse(c);
+    } catch {
+      // try the next form
+    }
+  }
+  return [];
+}
+
+export type GeminiErrorKind = 'key' | 'quota' | 'blocked' | 'model' | 'other';
+
+/** What went wrong with a Gemini call: bad key, too many requests, no access, model not available, or other. */
+export function geminiErrorKind(err: unknown): GeminiErrorKind {
+  const e = err as { status?: number; message?: string } | undefined;
+  const text = `${e?.status ?? ''} ${e?.message ?? err ?? ''}`;
+  if (/API_KEY_INVALID|API key not valid|API key expired/i.test(text)) return 'key';
+  if (e?.status === 429 || /RESOURCE_EXHAUSTED|quota/i.test(text)) return 'quota';
+  if (e?.status === 404 || /NOT_FOUND|is not found|not supported for generateContent|no longer available/i.test(text))
+    return 'model';
+  if (e?.status === 403 || /PERMISSION_DENIED|SERVICE_DISABLED|location is not supported/i.test(text)) return 'blocked';
+  return 'other';
+}
+
+export function geminiErrorMessage(kind: GeminiErrorKind): string {
+  switch (kind) {
+    case 'key':
+      return 'A chave do Gemini da app não é válida. Confirme a chave no AI Studio.';
+    case 'quota':
+      return 'O Gemini recebeu demasiados pedidos. Tente daqui a um minuto.';
+    case 'blocked':
+      return 'A chave do Gemini não tem acesso à leitura de imagens. Confirme a chave no AI Studio.';
+    default:
+      return 'Não foi possível ler o print. Tente outra vez.';
+  }
+}
+
 /** A game as read from the picture (date still as written). */
 export interface PrintGame {
   home: string;

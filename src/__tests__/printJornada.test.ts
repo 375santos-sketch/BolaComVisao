@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanPrintGames, printToLeagueGames } from '../lib/printJornada';
+import { cleanPrintGames, geminiErrorKind, parseModelJson, printToLeagueGames } from '../lib/printJornada';
 import {
   harmonizeTeams,
   leagueGames,
@@ -54,6 +54,24 @@ describe('leitura do print da jornada', () => {
     const { games } = harmonizeTeams(read, { ourName: 'Lobos', clubName: 'Lobos Teste', known: [] });
     const kept = withoutOurGames(games, 'Lobos');
     expect(kept.map((g) => g.home)).toEqual(['Equipa Azul']);
+  });
+});
+
+describe('resposta do Gemini', () => {
+  it('lê o JSON mesmo dentro de um bloco de código ou com texto à volta', () => {
+    expect(parseModelJson('{"games":[]}')).toEqual({ games: [] });
+    expect(parseModelJson('```json\n{"games":[1]}\n```')).toEqual({ games: [1] });
+    expect(parseModelJson('Aqui está: {"games":[2]} fim')).toEqual({ games: [2] });
+    expect(parseModelJson('nada')).toEqual([]);
+    expect(parseModelJson(undefined)).toEqual([]);
+  });
+
+  it('distingue os erros: chave, limite, modelo inexistente, sem acesso', () => {
+    expect(geminiErrorKind({ status: 400, message: 'API key not valid. Please pass a valid API key.' })).toBe('key');
+    expect(geminiErrorKind({ status: 429, message: 'RESOURCE_EXHAUSTED' })).toBe('quota');
+    expect(geminiErrorKind({ status: 404, message: 'models/gemini-x is not found' })).toBe('model');
+    expect(geminiErrorKind({ status: 403, message: 'PERMISSION_DENIED' })).toBe('blocked');
+    expect(geminiErrorKind(new Error('fetch failed'))).toBe('other');
   });
 });
 

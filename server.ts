@@ -4,7 +4,15 @@ import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
 import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
-import { cleanPrintGames, PRINT_PROMPT, PRINT_SCHEMA } from './src/lib/printJornada';
+import {
+  cleanPrintGames,
+  geminiErrorKind,
+  geminiErrorMessage,
+  parseModelJson,
+  PRINT_MODELS,
+  PRINT_PROMPT,
+  PRINT_SCHEMA
+} from './src/lib/printJornada';
 
 // Load Firebase Config for Backend operations
 let firebaseConfig: any = {};
@@ -252,23 +260,43 @@ async function startServer() {
 
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: geminiKey });
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [
-          { role: 'user', parts: [{ inlineData: { mimeType: match[1], data: match[2] } }, { text: PRINT_PROMPT }] }
-        ],
-        config: { responseMimeType: 'application/json', responseSchema: PRINT_SCHEMA as any, temperature: 0 }
-      });
-      let parsed: unknown = [];
-      try {
-        parsed = JSON.parse(response.text || '[]');
-      } catch {
-        parsed = [];
+      const contents = [
+        { role: 'user', parts: [{ inlineData: { mimeType: match[1], data: match[2] } }, { text: PRINT_PROMPT }] }
+      ];
+      // Models are retired over time: try the next one when a model does not exist, and once without the answer
+      // format when a model refuses it
+      let lastError: unknown;
+      for (const model of PRINT_MODELS) {
+        for (const withSchema of [true, false]) {
+          try {
+            const response = await ai.models.generateContent({
+              model,
+              contents,
+              config: {
+                responseMimeType: 'application/json',
+                ...(withSchema ? { responseSchema: PRINT_SCHEMA as any } : {}),
+                temperature: 0
+              }
+            });
+            return res.json({ success: true, games: cleanPrintGames(parseModelJson(response.text)) });
+          } catch (err: any) {
+            lastError = err;
+            console.warn(`Leitura do print com ${model}${withSchema ? '' : ' (sem formato)'}:`, err?.message || err);
+            const kind = geminiErrorKind(err);
+            if (kind !== 'model' && kind !== 'other') {
+              return res.status(502).json({ success: false, error: geminiErrorMessage(kind) });
+            }
+            if (kind === 'model') break;
+          }
+        }
       }
-      res.json({ success: true, games: cleanPrintGames(parsed) });
+      throw lastError;
     } catch (err: any) {
       console.error('Erro na rota /api/ler-jornada:', err?.message || err);
-      res.status(500).json({ success: false, error: 'Não foi possível ler o print. Tente outra vez.' });
+      res.status(500).json({
+        success: false,
+        error: `Não foi possível ler o print. Tente outra vez. (${String(err?.message || err).slice(0, 120)})`
+      });
     }
   });
 
