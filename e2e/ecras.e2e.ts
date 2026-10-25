@@ -454,6 +454,18 @@ test('classificação: resultados colados da série, jogos da app e posição da
   await expect(results.getByRole('listitem').filter({ hasText: 'Tramagal SU' }).first()).toBeVisible();
   await expect(results.getByText('da app')).toHaveCount(2);
 
+  // Text copied from the FPF results page: our team ("Cdr Dragões 'A'") and opponents' names are recognised
+  await dialog.getByRole('button', { name: 'Colar' }).click();
+  await dialog
+    .getByLabel('Resultados colados')
+    .fill(
+      "SÉRIE 10\nJORNADAS\n12345\nGdr Mação\t2 - 0\n31 OUT\nTramagal Su\nCampo X\nCdr Dragões 'A'\t11:00\n01 NOV\nAbrantes\nCampo Y"
+    );
+  await expect(dialog).toContainText('1 jogo(s) reconhecido(s)');
+  await dialog.getByRole('button', { name: 'Importar resultados' }).click();
+  await dialog.getByRole('button', { name: 'Resultados' }).click();
+  await expect(results).toContainText('Mação 2-0 Tramagal SU');
+
   await expect
     .poll(
       async () => {

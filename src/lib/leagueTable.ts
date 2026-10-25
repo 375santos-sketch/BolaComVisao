@@ -64,9 +64,10 @@ export function ownLeagueGames(matches: Match[], ourName: string, season?: strin
 }
 
 /**
- * Every game of the table: the other games of the series plus the team's own (oldest first). A typed/pasted game
- * that repeats one of the team's games under another name ("GD Alferrarede" for "Dragões": same opponent, same
- * side, same score) is left out, so it is not counted twice.
+ * Every game of the table: the other games of the series plus the team's own (oldest first). The team's games
+ * registered in the app win; a pasted game of the team is used only when the app does not have it (same opponent
+ * within 3 days). A pasted game that repeats one of the team's games under another name ("GD Alferrarede" for
+ * "Dragões": same opponent, same side, same score) is left out, so it is not counted twice.
  */
 export function leagueGames(league: LeagueSetup, matches: Match[], ourName: string): TableGame[] {
   const ourKey = teamKey(ourName);
@@ -79,9 +80,18 @@ export function leagueGames(league: LeagueSetup, matches: Match[], ourName: stri
         ((teamKey(o.away) === ourKey && teamKey(o.home) === teamKey(g.home)) ||
           (teamKey(o.home) === ourKey && teamKey(o.away) === teamKey(g.away)))
     );
-  const others = (league.games || []).filter(
-    (g) => teamKey(g.home) !== ourKey && teamKey(g.away) !== ourKey && !repeatsOwn(g)
-  );
+  const days = (a?: string, b?: string) =>
+    a && b ? Math.abs(Date.parse(a.slice(0, 10)) - Date.parse(b.slice(0, 10))) / 86_400_000 : 0;
+  const inApp = (g: LeagueGame) => {
+    const opponent = teamKey(g.home) === ourKey ? g.away : g.home;
+    return own.some(
+      (o) => teamKey(o.home === ourName ? o.away : o.home) === teamKey(opponent) && days(o.date, g.date) <= 3
+    );
+  };
+  const others = (league.games || []).filter((g) => {
+    const ours = teamKey(g.home) === ourKey || teamKey(g.away) === ourKey;
+    return ours ? !inApp(g) : !repeatsOwn(g);
+  });
   return [...others, ...own].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 }
 
@@ -193,12 +203,102 @@ function isoDate(d: string, m: string, y: string | undefined, season?: string): 
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
+const PT_MONTHS: Record<string, number> = {
+  jan: 1,
+  fev: 2,
+  mar: 3,
+  abr: 4,
+  mai: 5,
+  jun: 6,
+  jul: 7,
+  ago: 8,
+  set: 9,
+  out: 10,
+  nov: 11,
+  dez: 12
+};
+const FPF_DATE = /^(\d{1,2})\s+(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-z]*\.?$/i;
+
+/**
+ * Text copied from the series page of resultados.fpf.pt ("Jogos" tab): each game is the home team and the score on
+ * one line ("Cdr Alferrarede 'A'⇥7 - 3"), the date ("24 OUT"), the away team and the pitch. Headers, round numbers
+ * and pitches are ignored; games not played yet (no score) too.
+ */
+export function parseFpfPage(text: string, season?: string): LeagueGame[] {
+  const lines = (text || '')
+    .split(/\r?\n/)
+    .map((l) => l.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+  const games: LeagueGame[] = [];
+  for (let i = 0; i + 2 < lines.length; i++) {
+    const m = /^(.+?)\s+(\d{1,2})\s*-\s*(\d{1,2})$/.exec(lines[i]);
+    const d = FPF_DATE.exec(lines[i + 1]);
+    if (!m || !d) continue;
+    const home = m[1].trim();
+    const away = lines[i + 2].trim();
+    if (!home || !away || teamKey(home) === teamKey(away)) continue;
+    const month = PT_MONTHS[d[2].toLowerCase()];
+    games.push({
+      id: uid(),
+      date: isoDate(d[1], String(month), undefined, season),
+      home,
+      away,
+      homeGoals: Number(m[2]),
+      awayGoals: Number(m[3])
+    });
+    i += 2;
+  }
+  return games;
+}
+
+// Words that say nothing about which team it is ("Cdr", "Clube", "Casa do Povo"…)
+const GENERIC = new Set(
+  'cdr cd gd gdr grd ad ud uds sc cf fc acd adc cad cfr csd gdc ccd cb ca sl sport clube club desportivo desportiva recreativo recreativa cultural futebol associacao uniao casa povo os as de do da dos das sub11 sub10 sub'.split(
+    ' '
+  )
+);
+const teamWords = (name: string) =>
+  teamKey(name)
+    .split(' ')
+    .filter((w) => w.length >= 3 && !GENERIC.has(w));
+
+/**
+ * Names of a pasted list matched to the app's: our team (a name sharing a distinctive word with the club, e.g.
+ * "Cdr Alferrarede 'A'" for "Dragões de Alferrarede") becomes `ourName`, and an opponent whose distinctive words
+ * match exactly one name already in use ("Gdr Os Esparteiros" ↔ "Esparteiros") takes that name. Returns the games
+ * with the names changed and the pasted name recognised as ours.
+ */
+export function harmonizeTeams(
+  games: LeagueGame[],
+  opts: { ourName: string; clubName?: string; known: string[] }
+): { games: LeagueGame[]; ourAlias?: string } {
+  const clubWords = new Set([...teamWords(opts.ourName), ...teamWords(opts.clubName || '')]);
+  const pasted = Array.from(new Set(games.flatMap((g) => [g.home, g.away])));
+  const oursCandidates = pasted.filter((n) => teamWords(n).some((w) => clubWords.has(w)));
+  const ourAlias = oursCandidates.length === 1 ? oursCandidates[0] : undefined;
+  const known = Array.from(new Set(opts.known.filter((k) => k && teamKey(k) !== teamKey(opts.ourName))));
+  const alias = (name: string) => {
+    if (ourAlias && teamKey(name) === teamKey(ourAlias)) return opts.ourName;
+    if (known.some((k) => teamKey(k) === teamKey(name))) return known.find((k) => teamKey(k) === teamKey(name))!;
+    const words = teamWords(name);
+    if (!words.length) return name;
+    const matches = known.filter((k) => {
+      const kw = teamWords(k);
+      return kw.length > 0 && (kw.every((w) => words.includes(w)) || words.every((w) => kw.includes(w)));
+    });
+    return matches.length === 1 ? matches[0] : name;
+  };
+  return { games: games.map((g) => ({ ...g, home: alias(g.home), away: alias(g.away) })), ourAlias };
+}
+
 /**
  * Reads pasted results, one game per line, home team first:
  * "Tramagal SU 1-10 Dragões", "12/10 Mação 2 x 2 Abrantes", "Jornada 3" (sets the round of the next lines), or
  * Excel/Sheets columns "data | casa | golos | golos | fora" (date optional).
  */
 export function parseResults(text: string, season?: string): ParsedResults {
+  const fpf = parseFpfPage(text, season);
+  if (fpf.length) return { games: fpf, skipped: [] };
   const games: LeagueGame[] = [];
   const skipped: string[] = [];
   let round: number | undefined;
