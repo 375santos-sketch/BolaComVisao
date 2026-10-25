@@ -2,7 +2,9 @@ import React, { useMemo, useRef, useState } from 'react';
 import { AppState, LeagueGame, LeagueSetup } from '../../../types';
 import {
   computeStandings,
+  canonicalTeam,
   harmonizeTeams,
+  normalizeLeagueGames,
   leagueGames,
   mergeLeagueGames,
   parseResults,
@@ -60,13 +62,26 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
   const [printGames, setPrintGames] = useState<{ games: LeagueGame[]; ours: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Names the app already uses (calendar and games first, then the series teams): a team written another way on the
+  // site or in a picture takes this name, so it is not a second line in the table
+  const officialNames = useMemo(() => {
+    const calendar = [
+      ...(state.schedule || []).map((s) => s.opponent),
+      ...(state.matches || []).map((m) => m.opponent)
+    ];
+    return [calendar.filter(Boolean), league.teams.map((t) => canonicalTeam(t, calendar.filter(Boolean)))];
+  }, [league.teams, state.schedule, state.matches]);
+  const shownLeague = useMemo(
+    () => ({ ...league, games: normalizeLeagueGames(league.games, officialNames, ourName) }),
+    [league, officialNames, ourName]
+  );
   const games = useMemo(
-    () => leagueGames(league, state.matches || [], ourName, range),
-    [league, state.matches, ourName, range]
+    () => leagueGames(shownLeague, state.matches || [], ourName, range),
+    [shownLeague, state.matches, ourName, range]
   );
   const table = useMemo(
-    () => computeStandings(games, [ourName, ...league.teams], ourName),
-    [games, league.teams, ourName]
+    () => computeStandings(games, [ourName, ...officialNames[1]], ourName),
+    [games, officialNames, ourName]
   );
   const ours = table.find((r) => r.ours);
   const preview = useMemo(() => parseResults(pasted, season), [pasted, season]);
@@ -137,13 +152,10 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
   };
 
   /** Names as the app already uses them: our team and opponents written differently on the site or picture. */
-  const knownNames = () =>
-    [
-      ...league.teams,
-      ...league.games.flatMap((g) => [g.home, g.away]),
-      ...(state.matches || []).map((m) => m.opponent),
-      ...(state.schedule || []).map((s) => s.opponent)
-    ].filter(Boolean);
+  const teamNames = () => ({
+    official: officialNames,
+    known: shownLeague.games.flatMap((g) => [g.home, g.away])
+  });
 
   const addGame = () => {
     const home = form.home.trim();
@@ -181,7 +193,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
       onShowToast('Não encontrei resultados no texto colado.');
       return;
     }
-    const harmonized = harmonizeTeams(preview.games, { ourName, clubName: state.myClubName, known: knownNames() });
+    const harmonized = harmonizeTeams(preview.games, { ourName, clubName: state.myClubName, ...teamNames() });
     // Our games come from the app: never imported, so they are not counted twice
     const games = withoutOurGames(harmonized.games, ourName);
     const ours = harmonized.games.length - games.length;
@@ -208,7 +220,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
       if (!resp.ok || !data.success) throw new Error(data.error || 'Não foi possível ler o print.');
       const read = printToLeagueGames(cleanPrintGames(data.games), season);
       if (!read.length) throw new Error('Não encontrei resultados neste print.');
-      const harmonized = harmonizeTeams(read, { ourName, clubName: state.myClubName, known: knownNames() });
+      const harmonized = harmonizeTeams(read, { ourName, clubName: state.myClubName, ...teamNames() });
       const games = withoutOurGames(harmonized.games, ourName);
       setPrintGames({ games, ours: harmonized.games.length - games.length });
     } catch (err: any) {

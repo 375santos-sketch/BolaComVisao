@@ -116,3 +116,40 @@ describe('fases da classificação', () => {
     expect(g2.map((g) => g.away)).toEqual(['Equipa Rosa']);
   });
 });
+
+describe('nomes das equipas (não multiplicar equipas)', () => {
+  const calendar = ['GRD OS ESPARTEIROS', 'AD Mação', 'SAB "B"', 'CP Pego', 'Tramagal SU', 'Benfica'];
+
+  it('usa o nome do calendário para cada equipa lida do print', async () => {
+    const { canonicalTeam } = await import('../lib/leagueTable');
+    const pairs: [string, string][] = [
+      ['Gdr Os Esparteiros', 'GRD OS ESPARTEIROS'],
+      ['Ad Mação', 'AD Mação'],
+      ["S.Abrantes Benfica 'B'", 'SAB "B"'],
+      ['Casa Povo Pego', 'CP Pego'],
+      ['Tramagal Su', 'Tramagal SU']
+    ];
+    pairs.forEach(([read, app]) => expect(canonicalTeam(read, calendar)).toBe(app));
+    // An unknown team keeps its name; a different letter is a different team
+    expect(canonicalTeam('Equipa Nova', calendar)).toBe('Equipa Nova');
+    expect(canonicalTeam("S.Abrantes Benfica 'A'", calendar)).toBe("S.Abrantes Benfica 'A'");
+  });
+
+  it('junta na tabela as equipas já importadas com outro nome', async () => {
+    const { normalizeLeagueGames, computeStandings } = await import('../lib/leagueTable');
+    const games = normalizeLeagueGames(
+      [
+        { id: '1', date: '2026-10-10', home: 'Ad Mação', away: "S.Abrantes Benfica 'B'", homeGoals: 2, awayGoals: 4 },
+        { id: '2', date: '2026-10-10', home: 'AD Mação', away: 'SAB "B"', homeGoals: 2, awayGoals: 4 },
+        { id: '3', date: '2026-10-17', home: 'Gdr Os Esparteiros', away: 'Ad Mação', homeGoals: 1, awayGoals: 13 }
+      ],
+      [calendar],
+      'Lobos'
+    );
+    expect(games).toHaveLength(2);
+    const table = computeStandings(games, ['Lobos', ...calendar.slice(0, 5)], 'Lobos');
+    expect(table.map((r) => r.team).sort()).toEqual(
+      ['AD Mação', 'CP Pego', 'GRD OS ESPARTEIROS', 'Lobos', 'SAB "B"', 'Tramagal SU'].sort()
+    );
+  });
+});
