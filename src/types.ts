@@ -635,6 +635,8 @@ export interface SquadProfile {
   calendarToken?: string;
   /** Championship series (one per season): other games of the series, for the league table. */
   leagues?: LeagueSetup[];
+  /** Training templates (Treinos → Modelos): a session plan kept to start new trainings from it. */
+  trainingTemplates?: TrainingTemplate[];
   /** The team's rehearsed set pieces (corners, free kicks, throw-ins…), each its own cloud record. */
   setPieces?: SetPiece[];
   /** Animated plays drawn on the tactics board, each its own cloud record. */
@@ -687,6 +689,20 @@ export interface SetPiece {
 }
 
 /** A game of the championship series between two other teams (home team first). */
+/** A training kept as a model: type, time, place, length, objective, blocks and notes (no date nor attendance). */
+export interface TrainingTemplate {
+  id: string;
+  name: string;
+  type?: string;
+  time?: string;
+  location?: string;
+  durationMinutes?: number;
+  objective?: string;
+  notes?: string;
+  blocks: SessionBlock[];
+  createdAt: string;
+}
+
 export interface LeagueGame {
   id: string;
   round?: number;

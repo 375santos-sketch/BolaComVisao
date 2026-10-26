@@ -7,6 +7,8 @@ import { Header } from '../../Header';
 import { BatchTrainingSection } from './BatchTrainingSection';
 import { getPDFDocumentById, PDFDocumentItem } from '../../../lib/pdfLibraryDB';
 import { PDFViewerModal } from './PDFViewerModal';
+import { TrainingTemplates } from './TrainingTemplates';
+import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
 import { TrainingFormData, TRAINING_TYPES } from './types';
 
 interface TrainingEditorProps {
@@ -46,6 +48,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
   const [showLibrary, setShowLibrary] = useState(false);
   const library = state.exerciseLibrary || [];
   const exerciseOf = (id?: string) => (id ? library.find((e) => e.id === id) : undefined);
+  const usage = exerciseUsage(state.trainings);
 
   // Exercises from the library become blocks of the session (name, duration, type and objective copied)
   const handleAddFromLibrary = (ex: Exercise) => {
@@ -242,6 +245,14 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
           />
         ) : (
           <>
+            <TrainingTemplates
+              state={state}
+              trainingForm={trainingForm}
+              setTrainingForm={setTrainingForm}
+              onUpdateState={onUpdateState}
+              onShowToast={onShowToast}
+            />
+
             {/* Status Selection Pill */}
             <div className="ui-card p-4 mb-3.5">
               <label className="block text-xs font-['Chakra_Petch'] font-bold text-cyan-400 uppercase tracking-wider mb-2">
@@ -487,6 +498,9 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                             <span className="block text-xs font-bold text-white truncate">{ex.name}</span>
                             <span className="block text-[10px] text-slate-400 font-mono truncate">
                               {ex.durationMinutes} min{ex.objective ? ` · ${ex.objective}` : ''}
+                            </span>
+                            <span className="block text-[10px] text-cyan-300/80 truncate">
+                              {usageLabel(usage.get(ex.id))}
                             </span>
                           </span>
                           <span className="text-cyan-300 text-xs font-bold shrink-0">+ Juntar</span>

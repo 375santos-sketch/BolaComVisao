@@ -146,7 +146,11 @@ export async function generateSquadPDF(state: AppState) {
 /**
  * 3. Ficha Individual de Atleta em PDF
  */
-/** Builds the athlete's season sheet (to show parents or the coordinator: no contacts, no coach notes, no emojis). */
+/**
+ * Builds the athlete's season sheet on a single page (for meetings with the coordinator, or to show the parents):
+ * summary tiles, minutes game by game, latest games, training attendance month by month and absences by reason.
+ * No contacts, no coach notes, no emojis.
+ */
 export async function buildPlayerProfilePDF(player: Player, state: AppState) {
   const jsPDF = await getJsPDF();
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -155,7 +159,7 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
 
   drawDocumentHeader(doc, state, 'FICHA DO ATLETA');
   const w = createTextReportWriter(doc, 48);
-  const { heading, paragraph, list } = w;
+  const { heading } = w;
 
   const number =
     player.number !== null && player.number !== undefined && `${player.number}` !== '' ? `#${player.number} ` : '';
@@ -170,53 +174,120 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
     .filter(Boolean)
     .join('  •  ');
   if (info) w.centered(info, { size: 9, color: [71, 85, 105] });
-  w.skip(4.5);
+  w.skip(3);
 
-  heading('Jogos');
-  paragraph(
-    g.calledUp === 0
-      ? 'Ainda não foi convocado para jogos nesta época.'
-      : `Convocado para ${g.calledUp} jogo(s), jogou ${g.played}, titular em ${g.starts}. ` +
-          `${g.minutes} minutos jogados, ${Math.round(g.share * 100)}% dos minutos dos jogos.`
-  );
-  paragraph(
-    `Golos: ${s.goals}  •  Assistências: ${s.assists}` +
-      (s.yellowCards || s.redCards ? `  •  Cartões: ${s.yellowCards} amarelo(s), ${s.redCards} vermelho(s)` : '')
-  );
+  // Summary tiles
+  const tiles: [string, string, string][] = [
+    ['Jogos', String(g.played), g.calledUp ? `convocado ${g.calledUp}, titular ${g.starts}` : 'sem convocatórias'],
+    ['Minutos', String(g.minutes), g.calledUp ? `${Math.round(g.share * 100)}% dos minutos` : '—'],
+    ['Golos', String(s.goals), 'marcados'],
+    ['Assistências', String(s.assists), 'para golo'],
+    [
+      'Treinos',
+      s.trainings.held ? `${s.trainings.rate}%` : '—',
+      s.trainings.held ? `${s.trainings.present} de ${s.trainings.held}` : 'sem treinos'
+    ]
+  ];
+  const tileW = (182 - 4 * 2.5) / 5;
+  const top = w.y;
+  tiles.forEach(([label, value, sub], i) => {
+    const x = 14 + i * (tileW + 2.5);
+    doc.setFillColor(241, 245, 249);
+    doc.setDrawColor(...PDF_TRACK);
+    doc.roundedRect(x, top, tileW, 18, 2, 2, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...PDF_MUTED);
+    doc.text(label.toUpperCase(), x + tileW / 2, top + 4.5, { align: 'center' });
+    doc.setFontSize(13);
+    doc.setTextColor(...PDF_INK);
+    doc.text(value, x + tileW / 2, top + 11, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.3);
+    doc.setTextColor(...PDF_MUTED);
+    doc.text(sub, x + tileW / 2, top + 15.5, { align: 'center' });
+  });
+  w.skip(27);
+  const extras = [
+    s.yellowCards || s.redCards ? `Cartões: ${s.yellowCards} amarelo(s), ${s.redCards} vermelho(s)` : '',
+    s.ratingAverage !== null ? `Nota média do treinador: ${s.ratingAverage}` : ''
+  ].filter(Boolean);
+  if (extras.length) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...PDF_MUTED);
+    doc.text(extras.join('   •   '), 105, w.y, { align: 'center' });
+    w.skip(5);
+  }
 
-  drawMinutesByGame(doc, w, s);
+  drawMinutesByGame(doc, w, s, 30);
 
   heading('Últimos jogos');
-  list(
-    s.recentGames.map((r) => {
-      const date = r.date.slice(0, 10).split('-').reverse().join('/');
-      const game = `${date}  ${r.opponent} (${r.home ? 'casa' : 'fora'}) ${homeFirstScore(r.scored, r.conceded, r.home)}`;
-      if (!r.calledUp) return `${game}: não convocado`;
-      const extras = [
-        r.started ? 'titular' : null,
-        r.goals ? `${r.goals} golo(s)` : null,
-        r.assists ? `${r.assists} assist.` : null
-      ]
-        .filter(Boolean)
-        .join(', ');
-      return `${game}: ${r.minutes} min${extras ? `, ${extras}` : ''}`;
-    })
-  );
+  if (s.recentGames.length === 0) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...PDF_MUTED);
+    doc.text('Ainda sem jogos nesta época.', 16, w.y);
+    w.skip(6);
+  } else {
+    doc.setFontSize(8.5);
+    s.recentGames.forEach((r, i) => {
+      if (i % 2 === 1) {
+        doc.setFillColor(248, 250, 252);
+        doc.rect(14, w.y - 3.6, 182, 5, 'F');
+      }
+      const date = r.date.slice(0, 10).split('-').reverse().slice(0, 2).join('/');
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...PDF_INK);
+      doc.text(date, 16, w.y);
+      let opp = `${r.opponent} (${r.home ? 'casa' : 'fora'})`;
+      while (opp.length > 4 && doc.getTextWidth(opp) > 70) opp = opp.slice(0, -2);
+      doc.text(opp, 30, w.y);
+      doc.setFont('helvetica', 'bold');
+      doc.text(homeFirstScore(r.scored, r.conceded, r.home), 104, w.y, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+      const detail = !r.calledUp
+        ? 'não convocado'
+        : [
+            `${r.minutes} min`,
+            r.started ? 'titular' : null,
+            r.goals ? `${r.goals} golo(s)` : null,
+            r.assists ? `${r.assists} assist.` : null
+          ]
+            .filter(Boolean)
+            .join(', ');
+      doc.setTextColor(...(r.calledUp ? PDF_INK : PDF_MUTED));
+      doc.text(detail, 118, w.y);
+      w.skip(5);
+    });
+    w.skip(3);
+  }
 
   heading('Treinos');
-  paragraph(
-    s.trainings.held === 0
-      ? 'Ainda sem treinos registados nesta época.'
-      : `Presente em ${s.trainings.present} de ${s.trainings.held} treinos (${s.trainings.rate}%).`
-  );
-  drawTrainingMonths(doc, w, s);
-  if (s.absences.length > 0) {
-    list(
-      s.absences.map((a) => {
-        const date = a.date.slice(0, 10).split('-').reverse().join('/');
-        return `${date}${a.trainingNumber ? ` (treino ${a.trainingNumber})` : ''}: ${absenceReasonLabel(a.reason)}`;
-      })
-    );
+  if (s.trainings.held === 0) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...PDF_MUTED);
+    doc.text('Ainda sem treinos registados nesta época.', 16, w.y);
+    w.skip(6);
+  } else {
+    drawTrainingMonths(doc, w, s);
+    if (s.absences.length > 0) {
+      // Absences by reason, in one line (the full list would not fit on one page)
+      const byReason = new Map<string, number>();
+      s.absences.forEach((a) => {
+        const label = absenceReasonLabel(a.reason);
+        byReason.set(label, (byReason.get(label) || 0) + 1);
+      });
+      const text = `Faltas: ${s.absences.length} (${[...byReason.entries()].map(([r, n]) => `${r} ${n}`).join(', ')})`;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...PDF_INK);
+      (doc.splitTextToSize(text, 178) as string[]).slice(0, 2).forEach((line) => {
+        doc.text(line, 16, w.y);
+        w.skip(4.5);
+      });
+    }
   }
 
   addBolaComVisaoPageFooters(doc);
@@ -234,11 +305,10 @@ const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', '
 type Writer = ReturnType<typeof createTextReportWriter>;
 
 /** Minutes game by game: bar = minutes played over the game's minutes (track), dashed 50% line, G/A above. */
-export function drawMinutesByGame(doc: any, w: Writer, s: ReturnType<typeof buildPlayerSeason>) {
+export function drawMinutesByGame(doc: any, w: Writer, s: ReturnType<typeof buildPlayerSeason>, h = 38) {
   const games = s.evolution.games;
   if (games.length === 0) return;
   w.heading('Minutos jogo a jogo');
-  const h = 38;
   w.ensure(h + 12);
   const left = 24;
   const right = 188;

@@ -15,6 +15,7 @@ interface TrainingCardProps {
   onQuickToggleAbsence: (trainingId: string, playerId: string) => void;
   onSetAbsenceReason: (trainingId: string, playerId: string, reason: AbsenceReason | undefined) => void;
   onRepeatTraining: (trainingId: string) => void;
+  onDuplicateTraining: (training: Training) => void;
   onOpenEditForm: (training: Training) => void;
   onDeleteTraining: (trainingId: string) => void;
   onShowToast: (msg: string) => void;
@@ -32,6 +33,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
   onQuickToggleAbsence,
   onSetAbsenceReason,
   onRepeatTraining,
+  onDuplicateTraining,
   onOpenEditForm,
   onDeleteTraining,
   onShowToast
@@ -145,6 +147,16 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
           >
             <span>🔁</span>
             <span>Repetir</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onDuplicateTraining(tr)}
+            className="ui-btn ui-btn-soft px-2.5 py-1.5 text-xs flex items-center gap-1"
+            title="Duplicar: abre uma cópia deste treino para mudar a data e o que for preciso"
+          >
+            <span>📑</span>
+            <span>Duplicar</span>
           </button>
 
           <button

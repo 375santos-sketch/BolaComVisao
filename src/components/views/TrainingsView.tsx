@@ -16,7 +16,7 @@ import { TrainingAttendance } from './trainings/TrainingAttendance';
 import { TrainingEditor } from './trainings/TrainingEditor';
 import { TrainingBatchModal } from './trainings/TrainingBatchModal';
 import { TodayTrainingModal } from './trainings/TodayTrainingModal';
-import { trainingForToday, withAttendance } from '../../lib/trainingQuick';
+import { addDaysISO, localDateISO, trainingForToday, withAttendance } from '../../lib/trainingQuick';
 
 interface TrainingsViewProps {
   state: AppState;
@@ -129,6 +129,28 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
       sessionObjective: tr.sessionPlan?.objective || '',
       sessionBlocks: tr.sessionPlan?.blocks ? [...tr.sessionPlan.blocks] : []
     });
+  };
+
+  // Duplicar: a new training with everything copied (plan, place, time, notes), one week later by default; the
+  // coach changes the date and whatever else before saving
+  const handleDuplicateTraining = (tr: Training) => {
+    setCreationMode('single');
+    let date = addDaysISO(tr.date, 7);
+    while (date < localDateISO()) date = addDaysISO(date, 7);
+    setTrainingForm({
+      trainingNumber: getNextTrainingNumber(state.trainings || [], state.lastTrainingNumber),
+      date,
+      time: tr.time || '',
+      location: tr.location || '',
+      type: tr.type || '⚡ Tático',
+      notes: tr.notes || '',
+      absences: [],
+      completed: false,
+      durationMinutes: tr.sessionPlan?.totalDurationMinutes || tr.durationMinutes || 90,
+      sessionObjective: tr.sessionPlan?.objective || '',
+      sessionBlocks: (tr.sessionPlan?.blocks || []).map((b) => ({ ...b, id: uid() }))
+    });
+    onShowToast('📑 Cópia do treino aberta: muda a data e o que for preciso e guarda.');
   };
 
   const handleSaveTraining = (forceStatus?: boolean) => {
@@ -280,6 +302,7 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
       {activeTab === 'library' ? (
         <ExerciseLibrary
           exercises={state.exerciseLibrary || []}
+          trainings={state.trainings || []}
           onSave={(exerciseLibrary) => onUpdateState({ exerciseLibrary })}
           onShowToast={onShowToast}
         />
@@ -317,6 +340,7 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
           onQuickToggleAbsence={handleQuickToggleAbsence}
           onSetAbsenceReason={handleSetAbsenceReason}
           onRepeatTraining={handleRepeatTraining}
+          onDuplicateTraining={handleDuplicateTraining}
           onOpenToday={() => setTodayTraining(trainingForToday(state.trainings || [], state.lastTrainingNumber))}
           onDeleteTraining={(id) => {
             onShowConfirm('Tens a certeza que queres eliminar este treino?', () => handleDeleteTraining(id));
