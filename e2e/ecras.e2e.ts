@@ -783,6 +783,43 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
     .click();
   await expect(page.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
   await expect(page.getByText('Planeado: 15 /')).toBeVisible();
+
+  // Keep it as a model, save the training, and the library shows the exercise was used
+  const models = page.getByRole('region', { name: 'Modelos de treino' });
+  await models.getByRole('button', { name: /Guardar este treino como modelo/ }).click();
+  await models.getByLabel('Nome do modelo').fill('Rondo semanal');
+  await models.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await expect(page.getByText('Modelo "Rondo semanal" guardado ✓')).toBeVisible();
+  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  await expect(page.getByRole('region', { name: 'Biblioteca de exercícios' })).toContainText(/Usado 1× · último hoje/);
+
+  // A new training starts from the model; "Duplicar" opens a copy of a training to change and save
+  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
+  await page
+    .getByRole('region', { name: 'Modelos de treino' })
+    .getByLabel('Modelo', { exact: true })
+    .selectOption({ label: 'Rondo semanal (1 bloco)' });
+  await page.getByRole('region', { name: 'Modelos de treino' }).getByRole('button', { name: 'Usar' }).click();
+  await expect(page.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
+  await page.getByRole('button', { name: 'Cancelar' }).last().click();
+  await page
+    .getByRole('button', { name: /Duplicar/ })
+    .first()
+    .click();
+  await expect(page.getByText(/Cópia do treino aberta/)).toBeVisible();
+  await expect(page.getByText(/Novo Treino/).first()).toBeVisible();
+
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
+        return JSON.stringify(await res.json()).includes('Rondo semanal');
+      },
+      { timeout: 30_000, message: 'modelo guardado na nuvem' }
+    )
+    .toBe(true);
 });
 
 test('ficha do atleta: época, últimos jogos, faltas com motivo e PDF', async ({ page }) => {

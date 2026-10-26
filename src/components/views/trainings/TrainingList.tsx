@@ -26,6 +26,7 @@ interface TrainingListProps {
   onQuickToggleAbsence: (trainingId: string, playerId: string) => void;
   onSetAbsenceReason: (trainingId: string, playerId: string, reason: AbsenceReason | undefined) => void;
   onRepeatTraining: (trainingId: string) => void;
+  onDuplicateTraining: (training: Training) => void;
   onOpenToday: () => void;
   onDeleteTraining: (trainingId: string) => void;
   onClearAllTrainings: () => void;
@@ -53,6 +54,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
   onQuickToggleAbsence,
   onSetAbsenceReason,
   onRepeatTraining,
+  onDuplicateTraining,
   onOpenToday,
   onDeleteTraining,
   onClearAllTrainings,
@@ -121,6 +123,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
               onQuickToggleAbsence={onQuickToggleAbsence}
               onSetAbsenceReason={onSetAbsenceReason}
               onRepeatTraining={onRepeatTraining}
+              onDuplicateTraining={onDuplicateTraining}
               onOpenEditForm={onOpenEditForm}
               onDeleteTraining={onDeleteTraining}
               onShowToast={onShowToast}

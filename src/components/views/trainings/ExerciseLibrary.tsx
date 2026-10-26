@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { AutoTextarea } from '../../ui/AutoTextarea';
-import { Exercise, ExerciseCategory } from '../../../types';
+import { Exercise, ExerciseCategory, Training } from '../../../types';
+import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
 import { compressImageFile } from '../../../lib/imageCompress';
 import { uid } from '../../../lib/utils';
 
@@ -16,6 +17,8 @@ const categoryLabel = (c?: ExerciseCategory) => EXERCISE_CATEGORIES.find((x) => 
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];
+  /** The team's trainings, to show how often and when each exercise was used. */
+  trainings?: Training[];
   onSave: (exercises: Exercise[]) => void;
   onShowToast: (msg: string) => void;
 }
@@ -31,17 +34,29 @@ const blank = (): Exercise => ({
 });
 
 /** Treinos → Biblioteca: the coach's exercises (name, objective, drawing/photo, duration), reused in session plans. */
-export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onSave, onShowToast }) => {
+export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, trainings, onSave, onShowToast }) => {
   const [editing, setEditing] = useState<Exercise | null>(null);
   const [search, setSearch] = useState('');
   const [loadingImage, setLoadingImage] = useState(false);
 
+  const [order, setOrder] = useState<'nome' | 'mais' | 'esquecidos'>('nome');
+  const usage = useMemo(() => exerciseUsage(trainings), [trainings]);
+
   const list = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const byName = (a: Exercise, b: Exercise) => a.name.localeCompare(b.name, 'pt-PT');
+    const times = (e: Exercise) => usage.get(e.id)?.times || 0;
+    const last = (e: Exercise) => usage.get(e.id)?.lastDate || '';
     return [...exercises]
       .filter((e) => !q || `${e.name} ${e.objective || ''}`.toLowerCase().includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt-PT'));
-  }, [exercises, search]);
+      .sort((a, b) =>
+        order === 'mais'
+          ? times(b) - times(a) || byName(a, b)
+          : order === 'esquecidos'
+            ? last(a).localeCompare(last(b)) || byName(a, b)
+            : byName(a, b)
+      );
+  }, [exercises, search, order, usage]);
 
   const save = () => {
     if (!editing) return;
@@ -205,6 +220,27 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onS
           ➕ Novo exercício
         </button>
       </div>
+      {exercises.length > 1 && (
+        <div role="group" aria-label="Ordenar exercícios" className="flex flex-wrap gap-1.5 text-[11px]">
+          {(
+            [
+              ['nome', 'Nome'],
+              ['mais', 'Mais usados'],
+              ['esquecidos', 'Há mais tempo sem usar']
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={order === id}
+              onClick={() => setOrder(id)}
+              className={`ui-btn px-2.5 py-1 text-[11px] ${order === id ? 'ui-btn-primary' : 'ui-btn-secondary'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       {list.length === 0 ? (
         <div className="card text-center text-xs text-slate-400 py-8">
           {exercises.length === 0
@@ -226,6 +262,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onS
                   {categoryLabel(e.category)} · {e.durationMinutes} min
                 </div>
                 {e.objective && <div className="text-[11px] text-slate-300 line-clamp-2 mt-0.5">{e.objective}</div>}
+                <div className="text-[10px] text-cyan-300/80 mt-0.5">{usageLabel(usage.get(e.id))}</div>
                 <div className="flex gap-3 mt-1.5 text-[11px]">
                   <button type="button" className="text-cyan-300 font-bold" onClick={() => setEditing(e)}>
                     Editar

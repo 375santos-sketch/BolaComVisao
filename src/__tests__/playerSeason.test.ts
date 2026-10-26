@@ -142,6 +142,51 @@ describe('PDF da ficha do atleta', () => {
   });
 });
 
+describe('PDF da ficha do atleta numa página', () => {
+  it('fits on one page even with a full season (many games, months and absences)', async () => {
+    const { buildPlayerProfilePDF } = await import('../lib/pdf/createPlayerReport');
+    const player = { ...roster[0], name: 'Atleta Teste', positions: 'Médio' } as Player;
+    const months = [
+      '2026-09',
+      '2026-10',
+      '2026-11',
+      '2026-12',
+      '2027-01',
+      '2027-02',
+      '2027-03',
+      '2027-04',
+      '2027-05',
+      '2027-06'
+    ];
+    const state = {
+      myClubName: 'Lobos',
+      season: '2026/2027',
+      category: 'Sub-11',
+      roster: [player],
+      matches: months.flatMap((m, i) =>
+        [5, 12, 19, 26].map((d) =>
+          game(`m${i}-${d}`, `${m}-${String(d).padStart(2, '0')}`, {
+            goals: [{ id: `g${i}${d}`, type: 'scored', scorerId: 'a', assistId: null, minute: "3'" }]
+          } as Partial<Match>)
+        )
+      ),
+      trainings: months.flatMap((m, i) =>
+        [2, 9, 16, 23].map((d) =>
+          training(`t${i}-${d}`, `${m}-${String(d).padStart(2, '0')}`, {
+            absences: d === 9 ? ['a'] : [],
+            absenceReasons: d === 9 ? { a: i % 2 ? 'escola' : 'doente' } : undefined
+          })
+        )
+      )
+    };
+    const doc = await buildPlayerProfilePDF(player, state as never);
+    expect(doc.getNumberOfPages()).toBe(1);
+    const raw = doc.output() as string;
+    expect(raw).toContain('Atleta Teste');
+    expect(raw).toContain('Faltas: 10');
+  });
+});
+
 describe('Evolução do atleta', () => {
   it('lists every game of the season (oldest first) and training attendance per month', () => {
     const state = {
