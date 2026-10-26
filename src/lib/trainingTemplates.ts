@@ -7,7 +7,7 @@ import { uid } from './utils';
  */
 
 /** What a template keeps from the training form (date, number and attendance are left out). */
-export interface TemplateFields {
+interface TemplateFields {
   type: string;
   time: string;
   location: string;
@@ -60,7 +60,7 @@ export function withTeamTemplates(
   return (state.teams || []).map((t) => (t.id === state.activeTeamId ? { ...t, trainingTemplates: templates } : t));
 }
 
-export interface ExerciseUsage {
+interface ExerciseUsage {
   /** Trainings already held (today or before) that used the exercise. */
   times: number;
   /** Date of the latest of those trainings (YYYY-MM-DD). */
