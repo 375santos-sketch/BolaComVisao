@@ -8,7 +8,7 @@ import { calculateMatchScore, isSeasonMatching, seasonFromDate } from './utils';
  * only: no contacts, birth dates or the coach's private notes.
  */
 
-export const MONTH_NAMES = [
+const MONTH_NAMES = [
   'janeiro',
   'fevereiro',
   'março',
