@@ -265,35 +265,67 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
 
   curY += 27;
 
+  // Text is never cut: boxes grow with the text and continue on the next page when needed
+  const PAGE_BOTTOM = 280;
+  const PAGE_TOP = 20;
+  const newPage = () => {
+    doc.addPage();
+    curY = PAGE_TOP;
+  };
+
+  /** A box with a coloured title bar and all the lines of `text` (split over pages if long). */
+  const titledTextBox = (
+    title: string,
+    text: string,
+    colors: { bg: [number, number, number]; border: [number, number, number]; bar: [number, number, number] }
+  ) => {
+    doc.setFontSize(8);
+    const lines: string[] = doc.splitTextToSize(text, 174);
+    const lineH = 3.8;
+    let i = 0;
+    let part = 0;
+    while (i < lines.length) {
+      const headerH = 10.5;
+      if (PAGE_BOTTOM - curY < headerH + lineH + 3) newPage();
+      const fit = Math.max(1, Math.floor((PAGE_BOTTOM - curY - headerH - 3) / lineH) + 1);
+      const take = lines.slice(i, i + fit);
+      const boxH = headerH + (take.length - 1) * lineH + 4;
+      doc.setFillColor(...colors.bg);
+      doc.roundedRect(15, curY, 180, boxH, 2, 2, 'F');
+      doc.setDrawColor(...colors.border);
+      doc.roundedRect(15, curY, 180, boxH, 2, 2, 'S');
+      doc.setFillColor(...colors.bar);
+      doc.rect(15, curY, 180, 5.5, 'F');
+      doc.setFillColor(0, 210, 255);
+      doc.rect(15, curY, 2.5, 5.5, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(255, 255, 255);
+      doc.text(part > 0 ? `${title} (continuação)` : title, 20, curY + 4);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(15, 30, 52);
+      doc.text(take, 18, curY + headerH, { lineHeightFactor: 1.35 });
+      i += take.length;
+      part++;
+      curY += boxH + 4;
+      if (i < lines.length) newPage();
+    }
+  };
+
   // Box 1: Objetivo Principal da Sessão (se existir)
-  if (training.sessionPlan?.objective) {
-    doc.setFillColor(240, 248, 255);
-    doc.roundedRect(15, curY, 180, 20, 2, 2, 'F');
-    doc.setDrawColor(180, 215, 245);
-    doc.roundedRect(15, curY, 180, 20, 2, 2, 'S');
-
-    doc.setFillColor(0, 140, 220);
-    doc.rect(15, curY, 180, 5.5, 'F');
-    doc.setFillColor(255, 255, 255);
-    doc.rect(15, curY, 2.5, 5.5, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(255, 255, 255);
-    doc.text('OBJETIVO PRINCIPAL DA SESSÃO', 20, curY + 4);
-
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(15, 30, 52);
-    const objLines = doc.splitTextToSize(training.sessionPlan.objective, 174);
-    doc.text(objLines.slice(0, 2), 18, curY + 11);
-
-    curY += 24;
+  if (training.sessionPlan?.objective?.trim()) {
+    titledTextBox('OBJETIVO PRINCIPAL DA SESSÃO', training.sessionPlan.objective.trim(), {
+      bg: [240, 248, 255],
+      border: [180, 215, 245],
+      bar: [0, 140, 220]
+    });
   }
 
   // Box 2: Blocos e Exercícios da Sessão
   const blocks = training.sessionPlan?.blocks || [];
   const plannedMinutes = blocks.reduce((sum, b) => sum + (b.durationMinutes || 0), 0);
 
+  if (curY + 30 > PAGE_BOTTOM) newPage();
   doc.setFillColor(15, 30, 52);
   doc.rect(15, curY, 180, 7.5, 'F');
   doc.setFillColor(0, 210, 255);
@@ -321,7 +353,7 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
     curY += 20;
   } else {
     blocks.forEach((block, idx) => {
-      // Exercises from the library bring their drawing: the block grows to fit it on the right
+      // Exercises from the library bring their drawing: it sits on the right of the block's first part
       const exercise = block.exerciseId
         ? (state.exerciseLibrary || []).find((e) => e.id === block.exerciseId)
         : undefined;
@@ -339,82 +371,93 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
         }
       }
       const textWidth = imgW ? 176 - imgW - 18 : 166;
-      const details = [block.notes, exercise?.description].filter(Boolean).join('\n');
-      const noteLines = details ? doc.splitTextToSize(details, textWidth).slice(0, imgW ? 8 : 2) : [];
-      const boxH = Math.max(22, imgW ? imgH + 8 : 0, 16 + noteLines.length * 3.6);
-
-      if (curY + boxH > 280) {
-        doc.addPage();
-        curY = 20;
-      }
-
       const catLabel = block.category ? `[${block.category.toUpperCase()}] ` : '';
       const duration = block.durationMinutes ? `${block.durationMinutes} min` : '';
 
-      doc.setFillColor(248, 250, 252);
-      doc.roundedRect(15, curY, 180, boxH, 2, 2, 'F');
-      doc.setDrawColor(200, 220, 235);
-      doc.roundedRect(15, curY, 180, boxH, 2, 2, 'S');
-      if (imgW) {
-        doc.addImage(image!, 'JPEG', 192 - imgW, curY + 4, imgW, imgH);
-      }
-
-      // Index badge
-      doc.setFillColor(0, 180, 230);
-      doc.roundedRect(18, curY + 3.5, 6, 6, 1, 1, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7.5);
-      doc.setTextColor(255, 255, 255);
-      doc.text(String(idx + 1), 21, curY + 7.7, { align: 'center' });
-
-      // Title & duration
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
-      doc.setTextColor(15, 30, 52);
-      doc.text(doc.splitTextToSize(`${catLabel}${block.title || 'Bloco sem título'}`, textWidth)[0], 27, curY + 8);
+      const titleLines: string[] = doc.splitTextToSize(`${catLabel}${block.title || 'Bloco sem título'}`, textWidth);
+      // Objective / notes of the block and the exercise's description, whole
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      const description = exercise?.description?.trim();
+      const details = [block.notes?.trim(), description && description !== block.notes?.trim() ? description : '']
+        .filter(Boolean)
+        .join('\n');
+      const noteLines: string[] = details ? doc.splitTextToSize(details, textWidth) : [];
 
-      if (duration) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.setTextColor(0, 140, 200);
-        doc.text(duration, imgW ? 27 : 188, imgW ? curY + 13 : curY + 8, { align: imgW ? 'left' : 'right' });
-      }
+      const lineH = 3.6;
+      const titleH = 4.2;
+      const durationBelow = Boolean(imgW && duration);
+      const firstNoteY = 8 + (titleLines.length - 1) * titleH + (durationBelow ? 5 : 0) + 6;
+      let i = 0;
+      let part = 0;
+      do {
+        const first = part === 0;
+        const noteY = first ? firstNoteY : 8;
+        const minH = first ? Math.max(22, imgW ? imgH + 8 : 0, noteY + lineH * Math.min(3, noteLines.length)) : 16;
+        if (curY + minH > PAGE_BOTTOM) newPage();
+        const fit = Math.max(1, Math.floor((PAGE_BOTTOM - curY - noteY - 4) / lineH) + 1);
+        const take = noteLines.slice(i, i + fit);
+        const textH = take.length ? noteY + (take.length - 1) * lineH + 4 : noteY - 2;
+        const boxH = Math.max(first ? 22 : 12, first && imgW ? imgH + 8 : 0, textH);
 
-      // Objective / notes and the exercise's rules
-      if (noteLines.length > 0) {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor(60, 75, 90);
-        doc.text(noteLines, 27, curY + (imgW ? 18 : 14));
-      }
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(15, curY, 180, boxH, 2, 2, 'F');
+        doc.setDrawColor(200, 220, 235);
+        doc.roundedRect(15, curY, 180, boxH, 2, 2, 'S');
 
-      curY += boxH + 3;
+        if (first) {
+          if (imgW) doc.addImage(image!, 'JPEG', 192 - imgW, curY + 4, imgW, imgH);
+          // Index badge
+          doc.setFillColor(0, 180, 230);
+          doc.roundedRect(18, curY + 3.5, 6, 6, 1, 1, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7.5);
+          doc.setTextColor(255, 255, 255);
+          doc.text(String(idx + 1), 21, curY + 7.7, { align: 'center' });
+
+          // Title & duration
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(15, 30, 52);
+          doc.text(titleLines, 27, curY + 8, { lineHeightFactor: 1.3 });
+          if (duration) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(0, 140, 200);
+            if (durationBelow) doc.text(duration, 27, curY + 8 + (titleLines.length - 1) * titleH + 5);
+            else doc.text(duration, 188, curY + 8, { align: 'right' });
+          }
+        } else {
+          doc.setFont('helvetica', 'italic');
+          doc.setFontSize(7);
+          doc.setTextColor(100, 115, 130);
+          doc.text(`${idx + 1}. ${block.title || 'Bloco'} (continuação)`, 27, curY + 4.5);
+        }
+
+        if (take.length) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(60, 75, 90);
+          doc.text(take, 27, curY + noteY, { lineHeightFactor: 1.35 });
+        }
+
+        i += take.length;
+        part++;
+        curY += boxH + 3;
+        if (i < noteLines.length) newPage();
+      } while (i < noteLines.length);
     });
   }
 
   // Box 3: Notas Gerais / Observações do Treinador
-  if (training.notes && curY < 250) {
-    doc.setFillColor(252, 252, 252);
-    doc.roundedRect(15, curY, 180, 22, 2, 2, 'F');
-    doc.setDrawColor(215, 225, 235);
-    doc.roundedRect(15, curY, 180, 22, 2, 2, 'S');
-
-    doc.setFillColor(40, 55, 75);
-    doc.rect(15, curY, 180, 5.5, 'F');
-    doc.setFillColor(0, 210, 255);
-    doc.rect(15, curY, 2.5, 5.5, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(255, 255, 255);
-    doc.text('NOTAS GERAIS / OBSERVAÇÕES', 20, curY + 4);
-
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(30, 40, 50);
-    const noteLines = doc.splitTextToSize(training.notes, 174);
-    doc.text(noteLines.slice(0, 3), 18, curY + 10.5);
-
-    curY += 26;
+  if (training.notes?.trim()) {
+    titledTextBox('NOTAS GERAIS / OBSERVAÇÕES', training.notes.trim(), {
+      bg: [252, 252, 252],
+      border: [215, 225, 235],
+      bar: [40, 55, 75]
+    });
   }
 
   addBolaComVisaoPageFooters(doc);

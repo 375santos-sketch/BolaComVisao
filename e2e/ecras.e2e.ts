@@ -754,6 +754,12 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
   await form.getByLabel('Nome').fill('Rondo 4x2');
   await form.getByLabel('Objetivo').fill('Circulação de bola sob pressão');
   await form.getByLabel('Duração (min)').fill('15');
+  // The rules box grows with the text: everything written stays visible
+  const rules = form.getByLabel('Descrição / regras (opcional)');
+  const emptyHeight = (await rules.boundingBox())!.height;
+  await rules.fill(Array.from({ length: 12 }, (_, i) => `Regra ${i + 1}: dois toques e reação à perda.`).join('\n'));
+  await expect.poll(async () => (await rules.boundingBox())!.height).toBeGreaterThan(emptyHeight * 2);
+  expect(await rules.evaluate((el) => el.scrollHeight - el.clientHeight)).toBeLessThanOrEqual(2);
   await form.getByLabel('Importar imagem do exercício').setInputFiles('e2e/fixtures/exercicio.jpg');
   await expect(form.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
   await form.getByRole('button', { name: 'Guardar exercício' }).click();

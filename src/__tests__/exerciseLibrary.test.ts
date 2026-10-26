@@ -52,6 +52,36 @@ describe('Biblioteca de exercícios', () => {
     expect(raw).toContain('Quadrado de 12x12 m');
   });
 
+  it('the PDF shows all the text of long exercises, objective and notes (nothing cut)', async () => {
+    const long = (end: string) =>
+      `${Array.from({ length: 60 }, (_, i) => `Frase número ${i + 1} com regras, espaço e variantes do exercício.`).join(' ')} ${end}`;
+    const withImage = { ...rondo, id: 'ex2', description: long('FIMDESCRICAOCOMDESENHO') };
+    const noImage = { ...rondo, id: 'ex3', image: undefined, description: long('FIMDESCRICAOSEMDESENHO') };
+    const longTraining: Training = {
+      ...training,
+      notes: long('FIMNOTASGERAIS'),
+      sessionPlan: {
+        objective: long('FIMOBJETIVOSESSAO'),
+        blocks: [
+          { id: 'b1', exerciseId: 'ex2', title: 'Rondo 4x2', durationMinutes: 15, notes: long('FIMNOTASBLOCO') },
+          { id: 'b2', exerciseId: 'ex3', title: 'Jogo reduzido', durationMinutes: 20, notes: '' }
+        ]
+      }
+    };
+    const longState = normalizeClubState({ myClubName: 'Dragões', exerciseLibrary: [withImage, noImage] } as never);
+    const { doc } = await buildTrainingSessionPDF(longTraining, longState as AppState);
+    const raw = doc.output() as string;
+    [
+      'FIMDESCRICAOCOMDESENHO',
+      'FIMDESCRICAOSEMDESENHO',
+      'FIMNOTASGERAIS',
+      'FIMOBJETIVOSESSAO',
+      'FIMNOTASBLOCO'
+    ].forEach((end) => expect(raw, end).toContain(end));
+    expect(raw).toContain('Frase número 60');
+    expect(doc.getNumberOfPages()).toBeGreaterThan(2);
+  });
+
   it('measures the size of an image data URL', () => {
     expect(dataUrlBytes('data:image/jpeg;base64,QUJD')).toBe(3);
   });
