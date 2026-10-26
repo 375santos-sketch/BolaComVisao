@@ -1172,6 +1172,21 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
 });
 
+test('relatório mensal: resumo do mês e PDF para o coordenador', async ({ page }) => {
+  await signedIn(page);
+  await openMore(page, /Relatório mensal/);
+  const dialog = page.getByRole('dialog', { name: 'Relatório mensal' });
+  await dialog.getByLabel('Mês', { exact: true }).selectOption('2026-10');
+  const summary = dialog.getByLabel('Resumo do mês');
+  await expect(summary).toContainText('Jogos');
+  await expect(summary).toContainText('Treinos');
+  await dialog.getByLabel('Notas para o coordenador (opcional)').fill('Mês de boa evolução.');
+  const download = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: '📄 Gerar PDF' }).click();
+  expect((await download).suggestedFilename()).toBe('Relatorio_Mensal_Dragoes_2026-10.pdf');
+  await expect(page.getByText('Relatório mensal criado 📄')).toBeVisible();
+});
+
 test('sessão na nuvem terminada: aviso, entrar de novo sem perder o que ficou no aparelho', async ({
   page,
   browser
