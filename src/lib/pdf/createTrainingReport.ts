@@ -280,7 +280,7 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
     colors: { bg: [number, number, number]; border: [number, number, number]; bar: [number, number, number] }
   ) => {
     doc.setFontSize(8);
-    const lines: string[] = doc.splitTextToSize(text, 174);
+    const lines: string[] = doc.splitTextToSize(text, 170);
     const lineH = 3.8;
     let i = 0;
     let part = 0;
@@ -304,7 +304,7 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
       doc.text(part > 0 ? `${title} (continuação)` : title, 20, curY + 4);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(15, 30, 52);
-      doc.text(take, 18, curY + headerH, { lineHeightFactor: 1.35 });
+      doc.text(take, 20, curY + headerH, { lineHeightFactor: 1.35 });
       i += take.length;
       part++;
       curY += boxH + 4;
@@ -353,30 +353,41 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
     curY += 20;
   } else {
     blocks.forEach((block, idx) => {
-      // Exercises from the library bring their drawing: it sits on the right of the block's first part
+      // Layout of each block: title (and duration) on top, the exercise's drawing below it, then the text across the
+      // whole width of the page (inside the box margins)
       const exercise = block.exerciseId
         ? (state.exerciseLibrary || []).find((e) => e.id === block.exerciseId)
         : undefined;
       const image = exercise?.image;
+      const BOX_X = 15;
+      const BOX_W = 180;
+      const LEFT = 20; // text margin inside the box
+      const RIGHT = 190;
+      const textWidth = RIGHT - LEFT;
       let imgW = 0;
       let imgH = 0;
       if (image) {
         try {
           const props = doc.getImageProperties(image);
-          imgW = 70;
-          imgH = Math.min(52, (props.height / props.width) * imgW);
-          if (imgH === 52) imgW = (props.width / props.height) * imgH;
+          const maxW = textWidth;
+          const maxH = 75;
+          const scale = Math.min(maxW / props.width, maxH / props.height);
+          imgW = props.width * scale;
+          imgH = props.height * scale;
         } catch {
           imgW = 0;
         }
       }
-      const textWidth = imgW ? 176 - imgW - 18 : 166;
       const catLabel = block.category ? `[${block.category.toUpperCase()}] ` : '';
       const duration = block.durationMinutes ? `${block.durationMinutes} min` : '';
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
-      const titleLines: string[] = doc.splitTextToSize(`${catLabel}${block.title || 'Bloco sem título'}`, textWidth);
+      const titleX = LEFT + 9;
+      const titleLines: string[] = doc.splitTextToSize(
+        `${catLabel}${block.title || 'Bloco sem título'}`,
+        RIGHT - titleX - (duration ? 16 : 0)
+      );
       // Objective / notes of the block and the exercise's description, whole
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
@@ -388,59 +399,67 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
 
       const lineH = 3.6;
       const titleH = 4.2;
-      const durationBelow = Boolean(imgW && duration);
-      const firstNoteY = 8 + (titleLines.length - 1) * titleH + (durationBelow ? 5 : 0) + 6;
+      const titleBottom = 8 + (titleLines.length - 1) * titleH; // baseline of the last title line
+      const imageTop = titleBottom + 4;
+      const firstNoteY = imgW ? imageTop + imgH + 6 : titleBottom + 6;
       let i = 0;
       let part = 0;
       do {
         const first = part === 0;
         const noteY = first ? firstNoteY : 8;
-        const minH = first ? Math.max(22, imgW ? imgH + 8 : 0, noteY + lineH * Math.min(3, noteLines.length)) : 16;
-        if (curY + minH > PAGE_BOTTOM) newPage();
+        // The title, the drawing and the first lines of text stay together on the same page
+        const minH = first ? noteY + lineH * Math.min(3, noteLines.length) + 2 : 16;
+        if (curY + minH > PAGE_BOTTOM && curY > PAGE_TOP) newPage();
         const fit = Math.max(1, Math.floor((PAGE_BOTTOM - curY - noteY - 4) / lineH) + 1);
         const take = noteLines.slice(i, i + fit);
         const textH = take.length ? noteY + (take.length - 1) * lineH + 4 : noteY - 2;
-        const boxH = Math.max(first ? 22 : 12, first && imgW ? imgH + 8 : 0, textH);
+        const boxH = Math.max(first ? 14 : 12, textH);
 
         doc.setFillColor(248, 250, 252);
-        doc.roundedRect(15, curY, 180, boxH, 2, 2, 'F');
+        doc.roundedRect(BOX_X, curY, BOX_W, boxH, 2, 2, 'F');
         doc.setDrawColor(200, 220, 235);
-        doc.roundedRect(15, curY, 180, boxH, 2, 2, 'S');
+        doc.roundedRect(BOX_X, curY, BOX_W, boxH, 2, 2, 'S');
 
         if (first) {
-          if (imgW) doc.addImage(image!, 'JPEG', 192 - imgW, curY + 4, imgW, imgH);
           // Index badge
           doc.setFillColor(0, 180, 230);
-          doc.roundedRect(18, curY + 3.5, 6, 6, 1, 1, 'F');
+          doc.roundedRect(LEFT, curY + 3.5, 6, 6, 1, 1, 'F');
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(7.5);
           doc.setTextColor(255, 255, 255);
-          doc.text(String(idx + 1), 21, curY + 7.7, { align: 'center' });
+          doc.text(String(idx + 1), LEFT + 3, curY + 7.7, { align: 'center' });
 
           // Title & duration
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(9);
           doc.setTextColor(15, 30, 52);
-          doc.text(titleLines, 27, curY + 8, { lineHeightFactor: 1.3 });
+          doc.text(titleLines, titleX, curY + 8, { lineHeightFactor: 1.3 });
           if (duration) {
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(8);
             doc.setTextColor(0, 140, 200);
-            if (durationBelow) doc.text(duration, 27, curY + 8 + (titleLines.length - 1) * titleH + 5);
-            else doc.text(duration, 188, curY + 8, { align: 'right' });
+            doc.text(duration, RIGHT, curY + 8, { align: 'right' });
+          }
+
+          // The drawing, centred below the title
+          if (imgW) {
+            const imgX = LEFT + (textWidth - imgW) / 2;
+            doc.addImage(image!, 'JPEG', imgX, curY + imageTop, imgW, imgH);
+            doc.setDrawColor(215, 225, 235);
+            doc.rect(imgX, curY + imageTop, imgW, imgH, 'S');
           }
         } else {
           doc.setFont('helvetica', 'italic');
           doc.setFontSize(7);
           doc.setTextColor(100, 115, 130);
-          doc.text(`${idx + 1}. ${block.title || 'Bloco'} (continuação)`, 27, curY + 4.5);
+          doc.text(`${idx + 1}. ${block.title || 'Bloco'} (continuação)`, LEFT, curY + 4.5);
         }
 
         if (take.length) {
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(7.5);
           doc.setTextColor(60, 75, 90);
-          doc.text(take, 27, curY + noteY, { lineHeightFactor: 1.35 });
+          doc.text(take, LEFT, curY + noteY, { lineHeightFactor: 1.35 });
         }
 
         i += take.length;
