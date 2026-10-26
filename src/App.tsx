@@ -43,6 +43,7 @@ const ResultsView = lazyWithRetry(() => import('./components/views/ResultsView')
 const StatsView = lazyWithRetry(() => import('./components/views/StatsView'), 'StatsView');
 // Loaded when opened: it bundles the Excel library used by the team spreadsheets.
 const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 'DatabaseModal');
+const MonthlyReportModal = lazyWithRetry(() => import('./components/MonthlyReportModal'));
 const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
   'GameAnalysisDashboard'
@@ -124,6 +125,7 @@ export default function App() {
   // Modals & Overlay state
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showDatabase, setShowDatabase] = useState<boolean>(false);
+  const [showMonthlyReport, setShowMonthlyReport] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [showAdminUsers, setShowAdminUsers] = useState<boolean>(false);
   const [showInviteStaff, setShowInviteStaff] = useState<boolean>(false);
@@ -990,6 +992,7 @@ export default function App() {
           }}
           onOpenSettings={() => setShowSettings(true)}
           onOpenDatabase={() => setShowDatabase(true)}
+          onOpenMonthlyReport={() => setShowMonthlyReport(true)}
           onOpenAdminUsers={() => setShowAdminUsers(true)}
           onOpenInviteStaff={() => setShowInviteStaff(true)}
           onOpenSeasons={() => setShowSeasonSelector(true)}
@@ -998,6 +1001,11 @@ export default function App() {
         />
 
         {/* Modals */}
+        {showMonthlyReport && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <MonthlyReportModal state={state} onShowToast={showToast} onClose={() => setShowMonthlyReport(false)} />
+          </Suspense>
+        )}
         {/* Database Modal */}
         {showDatabase && (
           <Suspense fallback={<ViewLoadingFallback />}>

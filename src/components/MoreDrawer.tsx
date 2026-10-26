@@ -13,6 +13,7 @@ interface MoreDrawerProps {
   onNavigate: (tab: any) => void;
   onOpenSettings: () => void;
   onOpenDatabase: () => void;
+  onOpenMonthlyReport?: () => void;
   onOpenAdminUsers?: () => void;
   onOpenInviteStaff?: () => void;
   onOpenSeasons?: () => void;
@@ -27,6 +28,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onNavigate,
   onOpenSettings,
   onOpenDatabase,
+  onOpenMonthlyReport,
   onOpenAdminUsers,
   onOpenInviteStaff,
   onOpenSeasons,
@@ -104,6 +106,28 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
             </div>
             <span className="text-cyan-400 font-bold group-hover:translate-x-1 transition-transform">➔</span>
           </button>
+
+          {/* Relatório mensal para o coordenador */}
+          {onOpenMonthlyReport && (
+            <button
+              type="button"
+              onClick={() => handleAction(onOpenMonthlyReport)}
+              className="ui-btn ui-btn-secondary w-full p-3 flex items-center justify-between gap-3 text-left"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-base">
+                  📅
+                </span>
+                <div>
+                  <div className="font-bold text-white font-['Chakra_Petch'] uppercase">Relatório mensal</div>
+                  <div className="text-[11px] text-slate-400">
+                    PDF para o coordenador: resultados, presenças, minutos e objetivos
+                  </div>
+                </div>
+              </div>
+              <span className="text-slate-400">➔</span>
+            </button>
+          )}
 
           {/* Trocar de Equipa */}
           <button
