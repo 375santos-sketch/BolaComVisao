@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AutoTextarea } from '../../ui/AutoTextarea';
 import { AppState, Exercise, ExerciseCategory, Player, SessionBlock, Training } from '../../../types';
 import { t } from '../../../i18n/dict';
 import { uid } from '../../../lib/utils';
@@ -379,7 +380,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
 
               <div className="field mb-0">
                 <label>{t(state.lang, 'tr_notes')}</label>
-                <textarea
+                <AutoTextarea
                   placeholder="Ex: Aquecimento lúdico, circulação de bola, transições defesa-ataque e finalização..."
                   rows={3}
                   value={trainingForm.notes}
@@ -425,8 +426,8 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                   <span>🎯 Objetivo Principal da Sessão</span>
                   <span className="text-[10px] text-slate-400 font-normal">(opcional)</span>
                 </label>
-                <input
-                  type="text"
+                <AutoTextarea
+                  rows={2}
                   placeholder="Ex: Melhorar a pressão defensiva em bloco alto e transição rápida..."
                   value={trainingForm.sessionObjective}
                   onChange={(e) => setTrainingForm({ ...trainingForm, sessionObjective: e.target.value })}
@@ -636,8 +637,8 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                       )}
 
                       {/* Notes / Instructions */}
-                      <textarea
-                        rows={2}
+                      <AutoTextarea
+                        rows={3}
                         placeholder="Instruções específicas para este bloco, regras de espaço, rotações..."
                         value={block.notes || ''}
                         onChange={(e) => handleUpdateBlock(block.id, { notes: e.target.value })}

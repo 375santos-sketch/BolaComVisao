@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { AutoTextarea } from '../../ui/AutoTextarea';
 import { Exercise, ExerciseCategory } from '../../../types';
 import { compressImageFile } from '../../../lib/imageCompress';
 import { uid } from '../../../lib/utils';
@@ -85,9 +86,9 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onS
         </label>
         <label className="block text-[11px] text-slate-400">
           Objetivo
-          <textarea
+          <AutoTextarea
             className={input}
-            rows={2}
+            rows={3}
             value={editing.objective || ''}
             placeholder="Ex: Circulação de bola sob pressão e reação à perda"
             onChange={(e) => setEditing({ ...editing, objective: e.target.value })}
@@ -124,9 +125,9 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onS
         </div>
         <label className="block text-[11px] text-slate-400">
           Descrição / regras (opcional)
-          <textarea
+          <AutoTextarea
             className={input}
-            rows={2}
+            rows={5}
             value={editing.description || ''}
             placeholder="Espaço, número de jogadores, regras, variantes…"
             onChange={(e) => setEditing({ ...editing, description: e.target.value })}
