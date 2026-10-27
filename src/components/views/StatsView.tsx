@@ -29,6 +29,7 @@ export const StatsView: React.FC<StatsViewProps> = ({
   const [statsFilter, setStatsFilter] = useState<MatchType | 'todos'>('todos');
   const [seasonFilter, setSeasonFilter] = useState<string>('todas');
   const [showGoalsAssistsModal, setShowGoalsAssistsModal] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
   const [goalsAssistsTab, setGoalsAssistsTab] = useState<GoalsAssistsTab>('marcadores');
 
@@ -228,14 +229,75 @@ export const StatsView: React.FC<StatsViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      {/* Interactive panel (by game, head-to-head, phase, season or period) + export for Power BI */}
-      <button
-        type="button"
-        onClick={() => setShowPanel(true)}
-        className="w-full mb-3 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wide shadow-lg"
-      >
-        📊 Abrir painel (jogo, confronto, fase, época, período)
-      </button>
+      {/* Deeper analysis in one place: the interactive panel and the games' dashboard, exports under ⋯ */}
+      <section aria-label="Análise" className="ui-card p-3.5 mb-3">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <div className="text-sm font-bold text-white">Análise da equipa</div>
+            <div className="text-xs text-slate-400">
+              Por jogo, confronto, fase, época ou período · golos por minuto e origem
+            </div>
+          </div>
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setExportOpen(!exportOpen)}
+              aria-expanded={exportOpen}
+              aria-label="Exportar estatísticas"
+              className="ui-btn ui-btn-secondary w-9 h-9 flex items-center justify-center"
+            >
+              ⋯
+            </button>
+            {exportOpen && (
+              <div role="menu" className="ui-card absolute right-0 top-full mt-1.5 w-52 p-1.5 z-30 shadow-2xl">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={async () => {
+                    setExportOpen(false);
+                    const { generateGamesDashboardPDF } = await import('../../lib/pdf/createGamesDashboard');
+                    await generateGamesDashboardPDF(state);
+                    onShowToast('Estatísticas da Época exportadas em PDF 📄');
+                  }}
+                  className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-100 hover:bg-slate-800/70"
+                >
+                  📄 Exportar PDF
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={async () => {
+                    setExportOpen(false);
+                    const { exportGamesDashboardExcel } = await import('../../lib/gamesDashboardExcel');
+                    exportGamesDashboardExcel(state);
+                    onShowToast('Estatísticas da Época exportadas em Excel (.xlsx) 📊');
+                  }}
+                  className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-100 hover:bg-slate-800/70"
+                >
+                  📊 Exportar Excel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setShowPanel(true)}
+            className="ui-btn ui-btn-primary py-2.5 text-xs"
+            aria-label="Abrir painel (jogo, confronto, fase, época, período)"
+          >
+            Abrir painel
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigate('analise_jogos')}
+            className="ui-btn ui-btn-secondary py-2.5 text-xs"
+          >
+            Análise dos jogos ›
+          </button>
+        </div>
+      </section>
       {showPanel && <StatsPanel state={state} onClose={() => setShowPanel(false)} onShowToast={onShowToast} />}
 
       <div className="seg mb-3">
@@ -275,60 +337,6 @@ export const StatsView: React.FC<StatsViewProps> = ({
           </select>
         </div>
       )}
-
-      {/* Quick Launch: Dashboard Completo de Análise dos Jogos */}
-      <div className="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/80 via-blue-950/80 to-slate-900 border border-cyan-400/70 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-xl">📊</span>
-          <div>
-            <div className="font-['Chakra_Petch'] font-bold text-white text-sm uppercase flex items-center gap-2">
-              <span>Dashboard de Análise dos Jogos</span>
-              <span className="px-1.5 py-0.5 rounded bg-cyan-500 text-slate-950 font-mono text-[9px] font-black">
-                NOVO
-              </span>
-            </div>
-            <div className="text-[11px] font-mono text-cyan-200/90">
-              Períodos 0–15/16–30/90+', confronto direto, origem de golos e drill-down
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => onNavigate('analise_jogos')}
-          className="ui-btn ui-btn-primary w-full sm:w-auto px-4 py-2 text-xs flex items-center justify-center gap-1.5 shrink-0"
-        >
-          <span>Abrir Análise</span>
-          <span>➔</span>
-        </button>
-      </div>
-
-      {/* Export Season Stats: PDF & Excel (BolaComVisao) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-        <button
-          onClick={async () => {
-            const { generateGamesDashboardPDF } = await import('../../lib/pdf/createGamesDashboard');
-            await generateGamesDashboardPDF(state);
-            onShowToast('Estatísticas da Época exportadas em PDF (BolaComVisao)! 📄');
-          }}
-          className="ui-btn ui-btn-soft py-2.5 px-3 text-xs flex items-center justify-center gap-2"
-        >
-          <span>📄</span>
-          <span>Exportar PDF (BolaComVisao)</span>
-        </button>
-
-        <button
-          onClick={async () => {
-            const { exportGamesDashboardExcel } = await import('../../lib/gamesDashboardExcel');
-            exportGamesDashboardExcel(state);
-            onShowToast('Estatísticas da Época exportadas em Excel (.xlsx)! 📊');
-          }}
-          className="ui-btn ui-btn-soft-success py-2.5 px-3 text-xs flex items-center justify-center gap-2"
-        >
-          <span>📊</span>
-          <span>Exportar Excel (.xlsx)</span>
-        </button>
-      </div>
 
       <div className="section-title mt-4">{t(state.lang, 'st_global')}</div>
       <div className="stat-grid grid-cols-3">

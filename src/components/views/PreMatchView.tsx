@@ -27,7 +27,7 @@ interface PreMatchViewProps {
 }
 
 const field = 'ui-input text-xs';
-const label = 'block text-[11px] font-bold uppercase tracking-wide';
+const label = 'block text-xs font-bold';
 
 /** ⚡ Pré-jogo: a simple plan for the next game (nothing is saved until the coach saves). */
 export const PreMatchView: React.FC<PreMatchViewProps> = ({

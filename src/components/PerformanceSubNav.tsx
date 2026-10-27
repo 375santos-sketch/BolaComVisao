@@ -3,10 +3,10 @@ import { SubNavTabs, type TabItem } from './ui/SubNavTabs';
 import type { TabType } from './Navbar';
 
 const TABS: TabItem[] = [
-  { id: 'prejogo', label: 'Pré-jogo', icon: '⚡' },
-  { id: 'jogo', label: 'Jogo', icon: '⏱️' },
-  { id: 'stats', label: 'Estatísticas', icon: '📈' },
-  { id: 'analise_jogos', label: 'Análise', icon: '📊' }
+  { id: 'prejogo', label: 'Pré-jogo' },
+  { id: 'jogo', label: 'Jogo' },
+  { id: 'stats', label: 'Estatísticas' },
+  { id: 'analise_jogos', label: 'Análise' }
 ];
 
 interface PerformanceSubNavProps {

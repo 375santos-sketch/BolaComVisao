@@ -2,6 +2,7 @@ import React from 'react';
 import { UnifiedEvent } from './DashboardNextEvent';
 import { TabType } from '../Navbar';
 import { Match, ScheduledMatch } from '../../types';
+import { Icon, IconName } from '../ui/Icon';
 
 interface TodayFocusCardProps {
   unifiedEvents?: UnifiedEvent[];
@@ -9,6 +10,50 @@ interface TodayFocusCardProps {
   scheduledMatches?: ScheduledMatch[];
   onNavigate: (tab: TabType, targetId?: string) => void;
 }
+
+const TONES = {
+  live: 'from-rose-950/90 border-rose-500/70 text-rose-300',
+  match: 'from-cyan-950/90 border-cyan-500/50 text-cyan-300',
+  training: 'from-emerald-950/90 border-emerald-500/50 text-emerald-300',
+  event: 'from-violet-950/90 border-violet-500/50 text-violet-300',
+  none: 'from-slate-900 border-slate-700 text-slate-400'
+};
+
+interface Action {
+  label: string;
+  icon?: IconName;
+  primary?: boolean;
+  onClick: () => void;
+}
+
+/** One card for today: what it is, when and where, and the one or two things to do now. */
+const Focus: React.FC<{
+  id: string;
+  tone: keyof typeof TONES;
+  kicker: string;
+  title: string;
+  details: string[];
+  actions: Action[];
+}> = ({ id, tone, kicker, title, details, actions }) => (
+  <div id={id} className={`rounded-2xl border bg-gradient-to-br to-slate-900 p-4 ${TONES[tone]}`}>
+    <div className="text-[11px] font-bold uppercase tracking-wide">{kicker}</div>
+    <div className="mt-0.5 text-2xl font-bold text-white font-['Chakra_Petch'] leading-tight">{title}</div>
+    {details.length > 0 && <div className="mt-0.5 text-sm text-slate-400">{details.join(' · ')}</div>}
+    <div className="mt-3 flex flex-wrap gap-2">
+      {actions.map((a) => (
+        <button
+          key={a.label}
+          type="button"
+          onClick={a.onClick}
+          className={`ui-btn ${a.primary ? 'ui-btn-primary' : 'ui-btn-secondary'} px-4 py-2.5 text-sm flex items-center gap-1.5`}
+        >
+          {a.icon && <Icon name={a.icon} className="w-4 h-4" />}
+          {a.label}
+        </button>
+      ))}
+    </div>
+  </div>
+);
 
 export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
   unifiedEvents = [],
@@ -18,230 +63,96 @@ export const TodayFocusCard: React.FC<TodayFocusCardProps> = ({
 }) => {
   const safeEvents = Array.isArray(unifiedEvents) ? unifiedEvents : [];
   const now = new Date();
-  const day = now.getDate();
-  const monthName = now.toLocaleDateString('pt-PT', { month: 'long' }).toUpperCase();
-  const weekdayName = now.toLocaleDateString('pt-PT', { weekday: 'long' });
+  const weekday = now.toLocaleDateString('pt-PT', { weekday: 'long' }).replace('-feira', '');
+  const kicker = `Hoje · ${weekday}, ${now.getDate()} ${now.toLocaleDateString('pt-PT', { month: 'short' }).replace('.', '')}`;
 
-  // Find events occurring today
   const todayEvents = safeEvents.filter((e) => e && e.isToday);
   const todayMatch = todayEvents.find((e) => e && e.kind === 'jogo');
   const todayTraining = todayEvents.find((e) => e && e.kind === 'treino');
   const todayClubEvent = todayEvents.find((e) => e && e.kind === 'club_event');
-
-  // Next upcoming event if nothing today
   const nextUpcoming = safeEvents.find((e) => e && !e.isToday);
 
-  // If there's an active live match currently happening
   if (activeMatch) {
     return (
-      <div
+      <Focus
         id="today-focus-live-active-card"
-        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-rose-950 via-slate-900 to-rose-950/80 border-2 border-rose-500 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-5 animate-pulse"
-      >
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500 flex items-center justify-center text-3xl shrink-0">
-            🔴
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-black uppercase tracking-wider text-rose-400 bg-rose-500/20 px-2.5 py-0.5 rounded-full border border-rose-500/40">
-                Jogo em Curso
-              </span>
-              <span className="text-xs text-slate-300 font-mono">
-                {activeMatch.date} • {activeMatch.originalSchedule?.time || '15:00'}
-              </span>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white font-['Chakra_Petch'] mt-1">
-              vs {activeMatch.opponent || 'Adversário'}
-            </h3>
-            <p className="text-xs text-slate-300 mt-0.5">
-              {activeMatch.location || 'Campo de Jogo'} •{' '}
-              {activeMatch.originalSchedule?.callup?.length || activeMatch.lineup?.length || 0} jogadores convocados
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => onNavigate('jogo')}
-            className="ui-btn ui-btn-danger w-full md:w-auto px-6 py-3 text-sm flex items-center justify-center gap-2"
-          >
-            <span>Entrar no Modo Jogo</span>
-            <span>➔</span>
-          </button>
-        </div>
-      </div>
+        tone="live"
+        kicker="● Jogo em curso"
+        title={`vs ${activeMatch.opponent || 'Adversário'}`}
+        details={[activeMatch.originalSchedule?.time || '', activeMatch.location === 'fora' ? 'Fora' : 'Casa'].filter(
+          Boolean
+        )}
+        actions={[{ label: 'Entrar no Modo Jogo', icon: 'ball', primary: true, onClick: () => onNavigate('jogo') }]}
+      />
     );
   }
 
-  // 1. MATCH TODAY
   if (todayMatch) {
-    const fullMatchData = scheduledMatches.find((m) => m.id === todayMatch.id);
-    const convCount = fullMatchData?.callup?.length || 16;
-
+    const called = scheduledMatches.find((m) => m.id === todayMatch.id)?.callup?.length || 0;
     return (
-      <div
+      <Focus
         id="today-focus-match-card"
-        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-cyan-950 via-slate-900 to-blue-950 border-2 border-cyan-500/80 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-5"
-      >
-        <div className="flex items-start sm:items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-500/60 flex items-center justify-center text-3xl shrink-0 shadow-inner">
-            ⚽
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-black uppercase tracking-wider text-cyan-400 bg-cyan-500/20 px-2.5 py-0.5 rounded-full border border-cyan-500/40">
-                HOJE — {day} {monthName}
-              </span>
-              <span className="text-xs text-slate-400 capitalize">{weekdayName}</span>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white font-['Chakra_Petch'] mt-1 flex items-center gap-2">
-              <span>JOGO às {todayMatch.time}h</span>
-              <span className="text-cyan-400 text-lg">vs {todayMatch.opponent}</span>
-            </h3>
-            <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-slate-300 font-mono">
-              <span>📍 {todayMatch.venue || todayMatch.location || 'Campo Municipal'}</span>
-              <span>•</span>
-              <span>📋 Convocatória: {convCount} jogadores</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <button onClick={() => onNavigate('convocatoria')} className="ui-btn ui-btn-secondary px-4 py-2.5 text-xs">
-            📋 Ver Convocatória
-          </button>
-          <button
-            onClick={() => onNavigate('jogo', todayMatch.id)}
-            className="ui-btn ui-btn-primary px-5 py-2.5 text-xs flex items-center gap-1.5"
-          >
-            <span>Iniciar Modo Jogo</span>
-            <span>➔</span>
-          </button>
-        </div>
-      </div>
+        tone="match"
+        kicker={kicker}
+        title={`Jogo às ${todayMatch.time} · vs ${todayMatch.opponent}`}
+        details={[todayMatch.venue || (todayMatch.location === 'fora' ? 'Fora' : 'Casa'), `${called} convocados`]}
+        actions={[
+          {
+            label: 'Iniciar Modo Jogo',
+            icon: 'ball',
+            primary: true,
+            onClick: () => onNavigate('jogo', todayMatch.id)
+          },
+          { label: 'Ver Convocatória', icon: 'clipboard', onClick: () => onNavigate('convocatoria') }
+        ]}
+      />
     );
   }
 
-  // 2. TRAINING TODAY
   if (todayTraining) {
     return (
-      <div
+      <Focus
         id="today-focus-training-card"
-        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900 to-slate-900 border-2 border-emerald-500/60 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5"
-      >
-        <div className="flex items-start sm:items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-3xl shrink-0">
-            🏋️
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/40">
-                HOJE — {day} {monthName}
-              </span>
-              <span className="text-xs text-slate-400 capitalize">{weekdayName}</span>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white font-['Chakra_Petch'] mt-1">
-              TREINO às {todayTraining.time}h
-            </h3>
-            <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-slate-300 font-mono">
-              <span>📍 {todayTraining.venue || 'Campo de Treinos'}</span>
-              <span>•</span>
-              <span>🎯 Foco: {todayTraining.theme || todayTraining.title || 'Preparação Técnico-Tática'}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            onClick={() => onNavigate('treinos')}
-            className="ui-btn ui-btn-success px-5 py-2.5 text-xs flex items-center gap-1.5"
-          >
-            <span>Abrir Plano de Treino</span>
-            <span>➔</span>
-          </button>
-        </div>
-      </div>
+        tone="training"
+        kicker={kicker}
+        title={`Treino às ${todayTraining.time}`}
+        details={[todayTraining.venue || 'Campo de Treinos', todayTraining.theme || todayTraining.title || ''].filter(
+          Boolean
+        )}
+        actions={[
+          { label: 'Abrir Plano de Treino', icon: 'clipboard', primary: true, onClick: () => onNavigate('treinos') },
+          { label: 'Presenças', icon: 'users', onClick: () => onNavigate('treinos', 'hoje') }
+        ]}
+      />
     );
   }
 
-  // 3. CLUB EVENT TODAY (Reunião / Formação / Estágio)
   if (todayClubEvent) {
     return (
-      <div
+      <Focus
         id="today-focus-event-card"
-        className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-purple-950/90 via-slate-900 to-slate-900 border-2 border-purple-500/60 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5"
-      >
-        <div className="flex items-start sm:items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/50 flex items-center justify-center text-3xl shrink-0">
-            📅
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-black uppercase tracking-wider text-purple-400 bg-purple-500/20 px-2.5 py-0.5 rounded-full border border-purple-500/40">
-                HOJE — {day} {monthName}
-              </span>
-              <span className="text-xs text-slate-400 capitalize">{weekdayName}</span>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white font-['Chakra_Petch'] mt-1">
-              {todayClubEvent.title} às {todayClubEvent.time}h
-            </h3>
-            <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-slate-300 font-mono">
-              <span>📍 {todayClubEvent.venue || 'Sede do Clube'}</span>
-              {todayClubEvent.attendees && <span>• 👥 {todayClubEvent.attendees}</span>}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            onClick={() => onNavigate('calendario')}
-            className="px-5 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs shadow-lg transition-all"
-          >
-            Ver Detalhes
-          </button>
-        </div>
-      </div>
+        tone="event"
+        kicker={kicker}
+        title={`${todayClubEvent.title} às ${todayClubEvent.time}`}
+        details={[todayClubEvent.venue || 'Sede do Clube', todayClubEvent.attendees || ''].filter(Boolean)}
+        actions={[{ label: 'Ver Detalhes', icon: 'calendar', primary: true, onClick: () => onNavigate('calendario') }]}
+      />
     );
   }
 
-  // 4. NO EVENT TODAY -> Clean friendly focus card with next upcoming commitment
+  const next = nextUpcoming
+    ? `Próximo: ${nextUpcoming.kind === 'jogo' ? `jogo vs ${nextUpcoming.opponent}` : nextUpcoming.title} ${
+        nextUpcoming.isTomorrow ? 'amanhã' : `a ${nextUpcoming.date.slice(8, 10)}/${nextUpcoming.date.slice(5, 7)}`
+      } às ${nextUpcoming.time}`
+    : '';
   return (
-    <div
+    <Focus
       id="today-focus-empty-card"
-      className="ui-card p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-5"
-    >
-      <div className="flex items-center gap-4">
-        <div className="ui-inset w-12 h-12 flex items-center justify-center text-2xl shrink-0">☕</div>
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700">
-              HOJE — {day} {monthName}
-            </span>
-            <span className="text-xs text-slate-400 capitalize">{weekdayName}</span>
-          </div>
-          <h3 className="text-base sm:text-lg font-bold text-white font-['Chakra_Petch'] mt-1">
-            Hoje não existem compromissos oficiais agendados.
-          </h3>
-          {nextUpcoming && (
-            <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Próximo:{' '}
-              <span className="text-cyan-400 font-bold">{nextUpcoming.kind === 'jogo' ? '⚽ Jogo' : '🏋️ Treino'}</span>{' '}
-              {nextUpcoming.isTomorrow ? 'amanhã' : `a ${new Date(nextUpcoming.date).toLocaleDateString('pt-PT')}`} às{' '}
-              {nextUpcoming.time}h {nextUpcoming.opponent ? `(vs ${nextUpcoming.opponent})` : ''}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2.5 shrink-0">
-        <button onClick={() => onNavigate('jogo')} className="ui-btn ui-btn-soft px-4 py-2.5 text-xs">
-          🔴 Abrir Modo Jogo
-        </button>
-        <button onClick={() => onNavigate('calendario')} className="ui-btn ui-btn-secondary px-4 py-2.5 text-xs">
-          📅 Calendário
-        </button>
-      </div>
-    </div>
+      tone="none"
+      kicker={kicker}
+      title="Hoje não há nada marcado"
+      details={next ? [next] : []}
+      actions={[{ label: 'Agenda', icon: 'calendar', onClick: () => onNavigate('calendario') }]}
+    />
   );
 };
