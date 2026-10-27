@@ -10,6 +10,7 @@ import { PDFViewerModal } from './PDFViewerModal';
 import { TrainingTemplates } from './TrainingTemplates';
 import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
 import { TrainingFormData, TRAINING_TYPES } from './types';
+import { teamSettings } from '../../../lib/teamSettings';
 
 interface TrainingEditorProps {
   trainingForm: TrainingFormData;
@@ -242,6 +243,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
             existingTrainings={state.trainings || []}
             onGenerate={onBatchGenerated}
             onCancel={() => setTrainingForm(null)}
+            trainingSchedule={teamSettings(state)}
           />
         ) : (
           <>

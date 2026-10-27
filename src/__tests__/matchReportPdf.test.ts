@@ -34,14 +34,12 @@ describe('Relatório do jogo (PDF): equipa da casa primeiro', () => {
 
   it('away game: opponent and their goals first', async () => {
     const raw = (await generateMatchSheetPDF(game('fora'), state, false)).doc.output() as string;
-    expect(raw).toContain('TRAMAGAL SU  vs  DRAG');
-    expect(raw).toContain('1   -   10');
-    expect(raw).not.toContain('10   -   1');
+    expect(raw).toContain('(1 - 10)');
+    expect(raw).not.toContain('(10 - 1)');
   });
 
   it('home game: our team and our goals first', async () => {
     const raw = (await generateMatchSheetPDF(game('casa'), state, false)).doc.output() as string;
-    expect(raw).toContain('  vs  TRAMAGAL SU');
-    expect(raw).toContain('10   -   1');
+    expect(raw).toContain('(10 - 1)');
   });
 });

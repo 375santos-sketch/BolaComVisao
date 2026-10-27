@@ -6,7 +6,9 @@ import {
   drawDocumentHeader,
   drawPlayerAvatar,
   addBolaComVisaoPageFooters,
-  createTextReportWriter
+  createTextReportWriter,
+  pdfBrand,
+  drawSectionTitle
 } from './pdfLayout';
 import { buildPlayerSeason } from '../playerSeason';
 import { absenceReasonLabel } from '../trainingQuick';
@@ -26,25 +28,16 @@ export async function generateSquadPDF(state: AppState) {
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
   const activePlayers = sortPlayerObjs(state.roster.filter((p) => p.active !== false));
 
-  const brandDark = [8, 20, 30];
   const darkText = [20, 30, 40];
   const mutedText = [90, 110, 130];
 
   // Header with Left Club Crest & Right BolaComVisao Logo
-  drawDocumentHeader(doc, state, 'DOSSIER OFICIAL DO PLANTEL', `${activePlayers.length} Atletas`);
+  drawDocumentHeader(doc, state, 'Plantel', `${activePlayers.length} atletas`);
 
   let curY = 48;
 
   // Table header
-  doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
-  doc.rect(15, curY, 180, 8, 'F');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text('LISTA COMPLETA DE ATLETAS', 20, curY + 5.5);
-
-  curY += 12;
+  curY += drawSectionTitle(doc, pdfBrand(state), 'Atletas', 15, curY, 180) + 2;
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
@@ -157,8 +150,8 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
   const s = buildPlayerSeason(state, player.id, state.season);
   const g = s.games;
 
-  drawDocumentHeader(doc, state, 'FICHA DO ATLETA');
-  const w = createTextReportWriter(doc, 48);
+  drawDocumentHeader(doc, state, 'Ficha do atleta');
+  const w = createTextReportWriter(doc, 42, pdfBrand(state));
   const { heading } = w;
 
   const number =

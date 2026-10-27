@@ -17,6 +17,7 @@ import { TrainingEditor } from './trainings/TrainingEditor';
 import { TrainingBatchModal } from './trainings/TrainingBatchModal';
 import { TodayTrainingModal } from './trainings/TodayTrainingModal';
 import { addDaysISO, localDateISO, trainingForToday, withAttendance } from '../../lib/trainingQuick';
+import { firstTrainingTime, teamSettings, trainingSlot } from '../../lib/teamSettings';
 
 interface TrainingsViewProps {
   state: AppState;
@@ -57,7 +58,14 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   const [expandedTraining, setExpandedTraining] = useState<string | null>(null);
   const [showBatchModal, setShowBatchModal] = useState<boolean>(false);
   const [todayTraining, setTodayTraining] = useState<{ training: Training; isNew: boolean } | null>(() =>
-    openToday ? trainingForToday(state.trainings || [], state.lastTrainingNumber) : null
+    openToday
+      ? trainingForToday(
+          state.trainings || [],
+          state.lastTrainingNumber,
+          localDateISO(),
+          trainingSlot(teamSettings(state), localDateISO())
+        )
+      : null
   );
 
   const {
@@ -96,18 +104,19 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
     }
 
     setCreationMode('single');
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateISO();
     const nextNumber = getNextTrainingNumber(state.trainings || [], state.lastTrainingNumber);
+    const slot = trainingSlot(teamSettings(state), today);
     setTrainingForm({
       trainingNumber: nextNumber,
       date: today,
-      time: '19:00',
+      time: slot.time || firstTrainingTime(teamSettings(state)),
       location: '',
       type: '⚡ Tático',
       notes: '',
       absences: [],
       completed: false,
-      durationMinutes: 90,
+      durationMinutes: slot.durationMinutes,
       sessionObjective: '',
       sessionBlocks: []
     });
@@ -125,7 +134,8 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
       notes: tr.notes || '',
       absences: tr.absences || [],
       completed: tr.completed !== false,
-      durationMinutes: tr.sessionPlan?.totalDurationMinutes || 90,
+      durationMinutes:
+        tr.sessionPlan?.totalDurationMinutes || tr.durationMinutes || teamSettings(state).trainingMinutes,
       sessionObjective: tr.sessionPlan?.objective || '',
       sessionBlocks: tr.sessionPlan?.blocks ? [...tr.sessionPlan.blocks] : []
     });
@@ -146,7 +156,8 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
       notes: tr.notes || '',
       absences: [],
       completed: false,
-      durationMinutes: tr.sessionPlan?.totalDurationMinutes || tr.durationMinutes || 90,
+      durationMinutes:
+        tr.sessionPlan?.totalDurationMinutes || tr.durationMinutes || teamSettings(state).trainingMinutes,
       sessionObjective: tr.sessionPlan?.objective || '',
       sessionBlocks: (tr.sessionPlan?.blocks || []).map((b) => ({ ...b, id: uid() }))
     });
@@ -195,7 +206,7 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
         trainingForm.sessionObjective || trainingForm.sessionBlocks.length > 0
           ? {
               objective: trainingForm.sessionObjective || undefined,
-              totalDurationMinutes: trainingForm.durationMinutes || 90,
+              totalDurationMinutes: trainingForm.durationMinutes || teamSettings(state).trainingMinutes,
               blocks: trainingForm.sessionBlocks
             }
           : undefined
@@ -341,7 +352,16 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
           onSetAbsenceReason={handleSetAbsenceReason}
           onRepeatTraining={handleRepeatTraining}
           onDuplicateTraining={handleDuplicateTraining}
-          onOpenToday={() => setTodayTraining(trainingForToday(state.trainings || [], state.lastTrainingNumber))}
+          onOpenToday={() =>
+            setTodayTraining(
+              trainingForToday(
+                state.trainings || [],
+                state.lastTrainingNumber,
+                localDateISO(),
+                trainingSlot(teamSettings(state), localDateISO())
+              )
+            )
+          }
           onDeleteTraining={(id) => {
             onShowConfirm('Tens a certeza que queres eliminar este treino?', () => handleDeleteTraining(id));
           }}
@@ -373,6 +393,7 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
         isOpen={showBatchModal}
         onClose={() => setShowBatchModal(false)}
         existingTrainings={state.trainings || []}
+        trainingSchedule={teamSettings(state)}
         onGenerate={(newTrainings) => {
           handleBatchGenerated(newTrainings);
           setShowBatchModal(false);

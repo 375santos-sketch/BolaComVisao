@@ -45,7 +45,9 @@ function usualTraining(trainings: Training[]): Partial<Training> {
 export function trainingForToday(
   trainings: Training[],
   lastTrainingNumber: number | undefined,
-  today: string = localDateISO()
+  today: string = localDateISO(),
+  /** The team's time for today's weekday and its usual length (Definições → Clube). */
+  slot?: { time?: string; durationMinutes: number }
 ): { training: Training; isNew: boolean } {
   const existing = trainings.find((tr) => tr.date === today);
   if (existing) return { training: existing, isNew: false };
@@ -53,6 +55,7 @@ export function trainingForToday(
     isNew: true,
     training: {
       ...usualTraining(trainings),
+      ...(slot || {}),
       id: uid(),
       trainingNumber: getNextTrainingNumber(trainings, lastTrainingNumber),
       date: today,

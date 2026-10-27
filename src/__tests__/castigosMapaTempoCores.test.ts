@@ -177,9 +177,13 @@ describe('Cores do clube', () => {
 
   it('are kept in the active team', () => {
     const state = { activeTeamId: 't1', teams: [{ id: 't1' }, { id: 't2' }] } as unknown as AppState;
-    expect(teamSettings(state)).toEqual({ clubColor: DEFAULT_CLUB_COLOR, clubTown: '', yellowsForBan: 5 });
+    expect(teamSettings(state)).toMatchObject({ clubColor: DEFAULT_CLUB_COLOR, clubTown: '', yellowsForBan: 5 });
     const teams = withTeamSettings(state, { clubColor: '#e23b3b', clubTown: 'Abrantes', yellowsForBan: 4 })!;
-    expect(teamSettings({ ...state, teams })).toEqual({ clubColor: '#e23b3b', clubTown: 'Abrantes', yellowsForBan: 4 });
+    expect(teamSettings({ ...state, teams })).toMatchObject({
+      clubColor: '#e23b3b',
+      clubTown: 'Abrantes',
+      yellowsForBan: 4
+    });
     expect(teams[1]).toEqual({ id: 't2' });
   });
 });

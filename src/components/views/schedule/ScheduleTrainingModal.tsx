@@ -14,6 +14,7 @@ interface ScheduleTrainingModalProps {
   onSaveBatchTrainings?: (newTrainings: Training[]) => void;
   handleDeleteTraining?: (id: string) => void;
   onShowConfirm?: (msg: string, cb: () => void) => void;
+  trainingSchedule?: { trainingTimes: Record<string, string>; trainingMinutes: number };
 }
 
 export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
@@ -26,7 +27,8 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
   existingTrainings = [],
   onSaveBatchTrainings,
   handleDeleteTraining,
-  onShowConfirm
+  onShowConfirm,
+  trainingSchedule
 }) => {
   const [modalMode, setModalMode] = useState<'single' | 'batch'>('single');
 
@@ -100,6 +102,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
             <BatchTrainingSection
               isModal
               existingTrainings={existingTrainings}
+              trainingSchedule={trainingSchedule}
               onGenerate={(newTrainings) => {
                 if (onSaveBatchTrainings) {
                   onSaveBatchTrainings(newTrainings);

@@ -129,7 +129,7 @@ describe('Relatório mensal', () => {
     const { doc, filename } = await buildMonthlyReportPDF(r, state, 'Boa evolução na saída de bola.');
     const raw = doc.output() as string;
     expect(filename).toBe('Relatorio_Mensal_Lobos_2026-10.pdf');
-    ['RELATÓRIO MENSAL', 'Equipa m1', 'Atleta C', 'Ganhar as segundas bolas', 'Boa evolução na saída de bola.'].forEach(
+    ['Relatório mensal', 'Equipa m1', 'Atleta C', 'Ganhar as segundas bolas', 'Boa evolução na saída de bola.'].forEach(
       (t) => expect(raw, t).toContain(t)
     );
   });

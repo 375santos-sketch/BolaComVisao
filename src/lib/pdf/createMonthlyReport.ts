@@ -1,6 +1,6 @@
 import { AppState } from '../../types';
 import { MonthlyReport } from '../monthlyReport';
-import { addBolaComVisaoPageFooters, drawDocumentHeader, getJsPDF } from './pdfLayout';
+import { addBolaComVisaoPageFooters, drawDocumentHeader, drawSectionTitle, getJsPDF, pdfBrand } from './pdfLayout';
 
 /**
  * Monthly report PDF for the coordinator: summary tiles, the month's games, a table per athlete (attendance, games,
@@ -15,8 +15,6 @@ const WIDTH = 180;
 const PAGE_BOTTOM = 280;
 const INK: Rgb = [15, 30, 52];
 const MUTED: Rgb = [100, 115, 130];
-const NAVY: Rgb = [10, 25, 42];
-const CYAN: Rgb = [0, 190, 240];
 
 const ddmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 
@@ -29,8 +27,9 @@ interface Column {
 export async function buildMonthlyReportPDF(report: MonthlyReport, state: AppState, coachNotes = '') {
   const jsPDF = await getJsPDF();
   const doc: Doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  drawDocumentHeader(doc, state, 'RELATÓRIO MENSAL', report.label.toUpperCase());
-  let y = 47;
+  drawDocumentHeader(doc, state, 'Relatório mensal', report.label);
+  const brand = pdfBrand(state);
+  let y = 38;
 
   const ensure = (h: number) => {
     if (y + h > PAGE_BOTTOM) {
@@ -41,15 +40,8 @@ export async function buildMonthlyReportPDF(report: MonthlyReport, state: AppSta
 
   const heading = (text: string) => {
     ensure(16);
-    doc.setFillColor(...NAVY);
-    doc.rect(LEFT, y, WIDTH, 7, 'F');
-    doc.setFillColor(...CYAN);
-    doc.rect(LEFT, y, 2.5, 7, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(255, 255, 255);
-    doc.text(text.toUpperCase(), LEFT + 5, y + 4.8);
-    y += 10;
+    y += 1;
+    y += drawSectionTitle(doc, brand, text, LEFT, y, WIDTH) + 1;
   };
 
   const muted = (text: string) => {
@@ -234,7 +226,7 @@ export async function buildMonthlyReportPDF(report: MonthlyReport, state: AppSta
       ensure(9);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
-      doc.setTextColor(0, 120, 180);
+      doc.setTextColor(...brand);
       doc.text(`${ddmm(o.date)} · ${o.source}`, LEFT + 2, y + 3);
       y += 4.5;
       paragraph(o.text, LEFT + 4, WIDTH - 6);

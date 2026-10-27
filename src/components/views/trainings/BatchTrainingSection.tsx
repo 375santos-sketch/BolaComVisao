@@ -20,14 +20,19 @@ interface BatchTrainingSectionProps {
   onGenerate: (newTrainings: Training[]) => void;
   onCancel?: () => void;
   isModal?: boolean;
+  /** The team's training days, start times and length (Definições → Clube), used as the starting choice. */
+  trainingSchedule?: { trainingTimes: Record<string, string>; trainingMinutes: number };
 }
 
 export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
   existingTrainings = [],
   onGenerate,
   onCancel,
-  isModal = false
+  isModal = false,
+  trainingSchedule
 }) => {
+  const teamDays = Object.keys(trainingSchedule?.trainingTimes || {}).map(Number);
+  const teamTimes = Object.values(trainingSchedule?.trainingTimes || {});
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const defaultEnd = useMemo(() => {
     const d = new Date();
@@ -37,9 +42,10 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
 
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(defaultEnd);
-  const [selectedDays, setSelectedDays] = useState<number[]>([2, 4]); // Terça e Quinta por defeito
-  const [defaultTime, setDefaultTime] = useState('18:30');
-  const [useCustomDayTimes, setUseCustomDayTimes] = useState(false);
+  // The team's days and times when set (e.g. Monday 19:15 and Thursday 18:15), otherwise Tuesday and Thursday
+  const [selectedDays, setSelectedDays] = useState<number[]>(teamDays.length ? teamDays : [2, 4]);
+  const [defaultTime, setDefaultTime] = useState(teamTimes[0] || '18:30');
+  const [useCustomDayTimes, setUseCustomDayTimes] = useState(new Set(teamTimes).size > 1);
   const [dayTimes, setDayTimes] = useState<Record<number, string>>({
     1: '18:30',
     2: '18:30',
@@ -47,11 +53,12 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
     4: '18:30',
     5: '18:30',
     6: '10:00',
-    0: '10:00'
+    0: '10:00',
+    ...Object.fromEntries(Object.entries(trainingSchedule?.trainingTimes || {}).map(([d, t]) => [Number(d), t]))
   });
   const [location, setLocation] = useState('Campo Sintético');
   const [type, setType] = useState('⚡ Tático');
-  const [durationMinutes, setDurationMinutes] = useState(90);
+  const [durationMinutes, setDurationMinutes] = useState(trainingSchedule?.trainingMinutes || 90);
   const [notes, setNotes] = useState('');
   const [completed, setCompleted] = useState(false);
   const [avoidDuplicates, setAvoidDuplicates] = useState(true);

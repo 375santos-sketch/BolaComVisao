@@ -17,6 +17,7 @@ import { t } from '../../../../i18n/dict';
 import { lineupStarters } from '../../../../lib/startingLineup';
 import { LINEUP_SIZE } from '../../../../lib/constants';
 import { getNextTrainingNumber, allocateBatchTrainingNumbers } from '../../../../lib/trainingNumbering';
+import { firstTrainingTime, teamSettings, trainingSlot } from '../../../../lib/teamSettings';
 
 export function useScheduleModals(
   state: AppState,
@@ -414,14 +415,17 @@ export function useScheduleModals(
 
   // TRAINING HANDLERS
   const handleOpenScheduleTraining = (presetDate?: string) => {
+    const date = presetDate || selectedDate || todayStr;
+    const settings = teamSettings(state);
+    const slot = trainingSlot(settings, date);
     setTrainingForm({
-      date: presetDate || selectedDate || todayStr,
-      time: '19:00',
+      date,
+      time: slot.time || firstTrainingTime(settings),
       location: 'Campo Principal',
       type: '⚡ Tático',
       notes: '',
       completed: false,
-      durationMinutes: 90
+      durationMinutes: slot.durationMinutes
     });
     setEditingTrainingId(null);
     setShowTrainingModal(true);
@@ -435,7 +439,7 @@ export function useScheduleModals(
       type: tr.type || '⚡ Tático',
       notes: tr.notes || '',
       completed: tr.completed === true,
-      durationMinutes: tr.durationMinutes || 90
+      durationMinutes: tr.durationMinutes || teamSettings(state).trainingMinutes
     });
     setEditingTrainingId(tr.id);
     setShowTrainingModal(true);
@@ -483,7 +487,7 @@ export function useScheduleModals(
       notes: trainingForm.notes || '',
       absences: [],
       completed: isCompleted,
-      durationMinutes: trainingForm.durationMinutes || 90,
+      durationMinutes: trainingForm.durationMinutes || teamSettings(state).trainingMinutes,
       season: state.season || defaultSeason()
     };
 

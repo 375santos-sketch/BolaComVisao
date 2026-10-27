@@ -7,13 +7,15 @@ interface TrainingBatchModalProps {
   onClose: () => void;
   existingTrainings: Training[];
   onGenerate: (newTrainings: Training[]) => void;
+  trainingSchedule?: { trainingTimes: Record<string, string>; trainingMinutes: number };
 }
 
 export const TrainingBatchModal: React.FC<TrainingBatchModalProps> = ({
   isOpen,
   onClose,
   existingTrainings,
-  onGenerate
+  onGenerate,
+  trainingSchedule
 }) => {
   if (!isOpen) return null;
 
@@ -47,6 +49,7 @@ export const TrainingBatchModal: React.FC<TrainingBatchModalProps> = ({
             existingTrainings={existingTrainings}
             onGenerate={onGenerate}
             onCancel={onClose}
+            trainingSchedule={trainingSchedule}
           />
         </div>
       </div>

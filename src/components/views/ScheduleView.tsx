@@ -19,6 +19,7 @@ import { ScheduleClubEventModal } from './schedule/ScheduleClubEventModal';
 import { ScheduleFab } from './schedule/ScheduleFab';
 import { CalendarShareModal } from './schedule/CalendarShareModal';
 import { AgendaTabs } from './schedule/AgendaTabs';
+import { teamSettings } from '../../lib/teamSettings';
 
 const FixturePrintModal = lazy(() =>
   import('./schedule/FixturePrintModal').then((m) => ({ default: m.FixturePrintModal }))
@@ -442,6 +443,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         onSaveBatchTrainings={handleSaveBatchTrainings}
         handleDeleteTraining={handleDeleteTraining}
         onShowConfirm={onShowConfirm}
+        trainingSchedule={teamSettings(state)}
       />
 
       {/* MODAL 3: STAFF UNAVAILABILITY */}

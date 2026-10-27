@@ -1,7 +1,7 @@
 import { AppState } from '../../types';
 import { buildGamesDashboard, GamesDashboard, RankRow } from '../gamesDashboard';
 import { PLAYING_TIME_TARGET } from '../playingTime';
-import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters } from './pdfLayout';
+import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters, drawSectionTitle, pdfBrand } from './pdfLayout';
 import { DashboardSelection, selectDashboardGames } from './createSeasonReport';
 
 type Doc = InstanceType<Awaited<ReturnType<typeof getJsPDF>>>;
@@ -15,8 +15,6 @@ const INK: RGB = [15, 23, 42];
 const MUTED: RGB = [100, 116, 139];
 const LINE: RGB = [226, 232, 240];
 const CARD: RGB = [246, 248, 251];
-const BRAND: RGB = [10, 25, 42];
-const ACCENT: RGB = [0, 170, 220];
 
 const L = 15;
 const W = 180;
@@ -31,9 +29,9 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
   const d = buildGamesDashboard(games, state);
   const jsPDF = await getJsPDF();
   const doc: Doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  drawDocumentHeader(doc, state, 'PAINEL DE JOGOS');
+  drawDocumentHeader(doc, state, 'Painel de jogos');
 
-  let y = 50;
+  let y = 42;
   const ensure = (h: number) => {
     if (y + h > BOTTOM) {
       doc.addPage();
@@ -56,12 +54,7 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
   };
   const section = (title: string, subtitle: string, height: number) => {
     ensure(height + 14);
-    doc.setFillColor(...BRAND);
-    doc.rect(L, y, W, 7, 'F');
-    doc.setFillColor(...ACCENT);
-    doc.rect(L, y, 1.4, 7, 'F');
-    text(title.toUpperCase(), L + 4, y + 4.9, 9.5, [255, 255, 255], true);
-    y += 11;
+    y += drawSectionTitle(doc, pdfBrand(state), title, L, y, W) + 2;
     if (subtitle) {
       text(subtitle, L, y, 8, MUTED);
       y += 5;
@@ -69,13 +62,13 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
   };
 
   // Title and one-line summary
-  text(`${label}  ·  Painel de jogos`, 105, y, 13, INK, true, 'center');
+  text(label, 105, y, 13, INK, true, 'center');
   y += 6;
   const best = d.topGoals[0];
   const bestA = d.topAssists[0];
   const summary = [
     `${d.scored} golos marcados em ${d.played} jogo(s).`,
-    best ? `Melhor marcador: ${best.name} (${best.value} golos).` : null,
+    best ? `Melhor marcador: ${best.name} (${best.value} ${best.value === 1 ? 'golo' : 'golos'}).` : null,
     bestA ? `Mais assistências: ${bestA.name} (${bestA.value}).` : null
   ]
     .filter(Boolean)
@@ -366,7 +359,7 @@ function rankList(doc: Doc, x: number, y: number, title: string, rows: RankRow[]
     doc.setTextColor(...INK);
     doc.text(r.name, x + 9, yy);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${r.value} ${unit}`, x + w, yy, { align: 'right' });
+    doc.text(`${r.value} ${r.value === 1 && unit === 'golos' ? 'golo' : unit}`, x + w, yy, { align: 'right' });
     doc.setDrawColor(...LINE);
     doc.line(x, yy + 2.2, x + w, yy + 2.2);
     yy += 6.5;
