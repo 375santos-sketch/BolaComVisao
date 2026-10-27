@@ -25,6 +25,7 @@ interface SquadPlayerDetailModalProps {
   state: AppState;
   onClose: () => void;
   onEdit: (player: Player) => void;
+  onRemove?: (id: string) => void;
   onShowToast: (msg: string) => void;
   onUpdateState?: (partial: Partial<AppState>) => void;
 }
@@ -35,6 +36,7 @@ export const SquadPlayerDetailModal: React.FC<SquadPlayerDetailModalProps> = ({
   state,
   onClose,
   onEdit,
+  onRemove,
   onShowToast,
   onUpdateState
 }) => {
@@ -48,6 +50,7 @@ export const SquadPlayerDetailModal: React.FC<SquadPlayerDetailModalProps> = ({
       state={state}
       onClose={onClose}
       onEdit={onEdit}
+      onRemove={onRemove}
       onShowToast={onShowToast}
       onUpdateState={onUpdateState}
     />
@@ -71,6 +74,7 @@ interface SquadPlayerDetailModalInnerProps {
   state: AppState;
   onClose: () => void;
   onEdit: (player: Player) => void;
+  onRemove?: (id: string) => void;
   onShowToast: (msg: string) => void;
   onUpdateState?: (partial: Partial<AppState>) => void;
 }
@@ -81,6 +85,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
   state,
   onClose,
   onEdit,
+  onRemove,
   onShowToast,
   onUpdateState
 }) => {
@@ -472,6 +477,16 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
             <button onClick={onClose} className="ui-btn ui-btn-secondary flex-1 py-2.5 text-xs">
               Fechar
             </button>
+
+            {onRemove && (
+              <button
+                onClick={() => onRemove(player.id)}
+                className="ui-btn ui-btn-soft-danger px-3 py-2.5 text-xs"
+                title="Remover Jogador"
+              >
+                🗑️ Remover
+              </button>
+            )}
           </div>
         </div>
       </div>

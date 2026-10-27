@@ -5,7 +5,6 @@ import { CalendarEvent } from './schedule/types';
 import { MONTH_NAMES_PT, WEEKDAY_NAMES_PT } from './schedule/constants';
 import { useScheduleEvents } from './schedule/hooks/useScheduleEvents';
 import { useScheduleModals } from './schedule/hooks/useScheduleModals';
-import { ScheduleHeader } from './schedule/ScheduleHeader';
 import { ScheduleFilters } from './schedule/ScheduleFilters';
 import { ScheduleDayView } from './schedule/ScheduleDayView';
 import { ScheduleWeekView } from './schedule/ScheduleWeekView';
@@ -19,6 +18,7 @@ import { ScheduleStaffModal } from './schedule/ScheduleStaffModal';
 import { ScheduleClubEventModal } from './schedule/ScheduleClubEventModal';
 import { ScheduleFab } from './schedule/ScheduleFab';
 import { CalendarShareModal } from './schedule/CalendarShareModal';
+import { AgendaTabs } from './schedule/AgendaTabs';
 
 const FixturePrintModal = lazy(() =>
   import('./schedule/FixturePrintModal').then((m) => ({ default: m.FixturePrintModal }))
@@ -224,38 +224,6 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
     }
   };
 
-  // Reset entire schedule / agenda
-  const handleResetSchedule = () => {
-    onShowConfirm(
-      'Tem a certeza de que deseja fazer o RESET COMPLETO da agenda? Todos os jogos agendados, treinos, reuniões/formações e indisponibilidades desta equipa serão removidos.',
-      () => {
-        const remainingTrainings = (state.trainings || []).filter((tr) => tr.completed === true);
-        const updatedTeams = (state.teams || []).map((t) => {
-          if (t.id === state.activeTeamId) {
-            return {
-              ...t,
-              schedule: [],
-              trainings: remainingTrainings,
-              clubEvents: [],
-              staffUnavailability: []
-            };
-          }
-          return t;
-        });
-
-        onUpdateState({
-          schedule: [],
-          trainings: remainingTrainings,
-          clubEvents: [],
-          staffUnavailability: [],
-          teams: updatedTeams
-        });
-
-        onShowToast('Agenda completamente redefinida e limpa com sucesso! 📅');
-      }
-    );
-  };
-
   // Helper: Render Event Card
   const renderEventCard = (ev: CalendarEvent) => (
     <ScheduleEventCard
@@ -281,10 +249,10 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
   );
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-24 animate-fadeIn">
+    <div className="space-y-3 sm:space-y-4 pb-24 animate-fadeIn">
       {/* Top Main Navigation Header */}
       <Header
-        title="Agenda & Calendário Anual"
+        title="Agenda"
         lang={state.lang}
         currentTab="calendario"
         onNavigate={onNavigate}
@@ -298,50 +266,39 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      {/* Sub-Navigation: Planeamento & Treino */}
-      <div className="ui-card grid grid-cols-3 gap-1 p-1 text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
-        <button type="button" className="ui-btn ui-btn-primary py-2 px-1 flex items-center justify-center gap-1.5">
-          <span>📅</span>
-          <span>Agenda</span>
-        </button>
+      <AgendaTabs current="calendario" onNavigate={onNavigate} />
 
+      {/* Summary and the two less frequent actions */}
+      <div className="flex items-center gap-3 text-xs text-slate-400">
+        <span>
+          <strong className="text-slate-100">{stats.matchesCount}</strong> jogos
+        </span>
+        <span>
+          <strong className="text-slate-100">{stats.trainingsCount}</strong> treinos
+        </span>
         <button
           type="button"
-          onClick={() => onNavigate('treinos')}
-          className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
+          onClick={() => setShowFixturePrint(true)}
+          className="ml-auto font-semibold text-cyan-400 hover:text-cyan-300"
+          aria-label="Importar jogos de um print do calendário"
+          title="Importar jogos de um print do calendário"
         >
-          <span>⚡</span>
-          <span>Treinos</span>
+          📷 Importar print
         </button>
-
         <button
           type="button"
-          onClick={() => onNavigate('jogos')}
-          className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
+          onClick={() => setShowCalendarShare(true)}
+          className="font-semibold text-cyan-400 hover:text-cyan-300"
+          aria-label="Calendário para os pais"
+          title={
+            (state.teams || []).find((t) => t.id === state.activeTeamId)?.calendarToken
+              ? 'Calendário para os pais (link ativo)'
+              : 'Calendário para os pais (Google / iPhone)'
+          }
         >
-          <span>🏆</span>
-          <span>Resultados</span>
+          Pais
         </button>
       </div>
-
-      {/* Schedule Header (Stats & Primary Actions) */}
-      <ScheduleHeader
-        stats={stats}
-        allEventsCount={allEvents.length}
-        onOpenScheduleMatch={() => handleOpenScheduleMatch(selectedDate)}
-        onOpenScheduleTraining={() => handleOpenScheduleTraining(selectedDate)}
-        onOpenClubEventModal={() => handleOpenClubEventModal(selectedDate)}
-        onOpenScheduleStaff={() => handleOpenScheduleStaff(selectedDate)}
-        onResetSchedule={handleResetSchedule}
-      />
-
-      <button
-        type="button"
-        onClick={() => setShowFixturePrint(true)}
-        className="ui-btn ui-btn-soft w-full mb-2 py-2.5 px-3 text-xs"
-      >
-        📷 Importar jogos de um print do calendário
-      </button>
       {showFixturePrint && (
         <Suspense fallback={null}>
           <FixturePrintModal
@@ -352,19 +309,6 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
           />
         </Suspense>
       )}
-
-      <button
-        type="button"
-        onClick={() => setShowCalendarShare(true)}
-        className="ui-btn ui-btn-soft w-full mb-3 py-2.5 px-3 text-xs flex items-center justify-center gap-2"
-      >
-        📅 Calendário para os pais{' '}
-        <span className="text-[10px] font-normal text-slate-400">
-          {(state.teams || []).find((t) => t.id === state.activeTeamId)?.calendarToken
-            ? '(link ativo)'
-            : '(Google / iPhone)'}
-        </span>
-      </button>
       {showCalendarShare && (
         <CalendarShareModal
           state={state}
@@ -381,11 +325,6 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         eventTypeFilter={eventTypeFilter}
         setEventTypeFilter={setEventTypeFilter}
         stats={stats}
-        onOpenScheduleMatch={handleOpenScheduleMatch}
-        onOpenScheduleTraining={handleOpenScheduleTraining}
-        onOpenClubEventModal={handleOpenClubEventModal}
-        onOpenScheduleStaff={handleOpenScheduleStaff}
-        selectedDate={selectedDate}
       />
 
       {/* VIEW 1: DIA (Daily Timeline & Detailed Event Cards) */}
@@ -476,14 +415,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
 
       {/* VIEW 5: LISTA (Linear Chronological Agenda Feed) */}
       {viewMode === 'lista' && (
-        <ScheduleList
-          filteredEvents={filteredEvents}
-          renderEventCard={renderEventCard}
-          onOpenScheduleMatch={() => handleOpenScheduleMatch()}
-          onOpenScheduleTraining={() => handleOpenScheduleTraining()}
-          onOpenClubEventModal={() => handleOpenClubEventModal()}
-          onOpenScheduleStaff={() => handleOpenScheduleStaff()}
-        />
+        <ScheduleList filteredEvents={filteredEvents} todayStr={todayStr} renderEventCard={renderEventCard} />
       )}
 
       {/* MODAL 1: SCHEDULE MATCH */}

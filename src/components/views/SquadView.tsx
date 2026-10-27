@@ -13,8 +13,7 @@ import { ImportExcelPlayersModal } from '../ImportExcelPlayersModal';
 import { SquadTab } from './squad/types';
 import { useSquadRoster } from './squad/hooks/useSquadRoster';
 import { SquadTabsNav } from './squad/SquadTabsNav';
-import { SquadHeaderBanner } from './squad/SquadHeaderBanner';
-import { SquadFilters } from './squad/SquadFilters';
+import { SquadToolbar } from './squad/SquadToolbar';
 import { SquadListView } from './squad/SquadListView';
 import { SquadGridView } from './squad/SquadGridView';
 import { SquadPlayerFormModal } from './squad/SquadPlayerFormModal';
@@ -121,8 +120,7 @@ export const SquadView: React.FC<SquadViewProps> = ({
       {/* PLAYERS SECTION */}
       {squad.activeSquadTab === 'jogadores' && (
         <>
-          {/* Roster Header Banner with Export & Mode Switcher */}
-          <SquadHeaderBanner
+          <SquadToolbar
             state={state}
             activeRosterCount={squad.activeRoster.length}
             viewMode={squad.viewMode}
@@ -130,23 +128,17 @@ export const SquadView: React.FC<SquadViewProps> = ({
             statusCounts={squad.statusCounts}
             statusFilter={squad.statusFilter}
             setStatusFilter={squad.setStatusFilter}
+            searchQuery={squad.searchQuery}
+            setSearchQuery={squad.setSearchQuery}
+            sortBy={squad.sortBy}
+            setSortBy={squad.setSortBy}
+            sortDirection={squad.sortDirection}
+            setSortDirection={squad.setSortDirection}
             onOpenCreateModal={squad.handleOpenCreateModal}
             onOpenImportExcel={() => squad.setIsImportExcelOpen(true)}
             onUpdateState={onUpdateState}
             onShowConfirm={onShowConfirm}
             onShowToast={onShowToast}
-          />
-
-          {/* Search & Sort / Filter Bar */}
-          <SquadFilters
-            searchQuery={squad.searchQuery}
-            setSearchQuery={squad.setSearchQuery}
-            statusFilter={squad.statusFilter}
-            setStatusFilter={squad.setStatusFilter}
-            sortBy={squad.sortBy}
-            setSortBy={squad.setSortBy}
-            sortDirection={squad.sortDirection}
-            setSortDirection={squad.setSortDirection}
           />
 
           {/* Players Content Area */}
@@ -186,7 +178,6 @@ export const SquadView: React.FC<SquadViewProps> = ({
               sortDirection={squad.sortDirection}
               onSelectPlayer={squad.setSelectedPlayerId}
               onEditPlayer={squad.handleOpenEditModal}
-              onRemovePlayer={squad.handleRemovePlayer}
             />
           ) : (
             <SquadGridView
@@ -254,6 +245,10 @@ export const SquadView: React.FC<SquadViewProps> = ({
         state={state}
         onClose={() => squad.setSelectedPlayerId(null)}
         onEdit={squad.handleOpenEditModal}
+        onRemove={(id) => {
+          squad.setSelectedPlayerId(null);
+          squad.handleRemovePlayer(id);
+        }}
         onShowToast={onShowToast}
         onUpdateState={onUpdateState}
       />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AppState, Match, GoalEvent, CardEvent, SubEvent } from '../../types';
+import { AgendaTabs } from './schedule/AgendaTabs';
 import { t } from '../../i18n/dict';
 import { playerLabel, formatMinute, parseMinuteOrder, isSeasonMatching } from '../../lib/utils';
 import { Header } from '../Header';
@@ -61,31 +62,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
         />
 
-        {/* Sub-Navigation: Planeamento & Jogos */}
-        <div className="ui-card grid grid-cols-3 gap-1 mb-4 p-1 text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
-          <button
-            type="button"
-            onClick={() => onNavigate('calendario')}
-            className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
-          >
-            <span>📅</span>
-            <span>Agenda</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onNavigate('treinos')}
-            className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
-          >
-            <span>⚡</span>
-            <span>Treinos</span>
-          </button>
-
-          <button type="button" className="ui-btn ui-btn-primary py-2 px-1 flex items-center justify-center gap-1.5">
-            <span>🏆</span>
-            <span>Resultados</span>
-          </button>
-        </div>
+        <AgendaTabs current="jogos" onNavigate={onNavigate} className="mb-4" />
 
         <div className="empty mt-10">{t(state.lang, 'res_none')}</div>
       </div>
@@ -144,31 +121,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      {/* Sub-Navigation: Planeamento & Jogos */}
-      <div className="ui-card grid grid-cols-3 gap-1 mb-4 p-1 text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider">
-        <button
-          type="button"
-          onClick={() => onNavigate('calendario')}
-          className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
-        >
-          <span>📅</span>
-          <span>Agenda</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onNavigate('treinos')}
-          className="py-2 px-1 rounded-xl text-cyan-300/70 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all"
-        >
-          <span>⚡</span>
-          <span>Treinos</span>
-        </button>
-
-        <button type="button" className="ui-btn ui-btn-primary py-2 px-1 flex items-center justify-center gap-1.5">
-          <span>🏆</span>
-          <span>Resultados</span>
-        </button>
-      </div>
+      <AgendaTabs current="jogos" onNavigate={onNavigate} className="mb-4" />
 
       <button
         type="button"
