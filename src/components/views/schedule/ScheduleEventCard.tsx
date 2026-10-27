@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { CalendarEvent } from './types';
 import { AppState, ScheduledMatch, Training, StaffUnavailability, ClubEvent } from '../../../types';
 import { CallupShareModal } from '../../CallupShareModal';
+import { WeatherBadge } from '../../WeatherBadge';
+import { directionsUrl, townOfClub } from '../../../lib/gameMap';
+import { teamSettings } from '../../../lib/teamSettings';
 
 interface ScheduleEventCardProps {
   ev: CalendarEvent;
@@ -43,6 +46,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
   handleDeleteTraining
 }) => {
   const isMatch = ev.category === 'match';
+  const clubTown = state ? teamSettings(state).clubTown : '';
   const isStaff = ev.category === 'staff_unavailability';
   const isClub = ev.category === 'club_event';
   const formattedDate = ev.date.split('-').reverse().join('/');
@@ -87,6 +91,16 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               {ev.location}
             </span>
 
+            {s && (
+              <WeatherBadge
+                date={s.date}
+                time={s.time}
+                places={
+                  s.location === 'fora' ? [s.venue || '', townOfClub(s.opponent), clubTown] : [clubTown, s.venue || '']
+                }
+              />
+            )}
+
             {ev.tournamentName && (
               <span className="text-[10px] font-mono text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30">
                 🏆 {ev.tournamentName} {ev.phase ? `(${ev.phase})` : ''}
@@ -101,6 +115,18 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
           {/* Quick Action Buttons for Match */}
           <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+            {s && (
+              <a
+                href={directionsUrl(s)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ui-btn ui-btn-soft px-3 py-1.5 text-xs"
+                title="Abrir o mapa com o caminho para o campo"
+              >
+                🗺️ Como chegar
+              </a>
+            )}
+
             {s && (
               <button
                 type="button"
@@ -667,6 +693,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           <div className="text-sm font-black font-['Chakra_Petch'] text-cyan-300">
             📅 {formattedDate} às {ev.time}h
           </div>
+          {!tr.completed && <WeatherBadge date={tr.date} time={tr.time} places={[clubTown, tr.location || '']} />}
 
           <span className="text-xs font-mono text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/30">
             {ev.trainingType}

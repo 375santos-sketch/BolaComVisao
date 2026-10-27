@@ -1264,6 +1264,70 @@ test('relatório mensal: resumo do mês e PDF para o coordenador', async ({ page
   await expect(page.getByText('Relatório mensal criado 📄')).toBeVisible();
 });
 
+test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo', async ({ page }) => {
+  // The weather service answers with a rainy afternoon (no real internet in the tests)
+  await page.route('https://geocoding-api.open-meteo.com/**', (route) =>
+    route.fulfill({ json: { results: [{ latitude: 39.46, longitude: -8.2 }] } })
+  );
+  const hours = (v: number) => Array.from({ length: 24 }, () => v);
+  await page.route('https://api.open-meteo.com/**', (route) =>
+    route.fulfill({
+      json: {
+        hourly: {
+          temperature_2m: hours(15),
+          precipitation_probability: hours(60),
+          weather_code: hours(61),
+          wind_speed_10m: hours(20)
+        }
+      }
+    })
+  );
+  await signedIn(page);
+  await openMore(page, /Definições do Clube/);
+  const club = page.getByRole('region', { name: 'Definições do clube' });
+  await club.getByRole('button', { name: 'Vermelho' }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--color-cyan-500').trim())
+    )
+    .toBe('#e23b3b');
+  await club.getByPlaceholder('Ex: Abrantes').fill('Abrantes');
+  await club.getByLabel('Amarelos para um jogo de castigo').selectOption('4');
+  await page
+    .getByRole('button', { name: /Fechar|Close/ })
+    .last()
+    .click();
+
+  // An away game tomorrow: forecast for the game's hour and directions to the pitch
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: '⚽ ＋ Jogo' }).first().click();
+  await page.getByPlaceholder('Nome da equipa adversária').fill('AD Tempo Teste');
+  await page.locator('input[type=date]').first().fill(tomorrow);
+  await page.locator('input[type=time]').first().fill('15:00');
+  await page.getByRole('button', { name: 'Fora', exact: true }).click();
+  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await page.getByRole('button', { name: /Lista/i }).click();
+  const card = page.locator('.ui-card', { hasText: 'AD Tempo Teste' }).first();
+  await expect(card.getByLabel('Previsão do tempo')).toHaveText('🌧️ 15° · 💧60% · 💨20 km/h');
+  await card.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/cor-tempo.png` : undefined });
+  await expect(card.getByRole('link', { name: /Como chegar/ })).toHaveAttribute(
+    'href',
+    /google\.com\/maps\/dir\/\?api=1&destination=campo%20de%20futebol%20Tempo%20Teste/
+  );
+
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
+        const raw = JSON.stringify(await res.json());
+        return raw.includes('#e23b3b') && raw.includes('Abrantes') && raw.includes('yellowsForBan');
+      },
+      { timeout: 30_000, message: 'definições do clube na nuvem' }
+    )
+    .toBe(true);
+});
+
 test('sessão na nuvem terminada: aviso, entrar de novo sem perder o que ficou no aparelho', async ({
   page,
   browser

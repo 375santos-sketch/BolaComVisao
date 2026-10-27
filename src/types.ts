@@ -649,6 +649,10 @@ export interface SquadProfile {
   leagues?: LeagueSetup[];
   /** Training templates (Treinos → Modelos): a session plan kept to start new trainings from it. */
   trainingTemplates?: TrainingTemplate[];
+  /** Team settings (Definições → Clube): main colour, the club's town (weather) and the yellow-card rule. */
+  clubColor?: string;
+  clubTown?: string;
+  yellowsForBan?: number;
   /** The team's rehearsed set pieces (corners, free kicks, throw-ins…), each its own cloud record. */
   setPieces?: SetPiece[];
   /** Animated plays drawn on the tactics board, each its own cloud record. */

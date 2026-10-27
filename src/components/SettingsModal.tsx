@@ -1,4 +1,5 @@
 import React from 'react';
+import { ClubSettingsSection } from './ClubSettingsSection';
 import { AppState, NotificationSettings } from '../types';
 import { t } from '../i18n/dict';
 import { exportJSONBackup, exportCSVStats, exportTXTReport } from '../lib/exportUtils';
@@ -94,6 +95,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onChange={(e) => onUpdateState({ myClubName: e.target.value })}
           />
         </div>
+
+        <ClubSettingsSection state={state} onUpdateState={onUpdateState} onShowToast={onShowToast} />
 
         <div className="field text-left mt-4">
           <label>Símbolo / Emblema do Clube</label>

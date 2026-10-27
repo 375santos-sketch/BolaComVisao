@@ -5,6 +5,8 @@ import { getAllBirthdays } from './birthdayUtils';
 import { upcomingGames } from './preMatchPlan';
 import { addDaysISO, localDateISO } from './trainingQuick';
 import { calculateMatchScore, isSeasonMatching, seasonFromDate } from './utils';
+import { cardAlerts, cardStatuses } from './cardSuspensions';
+import { DEFAULT_YELLOWS_FOR_BAN } from './teamSettings';
 
 /** Season attendance below this (with enough trainings) is worth a notice on the home screen. */
 const LOW_ATTENDANCE = 70;
@@ -12,7 +14,7 @@ const MIN_TRAININGS_FOR_ATTENDANCE = 3;
 const MAX_HOME_NOTICES = 3;
 
 interface HomeNotice {
-  id: 'convocatoria' | 'minutos' | 'assiduidade' | 'aniversarios';
+  id: 'castigos' | 'convocatoria' | 'minutos' | 'assiduidade' | 'aniversarios';
   icon: string;
   text: string;
   tab: 'convocatoria' | 'treinos' | 'plantel';
@@ -36,9 +38,30 @@ type SummaryState = Pick<
  * What needs the coach's attention, most urgent first (at most MAX_HOME_NOTICES): a call-up still open for a game in
  * the next 7 days, players short of minutes, low training attendance, birthdays this week.
  */
-export function homeNotices(state: SummaryState, today: string = localDateISO()): HomeNotice[] {
+export function homeNotices(
+  state: SummaryState,
+  today: string = localDateISO(),
+  yellowsForBan: number = DEFAULT_YELLOWS_FOR_BAN
+): HomeNotice[] {
   const notices: HomeNotice[] = [];
   const roster = (state.roster || []).filter((p) => p && p.active !== false);
+
+  // Suspensions to serve, and athletes one yellow card away from one
+  const cards = cardAlerts(cardStatuses(state.matches || [], roster, state.season, yellowsForBan));
+  if (cards.suspended.length > 0 || cards.atRisk.length > 0) {
+    const parts = [
+      cards.suspended.length
+        ? `Castigo por cumprir: ${names(cards.suspended.map((c) => `${c.name} (${c.pendingGames} jogo${c.pendingGames > 1 ? 's' : ''})`))}`
+        : '',
+      cards.atRisk.length ? `A um amarelo do castigo: ${names(cards.atRisk.map((c) => c.name))}` : ''
+    ].filter(Boolean);
+    notices.push({
+      id: 'castigos',
+      icon: cards.suspended.length ? '🟥' : '🟨',
+      text: parts.join(' · '),
+      tab: 'convocatoria'
+    });
+  }
 
   const nextGame = upcomingGames(state.schedule || [], today)[0];
   if (nextGame && nextGame.date <= addDaysISO(today, 7) && !nextGame.callupFinalized) {

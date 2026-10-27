@@ -9,6 +9,10 @@ import { upcomingGames } from '../../lib/preMatchPlan';
 import { callupPlayingTime, playersNeedingMinutes, RECENT_GAMES } from '../../lib/callupPlayingTime';
 import { availabilityOn } from '../../lib/availability';
 import { SetPiecesCard } from './setpieces/SetPiecesCard';
+import { WeatherBadge } from '../WeatherBadge';
+import { directionsUrl, townOfClub } from '../../lib/gameMap';
+import { teamSettings } from '../../lib/teamSettings';
+import { cardAlerts, cardStatuses } from '../../lib/cardSuspensions';
 
 const LineupImageModal = lazy(() => import('./LineupImageModal').then((m) => ({ default: m.LineupImageModal })));
 
@@ -93,6 +97,13 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
   const isAvailable = (id: string) => availabilityById.get(id)?.available !== false;
   const calledUnavailable = squad.filter((p) => match?.callup.includes(p.id) && !isAvailable(p.id));
   const needMinutes = playersNeedingMinutes(minutesById).filter((r) => isAvailable(r.playerId));
+  // Cards: suspensions to serve and athletes one yellow away (official games only)
+  const settings = teamSettings(state);
+  const cards = useMemo(
+    () => cardAlerts(cardStatuses(state.matches || [], state.roster || [], state.season, settings.yellowsForBan)),
+    [state.matches, state.roster, state.season, settings.yellowsForBan]
+  );
+  const officialGame = match?.type !== 'amigavel';
   const [sortByMinutes, setSortByMinutes] = useState(false);
   const eligiblePlayers = sortByMinutes
     ? [...squad].sort(
@@ -427,6 +438,25 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           <span>⏱️ {match.time}h</span>
           {match.tournamentName && <span>🏆 {match.tournamentName}</span>}
         </div>
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <WeatherBadge
+            date={match.date}
+            time={match.time}
+            places={
+              match.location === 'fora'
+                ? [match.venue || '', townOfClub(match.opponent), settings.clubTown]
+                : [settings.clubTown, match.venue || '']
+            }
+          />
+          <a
+            href={directionsUrl(match)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ui-btn ui-btn-soft px-3 py-1 text-[11px]"
+          >
+            🗺️ Como chegar
+          </a>
+        </div>
 
         <div className="grid grid-cols-2 gap-2 mb-2">
           <div className="field mb-0">
@@ -513,6 +543,25 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           </div>
         ) : (
           <>
+            {officialGame && (cards.suspended.length > 0 || cards.atRisk.length > 0) && (
+              <div
+                role="note"
+                aria-label="Cartões"
+                className="mb-2.5 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-[11px] text-rose-100 space-y-1"
+              >
+                {cards.suspended.map((c) => (
+                  <div key={c.playerId}>
+                    🟥 <b>{c.name}</b> tem {c.pendingGames} jogo{c.pendingGames > 1 ? 's' : ''} de castigo por cumprir (
+                    {c.reasons.join(', ')}){match.callup.includes(c.playerId) ? ' · está convocado!' : ''}
+                  </div>
+                ))}
+                {cards.atRisk.map((c) => (
+                  <div key={c.playerId} className="text-amber-200">
+                    🟨 <b>{c.name}</b> tem {c.yellows} amarelos: mais um e fica de castigo
+                  </div>
+                ))}
+              </div>
+            )}
             {calledUnavailable.length > 0 && (
               <div
                 role="alert"

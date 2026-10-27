@@ -77,7 +77,7 @@
     color: var(--color-ui-brand-ink);
   }
   .ui-btn-primary:hover:not(:disabled) {
-    background: #4fd3f3;
+    background: color-mix(in srgb, var(--color-ui-brand) 85%, white);
   }
   .ui-btn-success {
     background: var(--color-ui-success);
@@ -108,9 +108,9 @@
     color: var(--color-ui-text);
   }
   .ui-btn-soft {
-    background: rgb(34 195 238 / 0.1);
-    border-color: rgb(34 195 238 / 0.35);
-    color: #8ee3f8;
+    background: color-mix(in srgb, var(--color-ui-brand) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-ui-brand) 35%, transparent);
+    color: var(--color-cyan-300);
   }
   .ui-btn-soft-success {
     background: rgb(16 185 129 / 0.1);
@@ -160,7 +160,7 @@
   .ui-input:focus {
     outline: none;
     border-color: var(--color-ui-brand);
-    box-shadow: 0 0 0 3px rgb(34 195 238 / 0.18);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ui-brand) 18%, transparent);
   }
   .ui-input:disabled {
     opacity: 0.55;
