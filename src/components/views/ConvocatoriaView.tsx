@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { lazy, Suspense, useMemo, useState } from 'react';
 import { AppState, ScheduledMatch } from '../../types';
 import { t } from '../../i18n/dict';
 import { sortPlayerObjs } from '../../lib/utils';
@@ -9,6 +9,8 @@ import { upcomingGames } from '../../lib/preMatchPlan';
 import { callupPlayingTime, playersNeedingMinutes, RECENT_GAMES } from '../../lib/callupPlayingTime';
 import { availabilityOn } from '../../lib/availability';
 import { SetPiecesCard } from './setpieces/SetPiecesCard';
+
+const LineupImageModal = lazy(() => import('./LineupImageModal').then((m) => ({ default: m.LineupImageModal })));
 
 interface ConvocatoriaViewProps {
   state: AppState;
@@ -36,6 +38,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
     initialMatchId || upcomingGames(state.schedule || [])[0]?.id || state.schedule[0]?.id || ''
   );
   const [showShare, setShowShare] = useState(false);
+  const [showLineup, setShowLineup] = useState(false);
 
   const match = state.schedule.find((s) => s.id === selectedMatchId) || state.schedule[0];
   const isFinalized = Boolean(match?.callupFinalized);
@@ -350,6 +353,29 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Starting line-up picture */}
+      <button
+        type="button"
+        onClick={() => setShowLineup(true)}
+        className="ui-btn ui-btn-soft w-full mb-3 py-2.5 text-xs"
+      >
+        🖼️ Imagem da equipa inicial
+        {match.startingLineup ? ' (guardada)' : ''}
+      </button>
+      {showLineup && (
+        <Suspense fallback={null}>
+          <LineupImageModal
+            game={match}
+            state={state}
+            onSave={(updated) =>
+              onUpdateState({ schedule: state.schedule.map((s) => (s.id === updated.id ? updated : s)) })
+            }
+            onShowToast={onShowToast}
+            onClose={() => setShowLineup(false)}
+          />
+        </Suspense>
       )}
 
       {/* Club Logo / Symbol Section */}

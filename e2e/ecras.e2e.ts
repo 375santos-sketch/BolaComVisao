@@ -244,6 +244,41 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
   await expect(message).not.toHaveValue(/Concentração/);
   await share.getByRole('button', { name: 'Fechar' }).click();
 
+  // Starting line-up picture: the called-up players, the system and the captain; saved with the game
+  await page.getByRole('button', { name: /Imagem da equipa inicial/ }).click();
+  const lineup = page.getByRole('dialog', { name: 'Equipa inicial' });
+  await expect(lineup.getByRole('group', { name: 'Titulares' }).getByRole('button')).toHaveCount(3);
+  await expect(lineup.getByText('Titulares (3/7)')).toBeVisible();
+  await lineup.getByLabel('Jogadores em campo').selectOption('5');
+  await expect(lineup.getByLabel('Sistema')).toHaveValue('2-2');
+  await expect(lineup.getByRole('group', { name: 'Lugares no campo' }).getByRole('button')).toHaveCount(5);
+  const places = lineup.getByRole('group', { name: 'Lugares no campo' });
+  for (const name of ['Rui Silva', 'Martim Costa', 'Duarte Matos']) await expect(places).toContainText(name);
+  await lineup.getByLabel('Capitão').selectOption({ label: 'Rui Silva' });
+  await expect(lineup.getByRole('img', { name: 'Imagem da equipa inicial' })).toBeVisible();
+  await lineup
+    .getByRole('img', { name: 'Imagem da equipa inicial' })
+    .screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/equipa-inicial.png` : undefined });
+  await lineup.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await expect(page.getByText(/Equipa inicial guardada/)).toBeVisible();
+  await lineup.getByRole('button', { name: 'Fechar equipa inicial' }).click();
+  await expect(page.getByRole('button', { name: /Imagem da equipa inicial \(guardada\)/ })).toBeVisible();
+
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
+        const body = (await res.json()) as { documents?: Array<{ fields: Record<string, any> }> };
+        const game = (body.documents || [])
+          .map((d) => d.fields.data?.mapValue?.fields)
+          .find((f) => f?.opponent?.stringValue === 'Constância');
+        const l = game?.startingLineup?.mapValue?.fields;
+        return l ? [l.system?.stringValue, l.slots?.arrayValue?.values?.length] : null;
+      },
+      { timeout: 30_000, message: 'equipa inicial na nuvem' }
+    )
+    .toEqual(['2-2', 5]);
+
   await expect
     .poll(
       async () => {

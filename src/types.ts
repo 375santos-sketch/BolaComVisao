@@ -128,10 +128,22 @@ export interface ScheduledMatch {
   preMatchFinalized?: boolean; // "Plano pronto" no Pré-jogo
   preMatchFinalizedAt?: number;
   preMatchPlan?: PreMatchPlan;
+  /** Planned starters for the "Equipa inicial" picture (Convocatória); used as the 1st-half line-up at kick-off. */
+  startingLineup?: StartingLineup;
   scoutingFinalized?: boolean;
   scoutingFinalizedAt?: number;
   teamId?: string;
   teamName?: string;
+}
+
+/**
+ * Planned starters: the system ("2-3-1", defence to attack, without the goalkeeper) and the player in each place of
+ * the pitch (place 0 is the goalkeeper, then each line from defence to attack, left to right).
+ */
+export interface StartingLineup {
+  system: string;
+  slots: (string | null)[];
+  captainId?: string;
 }
 
 /** Pré-jogo: the coaching staff's plan for a scheduled game (the game data comes from the Agenda). */

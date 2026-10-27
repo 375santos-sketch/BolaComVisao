@@ -14,6 +14,8 @@ import {
 import { TournamentGameForm } from '../types';
 import { uid, defaultSeason, seasonFromDate, playerLabel, sortPlayerObjs } from '../../../../lib/utils';
 import { t } from '../../../../i18n/dict';
+import { lineupStarters } from '../../../../lib/startingLineup';
+import { LINEUP_SIZE } from '../../../../lib/constants';
 import { getNextTrainingNumber, allocateBatchTrainingNumbers } from '../../../../lib/trainingNumbering';
 
 export function useScheduleModals(
@@ -305,6 +307,9 @@ export function useScheduleModals(
     }
 
     const doStart = () => {
+      const planned = lineupStarters(s.startingLineup, s.callup || []);
+      const plannedSize = s.startingLineup?.slots.length || 0;
+      const plannedStarters = plannedSize > 0 && planned.length === plannedSize ? planned : [];
       const newMatch: Match = {
         id: uid(),
         teamId: state.activeTeamId,
@@ -321,10 +326,15 @@ export function useScheduleModals(
         goals: [],
         cards: [],
         subs: [],
-        lineup: [],
+        // The starters planned in "Equipa inicial" (Convocatória) come in as the 1st-half line-up
+        lineup: plannedStarters,
+        ...(plannedStarters.length && plannedSize !== LINEUP_SIZE ? { lineupSize: plannedSize } : {}),
         convocados: [...(s.callup || [])],
         ratings: {},
-        capitao: null,
+        capitao:
+          plannedStarters.length && s.startingLineup?.captainId && plannedStarters.includes(s.startingLineup.captainId)
+            ? s.startingLineup.captainId
+            : null,
         timer: { isRunning: false, elapsedMs: 0, lastStartTs: null }
       };
 

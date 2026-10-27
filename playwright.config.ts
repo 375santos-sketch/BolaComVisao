@@ -12,7 +12,10 @@ export default defineConfig({
   workers: 1,
   timeout: 60_000,
   expect: { timeout: 15_000 },
-  reporter: [['list'], ['html', { open: 'never' }]],
+  // On GitHub the failures also show as annotations of the check (readable without downloading the logs)
+  reporter: process.env.CI
+    ? [['list'], ['github'], ['html', { open: 'never' }]]
+    : [['list'], ['html', { open: 'never' }]],
   use: {
     ...devices['Pixel 7'],
     baseURL: `http://localhost:${PORT}`,
