@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { lazy, Suspense, useMemo, useState } from 'react';
 import { AppState } from '../../types';
 import { Header } from '../Header';
 import { CalendarEvent } from './schedule/types';
@@ -19,6 +19,10 @@ import { ScheduleStaffModal } from './schedule/ScheduleStaffModal';
 import { ScheduleClubEventModal } from './schedule/ScheduleClubEventModal';
 import { ScheduleFab } from './schedule/ScheduleFab';
 import { CalendarShareModal } from './schedule/CalendarShareModal';
+
+const FixturePrintModal = lazy(() =>
+  import('./schedule/FixturePrintModal').then((m) => ({ default: m.FixturePrintModal }))
+);
 
 export type { CalendarEvent };
 
@@ -44,6 +48,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
   onShowToast
 }) => {
   const [showCalendarShare, setShowCalendarShare] = useState(false);
+  const [showFixturePrint, setShowFixturePrint] = useState(false);
   // Events hook
   const {
     viewMode,
@@ -329,6 +334,24 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         onOpenScheduleStaff={() => handleOpenScheduleStaff(selectedDate)}
         onResetSchedule={handleResetSchedule}
       />
+
+      <button
+        type="button"
+        onClick={() => setShowFixturePrint(true)}
+        className="ui-btn ui-btn-soft w-full mb-2 py-2.5 px-3 text-xs"
+      >
+        📷 Importar jogos de um print do calendário
+      </button>
+      {showFixturePrint && (
+        <Suspense fallback={null}>
+          <FixturePrintModal
+            state={state}
+            onUpdateState={onUpdateState}
+            onShowToast={onShowToast}
+            onClose={() => setShowFixturePrint(false)}
+          />
+        </Suspense>
+      )}
 
       <button
         type="button"
