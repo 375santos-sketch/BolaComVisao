@@ -5,7 +5,10 @@ import { createServer as createViteServer } from 'vite';
 import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
 import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
 import {
+  cleanPrintFixtures,
   cleanPrintGames,
+  FIXTURE_PROMPT,
+  FIXTURE_SCHEMA,
   geminiErrorKind,
   geminiErrorMessage,
   parseModelJson,
@@ -256,12 +259,18 @@ async function startServer() {
           .json({ success: false, error: 'A leitura de prints não está disponível (falta a chave do Gemini).' });
       }
       const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(req.body?.image || ''));
+      // "calendario": the games of a calendar (Agenda); otherwise the results of a round (Classificação)
+      const fixtures = req.body?.mode === 'calendario';
+      const prompt = fixtures ? FIXTURE_PROMPT : PRINT_PROMPT;
+      const schema = fixtures ? FIXTURE_SCHEMA : PRINT_SCHEMA;
+      const clean = (text: string | undefined) =>
+        fixtures ? cleanPrintFixtures(parseModelJson(text)) : cleanPrintGames(parseModelJson(text));
       if (!match) return res.status(400).json({ success: false, error: 'Imagem inválida.' });
 
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: geminiKey });
       const contents = [
-        { role: 'user', parts: [{ inlineData: { mimeType: match[1], data: match[2] } }, { text: PRINT_PROMPT }] }
+        { role: 'user', parts: [{ inlineData: { mimeType: match[1], data: match[2] } }, { text: prompt }] }
       ];
       // Models are retired over time: try the next one when a model does not exist, and once without the answer
       // format when a model refuses it
@@ -274,11 +283,11 @@ async function startServer() {
               contents,
               config: {
                 responseMimeType: 'application/json',
-                ...(withSchema ? { responseSchema: PRINT_SCHEMA as any } : {}),
+                ...(withSchema ? { responseSchema: schema as any } : {}),
                 temperature: 0
               }
             });
-            return res.json({ success: true, games: cleanPrintGames(parseModelJson(response.text)) });
+            return res.json({ success: true, games: clean(response.text) });
           } catch (err: any) {
             lastError = err;
             console.warn(`Leitura do print com ${model}${withSchema ? '' : ' (sem formato)'}:`, err?.message || err);

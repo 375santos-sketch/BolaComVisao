@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { applyCompact, loadCompact } from '../lib/clubBrand';
 import { ClubSettingsSection } from './ClubSettingsSection';
 import { AppState, NotificationSettings } from '../types';
 import { t } from '../i18n/dict';
@@ -26,6 +27,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenAdminUsers,
   pendingUsersCount = 0
 }) => {
+  const [compact, setCompact] = useState(loadCompact);
   // Administrator contacts (shown to coaches waiting for approval); stored with the notification settings
   const notifSettings: NotificationSettings = { ...defaultNotificationSettings, ...(state.notificationSettings || {}) };
   const updateNotifSettings = (updates: Partial<NotificationSettings>) =>
@@ -219,6 +221,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </div>
         </div>
+
+        <label className="flex items-start gap-2 text-left mt-4 text-xs text-slate-300 cursor-pointer">
+          <input
+            type="checkbox"
+            className="mt-0.5"
+            checked={compact}
+            onChange={(e) => {
+              setCompact(e.target.checked);
+              applyCompact(e.target.checked);
+            }}
+          />
+          <span>
+            <strong className="text-white">📏 Modo compacto</strong> (neste telemóvel): listas mais apertadas e letra
+            mais pequena, para ver mais coisas sem andar para baixo.
+          </span>
+        </label>
 
         <div className="field text-left mt-4">
           <label>{t(state.lang, 'set_subs')}</label>

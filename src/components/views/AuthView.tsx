@@ -14,6 +14,7 @@ import {
   buildRegistrationNotificationMessage
 } from '../../lib/notificationEngine';
 import { MASTER_ADMIN_EMAIL } from '../../lib/constants';
+import { loadBrand } from '../../lib/clubBrand';
 
 interface AuthViewProps {
   state: AppState;
@@ -124,6 +125,8 @@ const AuthErrorBanner: React.FC<{
 };
 
 export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLoginSuccess, onShowToast }) => {
+  // The club's symbol, name and colour kept on this phone from the last visit
+  const [brand] = useState(loadBrand);
   const [mode, setMode] = useState<'login' | 'register' | 'pending'>('login');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pendingAccount, setPendingAccount] = useState<UserAccount | null>(null);
@@ -471,7 +474,23 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-4 relative text-center">
-          <div className="relative group mb-2.5">
+          {(brand.logo || brand.name) && (
+            <div className="flex flex-col items-center mb-3" aria-label="Clube">
+              {brand.logo && (
+                <img
+                  src={brand.logo}
+                  alt={brand.name ? `Símbolo do ${brand.name}` : 'Símbolo do clube'}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-contain bg-white/95 p-1.5 border-4 border-cyan-400 shadow-lg"
+                />
+              )}
+              {brand.name && (
+                <div className="mt-2 text-lg sm:text-xl font-extrabold font-['Chakra_Petch'] uppercase tracking-wider text-cyan-300">
+                  {brand.name}
+                </div>
+              )}
+            </div>
+          )}
+          <div className={`relative group mb-2.5 ${brand.logo || brand.name ? 'scale-75 -mt-1 -mb-1' : ''}`}>
             <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse"></div>
             <img
               src={logoImg}

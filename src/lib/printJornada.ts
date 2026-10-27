@@ -148,3 +148,73 @@ export function printToLeagueGames(games: PrintGame[], season?: string): LeagueG
     awayGoals: g.awayGoals
   }));
 }
+
+// ---------- Calendar of games (Agenda → 📷 Importar jogos) ----------
+
+export const FIXTURE_PROMPT = `Esta imagem é um print de um calendário de jogos de futebol jovem em Portugal (por exemplo resultados.fpf.pt ou a app de uma associação).
+Lê todos os jogos que aparecem, com ou sem resultado. Para cada jogo indica:
+- home: nome da equipa da casa, exatamente como está escrito
+- away: nome da equipa de fora, exatamente como está escrito
+- date: a data como aparece (por exemplo "24 OUT", "24/10" ou "Sáb 24/10"), ou vazio se não houver
+- time: a hora no formato HH:MM, ou vazio se não houver
+- round: número da jornada se aparecer, senão 0
+- venue: nome do campo se aparecer, senão vazio
+Não inventes jogos nem nomes. Ignora publicidade e menus.`;
+
+export const FIXTURE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    games: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          home: { type: 'STRING' },
+          away: { type: 'STRING' },
+          date: { type: 'STRING' },
+          time: { type: 'STRING' },
+          round: { type: 'INTEGER' },
+          venue: { type: 'STRING' }
+        },
+        required: ['home', 'away']
+      }
+    }
+  },
+  required: ['games']
+} as const;
+
+export interface PrintFixture {
+  home: string;
+  away: string;
+  date?: string;
+  time?: string;
+  round?: number;
+  venue?: string;
+}
+
+/** Keeps only well-formed fixtures from the model's answer (at most 60, names cleaned, no repeated game). */
+export function cleanPrintFixtures(raw: unknown): PrintFixture[] {
+  const list = Array.isArray(raw) ? raw : Array.isArray((raw as any)?.games) ? (raw as any).games : [];
+  const out: PrintFixture[] = [];
+  for (const g of list.slice(0, 80)) {
+    if (!g || typeof g !== 'object') continue;
+    const home = name(g.home);
+    const away = name(g.away);
+    if (!home || !away || teamKey(home) === teamKey(away)) continue;
+    const date = name(g.date) || undefined;
+    if (out.some((o) => teamKey(o.home) === teamKey(home) && teamKey(o.away) === teamKey(away) && o.date === date))
+      continue;
+    const t = /(\d{1,2})[:hH.](\d{2})/.exec(name(g.time));
+    const round = goals(g.round);
+    out.push({
+      home,
+      away,
+      date,
+      time: t ? `${t[1].padStart(2, '0')}:${t[2]}` : undefined,
+      round: round > 0 ? round : undefined,
+      venue: name(g.venue) || undefined
+    });
+    if (out.length >= 60) break;
+  }
+  return out;
+}

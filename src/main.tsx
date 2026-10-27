@@ -3,6 +3,12 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
+import { applyCompact, loadBrand, loadCompact } from './lib/clubBrand';
+import { applyClubColor } from './lib/clubColors';
+
+// This phone's look before the club's data loads: the club's colour and the compact mode
+applyClubColor(loadBrand().color);
+applyCompact(loadCompact(), false);
 
 // Register Service Worker for 100% Offline PWA operation (only in production)
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {

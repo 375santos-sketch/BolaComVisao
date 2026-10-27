@@ -1328,6 +1328,83 @@ test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo',
     .toBe(true);
 });
 
+test('agenda: jogos importados de um print do calendário e modo compacto', async ({ page }) => {
+  let mode = '';
+  await page.route('**/api/ler-jornada', async (route) => {
+    mode = route.request().postDataJSON()?.mode;
+    await route.fulfill({
+      json: {
+        success: true,
+        games: [
+          {
+            home: "Cdr Dragões 'A'",
+            away: 'Gd Calendário',
+            date: '07/03/2099',
+            time: '10h30',
+            round: 1,
+            venue: 'Campo Teste'
+          },
+          { home: 'Ud Outra', away: 'Ad Terceira', date: '07/03/2099', time: '11:00', round: 1 },
+          { home: 'Ad Terceira', away: "Cdr Dragões 'A'", date: '14/03/2099', time: '09:15', round: 2 },
+          { home: 'Gd Calendário', away: 'Ud Outra', date: '14/03/2099', round: 2 }
+        ]
+      }
+    });
+  });
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: /Importar jogos de um print do calendário/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Importar jogos por print' });
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==',
+    'base64'
+  );
+  await dialog
+    .getByLabel('Print do calendário')
+    .setInputFiles({ name: 'calendario.png', mimeType: 'image/png', buffer: png });
+  await expect(dialog.getByLabel('A nossa equipa no print')).toHaveValue("Cdr Dragões 'A'");
+  expect(mode).toBe('calendario');
+  const found = dialog.getByRole('list', { name: 'Jogos encontrados' });
+  await expect(found.getByRole('listitem')).toHaveCount(2);
+  await expect(found.getByRole('listitem').first()).toContainText('🏠 vs Gd Calendário');
+  await expect(found.getByRole('listitem').first()).toContainText('10:30 · Jornada 1');
+  await expect(found.getByRole('listitem').last()).toContainText('✈️ vs Ad Terceira');
+  await dialog.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/calendario-print.png` : undefined });
+  await dialog.getByRole('button', { name: 'Adicionar 2 jogo(s) à Agenda' }).click();
+  await expect(dialog).toBeHidden();
+
+  await expect
+    .poll(
+      async () =>
+        [...(await cloudRecords()).values()]
+          .filter((r) => r.kind === 'schedule' && ['Gd Calendário', 'Ad Terceira'].includes(r.opponent as string))
+          .map((r) => `${r.date} ${r.time} ${r.location} ${r.phase} ${r.opponent}`)
+          .sort(),
+      { timeout: 30_000, message: 'jogos importados na nuvem' }
+    )
+    .toEqual(['2099-03-07 10:30 casa Jornada 1 Gd Calendário', '2099-03-14 09:15 fora Jornada 2 Ad Terceira']);
+
+  // The same print again: both games are already in the Agenda
+  await page.getByRole('button', { name: /Importar jogos de um print do calendário/ }).click();
+  await dialog
+    .getByLabel('Print do calendário')
+    .setInputFiles({ name: 'calendario.png', mimeType: 'image/png', buffer: png });
+  await expect(dialog.getByRole('list', { name: 'Jogos encontrados' })).toContainText('já está na Agenda');
+  await expect(dialog.getByRole('button', { name: 'Adicionar 0 jogo(s) à Agenda' })).toBeDisabled();
+  await dialog.getByRole('button', { name: 'Fechar importar jogos' }).click();
+
+  // Compact mode: on this phone only, kept after reopening the app
+  await openMore(page, /Definições do Clube/);
+  await page.getByRole('checkbox', { name: /Modo compacto/ }).check();
+  await expect(page.locator('html')).toHaveClass(/compact/);
+  await page.reload();
+  await expect(page.locator('html')).toHaveClass(/compact/);
+  await enterPanel(page);
+  await openMore(page, /Definições do Clube/);
+  await page.getByRole('checkbox', { name: /Modo compacto/ }).uncheck();
+  await expect(page.locator('html')).not.toHaveClass(/compact/);
+});
+
 test('sessão na nuvem terminada: aviso, entrar de novo sem perder o que ficou no aparelho', async ({
   page,
   browser
@@ -1405,4 +1482,7 @@ test('terminar sessão apaga os dados do clube neste aparelho', async ({ page })
 
   await page.reload();
   await expect(page.getByText('ENTRAR NA PLATAFORMA')).toBeVisible();
+  // Only the club's name, colour and symbol stay, for the entrance screen
+  await expect(page.getByLabel('Clube')).toContainText('Dragões');
+  await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/entrada.png` : undefined });
 });

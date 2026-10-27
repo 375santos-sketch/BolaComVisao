@@ -5,6 +5,7 @@ import { subscribeToClubCloud, migrateClubToRecords, getCloudMode } from './serv
 import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
 import { applyClubColor } from './lib/clubColors';
+import { saveBrand } from './lib/clubBrand';
 import { teamSettings } from './lib/teamSettings';
 import { exportJSONBackup } from './lib/exportUtils';
 import { evaluateSystemNotifications } from './lib/notificationEngine';
@@ -148,6 +149,12 @@ export default function App() {
     applyThemeCSS(state.theme || 'original');
     applyClubColor(clubColor);
   }, [state.theme, clubColor]);
+
+  // The club's look for the entrance screen of this phone (next time the app opens)
+  useEffect(() => {
+    if (!state.currentUser || !state.activeTeamId) return;
+    saveBrand({ name: state.myClubName, color: clubColor, logoSource: state.clubLogoUrl });
+  }, [state.currentUser, state.activeTeamId, state.myClubName, state.clubLogoUrl, clubColor]);
 
   // On Mount: Auto-check active cloud session and load latest master club state
   useEffect(() => {

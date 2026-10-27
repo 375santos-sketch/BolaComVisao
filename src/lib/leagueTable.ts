@@ -356,7 +356,7 @@ function acronymOf(short: ReturnType<typeof teamParts>, long: ReturnType<typeof 
  * inside the other's ("Mação" in "Ad Mação"), 0 different teams. Different letters ('A' and 'B') are never the same
  * team, and a lettered team is never matched by words only ("Benfica" is not "S.Abrantes Benfica 'B'").
  */
-function teamMatch(a: string, b: string): number {
+export function teamMatch(a: string, b: string): number {
   if (teamKey(a) === teamKey(b)) return 3;
   const pa = teamParts(a);
   const pb = teamParts(b);

@@ -29,6 +29,10 @@
 }
 
 @layer base {
+  /* Modo compacto (Definições, per phone): everything measured in rem gets about 12% smaller */
+  html.compact {
+    font-size: 14px;
+  }
   .font-mono {
     font-variant-numeric: tabular-nums;
     letter-spacing: 0;
@@ -1385,4 +1389,24 @@ select {
 
 .tactic-piece span {
   pointer-events: none;
+}
+
+/* Modo compacto: the older pieces measured in pixels */
+html.compact .btn {
+  min-height: 38px;
+  padding: 7px 8px;
+}
+html.compact .field input,
+html.compact .field select,
+html.compact .field textarea {
+  min-height: 38px;
+  padding: 9px 12px;
+}
+html.compact .card,
+html.compact .panel {
+  padding: 9px;
+}
+html.compact .chip {
+  min-height: 34px;
+  padding: 7px 6px;
 }
