@@ -132,3 +132,58 @@ export function shortName(p: Pick<Player, 'name' | 'nickname'>): string {
   const parts = p.name.trim().split(/\s+/);
   return parts.length > 2 ? `${parts[0]} ${parts[parts.length - 1]}` : p.name.trim();
 }
+
+const SIDES: Record<number, string[]> = {
+  1: [''],
+  2: ['esquerdo', 'direito'],
+  3: ['esquerdo', '', 'direito'],
+  4: ['esquerdo', 'centro esq.', 'centro dir.', 'direito'],
+  5: ['esquerdo', 'centro esq.', '', 'centro dir.', 'direito']
+};
+const side = (n: number, k: number) => (SIDES[n] || [])[k] ?? `${k + 1}`;
+
+function lineNames(n: number, line: number, count: number): string[] {
+  const names = (base: string, centre: string) =>
+    Array.from({ length: n }, (_, k) => (side(n, k) ? `${base} ${side(n, k)}` : centre));
+  if (line === 0) {
+    // Defence: centre-backs; with four or more, the outside ones are full-backs
+    if (n >= 4)
+      return Array.from({ length: n }, (_, k) =>
+        k === 0
+          ? 'Lateral esquerdo'
+          : k === n - 1
+            ? 'Lateral direito'
+            : n === 4
+              ? k === 1
+                ? 'Central esquerdo'
+                : 'Central direito'
+              : ['', 'Central esquerdo', 'Defesa central', 'Central direito'][k]
+      );
+    return names('Central', 'Defesa central');
+  }
+  if (line === count - 1 && count > 1) {
+    if (n === 3) return ['Extremo esquerdo', 'Ponta de lança', 'Extremo direito'];
+    return names('Avançado', 'Ponta de lança');
+  }
+  const middles = count - 2;
+  const base =
+    middles > 1 ? (line === 1 ? 'Médio defensivo' : line === count - 2 ? 'Médio ofensivo' : 'Médio') : 'Médio';
+  return names(base, base === 'Médio' ? 'Médio centro' : base);
+}
+
+/** Name of each place on the pitch ("Guarda-redes", "Central esquerdo", "Médio centro", "Ponta de lança"…). */
+export function slotNames(lines: number[]): string[] {
+  return ['Guarda-redes', ...lines.flatMap((n, i) => lineNames(n, i, lines.length))];
+}
+
+/**
+ * Puts a player (or nobody) in a place: if he was in another place, the two swap; if he was on the bench, whoever
+ * was in that place goes to the bench.
+ */
+export function assignSlot(slots: (string | null)[], index: number, playerId: string | null): (string | null)[] {
+  const next = [...slots];
+  const from = playerId ? next.indexOf(playerId) : -1;
+  if (from >= 0 && from !== index) next[from] = next[index];
+  next[index] = playerId;
+  return next;
+}

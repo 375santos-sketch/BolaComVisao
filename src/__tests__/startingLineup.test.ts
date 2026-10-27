@@ -5,6 +5,8 @@ import {
   lineupStarters,
   positionGroup,
   shortName,
+  slotNames,
+  assignSlot,
   slotPositions,
   swapSlots,
   systemLines
@@ -82,5 +84,40 @@ describe('Equipa inicial', () => {
   it('uses the nickname or the first and last names', () => {
     expect(shortName({ name: 'Tomás Pedro Teste' })).toBe('Tomás Teste');
     expect(shortName({ name: 'Rui Teste', nickname: 'Ruizinho' })).toBe('Ruizinho');
+  });
+
+  it('names every place of the pitch', () => {
+    expect(slotNames([2, 3, 1])).toEqual([
+      'Guarda-redes',
+      'Central esquerdo',
+      'Central direito',
+      'Médio esquerdo',
+      'Médio centro',
+      'Médio direito',
+      'Ponta de lança'
+    ]);
+    expect(slotNames([4, 3, 3])).toEqual([
+      'Guarda-redes',
+      'Lateral esquerdo',
+      'Central esquerdo',
+      'Central direito',
+      'Lateral direito',
+      'Médio esquerdo',
+      'Médio centro',
+      'Médio direito',
+      'Extremo esquerdo',
+      'Ponta de lança',
+      'Extremo direito'
+    ]);
+    expect(slotNames([4, 2, 3, 1]).slice(5, 7)).toEqual(['Médio defensivo esquerdo', 'Médio defensivo direito']);
+    expect(slotNames([4, 2, 3, 1])[8]).toBe('Médio ofensivo');
+  });
+
+  it('puts any player in any place: swapping with another place, or sending the one there to the bench', () => {
+    const slots = ['gk', 'a', 'b', null];
+    expect(assignSlot(slots, 1, 'b')).toEqual(['gk', 'b', 'a', null]); // swap
+    expect(assignSlot(slots, 1, 'miguel')).toEqual(['gk', 'miguel', 'b', null]); // from the bench
+    expect(assignSlot(slots, 3, 'a')).toEqual(['gk', null, 'b', 'a']); // to an empty place
+    expect(assignSlot(slots, 2, null)).toEqual(['gk', 'a', null, null]); // to the bench
   });
 });
