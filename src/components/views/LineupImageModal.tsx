@@ -8,7 +8,8 @@ import {
   positionGroup,
   shortName,
   slotPositions,
-  swapSlots,
+  assignSlot,
+  slotNames,
   SYSTEM_OPTIONS,
   systemLines
 } from '../../lib/startingLineup';
@@ -38,55 +39,52 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
   const saved = game.startingLineup;
   const [size, setSize] = useState(saved?.slots.length || LINEUP_SIZE);
   const [system, setSystem] = useState(saved?.system || game.preMatchPlan?.system?.trim() || defaultSystem(size));
-  const [starters, setStarters] = useState<string[]>(() => {
-    const kept = (saved?.slots || []).filter((id): id is string => Boolean(id && byId.has(id)));
-    if (kept.length) return kept;
+  // Each place of the pitch holds one called-up player (or nobody); the starters are whoever is on the pitch
+  const [slots, setSlots] = useState<(string | null)[]>(() => {
+    const kept = (saved?.slots || []).map((id) => (id && byId.has(id) ? id : null));
+    if (saved && kept.length === size && kept.some(Boolean)) return kept;
     const gk = called.find((p) => positionGroup(p.positions) === 'gr');
-    return [...(gk ? [gk] : []), ...called.filter((p) => p !== gk)].slice(0, size).map((p) => p.id);
+    const first = [...(gk ? [gk] : []), ...called.filter((p) => p !== gk)].slice(0, size);
+    return arrangeStarters(first, system, size);
   });
-  const [slots, setSlots] = useState<(string | null)[]>(() =>
-    saved && saved.slots.length === size && saved.slots.every((id) => !id || byId.has(id))
-      ? saved.slots
-      : arrangeStarters(starters.map((id) => byId.get(id)!).filter(Boolean), system, size)
-  );
+  const starters = slots.filter((id): id is string => Boolean(id));
   const [captainId, setCaptainId] = useState(saved?.captainId || '');
-  const [picked, setPicked] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lines = systemLines(system, size);
   const positions = slotPositions(lines);
+  const names = slotNames(lines);
 
-  const rearrange = (nextStarters: string[], nextSystem: string, nextSize: number) => {
-    setSlots(arrangeStarters(nextStarters.map((id) => byId.get(id)!).filter(Boolean), nextSystem, nextSize));
-    setPicked(null);
+  const updateSlots = (next: (string | null)[]) => {
+    setSlots(next);
+    if (captainId && !next.includes(captainId)) setCaptainId('');
   };
 
+  // Chips: a player comes in to the first free place, or goes out to the bench
   const toggleStarter = (id: string) => {
-    let next: string[];
-    if (starters.includes(id)) next = starters.filter((x) => x !== id);
-    else if (starters.length >= size) {
-      onShowToast(`Já tem ${size} titulares. Tire um primeiro.`);
+    const at = slots.indexOf(id);
+    if (at >= 0) return updateSlots(assignSlot(slots, at, null));
+    const free = slots.indexOf(null);
+    if (free < 0) {
+      onShowToast(`Já tem ${size} titulares. Tire um primeiro, ou escolha-o num lugar abaixo.`);
       return;
-    } else next = [...starters, id];
-    setStarters(next);
-    if (captainId && !next.includes(captainId)) setCaptainId('');
-    rearrange(next, system, size);
+    }
+    updateSlots(assignSlot(slots, free, id));
+  };
+
+  const autoArrange = (nextSystem = system, nextSize = size, from = starters) => {
+    updateSlots(arrangeStarters(from.map((id) => byId.get(id)!).filter(Boolean), nextSystem, nextSize));
   };
 
   const changeSize = (n: number) => {
     const nextSystem = defaultSystem(n);
-    const next = starters.slice(0, n);
     setSize(n);
     setSystem(nextSystem);
-    setStarters(next);
-    rearrange(next, nextSystem, n);
+    autoArrange(nextSystem, n, starters.slice(0, n));
   };
 
-  const tapSlot = (i: number) => {
-    if (picked === null) setPicked(i);
-    else {
-      if (picked !== i) setSlots(swapSlots(slots, picked, i));
-      setPicked(null);
-    }
+  // Another system with the same players: everyone keeps his place in the order (the coach fixes what changed)
+  const changeSystem = (next: string) => {
+    setSystem(next);
   };
 
   const clubName = state.myClubName || 'A nossa equipa';
@@ -157,16 +155,6 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
     if (result === 'downloaded') onShowToast('Imagem descarregada 📥');
   };
 
-  const placeLabel = (i: number) => {
-    if (i === 0) return 'GR';
-    let k = i - 1;
-    for (let li = 0; li < lines.length; li++) {
-      if (k < lines[li]) return li === 0 ? 'Def' : li === lines.length - 1 && lines.length > 1 ? 'Ava' : 'Méd';
-      k -= lines[li];
-    }
-    return '';
-  };
-
   return (
     <div
       className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3"
@@ -211,10 +199,7 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
                   aria-label="Sistema"
                   className="ui-input mt-1 text-xs"
                   value={lines.join('-')}
-                  onChange={(e) => {
-                    setSystem(e.target.value);
-                    rearrange(starters, e.target.value, size);
-                  }}
+                  onChange={(e) => changeSystem(e.target.value)}
                 >
                   {Array.from(new Set([lines.join('-'), ...(SYSTEM_OPTIONS[size] || [])])).map((s) => (
                     <option key={s} value={s}>
@@ -246,27 +231,41 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
             </div>
 
             <div>
-              <div className="text-[11px] text-slate-400 mb-1">
-                Lugares no campo: toque num jogador e depois noutro para os trocar
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <div className="text-[11px] text-slate-400">Lugares no campo: escolha quem joga em cada posição</div>
+                <button
+                  type="button"
+                  onClick={() => autoArrange()}
+                  className="ui-btn ui-btn-ghost px-2 py-0.5 text-[10px] shrink-0"
+                  title="Arrumar pelas posições do plantel"
+                >
+                  🔄 Arrumar
+                </button>
               </div>
-              <div role="group" aria-label="Lugares no campo" className="grid grid-cols-2 gap-1.5">
-                {slots.map((id, i) => {
-                  const p = id ? byId.get(id) : undefined;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      aria-pressed={picked === i}
-                      onClick={() => tapSlot(i)}
-                      className={`ui-btn justify-start px-2 py-1.5 text-[11px] ${picked === i ? 'ui-btn-warning' : 'ui-btn-secondary'}`}
+              <div role="group" aria-label="Lugares no campo" className="space-y-1.5">
+                {slots.map((id, i) => (
+                  <label key={i} className="flex items-center gap-2 text-[11px]">
+                    <span className="w-32 shrink-0 text-slate-300">{names[i]}</span>
+                    <select
+                      aria-label={names[i]}
+                      className="ui-input flex-1 py-1.5 text-xs"
+                      value={id || ''}
+                      onChange={(e) => updateSlots(assignSlot(slots, i, e.target.value || null))}
                     >
-                      <span className="text-slate-400 w-7 shrink-0 text-left">{placeLabel(i)}</span>
-                      <span className="truncate">
-                        {p ? `${numberOf(p) ? `${numberOf(p)} ` : ''}${shortName(p)}` : '—'}
-                      </span>
-                    </button>
-                  );
-                })}
+                      <option value="">— vazio —</option>
+                      {called.map((p) => {
+                        const where = slots.indexOf(p.id);
+                        return (
+                          <option key={p.id} value={p.id}>
+                            {numberOf(p) ? `${numberOf(p)} · ` : ''}
+                            {shortName(p)}
+                            {where >= 0 && where !== i ? ` (${names[where]})` : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </label>
+                ))}
               </div>
             </div>
 

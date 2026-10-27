@@ -251,9 +251,14 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
   await expect(lineup.getByText('Titulares (3/7)')).toBeVisible();
   await lineup.getByLabel('Jogadores em campo').selectOption('5');
   await expect(lineup.getByLabel('Sistema')).toHaveValue('2-2');
-  await expect(lineup.getByRole('group', { name: 'Lugares no campo' }).getByRole('button')).toHaveCount(5);
   const places = lineup.getByRole('group', { name: 'Lugares no campo' });
-  for (const name of ['Rui Silva', 'Martim Costa', 'Duarte Matos']) await expect(places).toContainText(name);
+  await expect(places.getByRole('combobox')).toHaveCount(5);
+  await expect(lineup.getByText('Titulares (3/5)')).toBeVisible();
+  // Any player in any place: Rui Silva (p1) plays as left centre-back
+  await places.getByLabel('Central esquerdo').selectOption('p1');
+  await expect(places.getByLabel('Central esquerdo')).toHaveValue('p1');
+  await lineup.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/lugares.png` : undefined });
+  await expect(lineup.getByText('Titulares (3/5)')).toBeVisible();
   await lineup.getByLabel('Capitão').selectOption({ label: 'Rui Silva' });
   await expect(lineup.getByRole('img', { name: 'Imagem da equipa inicial' })).toBeVisible();
   await lineup
