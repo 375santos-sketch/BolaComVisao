@@ -13,6 +13,7 @@ import { WeatherBadge } from '../WeatherBadge';
 import { directionsUrl, townOfClub } from '../../lib/gameMap';
 import { teamSettings } from '../../lib/teamSettings';
 import { cardAlerts, cardStatuses } from '../../lib/cardSuspensions';
+import { CompactSelect } from '../ui/CompactSelect';
 
 const LineupImageModal = lazy(() => import('./LineupImageModal').then((m) => ({ default: m.LineupImageModal })));
 
@@ -112,31 +113,6 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           (minutesById.get(a.id)?.minutes ?? 0) - (minutesById.get(b.id)?.minutes ?? 0)
       )
     : squad;
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      onShowToast('Por favor seleciona um ficheiro de imagem válido.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const dataUrl = evt.target?.result as string;
-      if (dataUrl) {
-        onUpdateState({ clubLogoUrl: dataUrl });
-        onShowToast('Símbolo do clube atualizado ✓');
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveLogo = () => {
-    onUpdateState({ clubLogoUrl: undefined });
-    onShowToast('Símbolo removido ✓');
-  };
 
   const handleUpdateMatchField = (field: keyof ScheduledMatch, val: any) => {
     if (!match) return;
@@ -241,9 +217,14 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
   }
 
   const calledCount = match.callup.length;
+  const WEEKDAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  const gameDay = `${WEEKDAYS[new Date(`${match.date}T12:00:00`).getDay()]} ${match.date.slice(8, 10)}/${match.date.slice(5, 7)}`;
+  const competition = match.tournamentName || match.phase || '';
+  const progress = eligiblePlayers.length ? Math.round((calledCount / eligiblePlayers.length) * 100) : 0;
+  const detailsSummary = [match.meetingTime, match.venue].filter(Boolean).join(' · ');
 
   return (
-    <div className="pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
+    <div className="pb-[calc(10rem+env(safe-area-inset-bottom))]">
       <Header
         title="Convocatória"
         lang={state.lang}
@@ -257,124 +238,86 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      {/* Select Match Header */}
-      {state.schedule.length > 1 && (
-        <div className="card mb-3 p-3">
-          <label className="text-xs text-gold uppercase font-bold block mb-1.5">🎯 Selecionar Jogo Agendado:</label>
-          <select
-            className="w-full bg-surface border border-line rounded-lg p-2.5 text-xs text-chalk font-semibold"
-            value={selectedMatchId}
-            onChange={(e) => handleSelectMatch(e.target.value)}
-          >
-            {state.schedule.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.opponent} ({s.date.split('-').reverse().join('/')} - {s.time}h)
-                {s.callupFinalized ? ' ✓ [Finalizada]' : ''}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Finalized Status Banner */}
-      {isFinalized && !isEditing ? (
-        <div className="card mb-3 p-3.5 bg-emerald-950/70 border-emerald-500/50 shadow-lg">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <span className="text-2xl shrink-0">✅</span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-['Chakra_Petch'] font-black uppercase tracking-wider text-emerald-300">
-                    Convocatória Finalizada
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-900/80 text-emerald-200 border border-emerald-500/40 text-[10px] font-mono font-bold">
-                    {calledCount} convocados
-                  </span>
-                </div>
-                <div className="text-[11px] text-emerald-400/80 font-mono mt-0.5">
-                  Esta convocatória está concluída e pronta para envio. Clica em "Editar" se precisares de efetuar
-                  alterações.
-                  {match.callupFinalizedAt
-                    ? ` • ${new Date(match.callupFinalizedAt).toLocaleDateString('pt-PT')} ${new Date(match.callupFinalizedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
-                    : ''}
-                </div>
-              </div>
+      {/* The game: who, when, where, and how far the call-up is */}
+      <section aria-label="Jogo da convocatória" className="ui-card p-3.5 mb-2.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-lg font-bold text-white leading-tight truncate">vs {match.opponent}</div>
+            <div className="text-xs text-slate-400 mt-0.5">
+              {gameDay} · {match.time} ·{' '}
+              {match.location === 'casa' ? t(state.lang, 'match_home') : t(state.lang, 'match_away')}
+              {competition ? ` · ${competition}` : ''}
             </div>
-
-            <button
-              type="button"
-              onClick={handleStartEditing}
-              className="ui-btn ui-btn-warning px-4 py-2 text-xs flex items-center justify-center gap-1.5 shrink-0"
-              title="Reabrir convocatória para editar jogadores ou informações"
-            >
-              <span>✏️</span>
-              <span>Editar Convocatória</span>
-            </button>
           </div>
+          {state.schedule.length > 1 && (
+            <CompactSelect
+              label="Escolher o jogo"
+              value={selectedMatchId}
+              onChange={handleSelectMatch}
+              className="shrink-0 text-xs !text-slate-300"
+              options={state.schedule.map((s) => [
+                s.id,
+                `${s.id === selectedMatchId ? 'Trocar' : s.opponent} ${s.id === selectedMatchId ? '' : `(${s.date.split('-').reverse().join('/')} - ${s.time}h)${s.callupFinalized ? ' ✓' : ''}`}`.trim()
+              ])}
+            />
+          )}
         </div>
-      ) : isFinalized && isEditing ? (
-        <div className="card mb-3 p-3.5 bg-amber-950/70 border-amber-500/50 shadow-lg">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <span className="text-2xl shrink-0">✏️</span>
-              <div>
-                <span className="text-xs font-['Chakra_Petch'] font-black uppercase tracking-wider text-amber-300">
-                  Modo de Edição Ativo
-                </span>
-                <div className="text-[11px] text-amber-400/80 font-mono mt-0.5">
-                  Podes alterar atletas, horários e notas. Quando terminares, clica em "Finalizar Convocatória".
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleFinalizeCallup}
-              className="ui-btn ui-btn-success px-4 py-2 text-xs flex items-center justify-center gap-1.5 shrink-0"
-              title="Concluir e finalizar convocatória"
-            >
-              <span>✓</span>
-              <span>Finalizar Convocatória</span>
-            </button>
-          </div>
+        <div className="mt-2">
+          <WeatherBadge
+            date={match.date}
+            time={match.time}
+            places={
+              match.location === 'fora'
+                ? [match.venue || '', townOfClub(match.opponent), settings.clubTown]
+                : [settings.clubTown, match.venue || '']
+            }
+          />
         </div>
-      ) : (
-        <div className="card mb-3 p-3 bg-slate-900/90 border-cyan-500/30">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">📋</span>
-              <div>
-                <span className="text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider text-cyan-300">
-                  Convocatória em Preparação
-                </span>
-                <span className="text-[11px] text-slate-400 ml-2 font-mono">
-                  ({calledCount}/{eligiblePlayers.length} atletas)
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleFinalizeCallup}
-              className="ui-btn ui-btn-success px-3.5 py-1.5 text-xs flex items-center justify-center gap-1.5 shrink-0"
-              title="Finalizar convocatória"
-            >
-              <span>✓</span>
-              <span>Finalizar Convocatória</span>
-            </button>
-          </div>
+        <div className="mt-2.5 h-1.5 rounded-full bg-slate-800 overflow-hidden" aria-hidden="true">
+          <div className="h-full rounded-full bg-emerald-500" style={{ width: `${progress}%` }} />
         </div>
-      )}
+        <div className="mt-1.5 flex items-center justify-between gap-2 text-xs text-slate-400">
+          {isFinalized && !isEditing ? (
+            <span className="text-emerald-300 font-semibold">
+              ✓ Convocatória fechada · {calledCount} convocados
+              {match.callupFinalizedAt ? ` · ${new Date(match.callupFinalizedAt).toLocaleDateString('pt-PT')}` : ''}
+            </span>
+          ) : (
+            <span>
+              <b className="text-slate-100">{calledCount}</b> de {eligiblePlayers.length} convocados
+              {isFinalized && isEditing ? ' · a editar' : ''}
+            </span>
+          )}
+        </div>
+      </section>
 
-      {/* Starting line-up picture */}
-      <button
-        type="button"
-        onClick={() => setShowLineup(true)}
-        className="ui-btn ui-btn-soft w-full mb-3 py-2.5 text-xs"
-      >
-        🖼️ Imagem da equipa inicial
-        {match.startingLineup ? ' (guardada)' : ''}
-      </button>
+      {/* What to do with it */}
+      <div className="grid grid-cols-3 gap-2 mb-2.5">
+        <button
+          type="button"
+          onClick={() => setShowLineup(true)}
+          className="ui-btn ui-btn-secondary px-2 py-2.5 text-xs leading-tight"
+          aria-label={`Imagem da equipa inicial${match.startingLineup ? ' (guardada)' : ''}`}
+        >
+          🖼️ Equipa inicial{match.startingLineup ? ' ✓' : ''}
+        </button>
+        <a
+          href={directionsUrl(match)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ui-btn ui-btn-secondary px-2 py-2.5 text-xs leading-tight flex items-center justify-center"
+        >
+          🗺️ Como chegar
+        </a>
+        <button
+          type="button"
+          onClick={() => setShowShare(true)}
+          className="ui-btn ui-btn-secondary px-2 py-2.5 text-xs leading-tight"
+          aria-label="Enviar por WhatsApp"
+        >
+          💬 WhatsApp
+        </button>
+      </div>
       {showLineup && (
         <Suspense fallback={null}>
           <LineupImageModal
@@ -389,155 +332,77 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
         </Suspense>
       )}
 
-      {/* Club Logo / Symbol Section */}
-      <div className="card mb-3 p-3.5 bg-surface-2 border-gold-dim">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-surface border border-line flex items-center justify-center overflow-hidden shrink-0">
-              {state.clubLogoUrl ? (
-                <img src={state.clubLogoUrl} alt="Símbolo do Clube" className="w-full h-full object-contain" />
-              ) : (
-                <span className="text-xl">🛡️</span>
-              )}
+      {/* Meeting time, pitch and notes: open only when needed */}
+      <details className="ui-card mb-3 group">
+        <summary className="flex items-center justify-between gap-2 px-3.5 py-3 cursor-pointer list-none text-sm font-semibold text-slate-100">
+          <span>Concentração, campo e avisos</span>
+          <span className="text-xs font-normal text-slate-400 truncate">{detailsSummary || 'por preencher'} ▾</span>
+        </summary>
+        <div className="px-3.5 pb-3.5">
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="field mb-0">
+              <label className="text-[11px]">Hora de concentração</label>
+              <input
+                type="time"
+                value={match.meetingTime || ''}
+                onChange={(e) => handleUpdateMatchField('meetingTime', e.target.value)}
+              />
             </div>
-            <div>
-              <div className="text-xs font-bold text-gold uppercase tracking-wider">Símbolo do Clube</div>
-              <div className="text-[11px] text-muted">Aparece no topo do PDF gerado</div>
+            <div className="field mb-0">
+              <label className="text-[11px]">Estádio / campo</label>
+              <input
+                type="text"
+                placeholder="Ex: Estádio Municipal"
+                value={match.venue || ''}
+                onChange={(e) => handleUpdateMatchField('venue', e.target.value)}
+              />
             </div>
           </div>
-
-          <div className="flex flex-col gap-1.5 shrink-0">
-            <label className="btn btn-outline text-xs py-1.5 px-3 cursor-pointer inline-flex items-center gap-1">
-              📷 {state.clubLogoUrl ? 'Alterar' : 'Carregar'}
-              <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-            </label>
-            {state.clubLogoUrl && (
-              <button className="text-[10px] text-red-400 hover:underline text-right" onClick={handleRemoveLogo}>
-                Remover
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Match Information Inputs */}
-      <div className="card mb-3 p-3.5">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm font-bold text-chalk">
-            ⚽ {state.myClubName || 'A Minha Equipa'} vs <span className="text-gold">{match.opponent}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className={`badge-loc ${match.location === 'casa' ? 'casa' : 'fora'}`}>
-              {match.location === 'casa' ? t(state.lang, 'match_home') : t(state.lang, 'match_away')}
-            </span>
-          </div>
-        </div>
-
-        <div className="text-xs text-muted mb-3 flex items-center gap-2">
-          <span>📅 {match.date.split('-').reverse().join('/')}</span>
-          <span>⏱️ {match.time}h</span>
-          {match.tournamentName && <span>🏆 {match.tournamentName}</span>}
-        </div>
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <WeatherBadge
-            date={match.date}
-            time={match.time}
-            places={
-              match.location === 'fora'
-                ? [match.venue || '', townOfClub(match.opponent), settings.clubTown]
-                : [settings.clubTown, match.venue || '']
-            }
-          />
-          <a
-            href={directionsUrl(match)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ui-btn ui-btn-soft px-3 py-1 text-[11px]"
-          >
-            🗺️ Como chegar
-          </a>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mb-2">
-          <div className="field mb-0">
-            <label className="text-[11px]">⏰ Hora Concentração</label>
-            <input
-              type="time"
-              value={match.meetingTime || ''}
-              onChange={(e) => handleUpdateMatchField('meetingTime', e.target.value)}
-            />
-          </div>
-          <div className="field mb-0">
-            <label className="text-[11px]">🏟️ Estádio / Campo</label>
+          <div className="field mb-2">
+            <label className="text-[11px]">Ponto de encontro</label>
             <input
               type="text"
-              placeholder="Ex: Estádio Municipal"
-              value={match.venue || ''}
-              onChange={(e) => handleUpdateMatchField('venue', e.target.value)}
+              placeholder="Ex: Sede do clube / Balneários"
+              value={match.meetingPoint || ''}
+              onChange={(e) => handleUpdateMatchField('meetingPoint', e.target.value)}
+            />
+          </div>
+          <div className="field mb-0">
+            <label className="text-[11px]">Avisos para os jogadores</label>
+            <textarea
+              rows={2}
+              className="w-full bg-surface border border-line rounded-lg p-2 text-xs text-chalk resize-none"
+              placeholder="Ex: Trazer BI/CC e equipamento alternativo..."
+              value={match.callupNotes || ''}
+              onChange={(e) => handleUpdateMatchField('callupNotes', e.target.value)}
             />
           </div>
         </div>
+      </details>
 
-        <div className="field mb-2">
-          <label className="text-[11px]">📍 Ponto de Encontro</label>
-          <input
-            type="text"
-            placeholder="Ex: Sede do clube / Balneários"
-            value={match.meetingPoint || ''}
-            onChange={(e) => handleUpdateMatchField('meetingPoint', e.target.value)}
-          />
-        </div>
-
-        <div className="field mb-0">
-          <label className="text-[11px]">📝 Observações / Avisos para os Jogadores</label>
-          <textarea
-            rows={2}
-            className="w-full bg-surface border border-line rounded-lg p-2 text-xs text-chalk resize-none"
-            placeholder="Ex: Trazer BI/CC e equipamento alternativo..."
-            value={match.callupNotes || ''}
-            onChange={(e) => handleUpdateMatchField('callupNotes', e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Players Selection Grid */}
-      <div className="card mb-3 p-3.5" id="convocatoria-players-selection">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
-          <div>
-            <div className="text-xs font-bold text-gold uppercase tracking-wider">
-              📋 Jogadores Convocados ({calledCount}/{eligiblePlayers.length})
-            </div>
-            <div className="text-[11px] text-muted">Toca nos jogadores para convocar ou retirar</div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            <button
-              className="ui-btn ui-btn-soft text-[10px] sm:text-xs px-3 py-1.5 min-h-[36px] flex items-center gap-1 touch-manipulation"
-              onClick={handleSelectByAttendance}
-              title="Convocar automaticamente atletas com assiduidade ≥70%"
-            >
-              <span>⚡</span>
-              <span>Por Assiduidade</span>
+      {/* Players */}
+      <section className="mb-3" id="convocatoria-players-selection" aria-label="Atletas">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-slate-400">
+            Atletas ({calledCount}/{eligiblePlayers.length})
+          </h2>
+          <div className="flex items-center gap-3 text-xs font-semibold text-cyan-400">
+            <button type="button" onClick={handleSelectByAttendance} title="Convocar os atletas com assiduidade ≥70%">
+              Por assiduidade
             </button>
-            <button
-              className="ui-btn ui-btn-secondary text-[10px] sm:text-xs text-gold border-gold-dim px-2.5 py-1.5 min-h-[36px] touch-manipulation"
-              onClick={handleSelectAll}
-            >
+            <button type="button" onClick={handleSelectAll}>
               Todos
             </button>
-            <button
-              className="ui-btn ui-btn-secondary text-[10px] sm:text-xs text-muted border-line px-2.5 py-1.5 min-h-[36px] hover:text-chalk touch-manipulation"
-              onClick={handleDeselectAll}
-            >
+            <button type="button" onClick={handleDeselectAll}>
               Limpar
             </button>
           </div>
         </div>
 
         {eligiblePlayers.length === 0 ? (
-          <div className="text-xs text-muted text-center py-4">
+          <div className="ui-card text-xs text-slate-400 text-center py-4">
             Ainda não adicionaste jogadores ao plantel.
-            <button className="text-gold font-bold ml-1 underline" onClick={() => onNavigate('plantel')}>
+            <button className="text-cyan-400 font-bold ml-1 underline" onClick={() => onNavigate('plantel')}>
               Adicionar Jogadores
             </button>
           </div>
@@ -547,7 +412,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
               <div
                 role="note"
                 aria-label="Cartões"
-                className="mb-2.5 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-[11px] text-rose-100 space-y-1"
+                className="mb-2 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-[11px] text-rose-100 space-y-1"
               >
                 {cards.suspended.map((c) => (
                   <div key={c.playerId}>
@@ -565,7 +430,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             {calledUnavailable.length > 0 && (
               <div
                 role="alert"
-                className="mb-2.5 p-2.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-[11px] text-rose-100"
+                className="mb-2 p-2.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-[11px] text-rose-100"
               >
                 ⚠️ Convocados indisponíveis neste jogo:{' '}
                 {calledUnavailable.map((p) => `${p.name} (${availabilityById.get(p.id)?.label})`).join(', ')}
@@ -575,15 +440,12 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
               <div
                 role="note"
                 aria-label="Precisam de minutos"
-                className="mb-2.5 p-2.5 rounded-xl bg-amber-950/50 border border-amber-500/40 text-[11px] text-amber-100 space-y-1"
+                className="mb-2 p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-[11px] text-amber-100 space-y-1"
               >
-                <div className="font-bold text-amber-300">⚖️ Precisam de minutos</div>
+                <div className="font-bold text-amber-300">Precisam de minutos</div>
                 <div className="flex flex-wrap gap-1">
                   {needMinutes.map((r) => (
-                    <span
-                      key={r.playerId}
-                      className="px-2 py-0.5 rounded-full bg-amber-900/50 border border-amber-500/30"
-                    >
+                    <span key={r.playerId} className="px-2 py-0.5 rounded-full bg-amber-900/40">
                       {r.name}{' '}
                       <b>
                         {r.availableMinutes > 0 ? `${Math.round(r.share * 100)}%` : 'sem jogos'}
@@ -597,124 +459,84 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                 </div>
               </div>
             )}
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-end mb-1.5">
               <button
                 type="button"
                 onClick={() => setSortByMinutes((v) => !v)}
-                className="ui-btn ui-btn-secondary text-[11px] px-2.5 py-1"
+                className="text-[11px] font-semibold text-slate-400 hover:text-slate-200"
               >
                 {sortByMinutes ? '↕ Ordenar por número' : '↕ Quem jogou menos primeiro'}
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
               {eligiblePlayers.map((p) => {
                 const isCalled = match.callup.includes(p.id);
                 const availability = availabilityById.get(p.id);
                 const att = getPlayerQuickAttendance(p.id, state);
                 const mins = minutesById.get(p.id);
-
-                const attBadgeColor =
-                  att.totalTrainings === 0
-                    ? 'text-slate-500'
-                    : att.rate >= 80
-                      ? 'text-emerald-400 font-bold'
-                      : att.rate >= 60
-                        ? 'text-amber-400 font-bold'
-                        : 'text-rose-400 font-bold';
+                const hasNumber = p.number !== null && p.number !== undefined && `${p.number}` !== '';
+                const facts = [
+                  p.positions || '',
+                  att.totalTrainings > 0 ? `${att.rate}% treinos` : '',
+                  mins && mins.matchesCalledUp > 0
+                    ? `${mins.minutes}' · ${Math.round(mins.share * 100)}%${mins.leftOutRecently >= 2 ? ` · fora ${mins.leftOutRecently}/${RECENT_GAMES}` : ''}`
+                    : mins
+                      ? 'sem jogos esta época'
+                      : ''
+                ].filter(Boolean);
 
                 return (
                   <div
                     key={p.id}
                     onClick={() => handleTogglePlayer(p.id)}
-                    className={`p-2.5 min-h-[48px] rounded-xl border text-left cursor-pointer transition-all active:scale-[0.98] touch-manipulation flex items-center justify-between gap-2.5 select-none ${
+                    role="checkbox"
+                    aria-checked={isCalled}
+                    className={`ui-card px-3 py-2 min-h-[52px] cursor-pointer active:scale-[0.99] touch-manipulation flex items-center gap-3 select-none ${
                       availability && !availability.available && !isCalled ? 'opacity-60 ' : ''
-                    }${
-                      isCalled
-                        ? 'bg-gold-dim border-gold text-gold font-bold shadow-sm'
-                        : 'bg-surface border-line text-muted hover:border-line-bright'
-                    }`}
+                    }${isCalled ? 'border-emerald-500/50' : ''}`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 truncate">
-                      {/* Player Photo / Avatar */}
-                      <div
-                        className={`w-9 h-9 rounded-lg overflow-hidden shrink-0 border flex items-center justify-center ${
-                          isCalled ? 'border-gold/60 bg-gold/10' : 'border-line bg-surface-2'
-                        }`}
-                      >
-                        {p.photoUrl ? (
-                          <img
-                            src={p.photoUrl}
-                            alt={p.name}
-                            className="w-full h-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        ) : (
-                          <span className={`text-[10px] font-bold ${isCalled ? 'text-gold' : 'text-cyan-400'}`}>
-                            {p.number !== null && p.number !== undefined
-                              ? `#${p.number}`
-                              : p.name.slice(0, 2).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="truncate">
-                        <div className="text-xs truncate flex items-center gap-1.5">
-                          <span className="font-mono text-[11px] opacity-80 shrink-0">
-                            {p.number !== null ? `#${p.number}` : '-'}
-                          </span>
-                          <span className="truncate">{p.name}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-[10px] font-mono mt-0.5">
-                          {/* Assiduidade aos treinos */}
-                          <span className={attBadgeColor}>
-                            {att.totalTrainings > 0 ? `${att.rate}% assid.` : 'Sem treinos'}
-                          </span>
-
-                          {/* Alerta de faltas consecutivas */}
-                          {att.consecutiveAbsences >= 2 && (
-                            <span className="text-rose-400 font-bold bg-rose-950/60 px-1 rounded">
-                              ⚠️ {att.consecutiveAbsences} faltas
-                            </span>
-                          )}
-
-                          {p.positions && <span className="opacity-60 truncate font-normal">{p.positions}</span>}
-                        </div>
-
-                        {/* Lesão ou castigo neste dia (ou regresso já previsto) */}
-                        {availability?.label && (
-                          <div
-                            className={`text-[10px] font-mono mt-0.5 font-bold ${
-                              availability.available ? 'text-emerald-400' : 'text-rose-400'
-                            }`}
-                          >
-                            {availability.available ? '✓ ' : availability.status === 'lesionado' ? '🏥 ' : '🟥 '}
-                            {availability.label}
-                          </div>
-                        )}
-
-                        {/* Minutos da época */}
-                        {mins && mins.matchesCalledUp === 0 && (
-                          <div className="text-[10px] font-mono mt-0.5 text-amber-300">⏱ sem jogos esta época</div>
-                        )}
-                        {mins && mins.matchesCalledUp > 0 && (
-                          <div
-                            className={`text-[10px] font-mono mt-0.5 ${mins.belowTarget ? 'text-amber-300 font-bold' : 'text-slate-400'}`}
-                          >
-                            ⏱ {mins.minutes}' · {Math.round(mins.share * 100)}% · {mins.matchesPlayed}/
-                            {mins.matchesCalledUp} jogos
-                            {mins.leftOutRecently >= 2 ? ` · fora ${mins.leftOutRecently}/${RECENT_GAMES}` : ''}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0 ${
-                        isCalled ? 'bg-gold text-black' : 'border border-line text-transparent'
+                    <span
+                      className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-black ${
+                        isCalled ? 'bg-emerald-500 text-slate-950' : 'border-2 border-slate-600 text-transparent'
                       }`}
+                      aria-hidden="true"
                     >
                       ✓
+                    </span>
+                    {p.photoUrl ? (
+                      <img
+                        src={p.photoUrl}
+                        alt=""
+                        className="w-9 h-9 shrink-0 rounded-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <span className="ui-inset w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-sm font-bold text-white">
+                        {hasNumber ? p.number : '–'}
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className={`text-sm font-bold truncate ${isCalled ? 'text-white' : 'text-slate-300'}`}>
+                        {p.photoUrl && hasNumber && <span className="text-slate-400 mr-1">#{p.number}</span>}
+                        <span>{p.name}</span>
+                      </div>
+                      {availability?.label ? (
+                        <div
+                          className={`text-[11px] font-semibold truncate ${
+                            availability.available ? 'text-emerald-400' : 'text-rose-400'
+                          }`}
+                        >
+                          {availability.available ? '✓ ' : availability.status === 'lesionado' ? '🏥 ' : '🟥 '}
+                          {availability.label}
+                        </div>
+                      ) : (
+                        <div
+                          className={`text-[11px] truncate ${mins?.belowTarget ? 'text-amber-300' : 'text-slate-400'}`}
+                        >
+                          {facts.join(' · ')}
+                          {att.consecutiveAbsences >= 2 ? ` · ⚠️ ${att.consecutiveAbsences} faltas` : ''}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -722,60 +544,38 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             </div>
           </>
         )}
-      </div>
+      </section>
 
       <SetPiecesCard state={state} callup={match.callup} onUpdateState={onUpdateState} onShowToast={onShowToast} />
 
-      {/* Action Buttons */}
-      <div className="flex flex-col gap-2">
-        {/* Main Finalize / Edit Action Button */}
+      <div className="grid grid-cols-2 gap-2 mt-3">
+        <button className="ui-btn ui-btn-secondary py-2.5 text-xs" onClick={handleGeneratePDF}>
+          📄 PDF
+        </button>
+        <button className="ui-btn ui-btn-secondary py-2.5 text-xs" onClick={handleGenerateExcel}>
+          📊 Excel
+        </button>
+      </div>
+
+      {/* Main action, always at hand above the bottom bar */}
+      <div className="fixed left-0 right-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 px-3 max-w-5xl mx-auto pointer-events-none">
         {isFinalized && !isEditing ? (
           <button
             type="button"
             onClick={handleStartEditing}
-            className="ui-btn ui-btn-warning w-full py-3.5 px-4 text-sm flex items-center justify-center gap-2"
+            className="pointer-events-auto ui-btn ui-btn-secondary w-full py-3.5 text-sm shadow-2xl flex items-center justify-center gap-2"
           >
-            <span>✏️</span>
-            <span>Editar Convocatória (Reabrir)</span>
+            ✏️ Editar Convocatória
           </button>
         ) : (
           <button
             type="button"
             onClick={handleFinalizeCallup}
-            className="ui-btn ui-btn-success w-full py-3.5 px-4 text-sm flex items-center justify-center gap-2"
+            className="pointer-events-auto ui-btn ui-btn-primary w-full py-3.5 text-sm shadow-2xl flex items-center justify-center gap-2"
           >
-            <span>✓</span>
-            <span>Finalizar Convocatória</span>
+            ✓ Finalizar Convocatória ({calledCount})
           </button>
         )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <button
-            className="btn btn-gold w-full text-xs sm:text-sm font-bold py-3 flex items-center justify-center gap-2 shadow-md"
-            onClick={handleGeneratePDF}
-          >
-            <span>📄</span>
-            <span>Exportar PDF (BolaComVisao)</span>
-          </button>
-
-          <button
-            className="ui-btn ui-btn-soft-success btn btn-outline w-full text-xs sm:text-sm py-3 flex items-center justify-center gap-2"
-            onClick={handleGenerateExcel}
-          >
-            <span>📊</span>
-            <span>Exportar Excel (.xlsx)</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <button
-            className="btn btn-green w-full text-xs font-semibold py-2.5 flex items-center justify-center gap-2"
-            onClick={() => setShowShare(true)}
-          >
-            <span>💬</span>
-            <span>Enviar por WhatsApp</span>
-          </button>
-        </div>
       </div>
       {showShare && (
         <CallupShareModal match={match} state={state} onClose={() => setShowShare(false)} onShowToast={onShowToast} />

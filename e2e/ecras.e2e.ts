@@ -163,7 +163,7 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   ]) {
     await expect(page.getByRole('button', { name: removed })).toHaveCount(0);
   }
-  for (const kept of [/Definições do Clube/, /Base de Dados & Backup/, /Trocar de Equipa/]) {
+  for (const kept of [/Definições do Clube/, /Cópias de segurança/, /Trocar de equipa/]) {
     await expect(page.getByRole('button', { name: kept })).toBeVisible();
   }
   await page.keyboard.press('Escape');
@@ -232,7 +232,7 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
   // The call-up of the game that was tapped (not the first game of the list).
   await openAgendaRow(page, /vs Constância/);
   await page.getByTitle('Abrir Convocatória').click();
-  await expect(page.getByText(/Dragões vs Constância/)).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Jogo da convocatória' })).toContainText('vs Constância');
 
   // Minutes of the season help choose: who played little is flagged.
   const need = page.getByRole('note', { name: 'Precisam de minutos' });
@@ -405,7 +405,7 @@ test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await expect(page.getByText('Esparteiros')).toBeVisible();
   // Away win 2-1 reads like a scoreboard, home team first: Tramagal SU (Fora) 1 – 2
-  await expect(page.locator('.match-item', { hasText: 'Tramagal SU' }).locator('.match-score')).toHaveText('1 – 2');
+  await expect(page.locator('.ui-card', { hasText: 'Tramagal SU' }).getByLabel(/^Resultado /)).toHaveText('1 – 2');
   await page.getByText('Tramagal SU').click();
   await expect(page.getByText("12'⚽ 9 - Rui Silva (ast. 7 - Tomás Gonçalves)")).toBeVisible();
   await page.getByRole('button', { name: /Partilhar com os pais/i }).click();
@@ -435,7 +435,7 @@ test('resultados: editar um jogo terminado num só ecrã (golo novo) fica guarda
   await editor.getByRole('button', { name: 'Guardar alterações' }).click();
   await expect(editor).toBeHidden();
 
-  await expect(page.locator('.match-item', { hasText: 'Tramagal SU' }).locator('.match-score')).toHaveText('1 – 3');
+  await expect(page.locator('.ui-card', { hasText: 'Tramagal SU' }).getByLabel(/^Resultado /)).toHaveText('1 – 3');
   await expect(page.getByText(/45'.*7 - Tomás Gonçalves/).first()).toBeVisible();
   await expect
     .poll(
@@ -783,15 +783,16 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await today.getByRole('button', { name: 'Fechar' }).click();
 
   // Repeat today's training next week: planned, shown first (what's coming).
-  await page
-    .getByRole('button', { name: /Repetir/ })
-    .first()
-    .click();
+  await page.getByRole('button', { name: /Treino 3/ }).click();
+  await page.getByRole('button', { name: /Repetir/ }).click();
   await expect(page.getByText(/Treino repetido para/)).toBeVisible();
   await expect(page.getByText('TREINO 4')).toBeVisible();
 
   // Absences per athlete, with the reason.
-  await page.getByRole('button', { name: /Stats/i }).first().click();
+  await page
+    .getByRole('button', { name: /Assiduidade/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Rui Silva/ }).click();
   await expect(page.getByRole('list', { name: 'Faltas de Rui Silva' })).toContainText('Doente');
   await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
@@ -857,10 +858,8 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
   await page.getByRole('region', { name: 'Modelos de treino' }).getByRole('button', { name: 'Usar' }).click();
   await expect(page.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
   await page.getByRole('button', { name: 'Cancelar' }).last().click();
-  await page
-    .getByRole('button', { name: /Duplicar/ })
-    .first()
-    .click();
+  await page.locator('[data-training-row]').first().click();
+  await page.getByRole('button', { name: /Duplicar/ }).click();
   await expect(page.getByText(/Cópia do treino aberta/)).toBeVisible();
   await expect(page.getByText(/Novo Treino/).first()).toBeVisible();
 

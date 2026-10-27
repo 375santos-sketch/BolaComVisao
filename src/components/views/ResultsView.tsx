@@ -245,7 +245,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           return (
             <div
               key={m.id}
-              className="card match-item cursor-pointer"
+              className="ui-card p-2.5 mb-2 cursor-pointer"
               onClick={(e) => {
                 const target = e.target as HTMLElement;
                 if (!target.closest('button') && !target.closest('textarea')) {
@@ -253,43 +253,40 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                 }
               }}
             >
-              <div className="match-head-row">
-                <div className="match-head flex-1">
-                  <div>
-                    <div className="opp">
-                      {m.opponent} {!m.finished && <span className="badge-open">{t(state.lang, 'res_ongoing')}</span>}
-                      <span
-                        className={`badge-loc ${locLabel.toLowerCase() === 'casa' || locLabel.toLowerCase() === 'home' ? 'casa' : 'fora'}`}
-                      >
-                        {locLabel}
-                      </span>
-                    </div>
-                    <div className="date">
-                      {m.date} <span className="badge-type">{typeLabel}</span>
-                    </div>
+              <div className="flex items-center gap-3">
+                <span className="ui-inset w-11 shrink-0 py-1 text-center rounded-xl">
+                  <span className="block text-base font-bold leading-tight text-white">
+                    {(m.date || '').slice(8, 10)}
+                  </span>
+                  <span className="block text-[10px] font-semibold uppercase text-slate-400">
+                    {m.date
+                      ? ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][
+                          new Date(`${m.date.slice(0, 10)}T12:00:00`).getDay()
+                        ]
+                      : ''}
+                  </span>
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-bold text-slate-100 truncate">
+                    vs <span>{m.opponent}</span>
+                    {!m.finished && <span className="badge-open ml-1.5">{t(state.lang, 'res_ongoing')}</span>}
                   </div>
-                  <div className="match-score">
-                    {(m.location || 'casa') === 'casa' ? (
-                      <>
-                        <span className="s">{sc}</span> – <span className="c">{co}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="c">{co}</span> – <span className="s">{sc}</span>
-                      </>
-                    )}
+                  <div className="text-xs text-slate-400 truncate">
+                    {(m.date || '').slice(8, 10)}/{(m.date || '').slice(5, 7)} · {locLabel} · {typeLabel}
                   </div>
                 </div>
-
-                <button
-                  className="quick-del hover:text-red-400"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onShowConfirm(t(state.lang, 'msg_del_match'), () => handleDeleteMatch(m.id));
-                  }}
+                <span
+                  className={`shrink-0 rounded-lg px-2.5 py-1 text-sm font-bold tabular-nums ${
+                    sc > co
+                      ? 'bg-emerald-500/15 text-emerald-300'
+                      : sc === co
+                        ? 'bg-amber-500/15 text-amber-300'
+                        : 'bg-rose-500/15 text-rose-300'
+                  }`}
+                  aria-label={`Resultado ${(m.location || 'casa') === 'casa' ? `${sc}-${co}` : `${co}-${sc}`}`}
                 >
-                  🗑
-                </button>
+                  {(m.location || 'casa') === 'casa' ? `${sc} – ${co}` : `${co} – ${sc}`}
+                </span>
               </div>
 
               {open && (
@@ -528,6 +525,18 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                       </button>
                     </div>
                   )}
+
+                  <div className="btn-row mt-2.5">
+                    <button
+                      className="ui-btn ui-btn-soft-danger w-full py-2 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onShowConfirm(t(state.lang, 'msg_del_match'), () => handleDeleteMatch(m.id));
+                      }}
+                    >
+                      🗑️ Apagar jogo
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

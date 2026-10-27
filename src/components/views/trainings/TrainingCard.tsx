@@ -28,7 +28,6 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
   getPlayerName,
   isExpanded,
   onToggleExpand,
-  onSetStatus,
   onToggleComplete,
   onQuickToggleAbsence,
   onSetAbsenceReason,
@@ -42,170 +41,111 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
   const absNames = (tr.absences || []).map(getPlayerName);
   const presCount = eligiblePlayers.length - absNames.length;
 
-  const [y, m, d] = (tr.date || '2026-01-01').split('-');
-  const formattedDate = `${d}/${m}/${y}`;
+  const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const date = tr.date || '2026-01-01';
+  const weekday = WEEKDAYS[new Date(`${date}T12:00:00`).getDay()];
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const tag: [string, string] =
+    date === today
+      ? ['Hoje', 'bg-emerald-500/15 text-emerald-300']
+      : isCompleted
+        ? ['Feito', 'bg-slate-500/15 text-slate-300']
+        : ['Por fazer', 'bg-amber-500/15 text-amber-300'];
+  const details = [
+    tr.time,
+    tr.location,
+    isCompleted ? `${presCount} presentes · ${absNames.length} ${absNames.length === 1 ? 'falta' : 'faltas'}` : ''
+  ].filter(Boolean);
 
   return (
-    <div
-      className={`rounded-2xl border transition-all duration-200 p-3 sm:p-4 ${
-        isCompleted
-          ? 'bg-slate-900/90 border-emerald-500/30 hover:border-emerald-400'
-          : 'bg-slate-900/90 border-amber-500/30 hover:border-amber-400'
-      }`}
-    >
-      {/* Top Row: Training Number, Date, Status Switch, Main Info & Action Buttons */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Training Number Badge */}
-          <span className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500/25 via-amber-500/15 to-cyan-500/10 border border-amber-400/50 text-amber-300 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
-            <span>🏋️</span>
-            <span>{tr.trainingNumber ? `TREINO ${tr.trainingNumber}` : 'TREINO'}</span>
+    <div className={`ui-card overflow-hidden ${isExpanded ? 'border-cyan-500/50' : ''}`}>
+      {/* The row: tap to open the actions, attendance and plan */}
+      <button
+        type="button"
+        data-training-row
+        aria-expanded={isExpanded}
+        onClick={onToggleExpand}
+        className="w-full p-2.5 flex items-center gap-3 text-left"
+      >
+        <span className={`w-1 self-stretch rounded-full ${isCompleted ? 'bg-slate-600' : 'bg-amber-400'}`} />
+        <span className="ui-inset w-11 shrink-0 py-1 text-center rounded-xl">
+          <span className="block text-base font-bold leading-tight text-white">{date.slice(8, 10)}</span>
+          <span className="block text-[10px] font-semibold uppercase text-slate-400">{weekday}</span>
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-sm font-bold text-slate-100 truncate">
+            {tr.trainingNumber ? `Treino ${tr.trainingNumber}` : 'Treino'}
+            {tr.type ? ` · ${tr.type}` : ''}
           </span>
+          <span className="block text-xs text-slate-400 truncate">{details.join(' · ')}</span>
+        </span>
+        <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold ${tag[1]}`}>{tag[0]}</span>
+      </button>
 
-          {/* Interactive Status Switch directly on the Card */}
-          <div className="ui-inset inline-flex p-0.5">
-            <button
-              type="button"
-              onClick={() => onSetStatus(tr.id, false)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1 ${
-                !isCompleted
-                  ? 'bg-amber-500 text-slate-950 shadow-[0_0_10px_rgba(245,158,11,0.4)]'
-                  : 'text-slate-400 hover:text-amber-300'
-              }`}
-              title="Marcar como treino Agendado (fora das estatísticas)"
-            >
-              <span>🟡</span>
-              <span>Agendado</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onSetStatus(tr.id, true)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1 ${
-                isCompleted
-                  ? 'bg-emerald-500 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
-                  : 'text-slate-400 hover:text-emerald-300'
-              }`}
-              title="Marcar como treino Concluído (entra nas estatísticas)"
-            >
-              <span>🟢</span>
-              <span>Concluído</span>
-            </button>
-          </div>
-
-          <div className="text-sm font-bold font-mono text-cyan-300 flex items-center gap-1.5">
-            <span>📅</span>
-            <span>{formattedDate}</span>
-          </div>
-
-          {tr.time && (
-            <span className="text-xs font-mono text-slate-300 bg-slate-950/80 border border-slate-800 px-2 py-0.5 rounded-md">
-              ⏱️ {tr.time}h
-            </span>
-          )}
-
-          {tr.type && (
-            <span className="text-xs font-['Chakra_Petch'] font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-md">
-              {tr.type}
-            </span>
-          )}
-        </div>
-
-        {/* Action Buttons: Edit, Toggle Status & Delete */}
-        <div className="flex items-center gap-2 shrink-0">
+      {isExpanded && (
+        <div className="px-3 pb-3 flex flex-wrap gap-1.5">
           <button
             type="button"
             onClick={() => onToggleComplete(tr.id, isCompleted)}
-            className={`px-3 py-1.5 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1.5 ${
-              !isCompleted
-                ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.35)]'
-                : 'bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-300'
-            }`}
+            className={`ui-btn ${isCompleted ? 'ui-btn-secondary' : 'ui-btn-success'} px-3 py-1.5 text-xs`}
             title={!isCompleted ? 'Concluir treino e contabilizar na assiduidade' : 'Reabrir treino como planeado'}
           >
-            <span>{!isCompleted ? '✓ Concluir Treino' : '↩ Reabrir (Agendado)'}</span>
+            {!isCompleted ? '✓ Concluir Treino' : '↩ Reabrir (Agendado)'}
           </button>
-
           <button
             type="button"
             onClick={() => {
               generateTrainingSessionPDF(tr, state);
               onShowToast('A gerar PDF do Plano de Treino... 📄');
             }}
-            className="ui-btn ui-btn-soft px-2.5 py-1.5 text-xs flex items-center gap-1"
+            className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-xs"
             title="Exportar PDF do Plano de Treino"
           >
-            <span>📄</span>
-            <span className="hidden sm:inline">PDF</span>
+            📄 PDF
           </button>
-
           <button
             type="button"
             onClick={() => onRepeatTraining(tr.id)}
-            className="ui-btn ui-btn-soft-success px-2.5 py-1.5 text-xs flex items-center gap-1"
+            className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-xs"
             title="Repetir este treino na semana seguinte"
           >
-            <span>🔁</span>
-            <span>Repetir</span>
+            🔁 Repetir
           </button>
-
           <button
             type="button"
             onClick={() => onDuplicateTraining(tr)}
-            className="ui-btn ui-btn-soft px-2.5 py-1.5 text-xs flex items-center gap-1"
+            className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-xs"
             title="Duplicar: abre uma cópia deste treino para mudar a data e o que for preciso"
           >
-            <span>📑</span>
-            <span>Duplicar</span>
+            📑 Duplicar
           </button>
-
           <button
             type="button"
             onClick={() => onOpenEditForm(tr)}
-            className="ui-btn ui-btn-soft px-3 py-1.5 text-xs flex items-center gap-1.5"
+            className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-xs"
             title="Editar Treino (Data, Hora, Local, Notas, Faltas)"
           >
-            <span>✏️</span>
-            <span>Editar</span>
+            ✏️ Editar
           </button>
-
           <button
             type="button"
             onClick={() => onDeleteTraining(tr.id)}
-            className="ui-btn ui-btn-secondary p-1.5 px-2 text-xs"
+            className="ui-btn ui-btn-soft-danger px-2.5 py-1.5 text-xs"
             title="Eliminar Treino"
           >
             🗑️
           </button>
         </div>
-      </div>
-
-      {/* Middle Info Row */}
-      <div className="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-        <div className="flex items-center gap-3 text-slate-400">
-          {tr.location && <span>📍 {tr.location}</span>}
-          <span>
-            👥 <b className="text-emerald-400">{presCount}</b> presentes ·{' '}
-            <b className="text-red-400">{absNames.length}</b> faltas
-          </span>
-        </div>
-
-        <button
-          type="button"
-          onClick={onToggleExpand}
-          className="text-cyan-400 hover:text-cyan-300 text-xs font-bold underline flex items-center gap-1"
-        >
-          <span>{isExpanded ? 'Ocultar Presenças & Notas ▲' : 'Gerir Presenças & Ver Notas ▼'}</span>
-        </button>
-      </div>
+      )}
 
       {/* Expanded Interactive Drawer */}
       {isExpanded && (
-        <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-3 text-xs">
+        <div className="px-3 pb-3 space-y-3 text-xs">
           {/* Interactive Attendance Quick Selector */}
           <div className="ui-inset p-3">
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-              <span className="text-cyan-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs flex items-center gap-1.5">
+              <span className="text-cyan-300 font-bold text-xs flex items-center gap-1.5">
                 <span>👥</span>
                 <span>Presenças (toca em quem faltou):</span>
               </span>
@@ -228,7 +168,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
             (tr.sessionPlan.objective || (tr.sessionPlan.blocks && tr.sessionPlan.blocks.length > 0)) && (
               <div className="ui-inset p-3 space-y-2 font-mono">
                 <div className="flex items-center justify-between pb-1 border-b border-slate-800">
-                  <span className="text-cyan-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs flex items-center gap-1.5">
+                  <span className="text-cyan-300 font-bold text-xs flex items-center gap-1.5">
                     <span>📋</span>
                     <span>Plano da Sessão ({tr.sessionPlan.blocks?.length || 0} blocos):</span>
                   </span>

@@ -72,13 +72,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="px-2.5 py-0.5 rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-500/50 text-[10px] font-mono font-bold flex items-center gap-1">
-              <span>⚽</span>
-              <span>JOGO {m ? '(REALIZADO)' : '(AGENDADO)'}</span>
-            </span>
-
-            <div className="text-sm font-black font-['Chakra_Petch'] text-white">
-              📅 {formattedDate} às {ev.time}h
+            <div className="text-sm font-bold text-white">
+              {formattedDate} · {ev.time}
             </div>
 
             <span
@@ -256,7 +251,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate('prejogo', s.id)}
-                    className={`px-3 py-1.5 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all ${
+                    className={`px-3 py-1.5 rounded-xl font-semibold text-xs flex items-center gap-1 transition-all ${
                       isPreMatchFin
                         ? 'bg-emerald-950/90 border border-emerald-500/60 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.25)]'
                         : 'bg-cyan-950/80 border border-cyan-500/50 hover:bg-cyan-900 text-cyan-300'
@@ -270,7 +265,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate('convocatoria', s.id)}
-                    className={`px-3 py-1.5 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all ${
+                    className={`px-3 py-1.5 rounded-xl font-semibold text-xs flex items-center gap-1 transition-all ${
                       isCallupFin
                         ? 'bg-emerald-950/90 border border-emerald-500/60 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.25)]'
                         : 'bg-slate-950 border border-slate-700 hover:border-slate-500 text-slate-200'
@@ -325,7 +320,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-lg bg-orange-950 text-orange-300 border border-orange-500/50 text-[10px] font-mono font-bold flex items-center gap-1">
               <span>🚫</span>
-              <span>INDISPONÍVEL (EQUIPA TÉCNICA)</span>
+              <span>Indisponível (equipa técnica)</span>
             </span>
 
             <div className="text-sm font-black font-['Chakra_Petch'] text-orange-300">
@@ -513,7 +508,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                 <button
                   type="button"
                   onClick={() => handleToggleClubEventStatus(c.id, isEventCompleted)}
-                  className={`px-3 py-1.5 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1 ${
+                  className={`px-3 py-1.5 rounded-xl font-semibold text-xs transition-all flex items-center gap-1 ${
                     !isEventCompleted
                       ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
                       : 'bg-amber-950 hover:bg-amber-900 border border-amber-500/50 text-amber-300'
@@ -603,7 +598,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               <button
                 type="button"
                 onClick={() => handleToggleClubEventStatus(c.id, isEventCompleted)}
-                className={`px-3 py-1.5 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase flex items-center gap-1 transition-all ${
+                className={`px-3 py-1.5 rounded-xl font-semibold text-xs flex items-center gap-1 transition-all ${
                   !isEventCompleted
                     ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black'
                     : 'bg-slate-950 border border-amber-500/50 hover:bg-amber-950 text-amber-300'
@@ -707,7 +702,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           <button
             type="button"
             onClick={() => handleToggleTrainingStatus(tr.id, tr.completed === true)}
-            className={`px-3 py-1.5 rounded-xl font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1 ${
+            className={`px-3 py-1.5 rounded-xl font-semibold text-xs transition-all flex items-center gap-1 ${
               !tr.completed
                 ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
                 : 'bg-amber-950 hover:bg-amber-900 border border-amber-500/50 text-amber-300'

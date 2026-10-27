@@ -62,34 +62,32 @@ export const TrainingList: React.FC<TrainingListProps> = ({
 }) => {
   return (
     <div className="space-y-3.5 text-left">
-      {/* Today's training: attendance in a few taps */}
-      <button
-        type="button"
-        onClick={onOpenToday}
-        className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-['Chakra_Petch'] font-black text-base uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 active:scale-[0.99]"
-      >
-        <span>✅</span>
-        <span>Treino de hoje</span>
-      </button>
-
-      {/* Top Action Bar: Add Single Training + Batch Season Planner */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      {/* Today's training first; new ones are less frequent */}
+      <div className="flex gap-2">
         <button
           type="button"
-          className="ui-btn ui-btn-soft-warning py-3 px-4 text-xs flex items-center justify-center gap-2"
+          onClick={onOpenToday}
+          className="ui-btn ui-btn-primary flex-1 py-3 text-sm flex items-center justify-center gap-1.5"
+        >
+          ✓ Treino de hoje
+        </button>
+        <button
+          type="button"
+          className="ui-btn ui-btn-secondary px-3 py-3 text-xs"
+          aria-label="Inserir Treino Único"
+          title="Inserir um treino"
           onClick={() => onOpenCreateForm('single')}
         >
-          <span>+</span>
-          <span>Inserir Treino Único</span>
+          + Novo
         </button>
-
         <button
           type="button"
-          className="py-3 px-4 rounded-xl bg-gradient-to-r from-slate-900 via-cyan-950/60 to-slate-900 hover:border-cyan-400 border border-cyan-500/40 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
+          className="ui-btn ui-btn-secondary px-3 py-3 text-xs"
+          aria-label="Adicionar Vários Treinos (Período)"
+          title="Adicionar vários treinos de uma vez (período)"
           onClick={() => onOpenCreateForm('batch')}
         >
-          <span>📅</span>
-          <span>Adicionar Vários Treinos (Período)</span>
+          + Vários
         </button>
       </div>
 
@@ -106,34 +104,46 @@ export const TrainingList: React.FC<TrainingListProps> = ({
         onClearAllTrainings={onClearAllTrainings}
       />
 
-      {/* Trainings Cards List */}
+      {/* Trainings: what is coming, then what was done */}
       {trainings.length > 0 ? (
-        <div className="space-y-2.5">
-          {trainings.map((tr) => (
-            <TrainingCard
-              key={tr.id}
-              training={tr}
-              state={state}
-              eligiblePlayers={eligiblePlayers}
-              getPlayerName={getPlayerName}
-              isExpanded={expandedTraining === tr.id}
-              onToggleExpand={() => setExpandedTraining(expandedTraining === tr.id ? null : tr.id)}
-              onSetStatus={onSetStatus}
-              onToggleComplete={onToggleComplete}
-              onQuickToggleAbsence={onQuickToggleAbsence}
-              onSetAbsenceReason={onSetAbsenceReason}
-              onRepeatTraining={onRepeatTraining}
-              onDuplicateTraining={onDuplicateTraining}
-              onOpenEditForm={onOpenEditForm}
-              onDeleteTraining={onDeleteTraining}
-              onShowToast={onShowToast}
-            />
-          ))}
+        <div className="space-y-4">
+          {[
+            ['Próximos', trainings.filter((tr) => tr.completed === false)],
+            ['Feitos', trainings.filter((tr) => tr.completed !== false)]
+          ].map(([label, group]) =>
+            (group as typeof trainings).length === 0 ? null : (
+              <section key={label as string} aria-label={label as string}>
+                <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">{label as string}</h3>
+                <div className="space-y-2">
+                  {(group as typeof trainings).map((tr) => (
+                    <TrainingCard
+                      key={tr.id}
+                      training={tr}
+                      state={state}
+                      eligiblePlayers={eligiblePlayers}
+                      getPlayerName={getPlayerName}
+                      isExpanded={expandedTraining === tr.id}
+                      onToggleExpand={() => setExpandedTraining(expandedTraining === tr.id ? null : tr.id)}
+                      onSetStatus={onSetStatus}
+                      onToggleComplete={onToggleComplete}
+                      onQuickToggleAbsence={onQuickToggleAbsence}
+                      onSetAbsenceReason={onSetAbsenceReason}
+                      onRepeatTraining={onRepeatTraining}
+                      onDuplicateTraining={onDuplicateTraining}
+                      onOpenEditForm={onOpenEditForm}
+                      onDeleteTraining={onDeleteTraining}
+                      onShowToast={onShowToast}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
+          )}
         </div>
       ) : (
         <div className="ui-card py-12 text-center p-6">
           <div className="text-3xl mb-2">📋</div>
-          <p className="text-sm font-['Chakra_Petch'] text-cyan-300 uppercase font-bold">
+          <p className="text-sm text-slate-200 font-bold">
             {(state.trainings || []).length === 0
               ? t(state.lang, 'tr_none')
               : 'Nenhum treino encontrado com os filtros selecionados.'}

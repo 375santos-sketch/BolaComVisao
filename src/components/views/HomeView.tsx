@@ -5,6 +5,7 @@ import { TabType } from '../Navbar';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { UnifiedEvent } from '../dashboard/DashboardNextEvent';
 import { TodayFocusCard } from '../dashboard/TodayFocusCard';
+import { Icon, IconName } from '../ui/Icon';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { homeNotices, seasonSummary } from '../../lib/homeSummary';
@@ -167,20 +168,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const summary = seasonSummary(state);
   const nextDays = unifiedEvents.filter((e) => e.daysUntil <= 7);
 
-  const shortcuts: { icon: string; label: string; tab: TabType; targetId?: string }[] = [
-    {
-      icon: '✅',
-      label: 'Treino de hoje',
-      tab: 'treinos',
-      targetId: 'hoje'
-    },
-    { icon: '📋', label: 'Convocatória', tab: 'convocatoria' },
-    { icon: '⏱️', label: 'Modo Jogo', tab: 'jogo' },
-    { icon: '👥', label: 'Plantel', tab: 'plantel' }
+  const shortcuts: { icon: IconName; label: string; tab: TabType; targetId?: string }[] = [
+    { icon: 'zap', label: 'Treino de hoje', tab: 'treinos', targetId: 'hoje' },
+    { icon: 'clipboard', label: 'Convocatória', tab: 'convocatoria' },
+    { icon: 'ball', label: 'Modo Jogo', tab: 'jogo' },
+    { icon: 'users', label: 'Plantel', tab: 'plantel' }
   ];
 
   return (
-    <div className="flex flex-col gap-5 sm:gap-6 max-w-7xl mx-auto pb-6">
+    <div className="flex flex-col gap-4 max-w-7xl mx-auto pb-6">
       {/* 1. Header with Club Branding & Quick Management Controls */}
       <DashboardHeader
         state={state}
@@ -204,11 +200,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
       {/* 🎂 Birthdays today, with the picture to share */}
       {birthdaysToday.length > 0 && (
-        <section
-          aria-label="Aniversários de hoje"
-          className="p-3.5 rounded-2xl bg-gradient-to-r from-fuchsia-950/80 to-indigo-950/80 border border-fuchsia-500/40 space-y-2"
-        >
-          <div className="text-xs font-black text-fuchsia-200 uppercase tracking-wider">🎂 Hoje faz anos</div>
+        <section aria-label="Aniversários de hoje" className="ui-card p-3.5 border-fuchsia-500/40 space-y-2">
+          <div className="text-xs font-bold text-fuchsia-300 uppercase tracking-wide">🎂 Hoje faz anos</div>
           {birthdaysToday.map((b) => (
             <div key={b.id} className="flex items-center gap-2">
               <div className="flex-1 min-w-0 text-sm text-white font-bold truncate">
@@ -217,7 +210,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <button
                 type="button"
                 onClick={() => setBirthdayImage(b)}
-                className="shrink-0 px-3 py-1.5 rounded-xl bg-fuchsia-500 text-white text-xs font-black"
+                className="ui-btn ui-btn-secondary shrink-0 px-3 py-1.5 text-xs"
               >
                 🖼️ Imagem de parabéns
               </button>
@@ -235,15 +228,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
       )}
 
       {/* 2. Shortcuts */}
-      <nav aria-label="Atalhos" className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      <nav aria-label="Atalhos" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {shortcuts.map((sc) => (
           <button
             key={sc.label}
             type="button"
             onClick={() => onNavigate(sc.tab, sc.targetId)}
-            className="ui-btn ui-btn-secondary py-3.5 px-3 rounded-2xl text-sm"
+            className="ui-card px-3 py-3 rounded-2xl text-sm font-bold text-slate-100 flex items-center gap-2.5 text-left hover:border-slate-600"
           >
-            <span className="text-lg">{sc.icon}</span>
+            <Icon name={sc.icon} className="w-5 h-5 text-cyan-400 shrink-0" />
             <span>{sc.label}</span>
           </button>
         ))}
@@ -251,21 +244,36 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
       {/* 3. What needs attention (only when there is something) */}
       {notices.length > 0 && (
-        <section aria-label="Avisos" className="space-y-2">
-          {notices.map((n) => (
-            <button
-              key={n.id}
-              type="button"
-              onClick={() => onNavigate(n.tab, n.targetId)}
-              className="ui-btn ui-btn-soft-warning w-full text-left p-3 text-sm flex items-center justify-between gap-3"
-            >
-              <span className="flex items-center gap-2.5 min-w-0">
-                <span className="text-lg shrink-0">{n.icon}</span>
-                <span className="leading-snug">{n.text}</span>
-              </span>
-              <span className="text-amber-400 text-xs shrink-0">➔</span>
-            </button>
-          ))}
+        <section aria-label="Avisos">
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Avisos</h2>
+          <div className="ui-card divide-y divide-slate-800 overflow-hidden">
+            {notices.map((n) => {
+              // "Convocatória por fechar: vs Abrantes (sábado 01/11)" → short title, the detail below
+              const cut = n.text.indexOf(': ');
+              const title = cut > 0 ? n.text.slice(0, cut) : n.text;
+              const detail = cut > 0 ? n.text.slice(cut + 2) : '';
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => onNavigate(n.tab, n.targetId)}
+                  className="w-full text-left px-3.5 py-3 flex items-start gap-3 hover:bg-slate-800/40"
+                >
+                  <span className="mt-1.5 w-2 h-2 shrink-0 rounded-full bg-amber-400" aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-bold text-slate-100">{title}</span>
+                    {detail && (
+                      <span className="block text-xs text-slate-400 leading-snug">
+                        <span className="sr-only">: </span>
+                        {detail}
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-slate-500 text-sm shrink-0">›</span>
+                </button>
+              );
+            })}
+          </div>
         </section>
       )}
 
@@ -275,7 +283,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* 4. Season at a glance */}
       <section aria-label="Resumo da época" className="ui-card p-3.5 flex flex-wrap items-center justify-between gap-3">
         <div className="text-sm text-slate-200 font-mono">
-          <span className="text-xs uppercase text-cyan-400 font-bold font-sans mr-2">Época {state.season}</span>
+          <span className="text-xs text-cyan-400 font-bold font-sans mr-2">Época {state.season}</span>
           {summary.played === 0 ? (
             <span className="text-slate-400">Ainda sem jogos</span>
           ) : (
@@ -301,19 +309,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {/* Next 4 Scheduled Events Agenda */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">📅</span>
-              <h2 className="text-base font-bold text-white font-sans uppercase tracking-tight">Próximos 7 dias</h2>
-            </div>
+            <h2 className="text-xs font-bold uppercase tracking-wide text-slate-400">Próximos 7 dias</h2>
             <button
               onClick={() => onNavigate('calendario')}
-              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold"
+              className="text-xs text-cyan-400 hover:text-cyan-300 font-bold"
             >
-              Ver Calendário Completo →
+              Ver a agenda ›
             </button>
           </div>
 
-          <Card className="bg-slate-900/90 border-slate-800 p-3 sm:p-4 divide-y divide-slate-800/80 shadow-xl">
+          <Card className="bg-slate-900/90 border-slate-800 p-1.5 sm:p-2 divide-y divide-slate-800/80">
             {nextDays.length > 0 ? (
               nextDays.map((evt) => (
                 <div
