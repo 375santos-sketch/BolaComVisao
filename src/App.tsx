@@ -4,6 +4,8 @@ import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
 import { subscribeToClubCloud, migrateClubToRecords, getCloudMode } from './services/clubCloud';
 import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
+import { applyClubColor } from './lib/clubColors';
+import { teamSettings } from './lib/teamSettings';
 import { exportJSONBackup } from './lib/exportUtils';
 import { evaluateSystemNotifications } from './lib/notificationEngine';
 import { syncStateWithCloud, processOfflineMutationsQueue, clearDeviceClubData } from './lib/syncEngine';
@@ -140,9 +142,12 @@ export default function App() {
   const isRemoteSyncRef = useRef<boolean>(false);
   const cloudSyncDebounceTimerRef = useRef<any>(null);
 
+  // Theme first, then the club's colour on top (Definições → Clube)
+  const clubColor = teamSettings(state).clubColor;
   useEffect(() => {
     applyThemeCSS(state.theme || 'original');
-  }, [state.theme]);
+    applyClubColor(clubColor);
+  }, [state.theme, clubColor]);
 
   // On Mount: Auto-check active cloud session and load latest master club state
   useEffect(() => {

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { teamSettings } from '../../lib/teamSettings';
 import { AppState, ScheduledMatch, Training, UserAccount, ClubEvent } from '../../types';
 import { TabType } from '../Navbar';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
@@ -162,7 +163,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   unifiedEvents.sort((a, b) => a.rawDate.getTime() - b.rawDate.getTime());
 
   // What needs attention and the season at a glance (details live in Estatísticas).
-  const notices = homeNotices(state);
+  const notices = homeNotices(state, undefined, teamSettings(state).yellowsForBan);
   const summary = seasonSummary(state);
   const nextDays = unifiedEvents.filter((e) => e.daysUntil <= 7);
 
