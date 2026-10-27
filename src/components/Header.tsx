@@ -5,6 +5,7 @@ import { isAppAdmin } from '../services/cloudAuthService';
 import { TabType } from './Navbar';
 import { getActiveCategory } from './navCategory';
 import { SyncStatusBadge } from './ui/SyncStatusBadge';
+import { Icon } from './ui/Icon';
 
 interface HeaderProps {
   title: string;
@@ -79,16 +80,9 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <div className="min-w-0 text-left">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[9px] font-['Chakra_Petch'] font-black uppercase tracking-widest text-cyan-400 bg-cyan-950/80 border border-cyan-500/30 px-1 py-0.5 rounded leading-none shrink-0">
-                BCV
-              </span>
-              <h1 className="text-xs sm:text-sm md:text-base font-black font-['Chakra_Petch'] uppercase tracking-wider text-white truncate leading-tight">
-                {title}
-              </h1>
-            </div>
+            <h1 className="text-base sm:text-lg font-bold text-white truncate leading-tight">{title}</h1>
             {clubInfo && clubInfo.clubName && (
-              <div className="text-[10px] font-mono text-slate-400 truncate mt-0.5">
+              <div className="text-[11px] text-slate-400 truncate mt-0.5">
                 {clubInfo.clubName} {clubInfo.category ? `· ${clubInfo.category}` : ''}
               </div>
             )}
@@ -97,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Desktop / Tablet Navigation Work Areas Links */}
         {onNavigate && (
-          <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-xl font-['Chakra_Petch'] text-xs font-bold uppercase tracking-wider">
+          <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-xl text-xs font-semibold">
             <button
               type="button"
               onClick={() => handleNav('home')}
@@ -129,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Planeamento
+              Agenda
             </button>
             <button
               type="button"
@@ -140,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <span>Performance</span>
+              <span>Jogo</span>
               {hasActiveMatch && (
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 ml-1 animate-ping" />
               )}
@@ -166,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Gestão de Acessos & Treinadores"
               aria-label="Gestão de Acessos"
             >
-              <span className="text-xs">👥</span>
+              <Icon name="users" className="w-4 h-4" />
               {pendingUsersCount > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 bg-amber-500 text-slate-950 font-mono text-[8px] font-black rounded-full flex items-center justify-center">
                   {pendingUsersCount}
@@ -184,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Notificações & Alertas"
               aria-label="Notificações"
             >
-              <span className="text-xs">🔔</span>
+              <Icon name="bell" className="w-[18px] h-[18px]" />
               {unreadNotificationsCount > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 bg-rose-500 text-white font-mono text-[8px] font-black rounded-full flex items-center justify-center shadow-sm">
                   {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
@@ -202,7 +196,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Base de Dados & Backup"
               aria-label="Base de Dados"
             >
-              <span className="text-xs">💾</span>
+              <Icon name="database" className="w-4 h-4" />
             </button>
           )}
 
@@ -214,7 +208,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Definições"
             aria-label="Definições"
           >
-            <span className="text-xs">⚙️</span>
+            <Icon name="settings" className="w-[18px] h-[18px]" />
           </button>
         </div>
       </div>

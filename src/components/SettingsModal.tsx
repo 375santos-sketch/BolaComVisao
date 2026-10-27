@@ -7,6 +7,7 @@ import { exportJSONBackup, exportCSVStats, exportTXTReport } from '../lib/export
 import { parseBackup, restoreFromBackup } from '../lib/backup';
 import { MASTER_ADMIN_EMAIL } from '../lib/constants';
 import { defaultNotificationSettings } from '../lib/notificationEngine';
+import { clearedAgenda } from '../lib/agendaReset';
 
 interface SettingsModalProps {
   state: AppState;
@@ -376,6 +377,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             />
           </div>
         </div>
+
+        {onShowConfirm && (
+          <div className="mt-6 rounded-xl border border-rose-500/30 p-3 text-left">
+            <div className="text-xs font-bold text-rose-300">Limpar a agenda</div>
+            <p className="mt-1 text-[11px] text-slate-400">
+              Apaga os jogos marcados, os treinos por fazer, as reuniões e as indisponibilidades desta equipa. Os jogos
+              terminados e os treinos feitos ficam.
+            </p>
+            <button
+              type="button"
+              onClick={() =>
+                onShowConfirm(
+                  'Tem a certeza de que quer limpar a agenda? Os jogos marcados, os treinos por fazer, as reuniões e as indisponibilidades desta equipa são apagados.',
+                  () => {
+                    onUpdateState(clearedAgenda(state));
+                    onShowToast?.('Agenda limpa 📅');
+                  }
+                )
+              }
+              className="ui-btn ui-btn-soft-danger mt-2 px-3 py-2 text-xs"
+            >
+              🗑️ Limpar a agenda
+            </button>
+          </div>
+        )}
 
         <button className="btn btn-outline w-full mt-6" onClick={onClose}>
           {t(state.lang, 'close')}

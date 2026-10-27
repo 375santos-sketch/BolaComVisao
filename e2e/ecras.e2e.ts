@@ -26,10 +26,23 @@ test.afterEach(() => {
 });
 
 const addPlayer = async (page: Page, name: string, number: string) => {
-  await page.getByRole('button', { name: /➕ Novo/ }).click();
+  await page.getByRole('button', { name: 'Novo', exact: true }).click();
   await page.getByPlaceholder('Ex: Cristiano Ronaldo').fill(name);
   await page.getByPlaceholder('Ex: 7', { exact: true }).fill(number);
   await page.locator('#player-form button[type=submit]').click();
+};
+
+/** Agenda: the only "add" button, then Jogo / Treino / … */
+const addToAgenda = async (page: Page, item: string) => {
+  await page.getByRole('button', { name: 'Adicionar à agenda' }).click();
+  await page.getByRole('menuitem', { name: item, exact: true }).click();
+};
+
+/** Agenda → Lista: opens the row of a game or training (also among the past ones) to show its actions. */
+const openAgendaRow = async (page: Page, name: RegExp) => {
+  const past = page.getByRole('button', { name: /Ver os \d+ anteriores/ });
+  if (!(await page.getByRole('button', { name }).count()) && (await past.isVisible())) await past.click();
+  await page.getByRole('button', { name }).first().click();
 };
 
 const signedIn = async (page: Page) => {
@@ -97,13 +110,13 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   await signedIn(page);
 
   await navTo(page, /equipa/i);
-  await expect(page.getByText('PLANTEL DE JOGADORES')).toBeVisible();
+  await expect(page.getByPlaceholder('Procurar atleta')).toBeVisible();
   await expect(page.getByText('RUI SILVA')).toBeVisible();
 
   await navTo(page, /agenda/i);
-  await expect(page.getByText('AGENDA & CALENDÁRIO ANUAL')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Agenda', exact: true })).toBeVisible();
 
-  await navTo(page, /performance/i);
+  await navTo(page, /jogo/i);
   await expect(page.getByRole('region', { name: 'Plano' })).toBeVisible();
 
   // Performance tabs: Estatísticas (with playing time) is one tap away
@@ -170,7 +183,7 @@ test('pré-jogo: abrir não grava nada; plano guardado no jogo da Agenda, PDF e 
     return ((await res.json()) as { fields?: any }).fields?.data?.mapValue?.fields || {};
   };
   await signedIn(page);
-  await navTo(page, /performance/i);
+  await navTo(page, /jogo/i);
   const game = page.getByRole('region', { name: 'Jogo' });
   await expect(game).toContainText('vs Abrantes');
   await page.waitForTimeout(5000); // longer than the 3.5 s save delay
@@ -203,7 +216,7 @@ test('pré-jogo: abrir não grava nada; plano guardado no jogo da Agenda, PDF e 
 test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '⚽ ＋ Jogo' }).first().click();
+  await addToAgenda(page, 'Jogo');
   await page.getByPlaceholder('Nome da equipa adversária').fill('Constância');
   await page.locator('input[type=date]').first().fill('2026-12-05');
   await page.locator('input[type=time]').first().fill('11:00');
@@ -215,10 +228,10 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
   await page.getByPlaceholder('Ex: Jornada 4 ou Quartos de Final').fill('Jornada 6');
   await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
 
-  await page.getByRole('button', { name: /Lista/i }).click();
-  await expect(page.getByText('🏆 Jornada 6')).toBeVisible();
+  await expect(page.getByRole('button', { name: /vs Constância.*Jornada 6/ })).toBeVisible();
   // The call-up of the game that was tapped (not the first game of the list).
-  await page.getByTitle('Abrir Convocatória').nth(1).click();
+  await openAgendaRow(page, /vs Constância/);
+  await page.getByTitle('Abrir Convocatória').click();
   await expect(page.getByText(/Dragões vs Constância/)).toBeVisible();
 
   // Minutes of the season help choose: who played little is flagged.
@@ -324,7 +337,7 @@ test('calendário para os pais: link secreto com jogos e treinos que se atualiza
   await share.getByRole('button', { name: 'Fechar' }).click();
 
   // A new game in the Agenda reaches the calendar on its own
-  await page.getByRole('button', { name: '⚽ ＋ Jogo' }).first().click();
+  await addToAgenda(page, 'Jogo');
   await page.getByPlaceholder('Nome da equipa adversária').fill('Mação');
   await page.locator('input[type=date]').first().fill('2026-12-12');
   await page.locator('input[type=time]').first().fill('15:00');
@@ -339,7 +352,7 @@ test('calendário para os pais: link secreto com jogos e treinos que se atualiza
 
 test('análise: remates e eficácia de finalização', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /performance/i);
+  await navTo(page, /jogo/i);
   await page
     .getByRole('navigation', { name: 'Performance' })
     .getByRole('button', { name: /Análise/ })
@@ -354,7 +367,7 @@ test('análise: remates e eficácia de finalização', async ({ page }) => {
 test('relatório do adversário pós-jogo: números do jogo, notas guardadas na nuvem e PDF', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Relatório do adversário/ }).click();
   const report = page.getByRole('dialog', { name: 'Relatório do adversário' });
@@ -389,7 +402,7 @@ test('relatório do adversário pós-jogo: números do jogo, notas guardadas na 
 test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await expect(page.getByText('Esparteiros')).toBeVisible();
   // Away win 2-1 reads like a scoreboard, home team first: Tramagal SU (Fora) 1 – 2
   await expect(page.locator('.match-item', { hasText: 'Tramagal SU' }).locator('.match-score')).toHaveText('1 – 2');
@@ -405,7 +418,7 @@ test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
 test('resultados: editar um jogo terminado num só ecrã (golo novo) fica guardado', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Editar jogo/ }).click();
   const editor = page.getByRole('dialog', { name: 'Editar jogo' });
@@ -436,7 +449,7 @@ test('resultados: editar um jogo terminado num só ecrã (golo novo) fica guarda
 test('resultados: corrigir o local de um jogo terminado (casa/fora) fica guardado', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   const place = page.getByRole('group', { name: 'Local do jogo' });
   await expect(place.getByRole('button', { name: 'Fora' })).toHaveAttribute('aria-pressed', 'true');
@@ -454,7 +467,7 @@ test('resultados: corrigir o local de um jogo terminado (casa/fora) fica guardad
   await page.reload();
   await enterPanel(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await expect(
     page.getByRole('group', { name: 'Local do jogo' }).getByRole('button', { name: 'Casa' })
@@ -464,7 +477,7 @@ test('resultados: corrigir o local de um jogo terminado (casa/fora) fica guardad
 test('classificação: resultados colados da série, jogos da app e posição da equipa', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByRole('button', { name: /Classificação do campeonato/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Classificação do campeonato' });
 
@@ -532,7 +545,7 @@ test('classificação: print da jornada (sem o nosso jogo) e nova fase sem perde
   );
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByRole('button', { name: /Classificação do campeonato/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Classificação do campeonato' });
 
@@ -584,8 +597,8 @@ test('classificação: print da jornada (sem o nosso jogo) e nova fase sem perde
 test('bolas paradas: caderno com desenho e quem marca aparece na Convocatória', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: /Lista/i }).click();
-  await page.getByTitle('Abrir Convocatória').first().click();
+  await openAgendaRow(page, /vs Abrantes/);
+  await page.getByTitle('Abrir Convocatória').click();
   const card = page.getByRole('region', { name: 'Bolas paradas', exact: true });
   await card.getByRole('button', { name: 'Criar caderno' }).click();
 
@@ -615,7 +628,7 @@ test('bolas paradas: caderno com desenho e quem marca aparece na Convocatória',
 test('jogador do jogo: escolher o destaque, guardar no jogo e descarregar a imagem', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Jogador do jogo/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Jogador do jogo' });
@@ -654,7 +667,7 @@ test('votação dos pais: link anónimo, um voto por telemóvel e os dois mais v
 }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '🏆 Resultados' }).first().click();
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Jogador do jogo/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Jogador do jogo' });
@@ -727,7 +740,7 @@ test('assistente: perguntas sobre a equipa respondidas com os dados da app', asy
 test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '⚡ Treinos' }).first().click();
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   // Opens on every training (no empty "Agendados" filter), newest first.
   await expect(page.getByText('TREINO 2')).toBeVisible();
 
@@ -787,7 +800,7 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
 test('exercícios: biblioteca com desenho importado, usada no plano do treino', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '⚡ Treinos' }).first().click();
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   await page.getByRole('button', { name: '➕ Novo exercício' }).click();
   const form = page.getByRole('region', { name: 'Editar exercício' });
@@ -910,13 +923,14 @@ test('fim de época: mensagem do treinador guardada na nuvem e PDF para a famíl
 
   await page.getByRole('button', { name: 'Fechar' }).click();
   const all = page.waitForEvent('download');
-  await page.getByRole('button', { name: /Fim de época/ }).click();
+  await page.getByRole('button', { name: 'Mais ações do plantel' }).click();
+  await page.getByRole('menuitem', { name: /Fim de época/ }).click();
   expect((await all).suggestedFilename()).toMatch(/^Fim_de_Epoca_Plantel_/);
 });
 
 test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /performance/i);
+  await navTo(page, /jogo/i);
   await page
     .getByRole('navigation', { name: 'Performance' })
     .getByRole('button', { name: /Estatísticas/ })
@@ -1000,8 +1014,8 @@ test('disponibilidade: lesão com data de regresso aparece no plantel e na Convo
   await expect(page.getByText('Lesionado até 15/01').first()).toBeVisible();
 
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: /Lista/i }).click();
-  await page.getByTitle('Abrir Convocatória').first().click();
+  await openAgendaRow(page, /vs Abrantes/);
+  await page.getByTitle('Abrir Convocatória').click();
   await expect(page.getByText('🏥 Lesionado até 15/01 · entorse')).toBeVisible();
 });
 
@@ -1132,6 +1146,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
 
   await signedIn(page);
   await navTo(page, /agenda/i);
+  await openAgendaRow(page, /vs Abrantes/);
   await page
     .getByRole('button', { name: /Iniciar Jogo/ })
     .first()
@@ -1301,14 +1316,14 @@ test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo',
   // An away game tomorrow: forecast for the game's hour and directions to the pitch
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
   await navTo(page, /agenda/i);
-  await page.getByRole('button', { name: '⚽ ＋ Jogo' }).first().click();
+  await addToAgenda(page, 'Jogo');
   await page.getByPlaceholder('Nome da equipa adversária').fill('AD Tempo Teste');
   await page.locator('input[type=date]').first().fill(tomorrow);
   await page.locator('input[type=time]').first().fill('15:00');
   await page.getByRole('button', { name: 'Fora', exact: true }).click();
   await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
-  await page.getByRole('button', { name: /Lista/i }).click();
-  const card = page.locator('.ui-card', { hasText: 'AD Tempo Teste' }).first();
+  await openAgendaRow(page, /vs AD Tempo Teste/);
+  const card = page.getByRole('listitem').filter({ hasText: 'AD Tempo Teste' });
   await expect(card.getByLabel('Previsão do tempo')).toHaveText('🌧️ 15° · 💧60% · 💨20 km/h');
   await card.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/cor-tempo.png` : undefined });
   await expect(card.getByRole('link', { name: /Como chegar/ })).toHaveAttribute(

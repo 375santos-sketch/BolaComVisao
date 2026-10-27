@@ -256,7 +256,12 @@ body {
 
 h1,
 h2,
-h3,
+h3 {
+  font-family: 'Chakra Petch', sans-serif;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+}
+
 .disp,
 .panel-title,
 .home-sub,

@@ -1,8 +1,7 @@
 import React from 'react';
 import { AppState, Player } from '../../../types';
 import { SquadSortBy, SquadSortDirection, POSITION_GROUPS, STATUS_CONFIG } from './types';
-import { SquadPositionBadge } from './SquadPositionBadge';
-import { computeAge, getPositionRank } from '../../../lib/utils';
+import { getPositionRank } from '../../../lib/utils';
 import { returnSuffix } from '../../../lib/availability';
 
 interface SquadListViewProps {
@@ -12,7 +11,6 @@ interface SquadListViewProps {
   sortDirection: SquadSortDirection;
   onSelectPlayer: (id: string) => void;
   onEditPlayer: (player: Player) => void;
-  onRemovePlayer: (id: string) => void;
 }
 
 export const SquadListView: React.FC<SquadListViewProps> = ({
@@ -21,8 +19,7 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
   sortBy,
   sortDirection,
   onSelectPlayer,
-  onEditPlayer,
-  onRemovePlayer
+  onEditPlayer
 }) => {
   const completedTrainings = (state.trainings || []).filter((tr) => tr.completed !== false);
   const totalTrainingsCount = completedTrainings.length;
@@ -35,129 +32,70 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
     const attendancePct = totalTrainingsCount > 0 ? Math.round((playerPresences / totalTrainingsCount) * 100) : 0;
     const hasLowAttendance = totalTrainingsCount >= 1 && attendancePct < attendanceThreshold;
 
+    const unavailable = player.status === 'lesionado' || player.status === 'suspenso' || player.status === 'inativo';
+    const hasNumber = player.number !== null && player.number !== undefined && `${player.number}` !== '';
+    const details = [player.positions || 'Jogador', unavailable ? `${st.label}${returnSuffix(player)}` : '']
+      .filter(Boolean)
+      .join(' · ');
+
     return (
       <div
         key={player.id}
         onClick={() => onSelectPlayer(player.id)}
-        className="ui-card px-3 py-2 sm:py-2.5 transition-all duration-150 flex items-center justify-between gap-3 group cursor-pointer"
+        className="ui-card px-3 py-2.5 flex items-center gap-3 cursor-pointer group"
       >
-        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
-          {/* 1. FOTO */}
-          <div className="shrink-0 relative">
-            {player.photoUrl ? (
-              <img
-                src={player.photoUrl}
-                alt={player.name}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover border border-cyan-500/40 group-hover:border-cyan-300 shadow-sm"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="ui-inset w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-base sm:text-lg text-cyan-400 font-bold">
-                👤
-              </div>
-            )}
+        {player.photoUrl ? (
+          <img
+            src={player.photoUrl}
+            alt=""
+            className="w-11 h-11 shrink-0 rounded-full object-cover border-2 border-slate-700"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="ui-inset w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-base font-bold text-white font-['Chakra_Petch']">
+            {hasNumber ? player.number : '–'}
           </div>
-
-          {/* 2. POSIÇÃO */}
-          <div className="shrink-0">
-            <SquadPositionBadge posStr={player.positions} />
-          </div>
-
-          {/* 3. Nº (Número de Camisola) */}
-          <div className="shrink-0">
-            <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-1.5 rounded-lg bg-cyan-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs shadow-sm">
-              {player.number !== null && player.number !== undefined ? `#${player.number}` : 'S/N'}
-            </span>
-          </div>
-
-          {/* 4. NOME */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-xs sm:text-sm text-white font-['Chakra_Petch'] leading-tight group-hover:text-cyan-300 transition-colors truncate">
-                {player.name}
-              </h3>
-              {hasLowAttendance && (
-                <span
-                  className="inline-flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.2 rounded-md font-bold bg-red-950 border border-red-500 text-red-300 animate-pulse"
-                  title={`Alerta: Menos de 50% de presenças nos treinos (${attendancePct}%)`}
-                >
-                  <span>🚨</span>
-                  <span>{attendancePct}% Treinos</span>
-                </span>
-              )}
-              {player.birthDate && (
-                <span className="text-[10px] font-mono text-slate-400 hidden md:inline">
-                  ({computeAge(player.birthDate)} anos)
-                </span>
-              )}
-            </div>
-            {(player.status === 'lesionado' || player.status === 'suspenso') && (
-              <div className={`sm:hidden text-[10px] font-mono font-bold mt-0.5 ${st.text}`}>
-                {st.icon} {st.label}
-                {returnSuffix(player)}
-              </div>
-            )}
-            <div className="text-[10px] font-mono text-slate-400 truncate mt-0.5 flex items-center gap-2">
-              <span className="hidden sm:inline">{player.positions || 'Jogador'}</span>
-              {player.dominantFoot && (
-                <span className="hidden sm:inline text-cyan-300/80">• Pé {player.dominantFoot}</span>
-              )}
-            </div>
-          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <h3 className="!font-sans !normal-case !tracking-normal font-bold text-sm text-white leading-tight truncate group-hover:text-cyan-300">
+            {player.photoUrl && hasNumber && <span className="text-slate-400 mr-1">{player.number}</span>}
+            {player.name}
+          </h3>
+          <div className={`text-xs truncate mt-0.5 ${unavailable ? st.text : 'text-slate-400'}`}>{details}</div>
         </div>
-
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <span
-            className={`hidden sm:inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-md font-bold border ${st.bg} ${st.text} ${st.border}`}
-          >
-            <span>{st.icon}</span>
-            <span>
-              {st.label}
-              {returnSuffix(player)}
-            </span>
+        {unavailable ? (
+          <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold ${st.bg} ${st.text}`}>
+            {st.label}
           </span>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelectPlayer(player.id);
-            }}
-            className="ui-btn ui-btn-soft px-2 py-1 text-[11px] hidden xs:inline-flex items-center gap-1"
-            title="Ver Ficha Completa"
-          >
-            <span>👁️</span>
-            <span className="hidden md:inline">Ficha</span>
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEditPlayer(player);
-            }}
-            className="ui-btn ui-btn-secondary p-1.5 text-xs"
-            title="Editar Jogador"
-          >
-            ✏️
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemovePlayer(player.id);
-            }}
-            className="ui-btn ui-btn-secondary p-1.5 text-xs"
-            title="Remover Jogador"
-          >
-            🗑️
-          </button>
-        </div>
+        ) : (
+          hasLowAttendance && (
+            <span
+              className="shrink-0 rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-300"
+              title={`Presenças nos treinos: ${attendancePct}%`}
+            >
+              Treinos {attendancePct}%
+            </span>
+          )
+        )}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEditPlayer(player);
+          }}
+          className="shrink-0 rounded-lg p-1.5 text-slate-500 hover:text-white"
+          title="Editar Jogador"
+          aria-label={`Editar ${player.name}`}
+        >
+          ✏️
+        </button>
       </div>
     );
   };
 
   if (sortBy === 'posicao') {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {(sortDirection === 'asc' ? POSITION_GROUPS : [...POSITION_GROUPS].reverse()).map((group) => {
           const groupPlayers = sortedRoster.filter((p) => {
             const rank = getPositionRank(p.positions);
@@ -170,18 +108,13 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
           if (groupPlayers.length === 0) return null;
 
           return (
-            <div key={group.id} className="space-y-2.5">
+            <div key={group.id} className="space-y-2">
               {/* Tactical Group Header */}
-              <div className="flex items-center justify-between pb-1.5 border-b border-cyan-500/20 text-cyan-400 font-['Chakra_Petch'] font-bold text-xs sm:text-sm uppercase tracking-wider">
+              <div className="flex items-center justify-between text-slate-400 font-bold text-xs uppercase tracking-wide">
                 <div className="flex items-center gap-2">
                   <span>{group.label}</span>
-                  <span className="text-xs font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded-full font-bold">
-                    {groupPlayers.length}
-                  </span>
+                  <span className="text-xs text-slate-500 font-bold">{groupPlayers.length}</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-500 hidden sm:inline">
-                  Foto • Posição • Nº • Nome
-                </span>
               </div>
 
               <div className="space-y-1.5">{groupPlayers.map(renderPlayerRow)}</div>
@@ -195,12 +128,10 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
   // Non-position sort (plain linear list)
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between pb-1.5 border-b border-cyan-500/20 text-cyan-400 font-['Chakra_Petch'] font-bold text-xs sm:text-sm uppercase tracking-wider">
+      <div className="flex items-center justify-between text-slate-400 font-bold text-xs uppercase tracking-wide">
         <div className="flex items-center gap-2">
           <span>{sortBy === 'numero' ? '🔢 Ordenado por Número da Camisola' : '🔤 Ordenado por Nome do Atleta'}</span>
-          <span className="text-xs font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded-full font-bold">
-            {sortedRoster.length} Atletas
-          </span>
+          <span className="text-xs text-slate-500 font-bold">{sortedRoster.length} Atletas</span>
         </div>
         <span className="text-[10px] font-mono text-slate-400">
           {sortBy === 'numero'
