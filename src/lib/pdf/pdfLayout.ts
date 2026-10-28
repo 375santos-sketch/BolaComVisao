@@ -1,6 +1,7 @@
 import { AppState, Player } from '../../types';
-import bolacomvisaoLogoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { defaultSeason } from '../utils';
+import { teamSettings } from '../teamSettings';
+import { inkFor, shade } from '../clubColors';
 
 export async function getJsPDF() {
   const mod = await import('jspdf');
@@ -9,10 +10,38 @@ export async function getJsPDF() {
 
 type jsPDF = any;
 
-/**
- * Draws the Club Emblem / Shield in the top-left corner
- */
-function drawClubEmblem(doc: jsPDF, x: number, y: number, size: number, clubName: string, logoUrl?: string) {
+export type Rgb = [number, number, number];
+
+const hexRgb = (hex: string): Rgb => {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+
+/** Colours of the printed documents: the club's colour (a little darker when it is light, to read on paper). */
+export const PDF_INK: Rgb = [20, 32, 46];
+export const PDF_MUTED: Rgb = [95, 111, 128];
+export const PDF_LINE: Rgb = [221, 227, 234];
+export const PDF_SOFT: Rgb = [245, 247, 250];
+
+export function pdfBrand(state: Pick<AppState, 'teams' | 'activeTeamId'>): Rgb {
+  const hex = teamSettings(state).clubColor;
+  return hexRgb(inkFor(hex) === '#ffffff' ? hex : shade(hex, -0.3));
+}
+
+/** "RELATÓRIO MENSAL" → "Relatório mensal" (titles are written in normal case on the page). */
+const sentence = (text: string) =>
+  text === text.toUpperCase() ? text.charAt(0) + text.slice(1).toLocaleLowerCase('pt-PT') : text;
+
+/** The club's symbol, or a round badge in the club's colour with its initial. */
+function drawClubEmblem(
+  doc: jsPDF,
+  x: number,
+  y: number,
+  size: number,
+  clubName: string,
+  brand: Rgb,
+  logoUrl?: string
+) {
   if (logoUrl) {
     try {
       doc.addImage(logoUrl, x, y, size, size);
@@ -21,129 +50,56 @@ function drawClubEmblem(doc: jsPDF, x: number, y: number, size: number, clubName
       console.warn('Could not render club logo image:', e);
     }
   }
-
-  // Fallback: Professional Club Shield / Crest
-  doc.saveGraphicsState();
-  doc.setFillColor(15, 30, 52);
-  doc.roundedRect(x, y, size, size, 3, 3, 'F');
-  doc.setDrawColor(0, 190, 240);
-  doc.setLineWidth(0.7);
-  doc.roundedRect(x, y, size, size, 3, 3, 'S');
-
-  // Inner circular emblem
-  doc.setFillColor(24, 48, 80);
-  doc.circle(x + size / 2, y + size / 2 - 1, size * 0.36, 'F');
-  doc.setDrawColor(217, 164, 65);
-  doc.setLineWidth(0.4);
-  doc.circle(x + size / 2, y + size / 2 - 1, size * 0.36, 'S');
-
-  // Club initial letters or default
+  doc.setFillColor(...brand);
+  doc.circle(x + size / 2, y + size / 2, size / 2, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  const initials = (clubName || 'CLUBE')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join('');
-
-  doc.setFontSize(size > 22 ? 10 : 8.5);
-  doc.text(initials || 'FC', x + size / 2, y + size / 2 + 2, { align: 'center' });
-
-  // Subtitle 'CLUBE'
-  doc.setFontSize(5);
-  doc.setTextColor(0, 210, 255);
-  doc.text('CLUBE', x + size / 2, y + size - 2.2, { align: 'center' });
-
-  doc.restoreGraphicsState();
+  doc.setFontSize(size * 0.85);
+  doc.text((clubName.trim()[0] || 'C').toUpperCase(), x + size / 2, y + size / 2 + size * 0.15, { align: 'center' });
 }
 
 /**
- * Draws the BolaComVisao Symbol / Logo in the top-right corner
- */
-function drawBolaComVisaoEmblem(doc: jsPDF, x: number, y: number, size: number) {
-  let rendered = false;
-  if (bolacomvisaoLogoImg) {
-    try {
-      doc.addImage(bolacomvisaoLogoImg, x, y, size, size);
-      rendered = true;
-    } catch (_e) {
-      // fallback
-    }
-  }
-
-  if (!rendered) {
-    doc.saveGraphicsState();
-    doc.setFillColor(8, 20, 38);
-    doc.roundedRect(x, y, size, size, 3, 3, 'F');
-    doc.setDrawColor(0, 210, 255);
-    doc.setLineWidth(0.7);
-    doc.roundedRect(x, y, size, size, 3, 3, 'S');
-
-    // Central circular glow
-    doc.setFillColor(16, 40, 72);
-    doc.circle(x + size / 2, y + size / 2 - 1, size * 0.36, 'F');
-    doc.setDrawColor(0, 210, 255);
-    doc.setLineWidth(0.4);
-    doc.circle(x + size / 2, y + size / 2 - 1, size * 0.36, 'S');
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(size > 22 ? 9 : 7);
-    doc.text('BV', x + size / 2, y + size / 2 + 1.8, { align: 'center' });
-
-    doc.setFontSize(4.5);
-    doc.setTextColor(0, 210, 255);
-    doc.text('BOLACOMVISÃO', x + size / 2, y + size - 2.2, { align: 'center' });
-
-    doc.restoreGraphicsState();
-  }
-}
-
-/**
- * Standard PDF Header with:
- * - Top-Left: Club Symbol
- * - Top-Right: BolaComVisao Symbol
- * - Center: Club Name, Document Title, Category / Season & Date
+ * Top of every document, light to print: the club's symbol, the title, "Clube · Escalão · Época" and the date, over a
+ * thin line in the club's colour. Content starts below y = 40.
  */
 export function drawDocumentHeader(doc: jsPDF, state: AppState, title: string, subtitle?: string) {
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : 'O Meu Clube';
+  const brand = pdfBrand(state);
 
-  // Header Banner Background
-  const brandDark = [10, 25, 42];
-  const brandCyan = [0, 190, 240];
+  drawClubEmblem(doc, 15, 10, 17, myClub, brand, state.clubLogoUrl);
 
-  doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
-  doc.rect(0, 0, 210, 37, 'F');
-
-  doc.setFillColor(brandCyan[0], brandCyan[1], brandCyan[2]);
-  doc.rect(0, 37, 210, 2.5, 'F');
-
-  // 1. Top-Left Corner: Club Symbol
-  drawClubEmblem(doc, 12, 5, 27, myClub, state.clubLogoUrl);
-
-  // 2. Top-Right Corner: BolaComVisao Symbol
-  drawBolaComVisaoEmblem(doc, 171, 5, 27);
-
-  // 3. Center Info
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(...PDF_INK);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text(myClub.toUpperCase(), 105, 13, { align: 'center' });
+  doc.setFontSize(19);
+  doc.text(sentence(title), 37, 19);
 
-  doc.setFontSize(11);
-  doc.setTextColor(brandCyan[0], brandCyan[1], brandCyan[2]);
-  doc.text(title.toUpperCase(), 105, 20.5, { align: 'center' });
-
-  doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(185, 215, 235);
-  const catSeason = `${state.category || 'Futebol'} • Época ${state.season || defaultSeason()}${subtitle ? ' • ' + subtitle : ''}`;
-  doc.text(catSeason, 105, 27.5, { align: 'center' });
+  doc.setFontSize(9);
+  doc.setTextColor(...PDF_MUTED);
+  const line = [myClub, state.category, `Época ${state.season || defaultSeason()}`, subtitle]
+    .filter(Boolean)
+    .join('  ·  ');
+  doc.text(doc.splitTextToSize(line, 125)[0], 37, 25.5);
 
   doc.setFontSize(7.5);
-  doc.setTextColor(140, 175, 200);
-  doc.text(`Emitido em: ${new Date().toLocaleDateString('pt-PT')}`, 105, 33.5, { align: 'center' });
+  doc.text(`Emitido a ${new Date().toLocaleDateString('pt-PT')}`, 195, 19, { align: 'right' });
+
+  doc.setDrawColor(...brand);
+  doc.setLineWidth(0.8);
+  doc.line(15, 31, 195, 31);
+  doc.setLineWidth(0.2);
+}
+
+/** Section title: small capitals in the club's colour over a thin grey line. Returns the height used (mm). */
+export function drawSectionTitle(doc: jsPDF, brand: Rgb, text: string, x: number, y: number, width: number) {
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...brand);
+  doc.text(text.toUpperCase(), x, y + 3.5);
+  doc.setDrawColor(...PDF_LINE);
+  doc.setLineWidth(0.3);
+  doc.line(x, y + 5.3, x + width, y + 5.3);
+  return 8.5;
 }
 
 /**
@@ -188,19 +144,19 @@ export function drawPlayerAvatar(doc: jsPDF, player: Player, x: number, y: numbe
   }
 }
 
-/**
- * Adds footer branding to every page (without diagonal watermark)
- */
+/** Footer of every page: "BolaComVisão" and the page number, small, over a thin line. */
 export function addBolaComVisaoPageFooters(doc: jsPDF) {
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(7.5);
-    doc.setTextColor(130, 150, 165);
-    doc.text(`BolaComVisão • Plataforma de Gestão Desportiva  |  Página ${i} de ${pageCount}`, 105, 290, {
-      align: 'center'
-    });
+    doc.setDrawColor(...PDF_LINE);
+    doc.setLineWidth(0.3);
+    doc.line(15, 285, 195, 285);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(150, 162, 175);
+    doc.text('BolaComVisão', 15, 289);
+    doc.text(`Página ${i} de ${pageCount}`, 195, 289, { align: 'right' });
   }
 }
 
@@ -208,7 +164,7 @@ export function addBolaComVisaoPageFooters(doc: jsPDF) {
  * Simple top-to-bottom writer for text reports (section headings, wrapped paragraphs and bullet lists), with page
  * breaks. No emojis: the PDF fonts cannot draw them.
  */
-export function createTextReportWriter(doc: jsPDF, startY: number) {
+export function createTextReportWriter(doc: jsPDF, startY: number, brand: Rgb = [14, 116, 144]) {
   const left = 14;
   const width = 182;
   let y = startY;
@@ -235,14 +191,9 @@ export function createTextReportWriter(doc: jsPDF, startY: number) {
       y += opts.size * 0.5;
     },
     heading(text: string) {
-      ensure(12);
-      doc.setFillColor(10, 25, 42);
-      doc.rect(left, y - 4.5, width, 7, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9.5);
-      doc.setTextColor(0, 190, 240);
-      doc.text(text.toUpperCase(), left + 2, y);
-      y += 7;
+      ensure(14);
+      y += 2;
+      y += drawSectionTitle(doc, brand, text, left, y - 4.5, width) - 2;
     },
     paragraph(text: string) {
       doc.setFont('helvetica', 'normal');

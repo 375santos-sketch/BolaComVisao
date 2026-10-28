@@ -5,7 +5,8 @@ import {
   drawDocumentHeader,
   drawPlayerAvatar,
   addBolaComVisaoPageFooters,
-  createTextReportWriter
+  createTextReportWriter,
+  pdfBrand
 } from './pdfLayout';
 import { drawMinutesByGame, drawTrainingMonths, PDF_BAR, PDF_INK, PDF_MUTED, PDF_TRACK } from './createPlayerReport';
 
@@ -112,10 +113,10 @@ function drawTiles(doc: Doc, top: number, s: PlayerSeason) {
 /** Draws one athlete's report starting on the current page. */
 function drawSeasonFinalReport(doc: Doc, player: Player, state: AppState, season?: string) {
   const s = buildPlayerSeason(state, player.id, season);
-  drawDocumentHeader(doc, state, 'RELATÓRIO DE FIM DE ÉPOCA');
+  drawDocumentHeader(doc, state, 'Relatório de fim de época');
 
   drawPlayerAvatar(doc, player, 93, 44, 24);
-  const w = createTextReportWriter(doc, 75);
+  const w = createTextReportWriter(doc, 75, pdfBrand(state));
   const number =
     player.number !== null && player.number !== undefined && `${player.number}` !== '' ? `#${player.number}  ` : '';
   w.centered(`${number}${player.name}`, { size: 16, bold: true });

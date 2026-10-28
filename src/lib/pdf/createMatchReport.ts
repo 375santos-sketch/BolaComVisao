@@ -2,251 +2,109 @@ import { Match, AppState, ScheduledMatch, Player } from '../../types';
 import { playerLabel, defaultSeason, formatMinute, sortPlayerObjs, getMatchCompetitionDetails } from '../utils';
 import { getLineupSize } from '../constants';
 import { t } from '../../i18n/dict';
-import { getJsPDF, drawDocumentHeader, drawPlayerAvatar, addBolaComVisaoPageFooters } from './pdfLayout';
+import {
+  getJsPDF,
+  drawDocumentHeader,
+  addBolaComVisaoPageFooters,
+  drawSectionTitle,
+  pdfBrand,
+  PDF_INK,
+  PDF_LINE,
+  PDF_MUTED,
+  PDF_SOFT
+} from './pdfLayout';
+import { dayLabel, factBoxes, gameTitle, noteBox } from './pdfBlocks';
 
 /**
- * 1. Convocatória Oficial em PDF com Fotos dos Jogadores
+ * Convocatória em PDF, to print or send in the group: the game, the four facts the families need (day, kick-off,
+ * meeting time and place) in big boxes, the called-up players in two columns and the notices.
  */
 export async function generateConvocatoriaPDF(match: ScheduledMatch, calledPlayers: Player[], state: AppState) {
   const jsPDF = await getJsPDF();
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4'
-  });
-
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
-  const dateFormatted = match.date.split('-').reverse().join('/');
-  const locLabel = match.location === 'casa' ? t(state.lang, 'match_home') : t(state.lang, 'match_away');
-
+  const brand = pdfBrand(state);
+  const away = match.location !== 'casa';
   const compLabel =
     match.type === 'torneio'
-      ? `${t(state.lang, 'sch_tour')}: ${match.tournamentName || ''}${match.phase ? ' - ' + match.phase : ''}`
+      ? `${t(state.lang, 'sch_tour')}${match.tournamentName ? ` ${match.tournamentName}` : ''}${match.phase ? ' · ' + match.phase : ''}`
       : match.type === 'campeonato'
-        ? `${t(state.lang, 'sch_champ')}${match.phase ? ' - ' + match.phase : ''}`
+        ? `${t(state.lang, 'sch_champ')}${match.phase ? ' · ' + match.phase : ''}`
         : t(state.lang, 'sch_friendly');
 
-  const darkGreen = [10, 25, 40];
-  const lightGray = [242, 246, 250];
-  const darkText = [20, 30, 40];
-  const mutedText = [90, 110, 130];
-
-  // Header with Left Club Crest & Right BolaComVisao Logo
-  drawDocumentHeader(doc, state, 'CONVOCATÓRIA OFICIAL DE JOGO', `vs ${match.opponent}`);
-
-  // Match Information Card
-  let curY = 47;
-  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-  doc.roundedRect(15, curY, 180, 48, 3, 3, 'F');
-
-  doc.setDrawColor(200, 220, 235);
-  doc.roundedRect(15, curY, 180, 48, 3, 3, 'S');
-
-  // Match Title / Opponent
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(darkGreen[0], darkGreen[1], darkGreen[2]);
-  const matchVsText =
-    match.location === 'casa' ? `${myClub}  vs  ${match.opponent}` : `${match.opponent}  vs  ${myClub}`;
-  doc.text(matchVsText, 22, curY + 11);
-
-  doc.setFontSize(9);
+  drawDocumentHeader(doc, state, 'Convocatória');
+  let y = 38;
+  y += gameTitle(doc, brand, away ? match.opponent : myClub, away ? myClub : match.opponent, y);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(darkText[0], darkText[1], darkText[2]);
+  doc.setFontSize(9.5);
+  doc.setTextColor(...PDF_MUTED);
+  doc.text(`${compLabel}  ·  jogo ${away ? 'fora' : 'em casa'}`, 15, y + 3);
+  y += 8;
 
-  // Details Grid
-  doc.setFont('helvetica', 'bold');
-  doc.text('Data do Jogo:', 22, curY + 21);
-  doc.setFont('helvetica', 'normal');
-  doc.text(dateFormatted, 50, curY + 21);
+  y +=
+    factBoxes(
+      doc,
+      [
+        ['Dia', dayLabel(match.date)],
+        ['Jogo', match.time || '—'],
+        ['Concentração', match.meetingTime || '—'],
+        ['Encontro', match.meetingPoint || '—']
+      ],
+      y
+    ) + 3;
+  if (match.venue) y += noteBox(doc, brand, `Campo: ${match.venue}`, y) + 3;
 
-  doc.setFont('helvetica', 'bold');
-  doc.text('Hora do Jogo:', 22, curY + 28);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${match.time}h`, 50, curY + 28);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('Competição:', 22, curY + 35);
-  doc.setFont('helvetica', 'normal');
-  doc.text(compLabel, 50, curY + 35);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('Condição:', 22, curY + 42);
-  doc.setFont('helvetica', 'normal');
-  doc.text(locLabel, 50, curY + 42);
-
-  // Column 2
-  const col2X = 110;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Concentração:', col2X, curY + 21);
-  doc.setFont('helvetica', 'normal');
-  doc.text(match.meetingTime ? `${match.meetingTime}h` : '--:--', col2X + 30, curY + 21);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('Local / Estádio:', col2X, curY + 28);
-  doc.setFont('helvetica', 'normal');
-  doc.text(
-    match.venue || (match.location === 'casa' ? 'Estádio Municipal' : 'Campo do Adversário'),
-    col2X + 30,
-    curY + 28
-  );
-
-  if (match.meetingPoint) {
+  // Called-up players, sorted by shirt number, in two columns
+  const players = sortPlayerObjs(calledPlayers);
+  y += 3;
+  y += drawSectionTitle(doc, brand, `Convocados (${players.length})`, 15, y, 180);
+  const rows = Math.ceil(players.length / 2);
+  const rowH = 11;
+  players.forEach((p, i) => {
+    const col = i < rows ? 0 : 1;
+    const row = col === 0 ? i : i - rows;
+    const x = 15 + col * 93;
+    const ry = y + row * rowH;
+    doc.setDrawColor(...brand);
+    doc.setLineWidth(0.6);
+    doc.circle(x + 4.5, ry + 4.5, 4.2, 'S');
     doc.setFont('helvetica', 'bold');
-    doc.text('Ponto Encontro:', col2X, curY + 35);
+    const num = p.number !== null && p.number !== undefined && `${p.number}` !== '' ? String(p.number) : '–';
+    doc.setFontSize(num.length > 2 ? 7.5 : 10);
+    doc.setTextColor(...PDF_INK);
+    doc.text(num, x + 4.5, ry + 6, { align: 'center' });
+    doc.setFontSize(11);
+    doc.text(doc.splitTextToSize(p.name, 74)[0], x + 12, ry + 4.2);
     doc.setFont('helvetica', 'normal');
-    doc.text(match.meetingPoint, col2X + 30, curY + 35);
-  }
+    doc.setFontSize(8);
+    doc.setTextColor(...PDF_MUTED);
+    if (p.positions) doc.text(doc.splitTextToSize(p.positions, 74)[0], x + 12, ry + 8.2);
+    doc.setDrawColor(...PDF_LINE);
+    doc.setLineWidth(0.2);
+    doc.line(x, ry + rowH - 0.5, x + 87, ry + rowH - 0.5);
+  });
+  y += rows * rowH + 6;
 
-  curY += 55;
-
-  // Called Players Section
-  doc.setFillColor(darkGreen[0], darkGreen[1], darkGreen[2]);
-  doc.rect(15, curY, 180, 8, 'F');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(255, 255, 255);
-  doc.text(`JOGADORES CONVOCADOS (${calledPlayers.length})`, 20, curY + 5.5);
-
-  curY += 12;
-
-  // Table Headers
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-  doc.text('Nº', 18, curY);
-  doc.text('FOTO', 28, curY);
-  doc.text('NOME DO JOGADOR', 42, curY);
-  doc.text('POSIÇÃO', 130, curY);
-  doc.text('ESTADO', 170, curY);
-
-  doc.setDrawColor(200, 220, 235);
-  doc.line(15, curY + 2, 195, curY + 2);
-  curY += 6;
-
-  const sortedCalled = sortPlayerObjs(calledPlayers);
-
-  if (sortedCalled.length === 0) {
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(9.5);
-    doc.setTextColor(150, 150, 150);
-    doc.text('Nenhum jogador selecionado para a convocatória.', 20, curY + 6);
-    curY += 12;
-  } else {
-    sortedCalled.forEach((p, idx) => {
-      if (curY > 255) {
-        doc.addPage();
-        curY = 20;
-
-        doc.setFillColor(darkGreen[0], darkGreen[1], darkGreen[2]);
-        doc.rect(15, curY, 180, 8, 'F');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        doc.setTextColor(255, 255, 255);
-        doc.text(`JOGADORES CONVOCADOS (Continuação)`, 20, curY + 5.5);
-        curY += 12;
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-        doc.text('Nº', 18, curY);
-        doc.text('FOTO', 28, curY);
-        doc.text('NOME DO JOGADOR', 42, curY);
-        doc.text('POSIÇÃO', 130, curY);
-        doc.text('ESTADO', 170, curY);
-
-        doc.setDrawColor(200, 220, 235);
-        doc.line(15, curY + 2, 195, curY + 2);
-        curY += 6;
-      }
-
-      const rowHeight = 9.5;
-      const photoSize = 7.5;
-      const photoX = 27.5;
-      const photoY = curY - 3;
-
-      if (idx % 2 === 0) {
-        doc.setFillColor(248, 251, 253);
-        doc.rect(15, curY - 4, 180, rowHeight, 'F');
-      }
-
-      // Player Number
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      doc.setTextColor(0, 120, 180);
-      doc.text(p.number !== null && p.number !== undefined ? String(p.number) : '-', 18, curY + 2);
-
-      // Player Photo / Avatar next to name
-      drawPlayerAvatar(doc, p, photoX, photoY, photoSize);
-
-      // Player Name
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-      const displayName = p.name.length > 40 ? p.name.substring(0, 38) + '...' : p.name;
-      doc.text(displayName, 42, curY + 2);
-
-      // Position
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
-      doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-      doc.text(p.positions || 'Jogador', 130, curY + 2);
-
-      // Status
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.5);
-      doc.setTextColor(16, 140, 70);
-      doc.text('Convocado', 170, curY + 2);
-
-      curY += rowHeight;
-    });
-  }
-
-  // Extra notes / observations if present
   if (match.callupNotes && match.callupNotes.trim()) {
-    curY += 6;
-    if (curY > 245) {
-      doc.addPage();
-      curY = 20;
-    }
-    doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-    doc.roundedRect(15, curY, 180, 22, 2, 2, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(darkGreen[0], darkGreen[1], darkGreen[2]);
-    doc.text('Observações e Recomendações:', 20, curY + 6);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-
-    const splitNotes = doc.splitTextToSize(match.callupNotes.trim(), 170);
-    doc.text(splitNotes, 20, curY + 12);
-
-    curY += 26;
+    y += drawSectionTitle(doc, brand, 'Avisos', 15, y, 180);
+    y += noteBox(doc, brand, match.callupNotes.trim(), y) + 4;
   }
 
   // Signature
-  const footerY = Math.max(curY + 10, 260);
-  if (footerY < 275) {
-    doc.setDrawColor(180, 200, 215);
-    doc.line(130, footerY, 190, footerY);
-
-    doc.setFont('helvetica', 'bold');
+  const signY = Math.max(y + 14, 262);
+  if (signY < 278) {
+    doc.setDrawColor(170, 180, 190);
+    doc.setLineWidth(0.3);
+    doc.line(135, signY, 195, signY);
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
-    doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-    doc.text('A Equipa Técnica', 160, footerY + 5, { align: 'center' });
+    doc.setTextColor(...PDF_MUTED);
+    doc.text('A equipa técnica', 165, signY + 5, { align: 'center' });
   }
 
-  // Apply Page Footers
   addBolaComVisaoPageFooters(doc);
-
-  // Save PDF
   const sanitize = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '_');
-  const filename = `Convocatoria_${sanitize(myClub)}_vs_${sanitize(match.opponent)}_${match.date}.pdf`;
-  doc.save(filename);
+  doc.save(`Convocatoria_${sanitize(myClub)}_vs_${sanitize(match.opponent)}_${match.date}.pdf`);
 }
 
 /**
@@ -294,10 +152,7 @@ export async function generateMatchSheetPDF(
   const dateFormatted = match.date.includes('-') ? match.date.split('-').reverse().join('/') : match.date;
 
   const compDetails = getMatchCompetitionDetails(match, state);
-  const typeLabel = compDetails.typeLabel;
-  const phaseLabel = compDetails.faseJornadaText;
 
-  const locLabel = (match.location || 'casa') === 'casa' ? 'JOGO EM CASA' : 'JOGO FORA';
   const compLabel =
     compDetails.type === 'torneio'
       ? `${compDetails.tournamentName || 'Torneio'}${compDetails.phase ? ' · ' + compDetails.phase : ''}`
@@ -310,79 +165,37 @@ export async function generateMatchSheetPDF(
 
   // Home team first (title and score): away games read "Adversário 1 - 10 Nós"
   const home = (match.location || 'casa') === 'casa';
-  const fixtureTitle = home
-    ? `${myClub.toUpperCase()}  vs  ${match.opponent.toUpperCase()}`
-    : `${match.opponent.toUpperCase()}  vs  ${myClub.toUpperCase()}`;
   const fixtureScore = home ? `${sc}   -   ${co}` : `${co}   -   ${sc}`;
 
-  // Header with Left Club Crest & Right BolaComVisao Logo
-  drawDocumentHeader(doc, state, 'RELATÓRIO OFICIAL DO JOGO', fixtureTitle);
+  const brand = pdfBrand(state);
+  drawDocumentHeader(doc, state, 'Relatório do jogo');
+  let curY = 38;
 
-  let curY = 46;
-
-  // 1. Banner Principal do Jogo (Scoreboard & Metadata)
-  doc.setFillColor(15, 30, 52);
-  doc.roundedRect(15, curY, 180, 31, 2.5, 2.5, 'F');
-  doc.setDrawColor(0, 210, 255);
-  doc.setLineWidth(0.6);
-  doc.roundedRect(15, curY, 180, 31, 2.5, 2.5, 'S');
-
-  // Match Title vs
+  // The game and the score, big; competition, date and place below
+  const homeName = home ? myClub : match.opponent;
+  const awayName = home ? match.opponent : myClub;
+  doc.setFillColor(...PDF_SOFT);
+  doc.roundedRect(15, curY, 180, 30, 3, 3, 'F');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(255, 255, 255);
-  doc.text(fixtureTitle, 105, curY + 6.5, { align: 'center' });
-
-  // Big Score
-  doc.setFontSize(16);
-  doc.setTextColor(0, 210, 255);
-  doc.text(fixtureScore, 105, curY + 15, { align: 'center' });
-
-  // Competition type and phase line: TIPO: CAMPEONATO • FASE/JORNADA: JORNADA 4
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.setTextColor(0, 210, 255);
-  const compTypePhaseText = `TIPO: ${typeLabel.toUpperCase()}   •   FASE/JORNADA: ${phaseLabel.toUpperCase()}`;
-  doc.text(compTypePhaseText, 105, curY + 21.2, { align: 'center' });
-
-  // Meta line: Data • Competição • Escalão • Local
+  doc.setFontSize(13);
+  doc.setTextColor(...PDF_INK);
+  doc.text(doc.splitTextToSize(homeName, 62)[0], 75, curY + 13, { align: 'right' });
+  doc.text(doc.splitTextToSize(awayName, 62)[0], 135, curY + 13);
+  doc.setFontSize(24);
+  doc.setTextColor(...brand);
+  doc.text(fixtureScore.replace(/\s+/g, ' '), 105, curY + 14.5, { align: 'center' });
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(200, 225, 245);
-  const metaText = `📅 ${dateFormatted}  •  🏆 ${compLabel}  •  ⚡ ${categoryLabel} (${seasonLabel})  •  📍 ${locLabel}`;
-  doc.text(metaText, 105, curY + 26.5, { align: 'center' });
-
-  curY += 35;
-
-  // 1.1 Caixa Dedicada de Informação do Jogo (Obtida da Agenda)
-  doc.setFillColor(242, 248, 255);
-  doc.roundedRect(15, curY, 180, 8.5, 1.5, 1.5, 'F');
-  doc.setDrawColor(0, 180, 230);
-  doc.setLineWidth(0.35);
-  doc.roundedRect(15, curY, 180, 8.5, 1.5, 1.5, 'S');
-
-  // TIPO:
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.setTextColor(15, 30, 52);
-  doc.text('TIPO:', 19, curY + 5.8);
-  doc.setTextColor(0, 140, 220);
-  doc.text(typeLabel.toUpperCase(), 30, curY + 5.8);
-
-  // FASE/JORNADA:
-  doc.setTextColor(15, 30, 52);
-  doc.text('FASE/JORNADA:', 82, curY + 5.8);
-  doc.setTextColor(215, 115, 0);
-  doc.text(phaseLabel.toUpperCase(), 110, curY + 5.8);
-
-  // Agenda status
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.8);
-  doc.setTextColor(95, 115, 140);
-  const agendaStatusText = compDetails.scheduledMatch ? '📅 Sincronizado com a Agenda' : '📋 Ficha Oficial de Jogo';
-  doc.text(agendaStatusText, 191, curY + 5.8, { align: 'right' });
-
-  curY += 12.5;
+  doc.setFontSize(9);
+  doc.setTextColor(...PDF_MUTED);
+  doc.text(
+    [dayLabel(match.date, true) || dateFormatted, compLabel, home ? 'Casa' : 'Fora', `${categoryLabel} ${seasonLabel}`]
+      .filter(Boolean)
+      .join('  ·  '),
+    105,
+    curY + 24,
+    { align: 'center' }
+  );
+  curY += 36;
 
   const getPName = (id: string | null) => {
     if (!id || id === 'unknown' || id === 'none') return 'Sem assistência / Desconhecido';
@@ -397,15 +210,8 @@ export async function generateMatchSheetPDF(
       doc.addPage();
       curY = 20;
     }
-    doc.setFillColor(15, 30, 52);
-    doc.rect(15, curY, 180, 6, 'F');
-    doc.setFillColor(0, 210, 255);
-    doc.rect(15, curY, 2.5, 6, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(255, 255, 255);
-    doc.text(title.toUpperCase(), 20, curY + 4.2);
-    curY += 9;
+    curY += 1;
+    curY += drawSectionTitle(doc, brand, title, 15, curY, 180);
   };
 
   // 2. GOLOS DA NOSSA EQUIPA
@@ -843,7 +649,7 @@ export async function generateMatchSheetPDF(
       doc.setFontSize(7.5);
       doc.setTextColor(darkText[0], darkText[1], darkText[2]);
       const minStr = c.minute ? `${formatMinute(c.minute)} ` : '';
-      doc.text(`${c.color === 'Amarelo' ? '🟨' : '🟥'} ${minStr}Cartão ${c.color}: ${getPName(c.playerId)}`, 20, curY);
+      doc.text(`${minStr}Cartão ${c.color.toLowerCase()}: ${getPName(c.playerId)}`, 20, curY);
       curY += 5;
     });
     curY += 2;

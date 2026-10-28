@@ -1,7 +1,18 @@
 import { AppState, Training } from '../../types';
 import { sortPlayerObjs } from '../utils';
 import { t } from '../../i18n/dict';
-import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters } from './pdfLayout';
+import {
+  getJsPDF,
+  drawDocumentHeader,
+  addBolaComVisaoPageFooters,
+  drawSectionTitle,
+  pdfBrand,
+  PDF_INK,
+  PDF_LINE,
+  PDF_MUTED
+} from './pdfLayout';
+import { dayLabel, factBoxes, noteBox } from './pdfBlocks';
+import { teamSettings } from '../teamSettings';
 
 /**
  * 1. Relatório de Assiduidade e Treinos em PDF
@@ -96,15 +107,7 @@ export async function generateTrainingsStatsPDF(state: AppState) {
   curY += 34;
 
   // Table Section Header
-  doc.setFillColor(brandDark[0], brandDark[1], brandDark[2]);
-  doc.rect(15, curY, 180, 8, 'F');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.setTextColor(255, 255, 255);
-  doc.text('DETALHE DE ASSIDUIDADE POR ATLETA', 20, curY + 5.5);
-
-  curY += 12;
+  curY += drawSectionTitle(doc, pdfBrand(state), 'Assiduidade por atleta', 15, curY, 180) + 2;
 
   // Columns header
   doc.setFont('helvetica', 'bold');
@@ -229,43 +232,37 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
   });
 
   const myClub = state.myClubName || 'A Minha Equipa';
+  const brand = pdfBrand(state);
+  drawDocumentHeader(
+    doc,
+    state,
+    training.trainingNumber ? `Plano de treino nº ${training.trainingNumber}` : 'Plano de treino'
+  );
 
-  const docTitle = training.trainingNumber
-    ? `PLANO DE TREINO Nº ${training.trainingNumber}`
-    : 'PLANO DE SESSÃO DE TREINO';
-  const docSubtitle = `DATA: ${training.date || '—'}${training.type ? ` | ${training.type.toUpperCase()}` : ''}`;
-  drawDocumentHeader(doc, state, docTitle, docSubtitle);
+  const blocks = training.sessionPlan?.blocks || [];
+  const plannedMinutes = blocks.reduce((sum, b) => sum + (b.durationMinutes || 0), 0);
+  const length = training.durationMinutes || teamSettings(state).trainingMinutes;
+  let curY = 38;
+  curY +=
+    factBoxes(
+      doc,
+      [
+        ['Dia', dayLabel(training.date || '')],
+        ['Hora', training.time || '—'],
+        ['Duração', `${length} min`],
+        ['Local', training.location || '—']
+      ],
+      curY
+    ) + 4;
+  if (training.type) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...PDF_MUTED);
+    doc.text(`Tipo de treino: ${training.type.replace(/[^\p{L}\p{N}\s.,·/()-]/gu, '').trim()}`, 15, curY + 2);
+    curY += 6;
+  }
 
-  let curY = 46;
-
-  // Header Banner for Training info
-  doc.setFillColor(15, 30, 52);
-  doc.roundedRect(15, curY, 180, 22, 3, 3, 'F');
-  doc.setDrawColor(0, 210, 255);
-  doc.setLineWidth(0.6);
-  doc.roundedRect(15, curY, 180, 22, 3, 3, 'S');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(255, 255, 255);
-  const bannerTitle = training.trainingNumber
-    ? `TREINO Nº ${training.trainingNumber} — ${training.date || 'DATA NÃO DEFINIDA'}`
-    : `SESSÃO DE TREINO — ${training.date || 'DATA NÃO DEFINIDA'}`;
-  doc.text(bannerTitle, 20, curY + 8);
-
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(0, 210, 255);
-  const typeStr = training.type || 'Geral';
-  const timeStr = training.time ? ` às ${training.time}` : '';
-  const locStr = training.location ? ` • ${training.location}` : '';
-  const durStr = ` • ${training.durationMinutes || 90} min`;
-  const statusStr = training.completed ? ' • Concluído' : ' • Planeado';
-  doc.text(`${typeStr}${timeStr}${locStr}${durStr}${statusStr}`, 20, curY + 15);
-
-  curY += 27;
-
-  // Text is never cut: boxes grow with the text and continue on the next page when needed
+  // Text is never cut: sections continue on the next page when needed
   const PAGE_BOTTOM = 280;
   const PAGE_TOP = 20;
   const newPage = () => {
@@ -273,210 +270,182 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
     curY = PAGE_TOP;
   };
 
-  /** A box with a coloured title bar and all the lines of `text` (split over pages if long). */
-  const titledTextBox = (
-    title: string,
-    text: string,
-    colors: { bg: [number, number, number]; border: [number, number, number]; bar: [number, number, number] }
-  ) => {
-    doc.setFontSize(8);
-    const lines: string[] = doc.splitTextToSize(text, 170);
-    const lineH = 3.8;
-    let i = 0;
-    let part = 0;
-    while (i < lines.length) {
-      const headerH = 10.5;
-      if (PAGE_BOTTOM - curY < headerH + lineH + 3) newPage();
-      const fit = Math.max(1, Math.floor((PAGE_BOTTOM - curY - headerH - 3) / lineH) + 1);
-      const take = lines.slice(i, i + fit);
-      const boxH = headerH + (take.length - 1) * lineH + 4;
-      doc.setFillColor(...colors.bg);
-      doc.roundedRect(15, curY, 180, boxH, 2, 2, 'F');
-      doc.setDrawColor(...colors.border);
-      doc.roundedRect(15, curY, 180, boxH, 2, 2, 'S');
-      doc.setFillColor(...colors.bar);
-      doc.rect(15, curY, 180, 5.5, 'F');
-      doc.setFillColor(0, 210, 255);
-      doc.rect(15, curY, 2.5, 5.5, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(255, 255, 255);
-      doc.text(part > 0 ? `${title} (continuação)` : title, 20, curY + 4);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(15, 30, 52);
-      doc.text(take, 20, curY + headerH, { lineHeightFactor: 1.35 });
-      i += take.length;
-      part++;
-      curY += boxH + 4;
-      if (i < lines.length) newPage();
-    }
+  /** Section title and all the lines of `text`, across pages if long. */
+  const textSection = (title: string, text: string, size = 10) => {
+    if (curY + 16 > PAGE_BOTTOM) newPage();
+    curY += drawSectionTitle(doc, brand, title, 15, curY, 180);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(size);
+    doc.setTextColor(...PDF_INK);
+    (doc.splitTextToSize(text, 180) as string[]).forEach((line) => {
+      if (curY + 5 > PAGE_BOTTOM) newPage();
+      doc.text(line, 15, curY + 3);
+      curY += size * 0.46;
+    });
+    curY += 5;
   };
 
-  // Box 1: Objetivo Principal da Sessão (se existir)
   if (training.sessionPlan?.objective?.trim()) {
-    titledTextBox('OBJETIVO PRINCIPAL DA SESSÃO', training.sessionPlan.objective.trim(), {
-      bg: [240, 248, 255],
-      border: [180, 215, 245],
-      bar: [0, 140, 220]
-    });
+    if (curY + 20 > PAGE_BOTTOM) newPage();
+    curY += drawSectionTitle(doc, brand, 'Objetivo', 15, curY, 180);
+    curY += noteBox(doc, brand, training.sessionPlan.objective.trim(), curY, { size: 11, bold: true }) + 6;
   }
 
-  // Box 2: Blocos e Exercícios da Sessão
-  const blocks = training.sessionPlan?.blocks || [];
-  const plannedMinutes = blocks.reduce((sum, b) => sum + (b.durationMinutes || 0), 0);
-
   if (curY + 30 > PAGE_BOTTOM) newPage();
-  doc.setFillColor(15, 30, 52);
-  doc.rect(15, curY, 180, 7.5, 'F');
-  doc.setFillColor(0, 210, 255);
-  doc.rect(15, curY, 2.5, 7.5, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(255, 255, 255);
-  doc.text(
-    `ESTRUTURA DA SESSÃO (${blocks.length} ${blocks.length === 1 ? 'bloco' : 'blocos'} · ${plannedMinutes} min planeados)`,
-    20,
-    curY + 5
+  curY += drawSectionTitle(
+    doc,
+    brand,
+    `Sessão · ${blocks.length} ${blocks.length === 1 ? 'bloco' : 'blocos'}${plannedMinutes ? ` · ${plannedMinutes} min planeados` : ''}`,
+    15,
+    curY,
+    180
   );
 
-  curY += 10;
-
   if (blocks.length === 0) {
-    doc.setFillColor(248, 250, 252);
-    doc.roundedRect(15, curY, 180, 16, 2, 2, 'F');
-    doc.setDrawColor(220, 230, 240);
-    doc.roundedRect(15, curY, 180, 16, 2, 2, 'S');
     doc.setFont('helvetica', 'italic');
-    doc.setFontSize(8.5);
-    doc.setTextColor(100, 115, 130);
-    doc.text('Nenhum bloco ou exercício estruturado para esta sessão.', 20, curY + 10);
-    curY += 20;
+    doc.setFontSize(9);
+    doc.setTextColor(...PDF_MUTED);
+    doc.text('Sem blocos nem exercícios planeados para esta sessão.', 15, curY + 4);
+    curY += 10;
   } else {
+    // Time bar: each block's share of the session, in its category's colour
+    if (plannedMinutes > 0) {
+      let x = 15;
+      blocks.forEach((b) => {
+        const w = (180 * (b.durationMinutes || 0)) / plannedMinutes;
+        if (w <= 0) return;
+        doc.setFillColor(...categoryColor(b.category));
+        doc.rect(x, curY, w, 6, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(255, 255, 255);
+        const label = `${categoryName(b.category) || b.title || ''} ${b.durationMinutes}'`;
+        if (doc.getTextWidth(label) < w - 2) doc.text(label, x + w / 2, curY + 4.1, { align: 'center' });
+        x += w;
+      });
+      curY += 10;
+    }
+
+    let minute = 0;
     blocks.forEach((block, idx) => {
-      // Layout of each block: title (and duration) on top, the exercise's drawing below it, then the text across the
-      // whole width of the page (inside the box margins)
+      // Each block: minutes and title on top, the exercise's drawing below it, then the text across the whole page
       const exercise = block.exerciseId
         ? (state.exerciseLibrary || []).find((e) => e.id === block.exerciseId)
         : undefined;
       const image = exercise?.image;
-      const BOX_X = 15;
-      const BOX_W = 180;
-      const LEFT = 20; // text margin inside the box
-      const RIGHT = 190;
+      const LEFT = 15;
+      const RIGHT = 195;
       const textWidth = RIGHT - LEFT;
       let imgW = 0;
       let imgH = 0;
       if (image) {
         try {
           const props = doc.getImageProperties(image);
-          const maxW = textWidth;
-          const maxH = 75;
-          const scale = Math.min(maxW / props.width, maxH / props.height);
+          const scale = Math.min(150 / props.width, 75 / props.height);
           imgW = props.width * scale;
           imgH = props.height * scale;
         } catch {
           imgW = 0;
         }
       }
-      const catLabel = block.category ? `[${block.category.toUpperCase()}] ` : '';
-      const duration = block.durationMinutes ? `${block.durationMinutes} min` : '';
+      const from = minute;
+      minute += block.durationMinutes || 0;
+      const range = block.durationMinutes ? `${from}–${minute}'` : `${idx + 1}.`;
+      const cat = categoryName(block.category);
 
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      const titleX = LEFT + 9;
-      const titleLines: string[] = doc.splitTextToSize(
-        `${catLabel}${block.title || 'Bloco sem título'}`,
-        RIGHT - titleX - (duration ? 16 : 0)
-      );
-      // Objective / notes of the block and the exercise's description, whole
+      doc.setFontSize(7);
+      const tagW = cat ? doc.getTextWidth(cat.toUpperCase()) + 5 : 0;
+      const titleX = LEFT + 22 + (tagW ? tagW + 2 : 0);
+      doc.setFontSize(11);
+      const titleLines: string[] = doc.splitTextToSize(block.title || 'Bloco sem título', RIGHT - titleX);
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7.5);
+      doc.setFontSize(9.5);
       const description = exercise?.description?.trim();
       const details = [block.notes?.trim(), description && description !== block.notes?.trim() ? description : '']
         .filter(Boolean)
         .join('\n');
       const noteLines: string[] = details ? doc.splitTextToSize(details, textWidth) : [];
+      const lineH = 4.4;
+      const titleH = (titleLines.length - 1) * 5 + 6;
+      const imageTop = Math.max(titleH + 3, 11);
+      // Below the title and the "N min" under the minutes
+      const firstNoteY = imgW ? Math.max(imageTop + imgH + 5, 13) : Math.max(titleH + 3, 13);
 
-      const lineH = 3.6;
-      const titleH = 4.2;
-      const titleBottom = 8 + (titleLines.length - 1) * titleH; // baseline of the last title line
-      const imageTop = titleBottom + 4;
-      const firstNoteY = imgW ? imageTop + imgH + 6 : titleBottom + 6;
       let i = 0;
       let part = 0;
       do {
         const first = part === 0;
-        const noteY = first ? firstNoteY : 8;
-        // The title, the drawing and the first lines of text stay together on the same page
-        const minH = first ? noteY + lineH * Math.min(3, noteLines.length) + 2 : 16;
+        const noteY = first ? firstNoteY : 5;
+        const minH = first ? noteY + lineH * Math.min(3, noteLines.length) + 2 : 12;
         if (curY + minH > PAGE_BOTTOM && curY > PAGE_TOP) newPage();
-        const fit = Math.max(1, Math.floor((PAGE_BOTTOM - curY - noteY - 4) / lineH) + 1);
+        const fit = Math.max(1, Math.floor((PAGE_BOTTOM - curY - noteY - 3) / lineH) + 1);
         const take = noteLines.slice(i, i + fit);
-        const textH = take.length ? noteY + (take.length - 1) * lineH + 4 : noteY - 2;
-        const boxH = Math.max(first ? 14 : 12, textH);
-
-        doc.setFillColor(248, 250, 252);
-        doc.roundedRect(BOX_X, curY, BOX_W, boxH, 2, 2, 'F');
-        doc.setDrawColor(200, 220, 235);
-        doc.roundedRect(BOX_X, curY, BOX_W, boxH, 2, 2, 'S');
 
         if (first) {
-          // Index badge
-          doc.setFillColor(0, 180, 230);
-          doc.roundedRect(LEFT, curY + 3.5, 6, 6, 1, 1, 'F');
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(7.5);
-          doc.setTextColor(255, 255, 255);
-          doc.text(String(idx + 1), LEFT + 3, curY + 7.7, { align: 'center' });
-
-          // Title & duration
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(9);
-          doc.setTextColor(15, 30, 52);
-          doc.text(titleLines, titleX, curY + 8, { lineHeightFactor: 1.3 });
-          if (duration) {
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(8);
-            doc.setTextColor(0, 140, 200);
-            doc.text(duration, RIGHT, curY + 8, { align: 'right' });
+          doc.setFontSize(11);
+          doc.setTextColor(...PDF_INK);
+          doc.text(range, LEFT, curY + 4.5);
+          if (block.durationMinutes) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7.5);
+            doc.setTextColor(...PDF_MUTED);
+            doc.text(`${block.durationMinutes} min`, LEFT, curY + 8.5);
           }
-
-          // The drawing, centred below the title
+          if (cat) {
+            doc.setFillColor(...categoryColor(block.category));
+            doc.roundedRect(LEFT + 22, curY + 0.8, tagW, 5, 2.5, 2.5, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7);
+            doc.setTextColor(255, 255, 255);
+            doc.text(cat.toUpperCase(), LEFT + 22 + tagW / 2, curY + 4.3, { align: 'center' });
+          }
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.setTextColor(...PDF_INK);
+          doc.text(titleLines, titleX, curY + 4.5, { lineHeightFactor: 1.3 });
           if (imgW) {
             const imgX = LEFT + (textWidth - imgW) / 2;
             doc.addImage(image!, 'JPEG', imgX, curY + imageTop, imgW, imgH);
-            doc.setDrawColor(215, 225, 235);
+            doc.setDrawColor(...PDF_LINE);
             doc.rect(imgX, curY + imageTop, imgW, imgH, 'S');
           }
         } else {
           doc.setFont('helvetica', 'italic');
-          doc.setFontSize(7);
-          doc.setTextColor(100, 115, 130);
-          doc.text(`${idx + 1}. ${block.title || 'Bloco'} (continuação)`, LEFT, curY + 4.5);
+          doc.setFontSize(8);
+          doc.setTextColor(...PDF_MUTED);
+          doc.text(`${block.title || 'Bloco'} (continuação)`, LEFT, curY + 3);
         }
 
         if (take.length) {
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(7.5);
-          doc.setTextColor(60, 75, 90);
-          doc.text(take, LEFT, curY + noteY, { lineHeightFactor: 1.35 });
+          doc.setFontSize(9.5);
+          doc.setTextColor(55, 70, 85);
+          doc.text(take, LEFT, curY + noteY + (first ? 1 : 0), { lineHeightFactor: 1.4 });
         }
-
+        const used = take.length ? noteY + take.length * lineH + 1 : Math.max(noteY, first ? 10 : 6);
         i += take.length;
         part++;
-        curY += boxH + 3;
+        curY += used + 2;
         if (i < noteLines.length) newPage();
       } while (i < noteLines.length);
+      doc.setDrawColor(...PDF_LINE);
+      doc.setLineWidth(0.3);
+      doc.line(LEFT, curY, RIGHT, curY);
+      curY += 4;
     });
   }
 
-  // Box 3: Notas Gerais / Observações do Treinador
-  if (training.notes?.trim()) {
-    titledTextBox('NOTAS GERAIS / OBSERVAÇÕES', training.notes.trim(), {
-      bg: [252, 252, 252],
-      border: [215, 225, 235],
-      bar: [40, 55, 75]
-    });
+  if (training.notes?.trim()) textSection('Notas', training.notes.trim());
+
+  // Room to write after the session, when it fits on the page
+  if (curY + 30 < PAGE_BOTTOM) {
+    curY += drawSectionTitle(doc, brand, 'Depois do treino (à mão)', 15, curY, 180);
+    doc.setDrawColor(200, 208, 216);
+    doc.setLineDashPattern([1, 1], 0);
+    for (let k = 1; k <= 3 && curY + k * 8 < PAGE_BOTTOM; k++) doc.line(15, curY + k * 8, 195, curY + k * 8);
+    doc.setLineDashPattern([], 0);
   }
 
   addBolaComVisaoPageFooters(doc);
@@ -486,3 +455,14 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
   const filename = `Plano${numPart}_${sanitize(myClub)}_${training.date || 'sem_data'}.pdf`;
   return { doc, filename };
 }
+
+const CATEGORIES: Record<string, [string, [number, number, number]]> = {
+  aquecimento: ['Aquecimento', [245, 158, 11]],
+  tecnica: ['Técnico', [14, 165, 233]],
+  tatica: ['Tático', [139, 92, 246]],
+  fisico: ['Físico', [239, 68, 68]],
+  jogo: ['Jogo', [16, 185, 129]],
+  bolas_paradas: ['Bolas paradas', [100, 116, 139]]
+};
+const categoryName = (c?: string) => (c ? CATEGORIES[c]?.[0] || c : '');
+const categoryColor = (c?: string): [number, number, number] => (c && CATEGORIES[c]?.[1]) || [71, 85, 105];

@@ -747,7 +747,9 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await page.getByRole('button', { name: /Treino de hoje/ }).click();
   const today = page.getByRole('dialog', { name: 'Treino de hoje' });
   await expect(today).toContainText('Nº 3');
-  await expect(today.getByLabel('Hora')).toHaveValue('18:15'); // the usual time
+  // The team's time for the day (Mondays 19:15, Thursdays 18:15), otherwise the usual time
+  const usual = (await page.evaluate(() => new Date().getDay())) === 1 ? '19:15' : '18:15';
+  await expect(today.getByLabel('Hora')).toHaveValue(usual);
   await today.getByRole('button', { name: 'Rui Silva: presente' }).click();
   await today.getByLabel('Motivo da falta de Rui Silva').selectOption('doente');
   await today.getByRole('button', { name: 'Guardar treino' }).click();

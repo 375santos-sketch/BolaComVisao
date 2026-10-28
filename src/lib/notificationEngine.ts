@@ -10,7 +10,7 @@ import {
 } from './attendanceAlerts';
 
 const defaultWeeklyTrainings: WeeklyTrainingSlot[] = [
-  { day: 2, time: '18:15', label: 'Terça-feira' },
+  { day: 1, time: '19:15', label: 'Segunda-feira' },
   { day: 4, time: '18:15', label: 'Quinta-feira' }
 ];
 

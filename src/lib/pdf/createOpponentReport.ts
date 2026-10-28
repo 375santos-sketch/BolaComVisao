@@ -1,5 +1,11 @@
 import { AppState, Match } from '../../types';
-import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters, createTextReportWriter } from './pdfLayout';
+import {
+  getJsPDF,
+  drawDocumentHeader,
+  addBolaComVisaoPageFooters,
+  createTextReportWriter,
+  pdfBrand
+} from './pdfLayout';
 import { getOpponentMatchFacts } from '../opponentReport';
 import { getMatchCompetitionDetails } from '../utils';
 
@@ -13,9 +19,9 @@ export async function buildOpponentReportPDF(match: Match, state: AppState) {
   const club = state.myClubName || 'A nossa equipa';
   const date = match.date.split('-').reverse().join('/');
 
-  drawDocumentHeader(doc, state, 'RELATÓRIO DO ADVERSÁRIO (PÓS-JOGO)', match.opponent);
+  drawDocumentHeader(doc, state, 'Relatório do adversário', `vs ${match.opponent}`);
 
-  const w = createTextReportWriter(doc, 48);
+  const w = createTextReportWriter(doc, 42, pdfBrand(state));
   const { heading, paragraph, list } = w;
 
   const home = match.location !== 'fora';

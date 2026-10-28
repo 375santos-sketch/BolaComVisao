@@ -651,6 +651,10 @@ export interface SquadProfile {
   trainingTemplates?: TrainingTemplate[];
   /** Team settings (Definições → Clube): main colour, the club's town (weather) and the yellow-card rule. */
   clubColor?: string;
+  /** Usual training length in minutes (Definições → Clube). */
+  trainingMinutes?: number;
+  /** Start time of the trainings by weekday (0 = Sunday … 6 = Saturday), "HH:MM". */
+  trainingTimes?: Record<string, string>;
   clubTown?: string;
   yellowsForBan?: number;
   /** The team's rehearsed set pieces (corners, free kicks, throw-ins…), each its own cloud record. */
