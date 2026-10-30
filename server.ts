@@ -6,6 +6,7 @@ import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
 import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
 import { cleanPrintExercise, EXERCISE_PROMPT, EXERCISE_SCHEMA } from './src/lib/printExercise';
 import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
+import { ChronicleAudience, chroniclePrompt, cleanChronicle } from './src/lib/matchChronicle';
 import {
   cleanPrintFixtures,
   cleanPrintGames,
@@ -313,6 +314,54 @@ async function startServer() {
         success: false,
         error: `Não foi possível ler o print. Tente outra vez. (${String(err?.message || err).slice(0, 120)})`
       });
+    }
+  });
+
+  // Resultados → "📰 Crónica do jogo": Gemini writes a short text from the game's facts (sent by the app: score,
+  // goals in order, first names of scorers only when the coach chose so). Only for signed-in users.
+  app.post('/api/cronica', async (req, res) => {
+    try {
+      const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
+      const authHeader = req.headers.authorization || '';
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+      const verification = token && apiKey ? await verifyFirebaseIdToken(token, apiKey) : { valid: false };
+      if (!verification.valid) {
+        return res.status(401).json({ success: false, error: 'Sessão expirada. Entre de novo na app.' });
+      }
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (!geminiKey)
+        return res.status(503).json({ success: false, error: 'A escrita automática não está disponível.' });
+      const facts = req.body?.facts;
+      const audience: ChronicleAudience = req.body?.audience === 'pais' ? 'pais' : 'clube';
+      if (!facts || typeof facts !== 'object' || JSON.stringify(facts).length > 6000) {
+        return res.status(400).json({ success: false, error: 'Dados do jogo inválidos.' });
+      }
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      let lastError: unknown;
+      for (const model of PRINT_MODELS) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents: [{ role: 'user', parts: [{ text: chroniclePrompt(facts, audience) }] }],
+            config: { temperature: 0.9 }
+          });
+          const text = cleanChronicle(response.text);
+          if (text) return res.json({ success: true, text });
+          lastError = new Error('Resposta vazia');
+        } catch (err: any) {
+          lastError = err;
+          console.warn(`Crónica com ${model}:`, err?.message || err);
+          const kind = geminiErrorKind(err);
+          if (kind !== 'model' && kind !== 'other') {
+            return res.status(502).json({ success: false, error: geminiErrorMessage(kind) });
+          }
+        }
+      }
+      throw lastError;
+    } catch (err: any) {
+      console.error('Erro na rota /api/cronica:', err?.message || err);
+      res.status(500).json({ success: false, error: 'Não foi possível escrever a crónica.' });
     }
   });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { Player, AppState } from '../../../types';
 import { STATUS_CONFIG } from './types';
 import { computeAge } from '../../../lib/utils';
@@ -7,6 +7,8 @@ import { buildPlayerSeason } from '../../../lib/playerSeason';
 import { PlayerSeasonSection } from './PlayerSeasonSection';
 import { StatsPanel } from '../../stats/StatsPanel';
 import { returnSuffix } from '../../../lib/availability';
+
+const PlayerCardModal = lazy(() => import('./PlayerCardModal'));
 
 interface SquadPlayerDetailModalProps {
   player: Player | null;
@@ -92,6 +94,7 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
   const [coachNotes, setCoachNotes] = useState<string>(player.coachNotes || player.notes || '');
   const [isSavingNotes, setIsSavingNotes] = useState<boolean>(false);
   const [showPanel, setShowPanel] = useState(false);
+  const [showCard, setShowCard] = useState(false);
   const [seasonMessage, setSeasonMessage] = useState<string>(
     (state.season && player.seasonMessages?.[state.season]) || ''
   );
@@ -433,7 +436,24 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
                 📄 PDF fim de época
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => setShowCard(true)}
+              className="ui-btn ui-btn-soft-warning w-full py-2 text-xs"
+            >
+              🃏 Cromo do atleta
+            </button>
           </section>
+          {showCard && (
+            <Suspense fallback={null}>
+              <PlayerCardModal
+                player={player}
+                state={state}
+                onShowToast={onShowToast}
+                onClose={() => setShowCard(false)}
+              />
+            </Suspense>
+          )}
 
           {/* Individual Export Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
