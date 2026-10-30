@@ -1617,3 +1617,46 @@ test('lista do saco: material do exercício no treino, e modo sol que fica lembr
   await page.getByRole('button', { name: 'Modo sol' }).first().click();
   await expect(html).not.toHaveClass(/\bsol\b/);
 });
+
+test('crónica do jogo e cromo do atleta (imagem e PDF de todos)', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
+  await page.getByText('Tramagal SU').click();
+  await page.getByRole('button', { name: /Crónica do jogo/ }).click();
+  const chronicle = page.getByRole('dialog', { name: 'Crónica do jogo' });
+  const text = chronicle.getByLabel('Mensagem');
+  // No Gemini key in the tests: the app writes the plain version itself and says so
+  await expect(chronicle.getByRole('note')).toContainText('texto mais simples');
+  await expect(text).toHaveValue(/venceu por \d-\d frente a Tramagal SU/);
+  await expect(text).toHaveValue(/Golos de Rui \(2\)/);
+  await chronicle.getByLabel('Dizer quem marcou').uncheck();
+  await expect(text).not.toHaveValue(/Rui/);
+  await chronicle.getByRole('button', { name: '💬 Grupo dos pais' }).click();
+  await expect(text).toHaveValue(/^⚽ Vitória/);
+  await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/cronica.png` : undefined });
+  await chronicle.getByRole('button', { name: 'Fechar' }).click();
+
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('button', { name: '🃏 Cromo do atleta' }).click();
+  const card = page.getByRole('dialog', { name: 'Cromo do atleta' });
+  await expect(card.getByRole('img', { name: 'Cromo de Rui Silva' })).toBeVisible();
+  await page.waitForTimeout(600);
+  await card
+    .getByRole('img', { name: 'Cromo de Rui Silva' })
+    .screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/cromo.png` : undefined });
+  await card.getByRole('button', { name: 'Fechar cromo' }).click();
+  await page.keyboard.press('Escape');
+  await page
+    .getByRole('button', { name: 'Fechar' })
+    .first()
+    .click()
+    .catch(() => {});
+
+  await page.getByRole('button', { name: 'Mais ações do plantel' }).click();
+  const download = page.waitForEvent('download');
+  await page.getByRole('menuitem', { name: '🃏 Cromos de todos (PDF)' }).click();
+  expect((await download).suggestedFilename()).toMatch(/^Cromos_Drag.*\.pdf$/);
+  await expect(page.getByText(/^\d+ cromos prontos a imprimir 🃏$/)).toBeVisible();
+});

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { AppState, Match, GoalEvent, CardEvent, SubEvent } from '../../types';
 import { AgendaTabs } from './schedule/AgendaTabs';
 import { t } from '../../i18n/dict';
@@ -12,6 +12,8 @@ import { LeagueTableModal } from './results/LeagueTableModal';
 import { MvpModal } from './results/MvpModal';
 import { candidateLabel } from '../../lib/mvpVote';
 import { hasReportNotes } from '../../lib/opponentReport';
+
+const ChronicleModal = lazy(() => import('./results/ChronicleModal'));
 
 interface ResultsViewProps {
   state: AppState;
@@ -37,6 +39,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [seasonFilter, setSeasonFilter] = useState<string>('todas');
   const [shareMatch, setShareMatch] = useState<Match | null>(null);
+  const [chronicleMatch, setChronicleMatch] = useState<Match | null>(null);
   const [reportMatch, setReportMatch] = useState<Match | null>(null);
   const [editMatch, setEditMatch] = useState<Match | null>(null);
   const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
@@ -200,6 +203,17 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           onClose={() => setReportMatch(null)}
           onShowToast={onShowToast}
         />
+      )}
+
+      {chronicleMatch && (
+        <Suspense fallback={null}>
+          <ChronicleModal
+            match={chronicleMatch}
+            state={state}
+            onClose={() => setChronicleMatch(null)}
+            onShowToast={onShowToast}
+          />
+        </Suspense>
       )}
 
       {shareMatch && (
@@ -455,6 +469,15 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         }}
                       >
                         📲 Partilhar com os pais
+                      </button>
+                      <button
+                        className="btn btn-outline w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setChronicleMatch(m);
+                        }}
+                      >
+                        📰 Crónica do jogo
                       </button>
                     </div>
                   )}

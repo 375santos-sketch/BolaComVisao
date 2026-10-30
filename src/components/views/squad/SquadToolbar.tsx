@@ -91,6 +91,15 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
       }
     ],
     [
+      '🃏 Cromos de todos (PDF)',
+      async () => {
+        if (noPlayers()) return;
+        const { generatePlayerCardsPDF } = await import('../../../lib/pdfUtils');
+        const n = await generatePlayerCardsPDF(state);
+        onShowToast(`${n} cromos prontos a imprimir 🃏`);
+      }
+    ],
+    [
       '📊 Exportar para Excel',
       async () => {
         if (noPlayers()) return;
