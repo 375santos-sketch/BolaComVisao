@@ -5,8 +5,10 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 import { applyCompact, loadBrand, loadCompact } from './lib/clubBrand';
 import { applyClubColor } from './lib/clubColors';
+import { applySunMode, loadSunMode } from './lib/sunMode';
 
-// This phone's look before the club's data loads: the club's colour and the compact mode
+// This phone's look before the club's data loads: the sun mode, the club's colour and the compact mode
+applySunMode(loadSunMode(), false);
 applyClubColor(loadBrand().color);
 applyCompact(loadCompact(), false);
 

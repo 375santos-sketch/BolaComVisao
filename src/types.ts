@@ -290,6 +290,10 @@ export type AttendanceCategory = 'excelente' | 'boa' | 'atencao' | 'baixa';
 
 export type ExerciseCategory = 'aquecimento' | 'tecnica' | 'tatica' | 'fisico' | 'jogo' | 'bolas_paradas';
 
+/** Material an exercise needs (Lista do saco). */
+export type MaterialId = 'cones' | 'coletes' | 'bolas' | 'balizas' | 'estacas' | 'arcos' | 'barreiras' | 'escadas';
+export type ExerciseMaterial = Partial<Record<MaterialId, number>>;
+
 export interface Exercise {
   id: string;
   name: string;
@@ -309,6 +313,8 @@ export interface Exercise {
   objective?: string;
   /** Drawing or photo of the exercise, imported and compressed (JPEG data URL, about 150 KB at most). */
   image?: string;
+  /** How many cones, bibs, balls… it needs ("Levar para o treino" adds up a training's exercises). */
+  material?: ExerciseMaterial;
 }
 
 export interface SessionBlock {

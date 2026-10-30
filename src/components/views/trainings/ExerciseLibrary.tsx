@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { AutoTextarea } from '../../ui/AutoTextarea';
 import { Exercise, ExerciseCategory, Training } from '../../../types';
+import { MATERIALS, MAX_PER_MATERIAL, cleanMaterial, materialSummary } from '../../../lib/kitBag';
 import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
 import { compressImageFile, compressImageSource, cropImageSource } from '../../../lib/imageCompress';
 import { readPrintData } from '../../../lib/readPrint';
@@ -70,6 +71,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
       return;
     }
     const clean: Exercise = { ...editing, name: editing.name.trim(), objective: editing.objective?.trim() || '' };
+    if (!clean.material) delete clean.material;
     const exists = exercises.some((e) => e.id === clean.id);
     onSave(exists ? exercises.map((e) => (e.id === clean.id ? clean : e)) : [...exercises, clean]);
     onShowToast(exists ? 'Exercício atualizado ✓' : 'Exercício guardado na biblioteca ✓');
@@ -95,6 +97,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
         durationMinutes: read.durationMinutes || 15,
         objective: read.objective || '',
         description: read.description || '',
+        ...(read.material ? { material: read.material } : {}),
         image: drawing || whole
       });
     } catch (err) {
@@ -186,6 +189,55 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
             onChange={(e) => setEditing({ ...editing, description: e.target.value })}
           />
         </label>
+
+        <fieldset className="space-y-1.5">
+          <legend className="text-[11px] text-slate-400 mb-1">🎒 Material</legend>
+          {MATERIALS.map((m) => {
+            const n = editing.material?.[m.id] || 0;
+            const set = (v: number) =>
+              setEditing({
+                ...editing,
+                material: cleanMaterial({ ...editing.material, [m.id]: Math.max(0, Math.min(MAX_PER_MATERIAL, v)) })
+              });
+            return (
+              <div
+                key={m.id}
+                className={`ui-inset flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs ${n ? 'text-white' : 'text-slate-400'}`}
+              >
+                <span className="flex-1 font-semibold">
+                  {m.emoji} {m.many.charAt(0).toUpperCase() + m.many.slice(1)}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`Menos ${m.many}`}
+                  onClick={() => set(n - 1)}
+                  className="ui-btn ui-btn-secondary w-8 h-8 text-base"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={MAX_PER_MATERIAL}
+                  aria-label={`Quantidade de ${m.many}`}
+                  value={n || ''}
+                  placeholder="0"
+                  onChange={(e) => set(Math.round(Number(e.target.value) || 0))}
+                  className="ui-input w-12 text-center text-sm font-bold !px-1"
+                />
+                <button
+                  type="button"
+                  aria-label={`Mais ${m.many}`}
+                  onClick={() => set(n + 1)}
+                  className="ui-btn ui-btn-secondary w-8 h-8 text-base"
+                >
+                  +
+                </button>
+              </div>
+            );
+          })}
+        </fieldset>
 
         <div className="space-y-2">
           <div className="text-[11px] text-slate-400">Desenho do exercício</div>
@@ -345,6 +397,9 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
                   {categoryLabel(e.category)} · {e.durationMinutes} min
                 </div>
                 {e.objective && <div className="text-[11px] text-slate-300 line-clamp-2 mt-0.5">{e.objective}</div>}
+                {e.material && (
+                  <div className="text-[11px] text-slate-400 mt-0.5">🎒 {materialSummary(e.material)}</div>
+                )}
                 <div className="text-[10px] text-cyan-300/80 mt-0.5">{usageLabel(usage.get(e.id))}</div>
                 <div className="flex gap-3 mt-1.5 text-[11px]">
                   <button type="button" className="text-cyan-300 font-bold" onClick={() => setEditing(e)}>

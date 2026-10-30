@@ -114,7 +114,7 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
             </button>
           </section>
 
-          <LastTimeAgainstCard matches={state.matches || []} opponent={game.opponent} />
+          <LastTimeAgainstCard matches={state.matches || []} roster={state.roster || []} opponent={game.opponent} />
 
           <PreMatchForm key={game.id} game={game} state={state} onSave={saveGame} onShowToast={onShowToast} />
 

@@ -5,6 +5,7 @@ import { isAppAdmin } from '../../services/cloudAuthService';
 import { defaultSeason } from '../../lib/utils';
 import { SyncStatusBadge } from '../ui/SyncStatusBadge';
 import { Icon } from '../ui/Icon';
+import { SunModeButton } from '../ui/SunModeButton';
 
 interface DashboardHeaderProps {
   state: AppState;
@@ -77,6 +78,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               )}
             </button>
           )}
+          <SunModeButton className="w-10 h-10" />
           {onOpenNotifications && (
             <button
               id="dashboard-notifications-btn"

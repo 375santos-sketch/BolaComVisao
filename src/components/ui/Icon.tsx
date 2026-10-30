@@ -52,7 +52,12 @@ const PATHS = {
   ],
   whistle: ['M12 7a7 7 0 1 0 7 7', 'M19 14h3V7H12', 'M12 14a.5.5 0 1 0 0-1'],
   chevronDown: ['m6 9 6 6 6-6'],
-  x: ['M18 6 6 18', 'm6 6 12 12']
+  x: ['M18 6 6 18', 'm6 6 12 12'],
+  sun: [
+    'M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+    'M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4'
+  ],
+  moon: ['M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z']
 } as const;
 
 export type IconName = keyof typeof PATHS;

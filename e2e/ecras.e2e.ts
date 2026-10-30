@@ -1574,3 +1574,46 @@ test('terminar sessão apaga os dados do clube neste aparelho', async ({ page })
   await expect(page.getByLabel('Clube')).toContainText('Dragões');
   await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/entrada.png` : undefined });
 });
+
+test('lista do saco: material do exercício no treino, e modo sol que fica lembrado', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  await page.getByRole('button', { name: '➕ Novo exercício' }).click();
+  const form = page.getByRole('region', { name: 'Editar exercício' });
+  await form.getByLabel('Nome').fill('Jogo 5x5 com balizas');
+  await form.getByLabel('Quantidade de cones').fill('16');
+  await form.getByRole('button', { name: 'Mais balizas pequenas' }).click();
+  await form.getByRole('button', { name: 'Mais balizas pequenas' }).click();
+  await form.getByRole('button', { name: 'Mais bolas' }).click();
+  await form.getByRole('button', { name: 'Guardar exercício' }).click();
+  const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
+  await expect(library).toContainText('🎒 16 cones · 1 bola · 2 balizas pequenas');
+
+  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
+  await page.getByRole('button', { name: /Da biblioteca/ }).click();
+  await page
+    .getByRole('group', { name: 'Escolher da biblioteca' })
+    .getByRole('button', { name: /Jogo 5x5 com balizas/ })
+    .click();
+  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.locator('[data-training-row]').first().click();
+  const kit = page.getByRole('region', { name: 'Levar para o treino' });
+  await expect(kit).toContainText('16 cones');
+  await expect(kit).toContainText('2 balizas pequenas');
+  await kit.getByRole('checkbox', { name: /16 cones/ }).click();
+  await expect(kit.getByRole('checkbox', { name: /16 cones/ })).toHaveAttribute('aria-checked', 'true');
+
+  // ☀️ in the top bar: the light look, remembered on this phone
+  const html = page.locator('html');
+  await expect(html).not.toHaveClass(/\bsol\b/);
+  await page.getByRole('button', { name: 'Modo sol' }).first().click();
+  await expect(html).toHaveClass(/\bsol\b/);
+  await page.reload();
+  await expect(html).toHaveClass(/\bsol\b/);
+  await enterPanel(page);
+  await page.getByRole('button', { name: 'Modo sol' }).first().click();
+  await expect(html).not.toHaveClass(/\bsol\b/);
+});

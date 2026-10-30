@@ -56,12 +56,18 @@ export function inkFor(hex: string): string {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.35 ? '#03131f' : '#ffffff';
 }
 
-/** CSS variables for the colour (empty for the default colour: the original palette stays). */
-export function clubColorVars(hex?: string): Record<string, string> {
+/**
+ * CSS variables for the colour (empty for the default colour: the original palette stays). In the sun mode the scale
+ * is upside down (50 ↔ 950…), like every other colour of the app.
+ */
+export function clubColorVars(hex?: string, sun = false): Record<string, string> {
   if (!isHexColor(hex) || hex!.toLowerCase() === DEFAULT_CLUB_COLOR) return {};
   const base = hex!.toLowerCase();
   const vars: Record<string, string> = {};
-  STEPS.forEach(([step, amount]) => (vars[`--color-cyan-${step}`] = shade(base, amount)));
+  STEPS.forEach(([step], i) => {
+    const amount = STEPS[sun ? STEPS.length - 1 - i : i][1];
+    vars[`--color-cyan-${step}`] = shade(base, amount);
+  });
   vars['--color-ui-brand'] = base;
   vars['--color-ui-brand-strong'] = shade(base, -0.15);
   vars['--color-ui-brand-ink'] = inkFor(base);
@@ -76,7 +82,7 @@ const APPLIED_KEY = '__bcvClubColorVars';
 export function applyClubColor(hex?: string, root: HTMLElement = document.documentElement) {
   const previous = ((root as unknown as Record<string, string[]>)[APPLIED_KEY] || []) as string[];
   previous.forEach((name) => root.style.removeProperty(name));
-  const vars = clubColorVars(hex);
+  const vars = clubColorVars(hex, root.classList.contains('sol'));
   Object.entries(vars).forEach(([name, value]) => root.style.setProperty(name, value));
   (root as unknown as Record<string, string[]>)[APPLIED_KEY] = Object.keys(vars);
 }
