@@ -1,6 +1,7 @@
 import { AppState } from '../../types';
 import { MonthlyReport } from '../monthlyReport';
 import { addBolaComVisaoPageFooters, drawDocumentHeader, drawSectionTitle, getJsPDF, pdfBrand } from './pdfLayout';
+import { drawSignatureBlock } from './pdfSignature';
 
 /**
  * Monthly report PDF for the coordinator: summary tiles, the month's games, a table per athlete (attendance, games,
@@ -240,6 +241,7 @@ export async function buildMonthlyReportPDF(report: MonthlyReport, state: AppSta
     heading('Notas do treinador');
     paragraph(coachNotes.trim());
   }
+  drawSignatureBlock(doc, state, 'relatorios', y);
 
   addBolaComVisaoPageFooters(doc);
   const club = (state.myClubName || 'Equipa')

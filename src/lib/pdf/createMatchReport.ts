@@ -13,6 +13,7 @@ import {
   PDF_MUTED,
   PDF_SOFT
 } from './pdfLayout';
+import { drawSignatureOnLine } from './pdfSignature';
 import { dayLabel, factBoxes, gameTitle, noteBox } from './pdfBlocks';
 
 /**
@@ -93,13 +94,16 @@ export async function generateConvocatoriaPDF(match: ScheduledMatch, calledPlaye
   // Signature
   const signY = Math.max(y + 14, 262);
   if (signY < 278) {
+    const signed = drawSignatureOnLine(doc, state, 'convocatoria', 165, signY);
     doc.setDrawColor(170, 180, 190);
     doc.setLineWidth(0.3);
     doc.line(135, signY, 195, signY);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(...PDF_MUTED);
-    doc.text('A equipa técnica', 165, signY + 5, { align: 'center' });
+    doc.text(signed ? `${state.currentUser?.name || 'O treinador'} · Treinador` : 'A equipa técnica', 165, signY + 5, {
+      align: 'center'
+    });
   }
 
   addBolaComVisaoPageFooters(doc);

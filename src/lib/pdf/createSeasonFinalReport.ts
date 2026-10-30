@@ -9,6 +9,7 @@ import {
   createTextReportWriter,
   pdfBrand
 } from './pdfLayout';
+import { drawSignatureBlock } from './pdfSignature';
 import { drawMinutesByGame, drawTrainingMonths, PDF_BAR, PDF_INK, PDF_MUTED, PDF_TRACK } from './createPlayerReport';
 
 /**
@@ -199,6 +200,7 @@ function drawSeasonFinalReport(doc: Doc, player: Player, state: AppState, season
     w.skip(2);
     w.centered('Obrigado por esta época. Continua a crescer!', { size: 10, bold: true, color: [42, 120, 214] });
   }
+  drawSignatureBlock(doc, state, 'fim_epoca', w.y);
 }
 
 /** One athlete per section (each starting on a new page); a single PDF for the whole squad when given many. */

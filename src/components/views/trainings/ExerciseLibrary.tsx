@@ -8,6 +8,7 @@ import { readPrintData } from '../../../lib/readPrint';
 import { cleanPrintExercise } from '../../../lib/printExercise';
 import { EXERCISE_SPACES, ExerciseIdeaRequest } from '../../../lib/exerciseIdea';
 import { createExerciseIdea } from '../../../services/exerciseIdea';
+import { explainToKids, readAloud } from '../../../services/kidsExplain';
 import { uid } from '../../../lib/utils';
 
 const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
@@ -65,6 +66,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
   });
   const [creating, setCreating] = useState(false);
   const [fromIdea, setFromIdea] = useState<ExerciseIdeaRequest | null>(null);
+  const [explaining, setExplaining] = useState(false);
 
   const [order, setOrder] = useState<'nome' | 'mais' | 'esquecidos'>('nome');
   const usage = useMemo(() => exerciseUsage(trainings), [trainings]);
@@ -93,6 +95,8 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
     }
     const clean: Exercise = { ...editing, name: editing.name.trim(), objective: editing.objective?.trim() || '' };
     if (!clean.material) delete clean.material;
+    if (!clean.kidsText?.trim()) delete clean.kidsText;
+    else clean.kidsText = clean.kidsText.trim();
     const exists = exercises.some((e) => e.id === clean.id);
     onSave(exists ? exercises.map((e) => (e.id === clean.id ? clean : e)) : [...exercises, clean]);
     onShowToast(exists ? 'Exercício atualizado ✓' : 'Exercício guardado na biblioteca ✓');
@@ -159,6 +163,30 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
       onShowToast((err as Error).message || 'Não foi possível criar o exercício.');
     } finally {
       setCreating(false);
+    }
+  };
+
+  /** 🧒 The exercise explained to the children by the AI (simpler when asked again). */
+  const explain = async (simpler: boolean) => {
+    if (!editing) return;
+    if (!editing.name.trim() && !editing.description?.trim()) {
+      onShowToast('Escreva primeiro o nome e a descrição do exercício.');
+      return;
+    }
+    setExplaining(true);
+    try {
+      const kidsText = await explainToKids({
+        name: editing.name,
+        objective: editing.objective,
+        description: editing.description,
+        ...(ageGroup ? { ageGroup } : {}),
+        simpler
+      });
+      setEditing((e) => (e ? { ...e, kidsText } : e));
+    } catch (err) {
+      onShowToast((err as Error).message || 'Não foi possível explicar o exercício.');
+    } finally {
+      setExplaining(false);
     }
   };
 
@@ -259,6 +287,47 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
             onChange={(e) => setEditing({ ...editing, description: e.target.value })}
           />
         </label>
+
+        <section aria-label="Para as crianças" className="ui-inset space-y-2 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-bold text-amber-200">🧒 Para as crianças</span>
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                disabled={explaining}
+                onClick={() => explain(Boolean(editing.kidsText))}
+                className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-[11px]"
+              >
+                {explaining ? 'A escrever…' : editing.kidsText ? '🔄 Mais simples' : '✨ Explicar às crianças'}
+              </button>
+              {editing.kidsText && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    !readAloud(editing.kidsText || '') && onShowToast('Este telemóvel não consegue ler em voz alta.')
+                  }
+                  className="ui-btn ui-btn-secondary px-2.5 py-1.5 text-[11px]"
+                >
+                  🔊 Ler
+                </button>
+              )}
+            </div>
+          </div>
+          {editing.kidsText !== undefined && (
+            <AutoTextarea
+              className={`${input} !bg-amber-50 !text-amber-950 font-semibold`}
+              rows={3}
+              aria-label="Explicação para as crianças"
+              value={editing.kidsText}
+              onChange={(e) => setEditing({ ...editing, kidsText: e.target.value })}
+            />
+          )}
+          {editing.kidsText === undefined && (
+            <p className="text-[10px] text-slate-500">
+              3 frases simples para ler aos atletas antes do exercício. Também aparecem no link do adjunto.
+            </p>
+          )}
+        </section>
 
         <fieldset className="space-y-1.5">
           <legend className="text-[11px] text-slate-400 mb-1">🎒 Material</legend>

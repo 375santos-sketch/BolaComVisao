@@ -8,6 +8,7 @@ import { cleanPrintExercise, EXERCISE_PROMPT, EXERCISE_SCHEMA } from './src/lib/
 import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
 import { ChronicleAudience, chroniclePrompt, cleanChronicle } from './src/lib/matchChronicle';
 import { cleanIdeaRequest, exerciseIdeaPrompt } from './src/lib/exerciseIdea';
+import { cleanKidsRequest, cleanKidsText, kidsPrompt } from './src/lib/kidsExplain';
 import {
   cleanPrintFixtures,
   cleanPrintGames,
@@ -417,6 +418,51 @@ async function startServer() {
     } catch (err: any) {
       console.error('Erro na rota /api/exercicio-ia:', err?.message || err);
       res.status(500).json({ success: false, error: 'Não foi possível criar o exercício. Tente outra vez.' });
+    }
+  });
+
+  // Treinos → Exercícios → "🧒 Explicar às crianças": Gemini rewrites an exercise in 3 simple sentences. Only for
+  // signed-in users.
+  app.post('/api/criancas', async (req, res) => {
+    try {
+      const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
+      const authHeader = req.headers.authorization || '';
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+      const verification = token && apiKey ? await verifyFirebaseIdToken(token, apiKey) : { valid: false };
+      if (!verification.valid) {
+        return res.status(401).json({ success: false, error: 'Sessão expirada. Entre de novo na app.' });
+      }
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (!geminiKey)
+        return res.status(503).json({ success: false, error: 'A explicação com IA não está disponível.' });
+      const request = cleanKidsRequest(req.body);
+      if (!request) return res.status(400).json({ success: false, error: 'O exercício não tem texto para explicar.' });
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      let lastError: unknown;
+      for (const model of PRINT_MODELS) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents: [{ role: 'user', parts: [{ text: kidsPrompt(request) }] }],
+            config: { temperature: 0.7 }
+          });
+          const text = cleanKidsText(response.text);
+          if (text) return res.json({ success: true, text });
+          lastError = new Error('Resposta vazia');
+        } catch (err: any) {
+          lastError = err;
+          console.warn(`Explicação para crianças com ${model}:`, err?.message || err);
+          const kind = geminiErrorKind(err);
+          if (kind !== 'model' && kind !== 'other') {
+            return res.status(502).json({ success: false, error: geminiErrorMessage(kind) });
+          }
+        }
+      }
+      throw lastError;
+    } catch (err: any) {
+      console.error('Erro na rota /api/criancas:', err?.message || err);
+      res.status(500).json({ success: false, error: 'Não foi possível explicar o exercício. Tente outra vez.' });
     }
   });
 
