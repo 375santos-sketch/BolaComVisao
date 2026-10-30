@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { AbsenceReason, AppState, Player, Training } from '../../../types';
 import { t } from '../../../i18n/dict';
 import { TrainingCard } from './TrainingCard';
 import { TrainingFilters } from './TrainingFilters';
 import { TrainingListFilter } from './hooks/useTrainingFilters';
+
+const PlanShareModal = lazy(() => import('./PlanShareModal').then((m) => ({ default: m.PlanShareModal })));
 
 interface TrainingListProps {
   state: AppState;
@@ -31,6 +33,7 @@ interface TrainingListProps {
   onDeleteTraining: (trainingId: string) => void;
   onClearAllTrainings: () => void;
   onShowToast: (msg: string) => void;
+  onUpdateState: (updates: Partial<AppState>) => void;
 }
 
 export const TrainingList: React.FC<TrainingListProps> = ({
@@ -58,8 +61,10 @@ export const TrainingList: React.FC<TrainingListProps> = ({
   onOpenToday,
   onDeleteTraining,
   onClearAllTrainings,
-  onShowToast
+  onShowToast,
+  onUpdateState
 }) => {
+  const [showPlanShare, setShowPlanShare] = useState(false);
   return (
     <div className="space-y-3.5 text-left">
       {/* Today's training first; new ones are less frequent */}
@@ -90,6 +95,23 @@ export const TrainingList: React.FC<TrainingListProps> = ({
           + Vários
         </button>
       </div>
+      <button
+        type="button"
+        onClick={() => setShowPlanShare(true)}
+        className="text-xs font-semibold text-cyan-400 hover:text-cyan-300"
+      >
+        🔗 Plano para o adjunto (link)
+      </button>
+      {showPlanShare && (
+        <Suspense fallback={null}>
+          <PlanShareModal
+            state={state}
+            onUpdateState={onUpdateState}
+            onShowToast={onShowToast}
+            onClose={() => setShowPlanShare(false)}
+          />
+        </Suspense>
+      )}
 
       {/* Quick Filter Bar */}
       <TrainingFilters

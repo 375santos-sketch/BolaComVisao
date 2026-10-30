@@ -4,6 +4,8 @@ import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
 import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
+import { cleanPrintExercise, EXERCISE_PROMPT, EXERCISE_SCHEMA } from './src/lib/printExercise';
+import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
 import {
   cleanPrintFixtures,
   cleanPrintGames,
@@ -259,12 +261,17 @@ async function startServer() {
           .json({ success: false, error: 'A leitura de prints não está disponível (falta a chave do Gemini).' });
       }
       const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(req.body?.image || ''));
-      // "calendario": the games of a calendar (Agenda); otherwise the results of a round (Classificação)
-      const fixtures = req.body?.mode === 'calendario';
-      const prompt = fixtures ? FIXTURE_PROMPT : PRINT_PROMPT;
-      const schema = fixtures ? FIXTURE_SCHEMA : PRINT_SCHEMA;
+      // "calendario": the games of a calendar (Agenda); "exercicio": an exercise for the library; otherwise the
+      // results of a round (Classificação)
+      const mode = req.body?.mode;
+      const prompt = mode === 'calendario' ? FIXTURE_PROMPT : mode === 'exercicio' ? EXERCISE_PROMPT : PRINT_PROMPT;
+      const schema = mode === 'calendario' ? FIXTURE_SCHEMA : mode === 'exercicio' ? EXERCISE_SCHEMA : PRINT_SCHEMA;
       const clean = (text: string | undefined) =>
-        fixtures ? cleanPrintFixtures(parseModelJson(text)) : cleanPrintGames(parseModelJson(text));
+        mode === 'calendario'
+          ? cleanPrintFixtures(parseModelJson(text))
+          : mode === 'exercicio'
+            ? cleanPrintExercise(parseModelJson(text))
+            : cleanPrintGames(parseModelJson(text));
       if (!match) return res.status(400).json({ success: false, error: 'Imagem inválida.' });
 
       const { GoogleGenAI } = await import('@google/genai');
@@ -331,6 +338,39 @@ async function startServer() {
     } catch (err) {
       console.error('Erro na rota /cal:', err);
       return res.status(502).type('text/plain').send('Calendário temporariamente indisponível.');
+    }
+  });
+
+  // Plan for the assistant coach (Treinos → "Link para o adjunto"): /plano/{token}, read from public_plans/{token}.
+  // The token is the secret; the document only holds the plan of the next training (no athletes' data).
+  app.get('/plano/:token', async (req, res) => {
+    const token = /^[a-zA-Z0-9]{20,64}$/.test(req.params.token || '') ? req.params.token : '';
+    const notFound = () =>
+      res
+        .status(404)
+        .type('html')
+        .send(
+          '<!doctype html><meta charset="utf-8"><p style="font-family:sans-serif;padding:24px">Este link de plano de treino não existe ou foi desligado.</p>'
+        );
+    if (!token) return notFound();
+    try {
+      const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+      const base = process.env.FIRESTORE_EMULATOR_HOST
+        ? `http://${process.env.FIRESTORE_EMULATOR_HOST}`
+        : 'https://firestore.googleapis.com';
+      const key = firebaseConfig.apiKey ? `?key=${encodeURIComponent(firebaseConfig.apiKey)}` : '';
+      const resp = await fetch(
+        `${base}/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/public_plans/${token}${key}`
+      );
+      if (!resp.ok) return notFound();
+      const page = planFromRestDocument(await resp.json());
+      if (!page) return notFound();
+      res.set('Cache-Control', 'no-store');
+      res.set('X-Robots-Tag', 'noindex');
+      return res.type('html').send(renderPlanPage(page));
+    } catch (err) {
+      console.error('Erro na rota /plano:', err);
+      return res.status(502).type('text/plain').send('Plano temporariamente indisponível.');
     }
   });
 

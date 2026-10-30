@@ -286,6 +286,53 @@ describe('Calendário para os pais (link secreto)', () => {
   });
 });
 
+describe('Plano para o adjunto (link secreto)', () => {
+  const TOKEN = 'Pla7aBcDeFgHiJkLmNoPqRsT';
+  const plan = (clubId: string, extra: Record<string, unknown> = {}) => ({
+    clubId,
+    teamId: 'sub11',
+    teamName: 'Dragões Sub-11',
+    color: '#d6332f',
+    plan: { date: '2026-11-02', time: '19:15', blocks: [{ title: 'Rondo 4x2', durationMinutes: 20 }] },
+    updatedAt: Date.now(),
+    ...extra
+  });
+  const planDoc = (token = TOKEN) => fs.doc(fb.db, 'public_plans', token);
+  const url = `http://${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/public_plans`;
+
+  beforeAll(async () => {
+    await setRules(RULES_NOW);
+  });
+
+  it('a coach publishes the plan and anyone with the link reads it (nobody lists the plans)', async () => {
+    await signInAs('coachA');
+    await fs.setDoc(planDoc(), plan('clubA'));
+    await fs.setDoc(planDoc(), plan('clubA', { plan: null }));
+    await fs.setDoc(planDoc(), plan('clubA'));
+    const res = await fetch(`${url}/${TOKEN}`);
+    expect(res.status).toBe(200);
+    expect(JSON.stringify(await res.json())).toContain('Rondo 4x2');
+    expect((await fetch(url)).status).toBe(403);
+  });
+
+  it('another club, an anonymous visitor or extra (personal) fields are refused', async () => {
+    await signInAs('coachB');
+    await expect(fs.setDoc(planDoc(), plan('clubB'))).rejects.toMatchObject(denied);
+    await expect(fs.deleteDoc(planDoc())).rejects.toMatchObject(denied);
+    await signInAs('coachA');
+    await expect(fs.setDoc(planDoc(), plan('clubA', { absences: ['Rui Silva'] }))).rejects.toMatchObject(denied);
+    await expect(fs.setDoc(planDoc('curto'), plan('clubA'))).rejects.toMatchObject(denied);
+    await fa.signOut(fb.auth);
+    await expect(fs.setDoc(planDoc('AnonimoPlanoAbcdef12345'), plan('clubA'))).rejects.toMatchObject(denied);
+  });
+
+  it('a coach of the club switches the link off', async () => {
+    await signInAs('colegaA');
+    await fs.deleteDoc(planDoc());
+    expect((await fetch(`${url}/${TOKEN}`)).status).toBe(404);
+  });
+});
+
 describe('Votação dos pais no jogador do jogo (link secreto)', () => {
   const TOKEN = 'Vot7aBcDeFgHiJkLmNoPqRsT';
   const CLOSED = 'VotFechadaAbcDefGhiJkLmN';
