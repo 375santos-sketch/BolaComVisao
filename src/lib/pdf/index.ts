@@ -6,3 +6,4 @@ export * from './createSeasonReport';
 export * from './createGamesDashboard';
 export { generateSeasonFinalReportPDF } from './createSeasonFinalReport';
 export { generatePlayerCardsPDF } from './createPlayerCards';
+export { generateCoachCvPDF } from './createCoachCv';

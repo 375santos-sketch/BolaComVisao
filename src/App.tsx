@@ -49,6 +49,7 @@ const StatsView = lazyWithRetry(() => import('./components/views/StatsView'), 'S
 // Loaded when opened: it bundles the Excel library used by the team spreadsheets.
 const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 'DatabaseModal');
 const MonthlyReportModal = lazyWithRetry(() => import('./components/MonthlyReportModal'));
+const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
 const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
   'GameAnalysisDashboard'
@@ -132,6 +133,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showDatabase, setShowDatabase] = useState<boolean>(false);
   const [showMonthlyReport, setShowMonthlyReport] = useState<boolean>(false);
+  const [showCareer, setShowCareer] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [showAdminUsers, setShowAdminUsers] = useState<boolean>(false);
   const [showInviteStaff, setShowInviteStaff] = useState<boolean>(false);
@@ -1013,11 +1015,22 @@ export default function App() {
           onOpenAdminUsers={() => setShowAdminUsers(true)}
           onOpenInviteStaff={() => setShowInviteStaff(true)}
           onOpenSeasons={() => setShowSeasonSelector(true)}
+          onOpenCareer={() => setShowCareer(true)}
           pendingUsersCount={pendingUsersCount}
           onLogout={handleLogout}
         />
 
         {/* Modals */}
+        {showCareer && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <CoachCareerModal
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onClose={() => setShowCareer(false)}
+            />
+          </Suspense>
+        )}
         {showMonthlyReport && (
           <Suspense fallback={<ViewLoadingFallback />}>
             <MonthlyReportModal state={state} onShowToast={showToast} onClose={() => setShowMonthlyReport(false)} />

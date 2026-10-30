@@ -1718,9 +1718,15 @@ test('testes: resultados por momento com cronómetro e evolução só na ficha d
   // Stopwatch: "Partida" at the start, "Chegou" at the line
   await section.getByRole('button', { name: 'Cronómetro para Rui Silva' }).click();
   const watch = page.getByRole('dialog', { name: 'Cronómetro do teste' });
-  await watch.getByRole('button', { name: '▶ Partida' }).click();
-  await page.waitForTimeout(300);
-  await watch.getByRole('button', { name: '■ Chegou' }).click();
+  // Both taps in the same instant, whatever the speed of the machine running the test
+  await watch.evaluate(async (dialog) => {
+    const button = (text: string) =>
+      [...dialog.querySelectorAll('button')].find((b) => b.textContent?.includes(text)) as
+        HTMLButtonElement | undefined;
+    button('Partida')!.click();
+    while (!button('Chegou')) await new Promise((r) => requestAnimationFrame(r));
+    button('Chegou')!.click();
+  });
   // A tap too quick for a 20 m sprint cannot be saved
   await expect(watch.getByRole('alert')).toContainText('demasiado curto');
   await expect(watch.getByRole('button', { name: '✓ Guardar' })).toBeDisabled();
@@ -1738,4 +1744,97 @@ test('testes: resultados por momento com cronómetro e evolução só na ficha d
   const own = page.getByRole('region', { name: 'Testes da época' });
   await expect(own).toContainText(/Sprint 20 m.*4,10 s → 2,\d\d s 🚀/);
   await expect(own).toContainText('Melhorou em 1 de 1 teste 💪');
+});
+
+test('exercício criado pela IA, pausas de água com calor e a minha carreira', async ({ page }) => {
+  // The AI and the weather answer with fixed data (no real internet in the tests)
+  const asked: Array<Record<string, unknown>> = [];
+  await page.route('**/api/exercicio-ia', async (route) => {
+    const body = route.request().postDataJSON();
+    asked.push(body);
+    await route.fulfill({
+      json: {
+        success: true,
+        exercise: {
+          name: asked.length === 1 ? 'Rondo 4+1 com terceiro homem' : 'Jogo 4x4 com zona de saída',
+          category: 'tatica',
+          durationMinutes: 15,
+          objective: 'Encontrar o terceiro homem para sair da pressão',
+          description: 'Quadrado 15x15 m, 4 fora e 1 joker contra 3.',
+          material: { cones: 4, coletes: 3, bolas: 6 }
+        }
+      }
+    });
+  });
+  await page.route('https://geocoding-api.open-meteo.com/**', (route) =>
+    route.fulfill({ json: { results: [{ latitude: 39.46, longitude: -8.2 }] } })
+  );
+  const hours = (v: number) => Array.from({ length: 24 }, () => v);
+  await page.route('https://api.open-meteo.com/**', (route) =>
+    route.fulfill({
+      json: {
+        hourly: {
+          temperature_2m: hours(33),
+          precipitation_probability: hours(0),
+          weather_code: hours(0),
+          wind_speed_10m: hours(5)
+        }
+      }
+    })
+  );
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  await page.getByRole('button', { name: '✨ Criar exercício com IA' }).click();
+  const ai = page.getByRole('region', { name: 'Criar exercício com IA' });
+  await ai.getByLabel('O que quer trabalhar?').fill('terceiro homem na saída de bola');
+  await ai.getByLabel('Jogadores').fill('9');
+  await ai.getByRole('button', { name: '✨ Criar exercício' }).click();
+  const form = page.getByRole('region', { name: 'Editar exercício' });
+  await expect(form.getByLabel('Nome')).toHaveValue('Rondo 4+1 com terceiro homem');
+  await expect(form.getByLabel('Quantidade de cones')).toHaveValue('4');
+  expect(asked[0]).toMatchObject({ goal: 'terceiro homem na saída de bola', players: 9, ageGroup: 'Sub-11' });
+  await form.getByRole('button', { name: '🔄 Outra proposta' }).click();
+  await expect(form.getByLabel('Nome')).toHaveValue('Jogo 4x4 com zona de saída');
+  expect(asked[1]).toMatchObject({ avoid: ['Rondo 4+1 com terceiro homem'] });
+  await form.getByRole('button', { name: 'Guardar exercício' }).click();
+  await expect(page.getByRole('region', { name: 'Biblioteca de exercícios' })).toContainText(
+    'Jogo 4x4 com zona de saída'
+  );
+
+  // Hot day: water breaks between the blocks of the training
+  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
+  await page.getByPlaceholder('Ex: Campo Sintético, Campo Principal, Pavilhão...').fill('Campo Municipal');
+  await page.getByRole('button', { name: /Da biblioteca/ }).click();
+  await page
+    .getByRole('group', { name: 'Escolher da biblioteca' })
+    .getByRole('button', { name: /Jogo 4x4 com zona de saída/ })
+    .click();
+  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.locator('[data-training-row]').first().click();
+  const heat = page.getByRole('region', { name: 'Calor: pausas de água' });
+  await expect(heat).toContainText('33 °C');
+  await expect(heat).toContainText('Pausas de água de 3 min a cada 15 min');
+  await expect(heat.getByRole('link', { name: /Avisar os pais/ })).toHaveAttribute('href', /garrafa/);
+
+  // My career: title, credits and the warning before it expires
+  await openMore(page, /A minha carreira/);
+  const career = page.getByRole('dialog', { name: 'A minha carreira' });
+  await career.getByRole('textbox', { name: 'Título', exact: true }).fill('Grau I · UEFA C');
+  await career.getByRole('textbox', { name: 'Título', exact: true }).blur();
+  const soon = new Date(Date.now() + 90 * 86_400_000).toISOString().slice(0, 10);
+  await career.locator('input[type=date]').first().fill(soon);
+  await career.getByLabel('Créditos precisos para renovar').fill('15');
+  await career.getByRole('button', { name: '＋ Formação' }).click();
+  await career.getByLabel('Nome da formação').fill('Ação de formação Futebol de 7');
+  await career.getByLabel('Créditos da formação').fill('4');
+  await career.getByRole('button', { name: 'Guardar formação' }).click();
+  await expect(career).toContainText('4 de 15 créditos');
+  await expect(career.getByRole('alert').first()).toContainText(/O título caduca em [23] meses/);
+  await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/carreira.png` : undefined });
+  const download = page.waitForEvent('download');
+  await career.getByRole('button', { name: '📄 Currículo em PDF' }).click();
+  expect((await download).suggestedFilename()).toMatch(/^Curriculo_.*\.pdf$/);
 });

@@ -3,6 +3,8 @@ import { AbsenceReason, AppState, Player, Training } from '../../../types';
 import { generateTrainingSessionPDF } from '../../../lib/pdfUtils';
 import { AttendanceGrid } from './AttendanceGrid';
 import { KitBagCard } from './KitBagCard';
+import { HeatBreaksCard } from './HeatBreaksCard';
+import { teamSettings } from '../../../lib/teamSettings';
 
 interface TrainingCardProps {
   training: Training;
@@ -163,6 +165,8 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
               onReason={(playerId, reason) => onSetAbsenceReason(tr.id, playerId, reason)}
             />
           </div>
+
+          <HeatBreaksCard training={tr} places={[tr.location || '', teamSettings(state).clubTown || '']} />
 
           <KitBagCard training={tr} library={state.exerciseLibrary || []} onShowToast={onShowToast} />
 

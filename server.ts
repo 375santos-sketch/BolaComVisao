@@ -7,6 +7,7 @@ import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
 import { cleanPrintExercise, EXERCISE_PROMPT, EXERCISE_SCHEMA } from './src/lib/printExercise';
 import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
 import { ChronicleAudience, chroniclePrompt, cleanChronicle } from './src/lib/matchChronicle';
+import { cleanIdeaRequest, exerciseIdeaPrompt } from './src/lib/exerciseIdea';
 import {
   cleanPrintFixtures,
   cleanPrintGames,
@@ -362,6 +363,60 @@ async function startServer() {
     } catch (err: any) {
       console.error('Erro na rota /api/cronica:', err?.message || err);
       res.status(500).json({ success: false, error: 'Não foi possível escrever a crónica.' });
+    }
+  });
+
+  // Treinos → Exercícios → "✨ Criar com IA": Gemini proposes an exercise for a goal, in the same format as an
+  // exercise read from a photo. Only for signed-in users.
+  app.post('/api/exercicio-ia', async (req, res) => {
+    try {
+      const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
+      const authHeader = req.headers.authorization || '';
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+      const verification = token && apiKey ? await verifyFirebaseIdToken(token, apiKey) : { valid: false };
+      if (!verification.valid) {
+        return res.status(401).json({ success: false, error: 'Sessão expirada. Entre de novo na app.' });
+      }
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (!geminiKey) return res.status(503).json({ success: false, error: 'A criação com IA não está disponível.' });
+      const request = cleanIdeaRequest(req.body);
+      if (!request) return res.status(400).json({ success: false, error: 'Escreva o que quer trabalhar.' });
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      let lastError: unknown;
+      for (const model of PRINT_MODELS) {
+        for (const withSchema of [true, false]) {
+          try {
+            const response = await ai.models.generateContent({
+              model,
+              contents: [{ role: 'user', parts: [{ text: exerciseIdeaPrompt(request) }] }],
+              config: {
+                responseMimeType: 'application/json',
+                ...(withSchema ? { responseSchema: EXERCISE_SCHEMA as any } : {}),
+                temperature: 0.9
+              }
+            });
+            const exercise = cleanPrintExercise(parseModelJson(response.text));
+            if (exercise) {
+              const { drawing: _drawing, ...rest } = exercise;
+              return res.json({ success: true, exercise: { ...rest, durationMinutes: request.minutes } });
+            }
+            lastError = new Error('Resposta vazia');
+          } catch (err: any) {
+            lastError = err;
+            console.warn(`Exercício com IA (${model}${withSchema ? '' : ', sem formato'}):`, err?.message || err);
+            const kind = geminiErrorKind(err);
+            if (kind !== 'model' && kind !== 'other') {
+              return res.status(502).json({ success: false, error: geminiErrorMessage(kind) });
+            }
+            if (kind === 'model') break;
+          }
+        }
+      }
+      throw lastError;
+    } catch (err: any) {
+      console.error('Erro na rota /api/exercicio-ia:', err?.message || err);
+      res.status(500).json({ success: false, error: 'Não foi possível criar o exercício. Tente outra vez.' });
     }
   });
 
