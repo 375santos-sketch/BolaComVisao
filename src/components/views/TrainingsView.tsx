@@ -315,6 +315,7 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
           exercises={state.exerciseLibrary || []}
           trainings={state.trainings || []}
           onSave={(exerciseLibrary) => onUpdateState({ exerciseLibrary })}
+          ageGroup={state.category}
           onShowToast={onShowToast}
         />
       ) : activeTab === 'stats' ? (

@@ -929,7 +929,29 @@ export interface SyncState {
   activeConflicts?: SyncConflict[];
 }
 
+/** 🎓 A minha carreira: the coach's own title and continuing education (one per user account). */
+export interface CoachCareer {
+  title?: string; // "Grau I · UEFA C"
+  titleNumber?: string;
+  validUntil?: string; // YYYY-MM-DD
+  /** Credits needed to renew the title (as set by the coach: the rules may change). */
+  creditsNeeded?: number;
+  courses: CoachCourse[];
+}
+
+export interface CoachCourse {
+  id: string;
+  name: string;
+  entity?: string; // "AF Santarém", "Clube", "Online"
+  date: string; // YYYY-MM-DD
+  credits: number;
+  hours?: number;
+  certificate?: boolean;
+}
+
 export interface AppState {
+  /** 🎓 A minha carreira, per user account id. */
+  coachCareers?: Record<string, CoachCareer>;
   activeTeamId: string;
   teams: SquadProfile[];
   roster: Player[];

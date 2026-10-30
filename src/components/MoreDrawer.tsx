@@ -5,6 +5,7 @@ import { Button } from './ui/Button';
 import { Icon, IconName } from './ui/Icon';
 import logoImg from '../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { defaultSeason } from '../lib/utils';
+import { careerOf, careerStatus } from '../lib/coachCareer';
 
 interface MoreDrawerProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ interface MoreDrawerProps {
   onOpenAdminUsers?: () => void;
   onOpenInviteStaff?: () => void;
   onOpenSeasons?: () => void;
+  onOpenCareer?: () => void;
   pendingUsersCount?: number;
   onLogout?: () => void;
 }
@@ -32,6 +34,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onOpenAdminUsers,
   onOpenInviteStaff,
   onOpenSeasons,
+  onOpenCareer,
   pendingUsersCount = 0,
   onLogout
 }) => {
@@ -45,6 +48,8 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   };
 
   type Item = { id?: string; icon: IconName; title: string; detail: string; badge?: string; run: () => void };
+  const career = careerOf(state);
+  const careerWarnings = careerStatus(career, new Date().toISOString().slice(0, 10)).warnings;
   const groups: { title: string; items: Item[] }[] = [
     {
       title: 'Equipa',
@@ -113,6 +118,17 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
     {
       title: 'Definições',
       items: [
+        ...(onOpenCareer
+          ? [
+              {
+                icon: 'trophy' as IconName,
+                title: 'A minha carreira',
+                detail: careerWarnings[0] || (career.title ? `${career.title}` : 'Título de treinador e formações'),
+                badge: careerWarnings.length ? 'Atenção' : undefined,
+                run: onOpenCareer
+              }
+            ]
+          : []),
         {
           icon: 'database',
           title: 'Cópias de segurança',

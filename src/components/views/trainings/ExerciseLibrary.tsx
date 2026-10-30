@@ -6,6 +6,8 @@ import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
 import { compressImageFile, compressImageSource, cropImageSource } from '../../../lib/imageCompress';
 import { readPrintData } from '../../../lib/readPrint';
 import { cleanPrintExercise } from '../../../lib/printExercise';
+import { EXERCISE_SPACES, ExerciseIdeaRequest } from '../../../lib/exerciseIdea';
+import { createExerciseIdea } from '../../../services/exerciseIdea';
 import { uid } from '../../../lib/utils';
 
 const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
@@ -24,6 +26,8 @@ interface ExerciseLibraryProps {
   trainings?: Training[];
   onSave: (exercises: Exercise[]) => void;
   onShowToast: (msg: string) => void;
+  /** The team's age group ("Sub-11"), for exercises proposed by the AI. */
+  ageGroup?: string;
 }
 
 const input = 'ui-input text-xs';
@@ -37,13 +41,30 @@ const blank = (): Exercise => ({
 });
 
 /** Treinos → Biblioteca: the coach's exercises (name, objective, drawing/photo, duration), reused in session plans. */
-export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, trainings, onSave, onShowToast }) => {
+export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
+  exercises,
+  trainings,
+  onSave,
+  onShowToast,
+  ageGroup
+}) => {
   const [editing, setEditing] = useState<Exercise | null>(null);
   const [search, setSearch] = useState('');
   const [loadingImage, setLoadingImage] = useState(false);
   // 📷 A partir de uma foto: the photo (to use it whole) and its drawing cut out, until the coach saves
   const [fromPhoto, setFromPhoto] = useState<{ photo: string; drawing?: string } | null>(null);
   const [readingPhoto, setReadingPhoto] = useState(false);
+  // ✨ Exercise proposed by the AI for a goal
+  const [ideaOpen, setIdeaOpen] = useState(false);
+  const [idea, setIdea] = useState<ExerciseIdeaRequest>({
+    goal: '',
+    players: 10,
+    minutes: 15,
+    space: '½ campo',
+    category: 'tatica'
+  });
+  const [creating, setCreating] = useState(false);
+  const [fromIdea, setFromIdea] = useState<ExerciseIdeaRequest | null>(null);
 
   const [order, setOrder] = useState<'nome' | 'mais' | 'esquecidos'>('nome');
   const usage = useMemo(() => exerciseUsage(trainings), [trainings]);
@@ -77,6 +98,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
     onShowToast(exists ? 'Exercício atualizado ✓' : 'Exercício guardado na biblioteca ✓');
     setEditing(null);
     setFromPhoto(null);
+    setFromIdea(null);
   };
 
   /** Reads an exercise from a photo and opens it in the form, to check and save. */
@@ -90,6 +112,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
       const whole = await compressImageSource(photo);
       const drawing = read.drawing ? await cropImageSource(photo, read.drawing).catch(() => undefined) : undefined;
       setFromPhoto({ photo: whole, drawing });
+      setFromIdea(null);
       setEditing({
         ...blank(),
         name: read.name,
@@ -104,6 +127,38 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
       onShowToast((err as Error).message || 'Não foi possível ler a foto.');
     } finally {
       setReadingPhoto(false);
+    }
+  };
+
+  /** Asks the AI for an exercise (another one, when `again`) and opens it in the form to check and save. */
+  const createIdea = async (again = false) => {
+    const request: ExerciseIdeaRequest = {
+      ...(again && fromIdea ? fromIdea : idea),
+      ...(ageGroup ? { ageGroup } : {}),
+      avoid: again && fromIdea && editing ? [...(fromIdea.avoid || []), editing.name].filter(Boolean) : []
+    };
+    if (request.goal.trim().length < 3) {
+      onShowToast('Escreva o que quer trabalhar.');
+      return;
+    }
+    setCreating(true);
+    try {
+      const read = await createExerciseIdea(request);
+      setFromPhoto(null);
+      setFromIdea(request);
+      setEditing({
+        ...(again && editing ? { ...blank(), id: editing.id } : blank()),
+        name: read.name,
+        category: read.category,
+        durationMinutes: read.durationMinutes || request.minutes,
+        objective: read.objective || '',
+        description: read.description || '',
+        ...(read.material ? { material: read.material } : {})
+      });
+    } catch (err) {
+      onShowToast((err as Error).message || 'Não foi possível criar o exercício.');
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -130,6 +185,21 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
           <p role="note" className="rounded-xl bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-200">
             Lido da foto. Confirme o nome, o texto e o desenho antes de guardar.
           </p>
+        )}
+        {fromIdea && (
+          <div role="note" className="flex items-center justify-between gap-2 rounded-xl bg-cyan-500/10 px-3 py-2">
+            <span className="text-[11px] text-cyan-100">
+              ✨ Proposto pela IA para "{fromIdea.goal}". Reveja antes de guardar.
+            </span>
+            <button
+              type="button"
+              disabled={creating}
+              onClick={() => createIdea(true)}
+              className="ui-btn ui-btn-secondary shrink-0 px-2.5 py-1.5 text-[11px]"
+            >
+              {creating ? 'A criar…' : '🔄 Outra proposta'}
+            </button>
+          </div>
         )}
         <label className="block text-[11px] text-slate-400">
           Nome
@@ -333,6 +403,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
           type="button"
           onClick={() => {
             setFromPhoto(null);
+            setFromIdea(null);
             setEditing(blank());
           }}
           className="ui-btn ui-btn-primary shrink-0 px-3 py-2 text-xs"
@@ -355,6 +426,91 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
           }}
         />
       </label>
+      <button
+        type="button"
+        aria-expanded={ideaOpen}
+        onClick={() => setIdeaOpen(!ideaOpen)}
+        className="ui-btn ui-btn-secondary w-full py-2.5 text-xs"
+      >
+        ✨ Criar exercício com IA
+      </button>
+      {ideaOpen && (
+        <section aria-label="Criar exercício com IA" className="ui-inset space-y-2 p-3">
+          <label className="block text-[11px] text-slate-400">
+            O que quer trabalhar?
+            <AutoTextarea
+              className={input}
+              rows={2}
+              value={idea.goal}
+              placeholder="Ex: terceiro homem na saída de bola, com pressão"
+              onChange={(e) => setIdea({ ...idea, goal: e.target.value })}
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block text-[11px] text-slate-400">
+              Jogadores
+              <input
+                type="number"
+                min={2}
+                max={30}
+                className={input}
+                value={idea.players}
+                onChange={(e) => setIdea({ ...idea, players: Number(e.target.value) || 0 })}
+              />
+            </label>
+            <label className="block text-[11px] text-slate-400">
+              Minutos
+              <input
+                type="number"
+                min={5}
+                max={60}
+                className={input}
+                value={idea.minutes}
+                onChange={(e) => setIdea({ ...idea, minutes: Number(e.target.value) || 0 })}
+              />
+            </label>
+            <label className="block text-[11px] text-slate-400">
+              Espaço
+              <select
+                className={input}
+                value={idea.space}
+                onChange={(e) => setIdea({ ...idea, space: e.target.value })}
+              >
+                {EXERCISE_SPACES.map((sp) => (
+                  <option key={sp} value={sp}>
+                    {sp}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-[11px] text-slate-400">
+              Tipo
+              <select
+                className={input}
+                value={idea.category}
+                onChange={(e) => setIdea({ ...idea, category: e.target.value as ExerciseCategory })}
+              >
+                {EXERCISE_CATEGORIES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <button
+            type="button"
+            disabled={creating}
+            onClick={() => createIdea()}
+            className="ui-btn ui-btn-primary w-full py-2.5 text-sm"
+          >
+            {creating ? 'A criar o exercício…' : '✨ Criar exercício'}
+          </button>
+          <p className="text-[10px] text-slate-500">
+            A IA propõe; o exercício só fica na biblioteca depois de o rever e guardar.
+          </p>
+        </section>
+      )}
       {exercises.length > 1 && (
         <div role="group" aria-label="Ordenar exercícios" className="flex flex-wrap gap-1.5 text-[11px]">
           {(
