@@ -47,6 +47,15 @@ export const SquadTabsNav: React.FC<SquadTabsNavProps> = ({
       </button>
 
       <button
+        onClick={() => setActiveSquadTab('testes')}
+        className={`shrink-0 min-h-[38px] py-1.5 px-3 rounded-xl font-semibold text-[13px] transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 ${
+          activeSquadTab === 'testes' ? 'ui-btn-primary' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+        }`}
+      >
+        <span>Testes</span>
+      </button>
+
+      <button
         onClick={() => setActiveSquadTab('equipa_tecnica')}
         className={`shrink-0 min-h-[38px] py-1.5 px-3 rounded-xl font-semibold text-[13px] transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 ${
           activeSquadTab === 'equipa_tecnica'

@@ -5,6 +5,7 @@ import { computeAge } from '../../../lib/utils';
 import { calculatePlayerEvolution } from '../../../lib/intelligenceEngine';
 import { buildPlayerSeason } from '../../../lib/playerSeason';
 import { PlayerSeasonSection } from './PlayerSeasonSection';
+import { PlayerTestsSection } from './PlayerTestsSection';
 import { StatsPanel } from '../../stats/StatsPanel';
 import { returnSuffix } from '../../../lib/availability';
 
@@ -397,6 +398,8 @@ const SquadPlayerDetailModalInner: React.FC<SquadPlayerDetailModalInnerProps> = 
               className="ui-input w-full text-xs resize-none"
             />
           </div>
+
+          <PlayerTestsSection player={player} season={state.season || ''} clubName={state.myClubName || ''} />
 
           {/* Relatório de fim de época (para a família) */}
           <section aria-label="Relatório de fim de época" className="ui-inset p-3.5 space-y-2">
