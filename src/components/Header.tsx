@@ -6,6 +6,7 @@ import { TabType } from './Navbar';
 import { getActiveCategory } from './navCategory';
 import { SyncStatusBadge } from './ui/SyncStatusBadge';
 import { Icon } from './ui/Icon';
+import { SunModeButton } from './ui/SunModeButton';
 
 interface HeaderProps {
   title: string;
@@ -168,6 +169,8 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </button>
           )}
+
+          <SunModeButton className="p-1.5 w-9 h-9 sm:w-8 sm:h-8" />
 
           {/* Notifications Bell */}
           {onOpenNotifications && (

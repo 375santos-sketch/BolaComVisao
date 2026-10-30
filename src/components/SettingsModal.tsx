@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { applyCompact, loadCompact } from '../lib/clubBrand';
+import { applySunMode, useSunMode } from '../lib/sunMode';
 import { ClubSettingsSection } from './ClubSettingsSection';
 import { AppState, NotificationSettings } from '../types';
 import { t } from '../i18n/dict';
@@ -29,6 +30,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   pendingUsersCount = 0
 }) => {
   const [compact, setCompact] = useState(loadCompact);
+  const sunMode = useSunMode();
   // Administrator contacts (shown to coaches waiting for approval); stored with the notification settings
   const notifSettings: NotificationSettings = { ...defaultNotificationSettings, ...(state.notificationSettings || {}) };
   const updateNotifSettings = (updates: Partial<NotificationSettings>) =>
@@ -203,20 +205,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <label>{t(state.lang, 'set_theme')}</label>
           <div className="seg">
             <div
-              className={`seg-btn ${state.theme === 'original' ? 'active' : ''}`}
-              onClick={() => onUpdateState({ theme: 'original' })}
+              className={`seg-btn ${!sunMode && state.theme !== 'oceanonoturno' ? 'active' : ''}`}
+              onClick={() => {
+                applySunMode(false);
+                onUpdateState({ theme: 'original' });
+              }}
             >
               {t(state.lang, 'set_theme_orig')}
             </div>
-            <div
-              className={`seg-btn ${state.theme === 'luzsolar' ? 'active' : ''}`}
-              onClick={() => onUpdateState({ theme: 'luzsolar' })}
-            >
+            <div className={`seg-btn ${sunMode ? 'active' : ''}`} onClick={() => applySunMode(true)}>
               {t(state.lang, 'set_theme_sun')}
             </div>
             <div
-              className={`seg-btn ${state.theme === 'oceanonoturno' ? 'active' : ''}`}
-              onClick={() => onUpdateState({ theme: 'oceanonoturno' })}
+              className={`seg-btn ${!sunMode && state.theme === 'oceanonoturno' ? 'active' : ''}`}
+              onClick={() => {
+                applySunMode(false);
+                onUpdateState({ theme: 'oceanonoturno' });
+              }}
             >
               {t(state.lang, 'set_theme_ocean')}
             </div>

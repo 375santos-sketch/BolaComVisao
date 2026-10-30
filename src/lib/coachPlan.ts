@@ -1,5 +1,6 @@
 import { AppState, Training } from '../types';
 import { fromRest } from './calendarFeed';
+import { kitBag } from './kitBag';
 
 /**
  * Treinos → 🔗 Link para o adjunto: one secret link per team that always shows the plan of today's training (or of
@@ -22,6 +23,8 @@ export interface SharedPlan {
   location?: string;
   number?: number;
   objective?: string;
+  /** Lista do saco: ["16 cones", "10 coletes"] */
+  kit?: string[];
   blocks: SharedBlock[];
 }
 
@@ -62,6 +65,7 @@ export function sharedPlanOf(state: Pick<AppState, 'trainings' | 'exerciseLibrar
       ...(image ? { image } : {})
     };
   });
+  const kit = kitBag(t.sessionPlan?.blocks, state.exerciseLibrary).map((i) => i.label);
   return {
     date: t.date.slice(0, 10),
     ...(t.time ? { time: t.time } : {}),
@@ -69,6 +73,7 @@ export function sharedPlanOf(state: Pick<AppState, 'trainings' | 'exerciseLibrar
     ...(t.location ? { location: t.location } : {}),
     ...(t.trainingNumber ? { number: t.trainingNumber } : {}),
     ...(t.sessionPlan?.objective?.trim() ? { objective: t.sessionPlan.objective.trim() } : {}),
+    ...(kit.length ? { kit } : {}),
     blocks
   };
 }
@@ -111,6 +116,12 @@ export function planFromRestDocument(doc: { fields?: Record<string, any> } | nul
           location: typeof p.location === 'string' ? p.location : undefined,
           number: Number(p.number) || undefined,
           objective: typeof p.objective === 'string' ? p.objective : undefined,
+          kit: Array.isArray(p.kit)
+            ? p.kit
+                .filter((k: unknown) => typeof k === 'string')
+                .slice(0, 12)
+                .map((k: string) => k.slice(0, 60))
+            : undefined,
           blocks: (Array.isArray(p.blocks) ? p.blocks : []).slice(0, 30).map((b: any) => ({
             title: String(b?.title || 'Bloco'),
             category: typeof b?.category === 'string' ? b.category : undefined,
@@ -187,5 +198,5 @@ var t=document.getElementById('t');if(!cur){t.style.display='none';return;}t.sty
 var left=Math.max(0,Math.round((+cur.dataset.to-m)*60));document.getElementById('tl').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');}
 tick();setInterval(tick,1000);})();</script>`
     : '';
-  return `${head}${header(`Treino${plan.number ? ` nº ${plan.number}` : ''}`)}<div class="w">${past}<div class="facts">${facts}</div>${plan.location ? `<div style="margin-top:8px;color:#5f6f80;font-size:13px">📍 ${esc(plan.location)}</div>` : ''}${plan.objective ? `<div class="obj">🎯 ${esc(plan.objective)}</div>` : ''}${bar}${blocks || '<div class="empty">O plano deste treino ainda não tem blocos.</div>'}</div>${live}</body></html>`;
+  return `${head}${header(`Treino${plan.number ? ` nº ${plan.number}` : ''}`)}<div class="w">${past}<div class="facts">${facts}</div>${plan.location ? `<div style="margin-top:8px;color:#5f6f80;font-size:13px">📍 ${esc(plan.location)}</div>` : ''}${plan.objective ? `<div class="obj">🎯 ${esc(plan.objective)}</div>` : ''}${plan.kit?.length ? `<div class="obj" style="font-weight:600">🎒 Levar: ${plan.kit.map(esc).join(' · ')}</div>` : ''}${bar}${blocks || '<div class="empty">O plano deste treino ainda não tem blocos.</div>'}</div>${live}</body></html>`;
 }

@@ -13,6 +13,7 @@ import {
 } from './pdfLayout';
 import { dayLabel, factBoxes, noteBox } from './pdfBlocks';
 import { teamSettings } from '../teamSettings';
+import { kitBag } from '../kitBag';
 
 /**
  * 1. Relatório de Assiduidade e Treinos em PDF
@@ -289,6 +290,13 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
     if (curY + 20 > PAGE_BOTTOM) newPage();
     curY += drawSectionTitle(doc, brand, 'Objetivo', 15, curY, 180);
     curY += noteBox(doc, brand, training.sessionPlan.objective.trim(), curY, { size: 11, bold: true }) + 6;
+  }
+
+  const kit = kitBag(blocks, state.exerciseLibrary);
+  if (kit.length) {
+    if (curY + 20 > PAGE_BOTTOM) newPage();
+    curY += drawSectionTitle(doc, brand, 'Material a levar', 15, curY, 180);
+    curY += noteBox(doc, brand, kit.map((i) => i.label).join('  ·  '), curY) + 6;
   }
 
   if (curY + 30 > PAGE_BOTTOM) newPage();

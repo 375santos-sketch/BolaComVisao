@@ -1,4 +1,5 @@
-import { ExerciseCategory } from '../types';
+import { ExerciseCategory, ExerciseMaterial } from '../types';
+import { cleanMaterial } from './kitBag';
 
 /**
  * Treinos → Exercícios → 📷 A partir de uma foto: what Gemini is asked to read from a photo of an exercise (a sheet,
@@ -12,6 +13,7 @@ Lê o exercício e responde em português de Portugal:
 - durationMinutes: a duração em minutos, se estiver escrita (senão 0)
 - objective: o objetivo do exercício, numa frase
 - description: como se faz (espaço, jogadores, regras, variantes), com as palavras da imagem, sem inventar
+- material: quantos cones, coletes, bolas, balizas (pequenas), estacas, arcos, barreiras (mini-barreiras) e escadas (de coordenação) o exercício usa, pelo texto ou contando no desenho; 0 no que não usa ou não se percebe
 - drawing: se houver um desenho ou esquema do exercício, a caixa que o contém em frações da imagem (x e y do canto de cima à esquerda, w largura, h altura, de 0 a 1); se não houver desenho, w = 0 e h = 0.`;
 
 export const EXERCISE_SCHEMA = {
@@ -22,6 +24,15 @@ export const EXERCISE_SCHEMA = {
     durationMinutes: { type: 'NUMBER' },
     objective: { type: 'STRING' },
     description: { type: 'STRING' },
+    material: {
+      type: 'OBJECT',
+      properties: Object.fromEntries(
+        ['cones', 'coletes', 'bolas', 'balizas', 'estacas', 'arcos', 'barreiras', 'escadas'].map((k) => [
+          k,
+          { type: 'NUMBER' }
+        ])
+      )
+    },
     drawing: {
       type: 'OBJECT',
       properties: { x: { type: 'NUMBER' }, y: { type: 'NUMBER' }, w: { type: 'NUMBER' }, h: { type: 'NUMBER' } }
@@ -36,6 +47,7 @@ interface PrintExercise {
   durationMinutes?: number;
   objective?: string;
   description?: string;
+  material?: ExerciseMaterial;
   /** Where the drawing is in the photo (fractions 0..1), when there is one. */
   drawing?: { x: number; y: number; w: number; h: number };
 }
@@ -69,6 +81,7 @@ export function cleanPrintExercise(raw: unknown): PrintExercise | null {
               ? 'bolas_paradas'
               : 'tecnica');
   const minutes = Math.round(num(r.durationMinutes));
+  const material = cleanMaterial(r.material);
   const d = r.drawing && typeof r.drawing === 'object' ? r.drawing : null;
   let drawing: PrintExercise['drawing'];
   if (d) {
@@ -85,6 +98,7 @@ export function cleanPrintExercise(raw: unknown): PrintExercise | null {
     ...(minutes > 0 && minutes <= 120 ? { durationMinutes: minutes } : {}),
     ...(objective ? { objective } : {}),
     ...(description ? { description } : {}),
+    ...(material ? { material } : {}),
     ...(drawing ? { drawing } : {})
   };
 }

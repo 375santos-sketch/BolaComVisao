@@ -14,6 +14,7 @@ import { directionsUrl, townOfClub } from '../../lib/gameMap';
 import { teamSettings } from '../../lib/teamSettings';
 import { cardAlerts, cardStatuses } from '../../lib/cardSuspensions';
 import { CompactSelect } from '../ui/CompactSelect';
+import { LastTimeAgainstCard } from './results/LastTimeAgainstCard';
 
 const LineupImageModal = lazy(() => import('./LineupImageModal').then((m) => ({ default: m.LineupImageModal })));
 const CallupImageModal = lazy(() => import('./CallupImageModal').then((m) => ({ default: m.CallupImageModal })));
@@ -350,6 +351,13 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           />
         </Suspense>
       )}
+
+      <LastTimeAgainstCard
+        matches={state.matches || []}
+        roster={state.roster || []}
+        opponent={match.opponent}
+        collapsed
+      />
 
       {/* Meeting time, pitch and notes: open only when needed */}
       <details className="ui-card mb-3 group">

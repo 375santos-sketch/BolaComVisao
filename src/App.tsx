@@ -5,6 +5,7 @@ import { subscribeToClubCloud, migrateClubToRecords, getCloudMode } from './serv
 import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
 import { applyClubColor } from './lib/clubColors';
+import { useSunMode } from './lib/sunMode';
 import { saveBrand } from './lib/clubBrand';
 import { teamSettings } from './lib/teamSettings';
 import { exportJSONBackup } from './lib/exportUtils';
@@ -147,10 +148,12 @@ export default function App() {
 
   // Theme first, then the club's colour on top (Definições → Clube)
   const clubColor = teamSettings(state).clubColor;
+  const sunMode = useSunMode();
   useEffect(() => {
-    applyThemeCSS(state.theme || 'original');
+    // "Luz Solar" was the old, half-done light theme: the sun mode replaces it
+    applyThemeCSS(sunMode ? 'luzsolar' : state.theme === 'luzsolar' ? 'original' : state.theme || 'original');
     applyClubColor(clubColor);
-  }, [state.theme, clubColor]);
+  }, [state.theme, clubColor, sunMode]);
 
   // The club's look for the entrance screen of this phone (next time the app opens)
   useEffect(() => {
