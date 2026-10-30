@@ -6,6 +6,8 @@ import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSa
 import { applyThemeCSS } from './lib/utils';
 import { applyClubColor } from './lib/clubColors';
 import { useSunMode } from './lib/sunMode';
+import { GuidedTour } from './components/GuidedTour';
+import { markTourDone, tourDone } from './lib/guidedTour';
 import { saveBrand } from './lib/clubBrand';
 import { teamSettings } from './lib/teamSettings';
 import { exportJSONBackup } from './lib/exportUtils';
@@ -50,6 +52,7 @@ const StatsView = lazyWithRetry(() => import('./components/views/StatsView'), 'S
 const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 'DatabaseModal');
 const MonthlyReportModal = lazyWithRetry(() => import('./components/MonthlyReportModal'));
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
+const SignatureModal = lazyWithRetry(() => import('./components/SignatureModal'));
 const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
   'GameAnalysisDashboard'
@@ -134,6 +137,8 @@ export default function App() {
   const [showDatabase, setShowDatabase] = useState<boolean>(false);
   const [showMonthlyReport, setShowMonthlyReport] = useState<boolean>(false);
   const [showCareer, setShowCareer] = useState<boolean>(false);
+  const [showSignature, setShowSignature] = useState<boolean>(false);
+  const [tourOpen, setTourOpen] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [showAdminUsers, setShowAdminUsers] = useState<boolean>(false);
   const [showInviteStaff, setShowInviteStaff] = useState<boolean>(false);
@@ -1016,11 +1021,34 @@ export default function App() {
           onOpenInviteStaff={() => setShowInviteStaff(true)}
           onOpenSeasons={() => setShowSeasonSelector(true)}
           onOpenCareer={() => setShowCareer(true)}
+          onOpenSignature={() => setShowSignature(true)}
+          onOpenTour={() => {
+            handleNavigate('home');
+            setTourOpen(true);
+          }}
           pendingUsersCount={pendingUsersCount}
           onLogout={handleLogout}
         />
 
         {/* Modals */}
+        {(tourOpen || (currentTab === 'home' && state.currentUser?.id && !tourDone(state.currentUser.id))) && (
+          <GuidedTour
+            onClose={() => {
+              markTourDone(state.currentUser?.id);
+              setTourOpen(false);
+            }}
+          />
+        )}
+        {showSignature && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <SignatureModal
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onClose={() => setShowSignature(false)}
+            />
+          </Suspense>
+        )}
         {showCareer && (
           <Suspense fallback={<ViewLoadingFallback />}>
             <CoachCareerModal

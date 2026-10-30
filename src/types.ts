@@ -331,6 +331,8 @@ export interface Exercise {
   objective?: string;
   /** Drawing or photo of the exercise, imported and compressed (JPEG data URL, about 150 KB at most). */
   image?: string;
+  /** 🧒 The exercise explained to the children in 3 short sentences (to read out). */
+  kidsText?: string;
   /** How many cones, bibs, balls… it needs ("Levar para o treino" adds up a training's exercises). */
   material?: ExerciseMaterial;
 }
@@ -949,7 +951,15 @@ export interface CoachCourse {
   certificate?: boolean;
 }
 
+/** ✍️ The coach's signature (a small PNG drawn with the finger) and the PDFs it goes on. */
+export interface CoachSignature {
+  image: string;
+  docs: Array<'convocatoria' | 'relatorios' | 'fim_epoca' | 'curriculo'>;
+}
+
 export interface AppState {
+  /** ✍️ Assinatura nos documentos, per user account id. */
+  coachSignatures?: Record<string, CoachSignature>;
   /** 🎓 A minha carreira, per user account id. */
   coachCareers?: Record<string, CoachCareer>;
   activeTeamId: string;

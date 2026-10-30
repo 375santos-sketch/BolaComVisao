@@ -14,7 +14,7 @@ const MIN_TRAININGS_FOR_ATTENDANCE = 3;
 const MAX_HOME_NOTICES = 3;
 
 interface HomeNotice {
-  id: 'castigos' | 'convocatoria' | 'minutos' | 'assiduidade' | 'aniversarios';
+  id: 'presencas' | 'castigos' | 'convocatoria' | 'minutos' | 'assiduidade' | 'aniversarios';
   icon: string;
   text: string;
   tab: 'convocatoria' | 'treinos' | 'plantel';
@@ -167,4 +167,30 @@ export function seasonSummary(state: SummaryState, today: string = localDateISO(
     s.attendance = Math.round(((possible - absences) / possible) * 100);
   }
   return s;
+}
+
+/**
+ * 📋 Presenças por marcar: near the end of today's training (the team's time for today, or the training's own) and
+ * still not marked as done. Shown first, until midnight or until the attendance is saved.
+ */
+export function attendanceReminder(
+  trainings: AppState['trainings'],
+  settings: { trainingTimes: Record<string, string>; trainingMinutes: number },
+  now: Date = new Date()
+): HomeNotice | null {
+  const today = localDateISO(now);
+  const training = (trainings || []).find((t) => t && (t.date || '').slice(0, 10) === today);
+  if (training?.completed) return null;
+  const start = training?.time || settings.trainingTimes[String(now.getDay())];
+  const m = /^(\d{1,2}):(\d{2})/.exec(start || '');
+  if (!m) return null;
+  const end = Number(m[1]) * 60 + Number(m[2]) + (training?.durationMinutes || settings.trainingMinutes);
+  if (now.getHours() * 60 + now.getMinutes() < end - 15) return null;
+  return {
+    id: 'presencas',
+    icon: '📋',
+    text: `Presenças por marcar: treino de hoje (${start})`,
+    tab: 'treinos',
+    targetId: 'hoje'
+  };
 }

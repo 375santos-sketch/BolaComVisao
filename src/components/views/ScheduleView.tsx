@@ -18,6 +18,7 @@ import { ScheduleStaffModal } from './schedule/ScheduleStaffModal';
 import { ScheduleClubEventModal } from './schedule/ScheduleClubEventModal';
 import { ScheduleFab } from './schedule/ScheduleFab';
 import { CalendarShareModal } from './schedule/CalendarShareModal';
+import { AllTeamsAgenda } from './schedule/AllTeamsAgenda';
 import { AgendaTabs } from './schedule/AgendaTabs';
 import { teamSettings } from '../../lib/teamSettings';
 
@@ -268,6 +269,8 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
       />
 
       <AgendaTabs current="calendario" onNavigate={onNavigate} />
+
+      <AllTeamsAgenda state={state} />
 
       {/* Summary and the two less frequent actions */}
       <div className="flex items-center gap-3 text-xs text-slate-400">

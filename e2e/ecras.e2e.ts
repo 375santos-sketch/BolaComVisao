@@ -1838,3 +1838,61 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   await career.getByRole('button', { name: '📄 Currículo em PDF' }).click();
   expect((await download).suggestedFilename()).toMatch(/^Curriculo_.*\.pdf$/);
 });
+
+test('explicar às crianças, assinatura nos PDFs e visita guiada', async ({ page }) => {
+  await page.route('**/api/criancas', async (route) => {
+    const body = route.request().postDataJSON();
+    await route.fulfill({
+      json: {
+        success: true,
+        text: body.simpler
+          ? '⚽ Passem a bola.\n🎯 Ao amarelo vale ponto.\n🏃 Quem perde troca.'
+          : '⚽ Vocês são 4 à volta do quadrado.\n🎯 Passem ao amarelo: vale 1 ponto!\n🏃 Quem perder a bola troca.'
+      }
+    });
+  });
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  await page.getByRole('button', { name: '➕ Novo exercício' }).click();
+  const form = page.getByRole('region', { name: 'Editar exercício' });
+  await form.getByLabel('Nome').fill('Rondo 4+1');
+  await form.getByLabel('Descrição / regras (opcional)').fill('Quadrado 15x15 m, 4 fora e 1 joker contra 3.');
+  const kids = form.getByRole('region', { name: 'Para as crianças' });
+  await kids.getByRole('button', { name: '✨ Explicar às crianças' }).click();
+  await expect(kids.getByLabel('Explicação para as crianças')).toHaveValue(/Vocês são 4/);
+  await kids.getByRole('button', { name: '🔄 Mais simples' }).click();
+  await expect(kids.getByLabel('Explicação para as crianças')).toHaveValue(/Passem a bola/);
+  await form.getByRole('button', { name: 'Guardar exercício' }).click();
+  await expect(page.getByRole('region', { name: 'Biblioteca de exercícios' })).toContainText('Rondo 4+1');
+
+  // ✍️ Sign once with the finger
+  await openMore(page, /Assinatura/);
+  const sign = page.getByRole('dialog', { name: 'Assinatura' });
+  const board = sign.getByLabel('Quadro para assinar');
+  const box = (await board.boundingBox())!;
+  await page.mouse.move(box.x + 20, box.y + box.height / 2);
+  await page.mouse.down();
+  for (let i = 1; i <= 10; i++) await page.mouse.move(box.x + 20 + i * 25, box.y + box.height / 2 + (i % 2 ? -20 : 20));
+  await page.mouse.up();
+  await sign.getByRole('button', { name: '✓ Guardar' }).click();
+  await expect(page.getByText('Assinatura guardada ✓')).toBeVisible();
+  await openMore(page, /Assinatura/);
+  await expect(
+    page.getByRole('dialog', { name: 'Assinatura' }).getByRole('img', { name: 'Assinatura guardada' })
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar assinatura' }).click();
+
+  // 🧭 Guided tour, from Mais
+  await openMore(page, /Visita guiada/);
+  const tour = page.getByRole('dialog', { name: 'Visita guiada' });
+  await expect(tour).toContainText('Bem-vindo à BolaComVisão');
+  await tour.getByRole('button', { name: 'Seguinte →' }).click();
+  await expect(tour).toContainText('Treino de hoje');
+  await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/visita.png` : undefined });
+  for (let i = 0; i < 4; i++) await tour.getByRole('button', { name: 'Seguinte →' }).click();
+  await expect(tour).toContainText('Mais');
+  await tour.getByRole('button', { name: 'Começar ✓' }).click();
+  await expect(tour).toBeHidden();
+});
