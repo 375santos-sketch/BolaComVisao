@@ -299,6 +299,19 @@ service cloud.firestore {
         data.updatedAt is number;
     }
 
+    // Plan for the assistant coach: the next training's plan only (blocks, minutes, drawings; no athletes' data).
+    function isValidPublicPlan(data) {
+      return data is map &&
+        data.keys().hasAll(['clubId', 'teamId', 'teamName', 'updatedAt']) &&
+        data.keys().hasOnly(['clubId', 'teamId', 'teamName', 'color', 'plan', 'updatedAt']) &&
+        data.clubId is string && data.clubId.size() > 0 && data.clubId.size() <= 128 &&
+        data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
+        data.teamName is string && data.teamName.size() <= 200 &&
+        (!data.keys().hasAny(['color']) || (data.color is string && data.color.size() <= 16)) &&
+        (!data.keys().hasAny(['plan']) || data.plan == null || data.plan is map) &&
+        data.updatedAt is number;
+    }
+
     // "Jogador do jogo" vote for the parents: candidates are shown by first name + initial and shirt number only.
     function isValidMvpPoll(data) {
       return data is map &&
@@ -325,6 +338,18 @@ service cloud.firestore {
         isValidPublicCalendar(incoming()) && canAccessClubWorkspace(incoming().clubId);
       allow update: if canAccessClubWorkspace(resource.data.clubId) &&
         isValidPublicCalendar(incoming()) && incoming().clubId == resource.data.clubId;
+      allow delete: if canAccessClubWorkspace(resource.data.clubId);
+    }
+
+    // Plan for the assistant coach (Treinos → "Link para o adjunto"): same model as the shareable calendar. Anyone
+    // with the secret link reads that one document; only the club's approved coaches write it or switch it off.
+    match /public_plans/{token} {
+      allow get: if token.size() >= 20;
+      allow list: if false;
+      allow create: if isValidId(token) && token.size() >= 20 &&
+        isValidPublicPlan(incoming()) && canAccessClubWorkspace(incoming().clubId);
+      allow update: if canAccessClubWorkspace(resource.data.clubId) &&
+        isValidPublicPlan(incoming()) && incoming().clubId == resource.data.clubId;
       allow delete: if canAccessClubWorkspace(resource.data.clubId);
     }
 

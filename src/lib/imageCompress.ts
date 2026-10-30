@@ -50,3 +50,33 @@ export function dataUrlBytes(dataUrl: string): number {
   const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
   return Math.floor((base64.length * 3) / 4);
 }
+
+/** The part of an image inside `box` (fractions 0..1 of its width and height), as a small JPEG like the others. */
+export async function cropImageSource(
+  src: string,
+  box: { x: number; y: number; w: number; h: number },
+  maxSide = 1000,
+  maxBytes = 180_000
+): Promise<string> {
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const el = new Image();
+    el.onload = () => resolve(el);
+    el.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+    el.src = src;
+  });
+  // A small margin around the drawing, so its edges are not cut
+  const pad = 0.02;
+  const x = Math.max(0, box.x - pad) * img.naturalWidth;
+  const y = Math.max(0, box.y - pad) * img.naturalHeight;
+  const w = Math.min(img.naturalWidth - x, (box.w + 2 * pad) * img.naturalWidth);
+  const h = Math.min(img.naturalHeight - y, (box.h + 2 * pad) * img.naturalHeight);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(w));
+  canvas.height = Math.max(1, Math.round(h));
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Não foi possível preparar a imagem.');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, x, y, w, h, 0, 0, canvas.width, canvas.height);
+  return compressImageSource(canvas.toDataURL('image/jpeg', 0.92), maxSide, maxBytes);
+}

@@ -197,7 +197,7 @@ type RestValue = {
   arrayValue?: { values?: RestValue[] };
 };
 
-function fromRest(v: RestValue | undefined): unknown {
+export function fromRest(v: RestValue | undefined): unknown {
   if (!v) return undefined;
   if (v.stringValue !== undefined) return v.stringValue;
   if (v.integerValue !== undefined) return Number(v.integerValue);

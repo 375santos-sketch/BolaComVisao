@@ -645,6 +645,8 @@ export interface SquadProfile {
   exerciseLibrary?: Exercise[];
   /** Secret part of the parents' calendar link (/cal/{token}.ics); none = calendar not shared. */
   calendarToken?: string;
+  /** Secret part of the assistant coach's plan link (/plano/{token}); none = not shared. */
+  planToken?: string;
   /** Championship series (one per season): other games of the series, for the league table. */
   leagues?: LeagueSetup[];
   /** Training templates (Treinos → Modelos): a session plan kept to start new trainings from it. */

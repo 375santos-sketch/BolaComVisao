@@ -2,7 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { AutoTextarea } from '../../ui/AutoTextarea';
 import { Exercise, ExerciseCategory, Training } from '../../../types';
 import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
-import { compressImageFile } from '../../../lib/imageCompress';
+import { compressImageFile, compressImageSource, cropImageSource } from '../../../lib/imageCompress';
+import { readPrintData } from '../../../lib/readPrint';
+import { cleanPrintExercise } from '../../../lib/printExercise';
 import { uid } from '../../../lib/utils';
 
 const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
@@ -38,6 +40,9 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
   const [editing, setEditing] = useState<Exercise | null>(null);
   const [search, setSearch] = useState('');
   const [loadingImage, setLoadingImage] = useState(false);
+  // 📷 A partir de uma foto: the photo (to use it whole) and its drawing cut out, until the coach saves
+  const [fromPhoto, setFromPhoto] = useState<{ photo: string; drawing?: string } | null>(null);
+  const [readingPhoto, setReadingPhoto] = useState(false);
 
   const [order, setOrder] = useState<'nome' | 'mais' | 'esquecidos'>('nome');
   const usage = useMemo(() => exerciseUsage(trainings), [trainings]);
@@ -69,6 +74,34 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
     onSave(exists ? exercises.map((e) => (e.id === clean.id ? clean : e)) : [...exercises, clean]);
     onShowToast(exists ? 'Exercício atualizado ✓' : 'Exercício guardado na biblioteca ✓');
     setEditing(null);
+    setFromPhoto(null);
+  };
+
+  /** Reads an exercise from a photo and opens it in the form, to check and save. */
+  const readPhoto = async (file?: File) => {
+    if (!file) return;
+    setReadingPhoto(true);
+    try {
+      const photo = await compressImageFile(file, 1600, 600_000);
+      const read = cleanPrintExercise(await readPrintData(photo, 'exercicio'));
+      if (!read) throw new Error('Não encontrei um exercício nesta foto.');
+      const whole = await compressImageSource(photo);
+      const drawing = read.drawing ? await cropImageSource(photo, read.drawing).catch(() => undefined) : undefined;
+      setFromPhoto({ photo: whole, drawing });
+      setEditing({
+        ...blank(),
+        name: read.name,
+        category: read.category,
+        durationMinutes: read.durationMinutes || 15,
+        objective: read.objective || '',
+        description: read.description || '',
+        image: drawing || whole
+      });
+    } catch (err) {
+      onShowToast((err as Error).message || 'Não foi possível ler a foto.');
+    } finally {
+      setReadingPhoto(false);
+    }
   };
 
   const importImage = async (file?: File) => {
@@ -90,6 +123,11 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
         <h3 className="text-sm font-black text-white font-['Chakra_Petch'] uppercase">
           {exercises.some((e) => e.id === editing.id) ? '✏️ Editar exercício' : '➕ Novo exercício'}
         </h3>
+        {fromPhoto && (
+          <p role="note" className="rounded-xl bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-200">
+            Lido da foto. Confirme o nome, o texto e o desenho antes de guardar.
+          </p>
+        )}
         <label className="block text-[11px] text-slate-400">
           Nome
           <input
@@ -158,13 +196,33 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
                 alt={`Desenho: ${editing.name || 'exercício'}`}
                 className="w-full max-h-64 object-contain rounded-xl bg-white"
               />
-              <button
-                type="button"
-                onClick={() => setEditing({ ...editing, image: undefined })}
-                className="text-[11px] text-rose-300 underline"
-              >
-                Remover imagem
-              </button>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditing({ ...editing, image: undefined })}
+                  className="text-[11px] text-rose-300 underline"
+                >
+                  Remover imagem
+                </button>
+                {fromPhoto?.drawing && editing.image === fromPhoto.drawing && (
+                  <button
+                    type="button"
+                    onClick={() => setEditing({ ...editing, image: fromPhoto.photo })}
+                    className="text-[11px] text-cyan-300 underline"
+                  >
+                    Usar a foto inteira
+                  </button>
+                )}
+                {fromPhoto?.drawing && editing.image === fromPhoto.photo && (
+                  <button
+                    type="button"
+                    onClick={() => setEditing({ ...editing, image: fromPhoto.drawing })}
+                    className="text-[11px] text-cyan-300 underline"
+                  >
+                    Usar só o desenho
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <p className="text-[11px] text-slate-500">
@@ -187,7 +245,14 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
         </div>
 
         <div className="flex justify-between gap-2 pt-1">
-          <button type="button" onClick={() => setEditing(null)} className="ui-btn ui-btn-secondary px-4 py-2 text-xs">
+          <button
+            type="button"
+            onClick={() => {
+              setEditing(null);
+              setFromPhoto(null);
+            }}
+            className="ui-btn ui-btn-secondary px-4 py-2 text-xs"
+          >
             Cancelar
           </button>
           <button
@@ -214,12 +279,30 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, tra
         />
         <button
           type="button"
-          onClick={() => setEditing(blank())}
+          onClick={() => {
+            setFromPhoto(null);
+            setEditing(blank());
+          }}
           className="ui-btn ui-btn-primary shrink-0 px-3 py-2 text-xs"
         >
           ➕ Novo exercício
         </button>
       </div>
+      <label
+        className={`ui-btn ui-btn-secondary w-full py-2.5 text-xs cursor-pointer flex items-center justify-center gap-1.5 ${readingPhoto ? 'opacity-60 pointer-events-none' : ''}`}
+      >
+        📷 {readingPhoto ? 'A ler a foto…' : 'Exercício a partir de uma foto'}
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          aria-label="Foto do exercício"
+          onChange={(e) => {
+            readPhoto(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+        />
+      </label>
       {exercises.length > 1 && (
         <div role="group" aria-label="Ordenar exercícios" className="flex flex-wrap gap-1.5 text-[11px]">
           {(

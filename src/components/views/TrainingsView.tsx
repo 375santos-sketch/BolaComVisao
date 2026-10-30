@@ -372,6 +372,7 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
             });
           }}
           onShowToast={onShowToast}
+          onUpdateState={onUpdateState}
         />
       )}
 

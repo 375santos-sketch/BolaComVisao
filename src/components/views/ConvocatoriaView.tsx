@@ -16,6 +16,7 @@ import { cardAlerts, cardStatuses } from '../../lib/cardSuspensions';
 import { CompactSelect } from '../ui/CompactSelect';
 
 const LineupImageModal = lazy(() => import('./LineupImageModal').then((m) => ({ default: m.LineupImageModal })));
+const CallupImageModal = lazy(() => import('./CallupImageModal').then((m) => ({ default: m.CallupImageModal })));
 
 interface ConvocatoriaViewProps {
   state: AppState;
@@ -44,6 +45,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
   );
   const [showShare, setShowShare] = useState(false);
   const [showLineup, setShowLineup] = useState(false);
+  const [showCallupImage, setShowCallupImage] = useState(false);
 
   const match = state.schedule.find((s) => s.id === selectedMatchId) || state.schedule[0];
   const isFinalized = Boolean(match?.callupFinalized);
@@ -292,7 +294,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
       </section>
 
       {/* What to do with it */}
-      <div className="grid grid-cols-3 gap-2 mb-2.5">
+      <div className="grid grid-cols-2 gap-2 mb-2.5">
         <button
           type="button"
           onClick={() => setShowLineup(true)}
@@ -317,7 +319,24 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
         >
           💬 WhatsApp
         </button>
+        <button
+          type="button"
+          onClick={() => setShowCallupImage(true)}
+          className="ui-btn ui-btn-secondary px-2 py-2.5 text-xs leading-tight"
+        >
+          🖼️ Imagem para os pais
+        </button>
       </div>
+      {showCallupImage && (
+        <Suspense fallback={null}>
+          <CallupImageModal
+            game={match}
+            state={state}
+            onShowToast={onShowToast}
+            onClose={() => setShowCallupImage(false)}
+          />
+        </Suspense>
+      )}
       {showLineup && (
         <Suspense fallback={null}>
           <LineupImageModal

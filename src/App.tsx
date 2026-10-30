@@ -32,6 +32,7 @@ import { InstallPwaBanner } from './components/InstallPwaBanner';
 import { ViewLoadingFallback } from './components/ViewLoadingFallback';
 import { lazyWithRetry } from './lib/lazyWithRetry';
 import { useCalendarPublisher } from './hooks/useCalendarPublisher';
+import { usePlanPublisher } from './hooks/usePlanPublisher';
 import { useShrinkOldPhotos } from './hooks/useShrinkOldPhotos';
 
 // Dynamic Lazy Views (Zero initial bundle cost + auto-recovery)
@@ -64,6 +65,7 @@ import { NotificationModal } from './components/NotificationModal';
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
   useCalendarPublisher(state);
+  usePlanPublisher(state);
   const latestStateRef = useRef(state);
   useEffect(() => {
     latestStateRef.current = state;

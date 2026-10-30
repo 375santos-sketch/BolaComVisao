@@ -1421,6 +1421,78 @@ test('agenda: jogos importados de um print do calendário e modo compacto', asyn
   await expect(page.locator('html')).not.toHaveClass(/compact/);
 });
 
+test('foto do exercício, imagem da convocatória e plano para o adjunto', async ({ page }) => {
+  // The photo is read on the server (Gemini): here the answer is simulated
+  let mode = '';
+  await page.route('**/api/ler-jornada', async (route) => {
+    mode = route.request().postDataJSON()?.mode;
+    await route.fulfill({
+      json: {
+        success: true,
+        games: {
+          name: 'Rondo da foto',
+          category: 'tatica',
+          durationMinutes: 18,
+          objective: 'Pressão após perda',
+          description: '4 fora, 2 dentro. Dois toques.',
+          drawing: { x: 0, y: 0, w: 0.5, h: 0.5 }
+        }
+      }
+    });
+  });
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==',
+    'base64'
+  );
+  await page
+    .getByLabel('Foto do exercício')
+    .setInputFiles({ name: 'exercicio.png', mimeType: 'image/png', buffer: png });
+  const form = page.getByRole('region', { name: 'Editar exercício' });
+  await expect(form.getByRole('note')).toContainText('Lido da foto');
+  expect(mode).toBe('exercicio');
+  await expect(form.getByPlaceholder('Ex: Rondo 4x2')).toHaveValue('Rondo da foto');
+  await expect(form.getByRole('img', { name: 'Desenho: Rondo da foto' })).toBeVisible();
+  await form.getByRole('button', { name: 'Usar a foto inteira' }).click();
+  await form
+    .getByRole('button', { name: /Guardar/ })
+    .first()
+    .click();
+  await expect(page.getByRole('region', { name: 'Biblioteca de exercícios' })).toContainText('Rondo da foto');
+
+  // Link for the assistant coach: created once, kept in the cloud with the next training's plan only
+  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page.getByRole('button', { name: /Plano para o adjunto/ }).click();
+  const share = page.getByRole('dialog', { name: 'Plano para o adjunto' });
+  await share.getByRole('button', { name: 'Criar link para o adjunto' }).click();
+  const link = await share.getByLabel('Link do plano').inputValue();
+  expect(link).toMatch(/\/plano\/[A-Za-z0-9]{24}$/);
+  const res = await fetch(`${FIRESTORE}/public_plans/${link.split('/').pop()}`);
+  expect(res.status).toBe(200);
+  const raw = JSON.stringify(await res.json());
+  expect(raw).toContain('Dragões');
+  expect(raw).not.toMatch(/Rui Silva|absences/);
+  await share.getByRole('button', { name: 'Fechar plano para o adjunto' }).click();
+
+  // Convocatória picture for the parents
+  await navTo(page, /agenda/i);
+  await openAgendaRow(page, /vs AD Tempo Teste/);
+  await page.getByTitle('Abrir Convocatória').click();
+  await page.getByRole('button', { name: 'Todos', exact: true }).click();
+  await page.getByRole('button', { name: /Imagem para os pais/ }).click();
+  const picture = page.getByRole('dialog', { name: 'Imagem da convocatória' });
+  await expect(picture.getByRole('img', { name: 'Imagem da convocatória para os pais' })).toBeVisible();
+  await picture.screenshot({
+    path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/convocatoria-imagem.png` : undefined
+  });
+  const download = page.waitForEvent('download');
+  await picture.getByRole('button', { name: /Partilhar imagem/ }).click();
+  expect((await download).suggestedFilename()).toMatch(/^Convocatoria_AD_Tempo_Teste_/);
+});
+
 test('sessão na nuvem terminada: aviso, entrar de novo sem perder o que ficou no aparelho', async ({
   page,
   browser
