@@ -1832,6 +1832,21 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   await career.getByLabel('Créditos da formação').fill('4');
   await career.getByRole('button', { name: 'Guardar formação' }).click();
   await expect(career).toContainText('4 de 15 créditos');
+  // Clubs by year
+  await career.getByRole('button', { name: '＋ Clube' }).click();
+  await career.getByLabel('Clube', { exact: true }).fill('CD Falcões');
+  await career.getByLabel('Ano ou época').fill('2019–2021');
+  await career.getByLabel('Função').fill('Adjunto');
+  await career.getByRole('button', { name: 'Guardar clube' }).click();
+  await career.getByRole('button', { name: '＋ Clube' }).click();
+  await career.getByLabel('Clube', { exact: true }).fill('GD Ribeira');
+  await career.getByLabel('Ano ou época').fill('2023/2024');
+  await career.getByLabel('Escalão').fill('Sub-11');
+  await career.getByRole('button', { name: 'Guardar clube' }).click();
+  await expect(career.getByRole('list', { name: 'Clubes' }).getByRole('listitem')).toHaveText([
+    /GD Ribeira.*Sub-11.*2023\/2024/,
+    /CD Falcões.*Adjunto.*2019–2021/
+  ]);
   await expect(career.getByRole('alert').first()).toContainText(/O título caduca em [23] meses/);
   await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/carreira.png` : undefined });
   const download = page.waitForEvent('download');
