@@ -12,7 +12,8 @@ import {
   getNowTimeString,
   getSuggestedMinute,
   getNominalHalfDuration,
-  computeMinuteInHalf
+  computeMinuteInHalf,
+  clockSecondsFor
 } from '../../../../lib/matchPhaseUtils';
 
 interface UseLiveMatchProps {
@@ -104,6 +105,12 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     setShowGoalModal(true);
   };
 
+  /** The exact second of an event recorded with the clock running (for 🎥 Vídeo do jogo). */
+  const clockOf = (half: 1 | 2, minuteInHalf: number | undefined) => {
+    const sec = match ? clockSecondsFor(match, half, minuteInHalf, state.category) : undefined;
+    return sec !== undefined ? { clockSec: sec } : {};
+  };
+
   const handleSaveGoal = () => {
     if (!match) return;
     if (!goalScorerId) {
@@ -156,6 +163,7 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
         minuteInHalf: minInHalf,
         period: finalPeriod,
         half: finalHalf,
+        ...clockOf(finalHalf, minInHalf),
         goalType: goalType
       };
       updateMatchInState({ ...match, goals: [...match.goals, newGoal] });
@@ -188,7 +196,8 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
       minuteBase: 'game',
       minuteInHalf: computeMinuteInHalf(suggested, half, getNominalHalfDuration(match, state.category)),
       period,
-      half
+      half,
+      ...clockOf(half, computeMinuteInHalf(suggested, half, getNominalHalfDuration(match, state.category)))
     };
     updateMatchInState({ ...match, goals: [...match.goals, goal] });
     return goal;
@@ -275,6 +284,7 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
         minuteInHalf: minInHalf,
         period: finalPeriod,
         half: finalHalf,
+        ...clockOf(finalHalf, minInHalf),
         goalType: concededGoalType,
         notes: concededNotes.trim() || undefined
       };
@@ -418,7 +428,8 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
         minuteInHalf: minInHalf,
         period: finalPeriod,
         half: finalHalf,
-        isHalftime: isHalftime || undefined
+        isHalftime: isHalftime || undefined,
+        ...(isHalftime ? {} : clockOf(finalHalf, minInHalf))
       }));
 
       updateMatchInState({ ...match, subs: [...(match.subs || []), ...newSubs] });
@@ -522,7 +533,8 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
         minuteBase: 'game',
         minuteInHalf: minInHalf,
         period: finalPeriod,
-        half: finalHalf
+        half: finalHalf,
+        ...clockOf(finalHalf, minInHalf)
       };
       updateMatchInState({ ...match, cards: [...(match.cards || []), newCard] });
       if (onShowToast)

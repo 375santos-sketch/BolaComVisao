@@ -31,6 +31,8 @@ export interface Player {
   seasonMessages?: Record<string, string>;
   nickname?: string;
   captain?: boolean;
+  /** 📏 Testes: results per round ("2026/2027-set") and test ("sprint20" → 3.94). */
+  fitnessTests?: Record<string, Record<string, number>>;
 }
 
 export type GoalType =
@@ -60,6 +62,8 @@ export interface GoalEvent {
   minute: number | string | null;
   minuteBase?: 'game';
   minuteInHalf?: number;
+  /** Seconds into the half when it was recorded with the clock running (Vídeo do jogo jumps to it). */
+  clockSec?: number;
   goalType?: GoalType | string;
   notes?: string;
 }
@@ -76,6 +80,8 @@ export interface CardEvent {
   minute: number | string | null;
   minuteBase?: 'game';
   minuteInHalf?: number;
+  /** Seconds into the half when it was recorded with the clock running (Vídeo do jogo jumps to it). */
+  clockSec?: number;
 }
 
 export interface SubEvent {
@@ -90,6 +96,8 @@ export interface SubEvent {
   minute: number | string | null;
   minuteBase?: 'game';
   minuteInHalf?: number;
+  /** Seconds into the half when it was recorded with the clock running (Vídeo do jogo jumps to it). */
+  clockSec?: number;
   notes?: string;
 }
 
@@ -226,6 +234,16 @@ export interface Match {
   pdfDataUrl?: string;
   pdfGeneratedAt?: string;
   opponentReport?: OpponentReport; // Relatório do adversário pós-jogo
+  /** 🎥 Vídeo do jogo: YouTube link and where each half starts in it. */
+  video?: MatchVideo;
+}
+
+export interface MatchVideo {
+  youtubeId: string;
+  half1At: number; // seconds into the video at the 1st-half kick-off
+  half2At?: number; // seconds into the video at the 2nd-half kick-off
+  /** Fine-tuning per event (event id → seconds), when a moment is a few seconds off. */
+  nudges?: Record<string, number>;
 }
 
 /** Post-match notes about the opponent (the numbers come from the match itself). */

@@ -242,3 +242,23 @@ export function getMatchSquad(roster: Player[], match: Match | null | undefined)
   ]);
   return active.filter((p) => inMatch.has(p.id));
 }
+
+/**
+ * Seconds into the half right now, for an event being recorded in that half at that minute (the clock is running and
+ * the coach kept the clock's minute). Undefined otherwise, so a minute typed by hand never gets a wrong second.
+ */
+export function clockSecondsFor(
+  match: Match,
+  half: 1 | 2,
+  minuteInHalf: number | undefined,
+  category?: string
+): number | undefined {
+  const phase = getMatchPhase(match);
+  if ((half === 1 && phase !== 'parte1') || (half === 2 && phase !== 'parte2')) return undefined;
+  const elapsedMs = getMatchElapsedMs(match);
+  const half1Ms = match.timer?.half1DurationMs ?? getNominalHalfDuration(match, category) * 60000;
+  const sec = Math.floor((half === 1 ? elapsedMs : elapsedMs - half1Ms) / 1000);
+  if (sec < 0) return undefined;
+  if (minuteInHalf !== undefined && Math.floor(sec / 60) + 1 !== minuteInHalf) return undefined;
+  return sec;
+}

@@ -1,5 +1,6 @@
 import { AppState, Player } from '../../types';
 import { buildPlayerSeason, PlayerSeason } from '../playerSeason';
+import { formatResult, playerEvolution } from '../fitnessTests';
 import {
   getJsPDF,
   drawDocumentHeader,
@@ -148,6 +149,20 @@ function drawSeasonFinalReport(doc: Doc, player: Player, state: AppState, season
       : `Presente em ${s.trainings.present} de ${s.trainings.held} treinos (${s.trainings.rate}%).`
   );
   drawTrainingMonths(doc, w, s);
+
+  // 📏 Testes: the athlete's own evolution only
+  const tests = playerEvolution(player, season || '').filter((e) => e.last !== undefined);
+  if (tests.length > 0) {
+    w.heading('Testes da época');
+    w.list(
+      tests.map(
+        (e) =>
+          `${e.test.name}: ${e.trend !== null ? `${formatResult(e.test, e.first)} -> ` : ''}${formatResult(e.test, e.last)}${
+            e.trend === 'melhor' ? ' (melhorou)' : ''
+          }`
+      )
+    );
+  }
 
   const message = seasonMessageOf(player, season);
   if (message) {

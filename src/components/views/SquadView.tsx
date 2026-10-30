@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { AppState } from '../../types';
 import { TabType } from '../Navbar';
 import { t } from '../../i18n/dict';
@@ -18,6 +18,8 @@ import { SquadListView } from './squad/SquadListView';
 import { SquadGridView } from './squad/SquadGridView';
 import { SquadPlayerFormModal } from './squad/SquadPlayerFormModal';
 import { SquadPlayerDetailModal } from './squad/SquadPlayerDetailModal';
+
+const FitnessTestsSection = lazy(() => import('./squad/FitnessTestsSection'));
 
 interface SquadViewProps {
   state: AppState;
@@ -92,6 +94,13 @@ export const SquadView: React.FC<SquadViewProps> = ({
             squad.setSelectedPlayerId(id);
           }}
         />
+      )}
+
+      {/* 📏 TESTES (SUBMENU) */}
+      {squad.activeSquadTab === 'testes' && (
+        <Suspense fallback={null}>
+          <FitnessTestsSection state={state} onUpdateState={onUpdateState} onShowToast={onShowToast} />
+        </Suspense>
       )}
 
       {/* ANIVERSÁRIOS SECTION (SUBMENU) */}

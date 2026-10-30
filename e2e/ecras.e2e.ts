@@ -1660,3 +1660,82 @@ test('crónica do jogo e cromo do atleta (imagem e PDF de todos)', async ({ page
   expect((await download).suggestedFilename()).toMatch(/^Cromos_Drag.*\.pdf$/);
   await expect(page.getByText(/^\d+ cromos prontos a imprimir 🃏$/)).toBeVisible();
 });
+
+test('vídeo do jogo: link do YouTube, início das partes e cada lance no seu momento', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
+  await page.getByText('Tramagal SU').click();
+  await page.getByRole('button', { name: /Vídeo do jogo/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Vídeo do jogo' });
+  await dialog.getByPlaceholder('https://youtu.be/…').fill('https://vimeo.com/1');
+  await expect(dialog.getByText('Este link não é de um vídeo do YouTube.')).toBeVisible();
+  await dialog.getByPlaceholder('https://youtu.be/…').fill('https://www.youtube.com/watch?v=aB3xQ_9-zZk');
+  await dialog.getByLabel('Início da 1.ª parte no vídeo').fill('2:15');
+  await dialog.getByLabel('Início da 2.ª parte no vídeo').fill('33:40');
+  await dialog.getByRole('button', { name: 'Guardar e ver os lances' }).click();
+  await expect(page.getByText('Vídeo ligado ao jogo ✓')).toBeVisible();
+
+  const list = dialog.getByRole('list', { name: 'Lances do jogo' });
+  // Rui's goal at 12' of the 1st half: 2:15 + 11:00 − 10 s
+  await expect(list).toContainText('Golo · Rui');
+  await expect(list).toContainText('13:05 no vídeo');
+  await dialog.getByRole('button', { name: /^⚽ Golos \d+$/ }).click();
+  await expect(list).not.toContainText('Golo sofrido');
+  await expect(list).not.toContainText('Sai ');
+  await list.getByRole('button', { name: /^Ver 12' Golo · Rui/ }).click();
+  await list.getByRole('button', { name: '+5 s' }).click();
+  await expect(list).toContainText('13:10 no vídeo');
+  await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/video-jogo.png` : undefined });
+  await dialog.getByRole('button', { name: 'Fechar vídeo' }).click();
+
+  // Kept with the game in the cloud
+  await expect(page.getByRole('button', { name: /Vídeo do jogo ✓/ })).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
+        return JSON.stringify(await res.json()).includes('aB3xQ_9-zZk');
+      },
+      { timeout: 30_000, message: 'vídeo guardado no jogo na nuvem' }
+    )
+    .toBe(true);
+});
+
+test('testes: resultados por momento com cronómetro e evolução só na ficha do atleta', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await page.getByRole('button', { name: 'Testes', exact: true }).click();
+  const section = page.getByRole('region', { name: 'Testes' });
+  await section.getByRole('button', { name: /^Setembro/ }).click();
+  await section.getByLabel('Sprint 20 m de Rui Silva').fill('4,1');
+  await section.getByLabel('Sprint 20 m de Rui Silva').press('Enter');
+  await expect(section).toContainText('1 de');
+
+  await section.getByRole('button', { name: /^Janeiro/ }).click();
+  await expect(section.getByLabel('Sprint 20 m de Rui Silva')).toHaveValue('');
+  await expect(section.getByRole('listitem').filter({ hasText: 'Rui Silva' })).toContainText('set 4,10');
+  // Stopwatch: "Partida" at the start, "Chegou" at the line
+  await section.getByRole('button', { name: 'Cronómetro para Rui Silva' }).click();
+  const watch = page.getByRole('dialog', { name: 'Cronómetro do teste' });
+  await watch.getByRole('button', { name: '▶ Partida' }).click();
+  await page.waitForTimeout(300);
+  await watch.getByRole('button', { name: '■ Chegou' }).click();
+  // A tap too quick for a 20 m sprint cannot be saved
+  await expect(watch.getByRole('alert')).toContainText('demasiado curto');
+  await expect(watch.getByRole('button', { name: '✓ Guardar' })).toBeDisabled();
+  await watch.getByRole('button', { name: '↺ Repetir' }).click();
+  await page.waitForTimeout(2300);
+  await watch.getByRole('button', { name: '■ Chegou' }).click();
+  await watch.getByRole('button', { name: '✓ Guardar' }).click();
+  await expect(watch).toBeHidden();
+  await expect(page.getByText(/Sprint 20 m de Rui Silva: 2,\d\d s ✓/)).toBeVisible();
+  await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/testes.png` : undefined });
+
+  // The athlete's own evolution, in the athlete's sheet
+  await page.getByRole('button', { name: 'Plantel', exact: false }).first().click();
+  await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  const own = page.getByRole('region', { name: 'Testes da época' });
+  await expect(own).toContainText(/Sprint 20 m.*4,10 s → 2,\d\d s 🚀/);
+  await expect(own).toContainText('Melhorou em 1 de 1 teste 💪');
+});
