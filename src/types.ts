@@ -937,6 +937,16 @@ export interface CoachCareer {
   /** Credits needed to renew the title (as set by the coach: the rules may change). */
   creditsNeeded?: number;
   courses: CoachCourse[];
+  /** Clubs the coach has been through, with the year or season. */
+  clubs?: CoachClub[];
+}
+
+export interface CoachClub {
+  id: string;
+  club: string;
+  period: string; // "2023/2024", "2019–2021", "2022"
+  category?: string; // "Sub-11"
+  role?: string; // "Treinador principal", "Adjunto"
 }
 
 export interface CoachCourse {
