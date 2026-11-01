@@ -6,6 +6,7 @@ import {
   getJsPDF,
   pdfBrand
 } from './pdfLayout';
+import { drawSignatureBlock } from './pdfSignature';
 import { careerOf, careerStatus, clubDetail, dateLabel, sortClubs, sortCourses } from '../coachCareer';
 
 /** 🎓 A minha carreira → Currículo de treinador: title, continuing education and the teams coached in the app. */
@@ -51,6 +52,7 @@ async function buildCoachCvPDF(state: AppState, today = new Date().toISOString()
     w.heading('Equipas nesta app');
     w.list(teams.map((t) => [t.clubName, t.category, t.season].filter(Boolean).join(' · ')));
   }
+  drawSignatureBlock(doc, state, 'curriculo', w.y);
   addBolaComVisaoPageFooters(doc);
   return doc;
 }

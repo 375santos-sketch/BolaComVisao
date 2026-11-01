@@ -13,6 +13,8 @@ export interface SharedBlock {
   category?: string;
   durationMinutes: number;
   notes?: string;
+  /** 🧒 The exercise explained to the children. */
+  kids?: string;
   image?: string;
 }
 
@@ -62,6 +64,7 @@ export function sharedPlanOf(state: Pick<AppState, 'trainings' | 'exerciseLibrar
       ...(b.category ? { category: b.category } : {}),
       durationMinutes: b.durationMinutes || 0,
       ...(notes ? { notes } : {}),
+      ...(ex?.kidsText?.trim() ? { kids: ex.kidsText.trim() } : {}),
       ...(image ? { image } : {})
     };
   });
@@ -127,6 +130,7 @@ export function planFromRestDocument(doc: { fields?: Record<string, any> } | nul
             category: typeof b?.category === 'string' ? b.category : undefined,
             durationMinutes: Math.max(0, Math.min(240, Number(b?.durationMinutes) || 0)),
             notes: typeof b?.notes === 'string' ? b.notes : undefined,
+            kids: typeof b?.kids === 'string' ? b.kids.slice(0, 600) : undefined,
             image: typeof b?.image === 'string' && IMAGE.test(b.image) ? b.image : undefined
           }))
         }
@@ -170,7 +174,7 @@ export function renderPlanPage(
       const from = minute;
       minute += b.durationMinutes;
       const [label, tagColor] = CATEGORIES[b.category || ''] || ['', '#475569'];
-      return `<div class="b" id="b${i}" data-from="${from}" data-to="${minute}"><div class="h"><span class="m">${b.durationMinutes ? `${from}–${minute}'` : `${i + 1}.`}</span>${label ? `<span class="tag" style="background:${tagColor}">${esc(label)}</span>` : ''}<b>${esc(b.title)}</b></div>${b.image ? `<img src="${b.image}" alt="Desenho: ${esc(b.title)}">` : ''}${b.notes ? `<p>${esc(b.notes)}</p>` : ''}</div>`;
+      return `<div class="b" id="b${i}" data-from="${from}" data-to="${minute}"><div class="h"><span class="m">${b.durationMinutes ? `${from}–${minute}'` : `${i + 1}.`}</span>${label ? `<span class="tag" style="background:${tagColor}">${esc(label)}</span>` : ''}<b>${esc(b.title)}</b></div>${b.image ? `<img src="${b.image}" alt="Desenho: ${esc(b.title)}">` : ''}${b.notes ? `<p>${esc(b.notes)}</p>` : ''}${b.kids ? `<p style="background:#fff7d6;border-radius:8px;padding:8px;font-weight:600;white-space:pre-line">🧒 ${esc(b.kids)}</p>` : ''}</div>`;
     })
     .join('');
   const bar = planned

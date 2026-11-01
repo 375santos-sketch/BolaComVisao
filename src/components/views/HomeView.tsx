@@ -8,7 +8,7 @@ import { TodayFocusCard } from '../dashboard/TodayFocusCard';
 import { Icon, IconName } from '../ui/Icon';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { homeNotices, seasonSummary } from '../../lib/homeSummary';
+import { attendanceReminder, homeNotices, seasonSummary } from '../../lib/homeSummary';
 import { AssistantCard } from '../assistant/AssistantCard';
 import { BirthdayImageModal } from '../birthday/BirthdayImageModal';
 import { BirthdayPerson, getAllBirthdays } from '../../lib/birthdayUtils';
@@ -164,7 +164,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
   unifiedEvents.sort((a, b) => a.rawDate.getTime() - b.rawDate.getTime());
 
   // What needs attention and the season at a glance (details live in Estatísticas).
-  const notices = homeNotices(state, undefined, teamSettings(state).yellowsForBan);
+  const reminder = attendanceReminder(state.trainings, teamSettings(state));
+  // The attendance reminder comes on top of the usual notices (never pushing one of them out)
+  const notices = [
+    ...(reminder ? [reminder] : []),
+    ...homeNotices(state, undefined, teamSettings(state).yellowsForBan)
+  ];
   const summary = seasonSummary(state);
   const nextDays = unifiedEvents.filter((e) => e.daysUntil <= 7);
 

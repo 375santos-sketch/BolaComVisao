@@ -19,6 +19,8 @@ interface MoreDrawerProps {
   onOpenInviteStaff?: () => void;
   onOpenSeasons?: () => void;
   onOpenCareer?: () => void;
+  onOpenSignature?: () => void;
+  onOpenTour?: () => void;
   pendingUsersCount?: number;
   onLogout?: () => void;
 }
@@ -35,6 +37,8 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onOpenInviteStaff,
   onOpenSeasons,
   onOpenCareer,
+  onOpenSignature,
+  onOpenTour,
   pendingUsersCount = 0,
   onLogout
 }) => {
@@ -126,6 +130,26 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
                 detail: careerWarnings[0] || (career.title ? `${career.title}` : 'Título de treinador e formações'),
                 badge: careerWarnings.length ? 'Atenção' : undefined,
                 run: onOpenCareer
+              }
+            ]
+          : []),
+        ...(onOpenSignature
+          ? [
+              {
+                icon: 'clipboard' as IconName,
+                title: 'Assinatura',
+                detail: 'A tua assinatura nos PDFs',
+                run: onOpenSignature
+              }
+            ]
+          : []),
+        ...(onOpenTour
+          ? [
+              {
+                icon: 'zap' as IconName,
+                title: 'Visita guiada',
+                detail: 'Onde está cada coisa, em 1 minuto',
+                run: onOpenTour
               }
             ]
           : []),

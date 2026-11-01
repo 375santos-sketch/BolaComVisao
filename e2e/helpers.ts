@@ -9,6 +9,14 @@ export function watchPageErrors(page: Page): string[] {
 }
 
 export async function login(page: Page, email: string) {
+  // The guided tour of the first visit is tested on its own
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('bcv_tour_done_v1', '1');
+    } catch {
+      // about:blank has no storage
+    }
+  });
   await page.goto('/');
   await page.getByPlaceholder('ex: treinador ou treinador@email.com').fill(email);
   await page.locator('input[type=password]').first().fill(PASSWORD);
