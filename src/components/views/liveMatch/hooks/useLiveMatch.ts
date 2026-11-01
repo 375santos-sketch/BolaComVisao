@@ -679,6 +679,24 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     return true;
   };
 
+  /** ⏸️ Pausa / ▶️ Retomar: stops the clock during a half (injury, ball lost, rain…) and starts it again. */
+  const handleTogglePause = () => {
+    if (!match) return;
+    const phase = getMatchPhase(match);
+    if (phase !== 'parte1' && phase !== 'parte2') return;
+    const running = Boolean(match.timer?.isRunning);
+    const timer = running
+      ? {
+          ...(match.timer || { elapsedMs: 0 }),
+          isRunning: false,
+          elapsedMs: getMatchElapsedMs(match),
+          lastStartTs: null
+        }
+      : { ...(match.timer || { elapsedMs: 0 }), isRunning: true, lastStartTs: getNowTimestamp() };
+    updateMatchInState({ ...match, timer });
+    if (onShowToast) onShowToast(running ? '⏸️ Jogo em pausa: o tempo parou.' : '▶️ Jogo retomado.');
+  };
+
   const matchPhase = getMatchPhase(match);
   const playersOnPitch = match ? getCurrentPlayersOnPitch(match) : [];
   const playersAtEndOfFirstHalf = match ? getPlayersAtEndOfFirstHalf(match) : [];
@@ -697,6 +715,7 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
     handleStartFirstHalf,
     handleGoToHalftime,
     handleStartSecondHalf,
+    handleTogglePause,
     handleUpdateLineup,
     handleUpdateSecondHalfLineup,
 
