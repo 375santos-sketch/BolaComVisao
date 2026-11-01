@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cleanIdeaRequest, exerciseIdeaPrompt } from '../lib/exerciseIdea';
 import { breakRule, heatMessage, withWaterBreaks } from '../lib/waterBreaks';
-import { careerOf, careerStatus, monthsUntil, withCareer } from '../lib/coachCareer';
+import { careerOf, careerStatus, clubDetail, monthsUntil, sortClubs, withCareer } from '../lib/coachCareer';
 import { AppState, SessionBlock } from '../types';
 
 describe('exercício a partir de um objetivo', () => {
@@ -108,5 +108,19 @@ describe('a minha carreira', () => {
       'O título de treinador caducou: trate da renovação.'
     ]);
     expect(careerStatus({ ...career, validUntil: '2029-01-01' }, '2026-10-30').warnings).toEqual([]);
+  });
+});
+
+describe('clubes por onde passei', () => {
+  it('lists the most recent first, by the last year of the period', () => {
+    const clubs = [
+      { id: 'a', club: 'CD Falcões', period: '2019–2021', role: 'Adjunto' },
+      { id: 'b', club: 'GD Ribeira', period: '2023/2024', category: 'Sub-11', role: 'Treinador principal' },
+      { id: 'c', club: 'UD Serra', period: '2022' }
+    ];
+    expect(sortClubs(clubs).map((c) => c.club)).toEqual(['GD Ribeira', 'UD Serra', 'CD Falcões']);
+    expect(clubDetail(clubs[1])).toBe('Sub-11 · Treinador principal');
+    expect(clubDetail(clubs[2])).toBe('');
+    expect(sortClubs(undefined)).toEqual([]);
   });
 });

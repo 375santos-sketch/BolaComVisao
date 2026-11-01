@@ -7,7 +7,7 @@ import {
   pdfBrand
 } from './pdfLayout';
 import { drawSignatureBlock } from './pdfSignature';
-import { careerOf, careerStatus, dateLabel, sortCourses } from '../coachCareer';
+import { careerOf, careerStatus, clubDetail, dateLabel, sortClubs, sortCourses } from '../coachCareer';
 
 /** 🎓 A minha carreira → Currículo de treinador: title, continuing education and the teams coached in the app. */
 async function buildCoachCvPDF(state: AppState, today = new Date().toISOString().slice(0, 10)) {
@@ -26,6 +26,12 @@ async function buildCoachCvPDF(state: AppState, today = new Date().toISOString()
     career.validUntil ? `Válido até ${dateLabel(career.validUntil)}${status.expired ? ' (caducado)' : ''}` : ''
   ]);
 
+  const clubs = sortClubs(career.clubs);
+  if (clubs.length) {
+    w.heading('Clubes por onde passou');
+    w.list(clubs.map((c) => `${c.period} · ${c.club}${clubDetail(c) ? ` · ${clubDetail(c)}` : ''}`));
+  }
+
   const courses = sortCourses(career.courses);
   w.heading(
     `Formação contínua · ${status.credits} ${status.credits === 1 ? 'crédito' : 'créditos'}${
@@ -43,7 +49,7 @@ async function buildCoachCvPDF(state: AppState, today = new Date().toISOString()
 
   const teams = (state.teams || []).filter(Boolean);
   if (teams.length) {
-    w.heading('Equipas');
+    w.heading('Equipas nesta app');
     w.list(teams.map((t) => [t.clubName, t.category, t.season].filter(Boolean).join(' · ')));
   }
   drawSignatureBlock(doc, state, 'curriculo', w.y);

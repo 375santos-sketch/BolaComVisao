@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { AppState, CoachCareer, CoachCourse } from '../types';
-import { careerOf, careerStatus, dateLabel, sortCourses, withCareer } from '../lib/coachCareer';
+import { AppState, CoachCareer, CoachClub, CoachCourse } from '../types';
+import { careerOf, careerStatus, clubDetail, dateLabel, sortClubs, sortCourses, withCareer } from '../lib/coachCareer';
 import { uid } from '../lib/utils';
 
 interface CoachCareerModalProps {
@@ -12,6 +12,117 @@ interface CoachCareerModalProps {
 
 const today = () => new Date().toISOString().slice(0, 10);
 const blankCourse = (): CoachCourse => ({ id: uid(), name: '', date: today(), credits: 1 });
+const blankClub = (): CoachClub => ({ id: uid(), club: '', period: String(new Date().getFullYear()) });
+
+/** 🏟️ Clubes por onde passei: club, year or season, age group and role. */
+const ClubsSection: React.FC<{ career: CoachCareer; onSave: (career: CoachCareer) => void }> = ({ career, onSave }) => {
+  const [club, setClub] = useState<CoachClub | null>(null);
+  const clubs = career.clubs || [];
+  const exists = club ? clubs.some((c) => c.id === club.id) : false;
+  const saveClub = () => {
+    if (!club || !club.club.trim() || !club.period.trim()) return;
+    const clean: CoachClub = {
+      id: club.id,
+      club: club.club.trim(),
+      period: club.period.trim(),
+      ...(club.category?.trim() ? { category: club.category.trim() } : {}),
+      ...(club.role?.trim() ? { role: club.role.trim() } : {})
+    };
+    onSave({ ...career, clubs: exists ? clubs.map((c) => (c.id === clean.id ? clean : c)) : [...clubs, clean] });
+    setClub(null);
+  };
+  return (
+    <section aria-label="Clubes por onde passei" className="space-y-2">
+      <div className="text-[11px] font-bold text-slate-400">CLUBES POR ONDE PASSEI</div>
+      {clubs.length > 0 && (
+        <ul aria-label="Clubes" className="divide-y divide-slate-800">
+          {sortClubs(clubs).map((c) => (
+            <li key={c.id}>
+              <button
+                type="button"
+                onClick={() => setClub(c)}
+                className="flex w-full items-center gap-2 py-2 text-left"
+              >
+                <span className="min-w-0 flex-1">
+                  <b className="block truncate text-sm text-white">{c.club}</b>
+                  {clubDetail(c) && <span className="text-[11px] text-slate-400">{clubDetail(c)}</span>}
+                </span>
+                <span className="shrink-0 text-sm font-bold text-cyan-300 font-['Chakra_Petch']">{c.period}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {club ? (
+        <div className="ui-inset space-y-2 p-3">
+          <input
+            className="ui-input w-full text-sm"
+            aria-label="Clube"
+            placeholder="Ex: GD Os Dragões"
+            value={club.club}
+            onChange={(e) => setClub({ ...club, club: e.target.value })}
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              className="ui-input text-sm"
+              aria-label="Ano ou época"
+              placeholder="Ex: 2023/2024"
+              value={club.period}
+              onChange={(e) => setClub({ ...club, period: e.target.value })}
+            />
+            <input
+              className="ui-input text-sm"
+              aria-label="Escalão"
+              placeholder="Escalão (ex: Sub-11)"
+              value={club.category || ''}
+              onChange={(e) => setClub({ ...club, category: e.target.value })}
+            />
+          </div>
+          <input
+            className="ui-input w-full text-sm"
+            aria-label="Função"
+            placeholder="Função (ex: Treinador principal, Adjunto)"
+            value={club.role || ''}
+            onChange={(e) => setClub({ ...club, role: e.target.value })}
+          />
+          <div className="flex gap-2">
+            {exists && (
+              <button
+                type="button"
+                onClick={() => {
+                  onSave({ ...career, clubs: clubs.filter((c) => c.id !== club.id) });
+                  setClub(null);
+                }}
+                className="ui-btn ui-btn-soft-danger px-3 py-2 text-xs"
+              >
+                Apagar
+              </button>
+            )}
+            <button type="button" onClick={() => setClub(null)} className="ui-btn ui-btn-secondary flex-1 py-2 text-xs">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={!club.club.trim() || !club.period.trim()}
+              onClick={saveClub}
+              className="ui-btn ui-btn-primary flex-1 py-2 text-xs"
+            >
+              Guardar clube
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setClub(blankClub())}
+          className="ui-btn ui-btn-secondary w-full py-2 text-xs"
+        >
+          ＋ Clube
+        </button>
+      )}
+    </section>
+  );
+};
 
 /** Mais → 🎓 A minha carreira: the coach's title, its expiry and the courses for its renewal. */
 const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateState, onShowToast, onClose }) => {
@@ -102,6 +213,8 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
             </p>
           )}
         </section>
+
+        <ClubsSection career={career} onSave={save} />
 
         <section aria-label="Formação contínua" className="space-y-2">
           <div className="flex items-end justify-between gap-2">

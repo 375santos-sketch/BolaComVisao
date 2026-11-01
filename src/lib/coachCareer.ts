@@ -1,4 +1,4 @@
-import { AppState, CoachCareer, CoachCourse } from '../types';
+import { AppState, CoachCareer, CoachClub, CoachCourse } from '../types';
 
 /**
  * 🎓 A minha carreira: the coach's title (and when it expires) and the continuing-education courses that count for its
@@ -59,3 +59,12 @@ export const sortCourses = (courses: CoachCourse[]) =>
   [...(courses || [])].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
 export const dateLabel = (iso?: string) => (iso ? iso.slice(0, 10).split('-').reverse().join('/') : '');
+
+/** Most recent first: by the last year written in the period ("2019–2021" → 2021). */
+export const sortClubs = (clubs?: CoachClub[]) => {
+  const lastYear = (c: CoachClub) => Math.max(0, ...(c.period.match(/\d{4}/g) || []).map(Number));
+  return [...(clubs || [])].sort((a, b) => lastYear(b) - lastYear(a) || a.club.localeCompare(b.club));
+};
+
+/** "Sub-11 · Treinador principal" */
+export const clubDetail = (c: CoachClub) => [c.category, c.role].filter(Boolean).join(' · ');
