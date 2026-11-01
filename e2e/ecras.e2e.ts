@@ -1184,6 +1184,17 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await page.locator('select').first().selectOption('p5'); // 2 - Martim Costa
   await page.getByRole('button', { name: 'Confirmar Cartão' }).click();
 
+  // ⏸️ The game stops (injury): the clock stops too, and carries on from the same second
+  const clock = page.locator('span.tracking-wider').first();
+  await page.getByRole('button', { name: '⏸️ Pausa' }).click();
+  await expect(page.getByText('Jogo em pausa: o tempo está parado.', { exact: false })).toBeVisible();
+  const stopped = await clock.textContent();
+  await advance('03:00');
+  await expect(clock).toHaveText(stopped!);
+  await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/pausa.png` : undefined });
+  await page.getByRole('button', { name: '▶️ Retomar o jogo' }).click();
+  await expect(page.getByRole('button', { name: '⏸️ Pausa' })).toBeVisible();
+
   // 26': goal conceded, then half time after 25 minutes.
   await advance('10:00');
   await page.getByRole('button', { name: /GOLO SOFRIDO/i }).click();
