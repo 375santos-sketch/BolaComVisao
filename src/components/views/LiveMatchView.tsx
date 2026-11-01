@@ -149,7 +149,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     setShowCaptainModal,
     setShowFinishModal,
     setIsFinishing,
-    playersOnPitch
+    playersOnPitch,
+    handleTogglePause
   } = useLiveMatch({ state, onUpdateState, onShowToast });
 
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
@@ -401,7 +402,10 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         </div>
 
         {/* Relógio do Jogo (MatchClock visível nos 3 modos) */}
-        <MatchClock match={match} />
+        <MatchClock
+          match={match}
+          onTogglePause={matchPhase === 'parte1' || matchPhase === 'parte2' ? handleTogglePause : undefined}
+        />
 
         {/* Minutos de jogo por atleta e alertas de tempo de jogo */}
         <LivePlayingTimePanel match={match} roster={state.roster || []} category={state.category} />
