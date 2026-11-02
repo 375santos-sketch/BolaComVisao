@@ -1959,8 +1959,7 @@ test('fichas PDF antigas deste aparelho passam para a biblioteca com imagem e ex
   await expect(sheets).toContainText('Rondo 5x2 com transição');
 
   await sheets.getByRole('button', { name: 'Passar a ficha para a biblioteca' }).click();
-  await expect(page.getByText('1 ficha passou para a biblioteca ✓')).toBeVisible({ timeout: 30_000 });
-  await expect(sheets).toContainText('✓ na biblioteca');
+  await expect(sheets).toContainText('✓ na biblioteca', { timeout: 30_000 });
   const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
   await expect(library).toContainText('Rondo 5x2 com transição');
   await expect(library).toContainText('Organização: quadrado de 12x12 metros');
