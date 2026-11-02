@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocumentItem, formatFileSize } from '../../../lib/pdfLibraryDB';
 
-// Configure PDF.js worker
+import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { ensureMapUpsert } from '../../../lib/pdfjs';
+
+// PDF.js worker served by the app itself (works without the internet)
 if (typeof window !== 'undefined') {
-  try {
-    // Set worker source to CDN matching pdfjs-dist or unpkg
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/pdf.worker.min.mjs`;
-  } catch (err) {
-    console.warn('PDF Worker initialization note:', err);
-  }
+  ensureMapUpsert();
+  pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 }
 
 interface PDFViewerModalProps {
@@ -69,9 +68,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
       try {
         const data = base64ToUint8Array(docItem.fileData);
         const loadingTask = pdfjsLib.getDocument({
-          data,
-          cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/cmaps/',
-          cMapPacked: true
+          data
         });
 
         const pdf = await loadingTask.promise;

@@ -59,6 +59,8 @@ export interface StoredRecord {
   time?: string;
   location?: string;
   convocados?: number;
+  /** Whether the record has a picture (exercises). */
+  hasImage?: boolean;
 }
 
 /** Club records in the emulator (read with admin access). */
@@ -79,7 +81,8 @@ export async function cloudRecords(workspace = 'clubA'): Promise<Map<string, Sto
         date: d.fields.data?.mapValue?.fields?.date?.stringValue,
         time: d.fields.data?.mapValue?.fields?.time?.stringValue,
         location: d.fields.data?.mapValue?.fields?.location?.stringValue,
-        convocados: d.fields.data?.mapValue?.fields?.convocados?.arrayValue?.values?.length ?? 0
+        convocados: d.fields.data?.mapValue?.fields?.convocados?.arrayValue?.values?.length ?? 0,
+        hasImage: /^data:image\//.test(d.fields.data?.mapValue?.fields?.image?.stringValue || '')
       }
     ])
   );
