@@ -333,6 +333,8 @@ export interface Exercise {
   image?: string;
   /** 🧒 The exercise explained to the children in 3 short sentences (to read out). */
   kidsText?: string;
+  /** 📄 The old PDF sheet (kept only on the device it was imported on) this exercise was made from. */
+  fromPdfId?: string;
   /** How many cones, bibs, balls… it needs ("Levar para o treino" adds up a training's exercises). */
   material?: ExerciseMaterial;
 }

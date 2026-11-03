@@ -1,4 +1,5 @@
 import { deflateSync } from 'node:zlib';
+import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { COACH_A, COACH_B, FIRESTORE, owner, PASSWORD } from './seed';
 import { buildICS, feedFromRestDocument } from '../src/lib/calendarFeed';
@@ -1921,4 +1922,66 @@ test('explicar às crianças, assinatura nos PDFs e visita guiada', async ({ pag
   await expect(tour).toContainText('Mais');
   await tour.getByRole('button', { name: 'Começar ✓' }).click();
   await expect(tour).toBeHidden();
+});
+
+test('fichas PDF antigas deste aparelho passam para a biblioteca com imagem e explicação', async ({ page }) => {
+  await signedIn(page);
+  // An old sheet of the Biblioteca de PDFs, kept only in this browser (IndexedDB)
+  const fileData = `data:application/pdf;base64,${readFileSync('e2e/fixtures/ficha.pdf').toString('base64')}`;
+  await page.evaluate(
+    (data) =>
+      new Promise<void>((resolve, reject) => {
+        const req = indexedDB.open('BolaComVisao_PDFLibrary_DB', 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('pdf_documents', { keyPath: 'id' });
+        req.onerror = () => reject(req.error);
+        req.onsuccess = () => {
+          const tx = req.result.transaction('pdf_documents', 'readwrite');
+          tx.objectStore('pdf_documents').put({
+            id: 'ficha-antiga-1',
+            title: 'Rondo 5x2 com transição',
+            category: 'tecnica',
+            tags: [],
+            fileName: 'rondo.pdf',
+            fileSize: 4939,
+            uploadedAt: '2026-10-01T10:00:00.000Z',
+            fileData: data
+          });
+          tx.oncomplete = () => resolve();
+        };
+      }),
+    fileData
+  );
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  const sheets = page.getByRole('region', { name: 'Fichas PDF' });
+  await expect(sheets).toContainText('1 guardada neste aparelho');
+  await expect(sheets).toContainText('Rondo 5x2 com transição');
+
+  await sheets.getByRole('button', { name: 'Passar a ficha para a biblioteca' }).click();
+  await expect(sheets).toContainText('✓ na biblioteca', { timeout: 30_000 });
+  const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
+  await expect(library).toContainText('Rondo 5x2 com transição');
+  await expect(library).toContainText('Organização: quadrado de 12x12 metros');
+  await library
+    .getByRole('listitem')
+    .filter({ hasText: 'Rondo 5x2 com transição' })
+    .getByRole('button', { name: 'Editar' })
+    .click();
+  const form = page.getByRole('region', { name: 'Editar exercício' });
+  await expect(form.getByLabel('Descrição / regras (opcional)')).toHaveValue(/Pontos-chave: apoio rápido/);
+  await expect(form.getByRole('img', { name: /Desenho/ })).toBeVisible();
+  await expect
+    .poll(
+      async () =>
+        [...(await cloudRecords()).values()].some(
+          (r) => r.kind === 'exercise' && r.name === 'Rondo 5x2 com transição' && r.hasImage
+        ),
+      { timeout: 30_000, message: 'ficha na nuvem com imagem' }
+    )
+    .toBe(true);
+
+  // The original PDF still opens on this device
+  await sheets.getByRole('button', { name: 'Ver Rondo 5x2 com transição' }).click();
+  await expect(page.locator('canvas').first()).toBeVisible({ timeout: 20_000 });
 });

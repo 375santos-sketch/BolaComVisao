@@ -10,6 +10,7 @@ import { TrainingFormData, TrainingsTab } from './trainings/types';
 import { useTrainings } from './trainings/hooks/useTrainings';
 import { useTrainingFilters } from './trainings/hooks/useTrainingFilters';
 import { TrainingHeader } from './trainings/TrainingHeader';
+import { PdfSheetsSection } from './trainings/PdfSheetsSection';
 import { ExerciseLibrary } from './trainings/ExerciseLibrary';
 import { TrainingList } from './trainings/TrainingList';
 import { TrainingAttendance } from './trainings/TrainingAttendance';
@@ -311,13 +312,20 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
       />
 
       {activeTab === 'library' ? (
-        <ExerciseLibrary
-          exercises={state.exerciseLibrary || []}
-          trainings={state.trainings || []}
-          onSave={(exerciseLibrary) => onUpdateState({ exerciseLibrary })}
-          ageGroup={state.category}
-          onShowToast={onShowToast}
-        />
+        <>
+          <PdfSheetsSection
+            exercises={state.exerciseLibrary || []}
+            onSave={(exerciseLibrary) => onUpdateState({ exerciseLibrary })}
+            onShowToast={onShowToast}
+          />
+          <ExerciseLibrary
+            exercises={state.exerciseLibrary || []}
+            trainings={state.trainings || []}
+            onSave={(exerciseLibrary) => onUpdateState({ exerciseLibrary })}
+            ageGroup={state.category}
+            onShowToast={onShowToast}
+          />
+        </>
       ) : activeTab === 'stats' ? (
         <TrainingAttendance
           state={state}

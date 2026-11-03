@@ -61,3 +61,22 @@ export function formatFileSize(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
+
+/** Every PDF sheet kept in this device's browser, newest first (empty when there are none or the browser blocks it). */
+export async function getAllPDFDocuments(): Promise<PDFDocumentItem[]> {
+  try {
+    const db = await openPDFDB();
+    return await new Promise((resolve) => {
+      const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).getAll();
+      req.onsuccess = () =>
+        resolve(
+          ((req.result || []) as PDFDocumentItem[]).sort((a, b) =>
+            (b.uploadedAt || '').localeCompare(a.uploadedAt || '')
+          )
+        );
+      req.onerror = () => resolve([]);
+    });
+  } catch {
+    return [];
+  }
+}
