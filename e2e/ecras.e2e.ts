@@ -1885,11 +1885,21 @@ test('exercício sem explicação para as crianças, assinatura nos PDFs e visit
   await openMore(page, /Assinatura/);
   const sign = page.getByRole('dialog', { name: 'Assinatura' });
   const board = sign.getByLabel('Quadro para assinar');
+  // The window slides in: wait until the board stops moving before measuring it, or the stroke misses it
+  await board.hover({ position: { x: 20, y: 40 } });
   const box = (await board.boundingBox())!;
   await page.mouse.move(box.x + 20, box.y + box.height / 2);
   await page.mouse.down();
   for (let i = 1; i <= 10; i++) await page.mouse.move(box.x + 20 + i * 25, box.y + box.height / 2 + (i % 2 ? -20 : 20));
   await page.mouse.up();
+  // Something was drawn on the board (dark pixels on the white)
+  expect(
+    await board.evaluate((c: HTMLCanvasElement) => {
+      const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+      for (let i = 3; i < d.length; i += 4) if (d[i] > 0) return true;
+      return false;
+    })
+  ).toBe(true);
   await sign.getByRole('button', { name: '✓ Guardar' }).click();
   await expect(page.getByText('Assinatura guardada ✓')).toBeVisible();
   await openMore(page, /Assinatura/);
