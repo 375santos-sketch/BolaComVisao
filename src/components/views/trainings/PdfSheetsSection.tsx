@@ -1,7 +1,9 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Exercise } from '../../../types';
 import { PDFDocumentItem, formatFileSize, getAllPDFDocuments } from '../../../lib/pdfLibraryDB';
-import { fileToDataUrl, readPdfSheet, sheetExercise } from '../../../lib/pdfSheet';
+import { fileToDataUrl, pageExercises, pdfPageImages, replaceSheetExercises, sheetDone } from '../../../lib/pdfSheet';
+import { readPrintData } from '../../../lib/readPrint';
+import { cropImageSource } from '../../../lib/imageCompress';
 import { dateLabel } from '../../../lib/coachCareer';
 
 const PDFViewerModal = lazy(() => import('./PDFViewerModal').then((m) => ({ default: m.PDFViewerModal })));
@@ -14,7 +16,8 @@ interface PdfSheetsSectionProps {
 
 /**
  * Treinos → Biblioteca → 📄 Fichas PDF: the sheets of the old Biblioteca de PDFs that are still in this device, to see
- * them and pass them to the library (picture + explanation, in the cloud), and new PDF sheets imported straight in.
+ * them and pass them to the library (each exercise of each page with only its drawing and its explanation, in the
+ * cloud), and new PDF sheets imported straight in.
  */
 export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, onSave, onShowToast }) => {
   const [docs, setDocs] = useState<PDFDocumentItem[] | null>(null);
@@ -29,29 +32,46 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
     };
   }, []);
 
-  const passed = new Set(exercises.map((e) => e.fromPdfId).filter(Boolean));
-  const pending = (docs || []).filter((d) => !passed.has(d.id) && d.fileData);
+  const done = (id: string) => sheetDone(exercises, id);
+  const pending = (docs || []).filter((d) => !done(d.id) && d.fileData);
+  const countOf = (id: string) => exercises.filter((e) => e.fromPdfId === id).length;
 
-  /** Reads the sheets one by one and saves them all at the end (the library list stays as it was until then). */
+  /**
+   * Reads the sheets page by page: the AI finds each exercise, its drawing is cut from the page and it goes to the
+   * library with its explanation. What a sheet had given before (whole pages) is replaced. Saved once at the end.
+   */
   const pass = async (list: PDFDocumentItem[], link = true) => {
-    const made: Exercise[] = [];
+    let library = exercises;
+    let added = 0;
     let failed = 0;
+    let error = '';
     for (const [i, doc] of list.entries()) {
-      setBusy(list.length > 1 ? `A passar ${i + 1} de ${list.length}…` : doc.id);
+      const sheet = list.length > 1 ? `Ficha ${i + 1} de ${list.length}: ` : '';
       try {
-        const ex = sheetExercise(doc, await readPdfSheet(doc.fileData || ''));
-        if (!link) delete ex.fromPdfId;
-        made.push(ex);
-      } catch {
+        setBusy(`${sheet}a abrir o PDF…`);
+        const pages = await pdfPageImages(doc.fileData || '');
+        const made: Exercise[] = [];
+        for (const [p, image] of pages.entries()) {
+          setBusy(`${sheet}a ler a página ${p + 1} de ${pages.length}…`);
+          const answer = await readPrintData(image, 'exercicios');
+          made.push(
+            ...(await pageExercises(answer, p + 1, link ? doc.id : undefined, (box) => cropImageSource(image, box)))
+          );
+        }
+        if (!made.length) throw new Error('Não encontrei exercícios nesta ficha.');
+        library = replaceSheetExercises(library, link ? doc.id : undefined, made);
+        added += made.length;
+      } catch (err) {
         failed++;
+        error = (err as Error).message || 'Não foi possível ler a ficha PDF.';
       }
     }
     setBusy(null);
-    if (made.length) onSave([...exercises, ...made]);
+    if (added) onSave(library);
     onShowToast(
-      made.length
-        ? `${made.length === 1 ? '1 ficha passou' : `${made.length} fichas passaram`} para a biblioteca ✓${failed ? ` (${failed} não deu para ler)` : ''}`
-        : 'Não foi possível ler a ficha PDF.'
+      added
+        ? `${added} ${added === 1 ? 'exercício passou' : 'exercícios passaram'} para a biblioteca ✓${failed ? ` (${failed} ${failed === 1 ? 'ficha não deu' : 'fichas não deram'} para ler)` : ''}`
+        : error || 'Não foi possível ler a ficha PDF.'
     );
   };
 
@@ -113,8 +133,8 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
       ) : (
         <>
           <p className="text-xs text-slate-400">
-            Estas fichas estão só neste aparelho. Passe-as para a biblioteca: ficam com a imagem e a explicação, em
-            todos os aparelhos e nos planos de treino.
+            Estas fichas estão só neste aparelho. Ao passá-las para a biblioteca, a app separa cada exercício: fica só o
+            desenho dele e a explicação, em todos os aparelhos e nos planos de treino.
           </p>
           {pending.length > 0 && (
             <button
@@ -123,9 +143,7 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
               onClick={() => pass(pending)}
               className="ui-btn ui-btn-primary w-full py-2.5 text-xs"
             >
-              {busy && !docs.some((d) => d.id === busy)
-                ? busy
-                : `⬇️ Passar ${pending.length === 1 ? 'a ficha' : `as ${pending.length} fichas`} para a biblioteca`}
+              ⬇️ Passar {pending.length === 1 ? 'a ficha' : `as ${pending.length} fichas`} para a biblioteca
             </button>
           )}
           <ul aria-label="Fichas guardadas neste aparelho" className="divide-y divide-slate-800">
@@ -151,8 +169,10 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
                 >
                   👁️ Ver
                 </button>
-                {passed.has(d.id) ? (
-                  <span className="shrink-0 text-[11px] font-semibold text-emerald-300">✓ na biblioteca</span>
+                {done(d.id) ? (
+                  <span className="shrink-0 text-[11px] font-semibold text-emerald-300">
+                    ✓ {countOf(d.id)} {countOf(d.id) === 1 ? 'exercício' : 'exercícios'}
+                  </span>
                 ) : (
                   <button
                     type="button"
@@ -161,7 +181,7 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
                     aria-label={`Passar ${d.title || d.fileName} para a biblioteca`}
                     className="ui-btn ui-btn-primary shrink-0 px-2.5 py-1.5 text-[11px]"
                   >
-                    {busy === d.id ? 'A ler…' : '➕ Biblioteca'}
+                    ➕ Biblioteca
                   </button>
                 )}
               </li>
@@ -171,7 +191,11 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
       )}
 
       <div className="flex gap-2">{importButton}</div>
-      {busy && !docs?.length && <p className="text-xs text-slate-400">A ler o PDF…</p>}
+      {busy && (
+        <p role="status" className="text-xs font-semibold text-cyan-300">
+          ⏳ {busy}
+        </p>
+      )}
 
       {viewing && (
         <Suspense fallback={null}>

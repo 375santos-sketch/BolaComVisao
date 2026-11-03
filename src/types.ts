@@ -335,6 +335,8 @@ export interface Exercise {
   kidsText?: string;
   /** 📄 The old PDF sheet (kept only on the device it was imported on) this exercise was made from. */
   fromPdfId?: string;
+  /** The page of that sheet where the exercise is (set when the sheet was split into its exercises). */
+  fromPdfPage?: number;
   /** How many cones, bibs, balls… it needs ("Levar para o treino" adds up a training's exercises). */
   material?: ExerciseMaterial;
 }

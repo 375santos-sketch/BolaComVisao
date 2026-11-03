@@ -4,7 +4,14 @@ import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
 import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
-import { cleanPrintExercise, EXERCISE_PROMPT, EXERCISE_SCHEMA } from './src/lib/printExercise';
+import {
+  cleanPrintExercise,
+  cleanPrintExercises,
+  EXERCISE_PROMPT,
+  EXERCISE_SCHEMA,
+  EXERCISES_PROMPT,
+  EXERCISES_SCHEMA
+} from './src/lib/printExercise';
 import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
 import { ChronicleAudience, chroniclePrompt, cleanChronicle } from './src/lib/matchChronicle';
 import { cleanIdeaRequest, exerciseIdeaPrompt } from './src/lib/exerciseIdea';
@@ -264,17 +271,33 @@ async function startServer() {
           .json({ success: false, error: 'A leitura de prints não está disponível (falta a chave do Gemini).' });
       }
       const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(req.body?.image || ''));
-      // "calendario": the games of a calendar (Agenda); "exercicio": an exercise for the library; otherwise the
-      // results of a round (Classificação)
+      // "calendario": the games of a calendar (Agenda); "exercicio": an exercise for the library; "exercicios":
+      // every exercise of a page of a PDF sheet; otherwise the results of a round (Classificação)
       const mode = req.body?.mode;
-      const prompt = mode === 'calendario' ? FIXTURE_PROMPT : mode === 'exercicio' ? EXERCISE_PROMPT : PRINT_PROMPT;
-      const schema = mode === 'calendario' ? FIXTURE_SCHEMA : mode === 'exercicio' ? EXERCISE_SCHEMA : PRINT_SCHEMA;
+      const prompt =
+        mode === 'calendario'
+          ? FIXTURE_PROMPT
+          : mode === 'exercicio'
+            ? EXERCISE_PROMPT
+            : mode === 'exercicios'
+              ? EXERCISES_PROMPT
+              : PRINT_PROMPT;
+      const schema =
+        mode === 'calendario'
+          ? FIXTURE_SCHEMA
+          : mode === 'exercicio'
+            ? EXERCISE_SCHEMA
+            : mode === 'exercicios'
+              ? EXERCISES_SCHEMA
+              : PRINT_SCHEMA;
       const clean = (text: string | undefined) =>
         mode === 'calendario'
           ? cleanPrintFixtures(parseModelJson(text))
           : mode === 'exercicio'
             ? cleanPrintExercise(parseModelJson(text))
-            : cleanPrintGames(parseModelJson(text));
+            : mode === 'exercicios'
+              ? cleanPrintExercises(parseModelJson(text))
+              : cleanPrintGames(parseModelJson(text));
       if (!match) return res.status(400).json({ success: false, error: 'Imagem inválida.' });
 
       const { GoogleGenAI } = await import('@google/genai');

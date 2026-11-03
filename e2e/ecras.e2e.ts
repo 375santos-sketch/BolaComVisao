@@ -1924,8 +1924,42 @@ test('explicar às crianças, assinatura nos PDFs e visita guiada', async ({ pag
   await expect(tour).toBeHidden();
 });
 
-test('fichas PDF antigas deste aparelho passam para a biblioteca com imagem e explicação', async ({ page }) => {
+test('fichas PDF antigas: cada exercício passa para a biblioteca só com o seu desenho e a explicação', async ({
+  page
+}) => {
   await signedIn(page);
+  // The AI reads the page: two exercises, each with the box of its own drawing
+  const modes: string[] = [];
+  await page.route('**/api/ler-jornada', async (route) => {
+    const body = route.request().postDataJSON() as { mode: string; image: string };
+    modes.push(body.mode);
+    expect(body.image).toMatch(/^data:image\/jpeg;base64,/);
+    await route.fulfill({
+      json: {
+        success: true,
+        games: {
+          exercises: [
+            {
+              name: 'Rondo 5x2',
+              category: 'tecnica',
+              durationMinutes: 12,
+              objective: 'Circulação de bola sob pressão',
+              description: 'Quadrado de 12x12 metros. Dois toques; ao recuperar, os defesas saem a conduzir.',
+              material: { cones: 4, bolas: 2, coletes: 2 },
+              drawing: { x: 0.07, y: 0.084, w: 0.381, h: 0.202 }
+            },
+            {
+              name: 'Finalização 2x1',
+              category: 'jogo',
+              objective: 'Finalizar em superioridade',
+              description: 'Ataque à baliza em superioridade numérica. Remate em 6 segundos.',
+              drawing: { x: 0.07, y: 0.37, w: 0.381, h: 0.202 }
+            }
+          ]
+        }
+      }
+    });
+  });
   // An old sheet of the Biblioteca de PDFs, kept only in this browser (IndexedDB)
   const fileData = `data:application/pdf;base64,${readFileSync('e2e/fixtures/ficha.pdf').toString('base64')}`;
   await page.evaluate(
@@ -1938,11 +1972,11 @@ test('fichas PDF antigas deste aparelho passam para a biblioteca com imagem e ex
           const tx = req.result.transaction('pdf_documents', 'readwrite');
           tx.objectStore('pdf_documents').put({
             id: 'ficha-antiga-1',
-            title: 'Rondo 5x2 com transição',
+            title: 'Ficha de treino Sub-11',
             category: 'tecnica',
             tags: [],
-            fileName: 'rondo.pdf',
-            fileSize: 4939,
+            fileName: 'ficha.pdf',
+            fileSize: 6456,
             uploadedAt: '2026-10-01T10:00:00.000Z',
             fileData: data
           });
@@ -1956,32 +1990,35 @@ test('fichas PDF antigas deste aparelho passam para a biblioteca com imagem e ex
   await page.getByRole('button', { name: /Exercícios/ }).click();
   const sheets = page.getByRole('region', { name: 'Fichas PDF' });
   await expect(sheets).toContainText('1 guardada neste aparelho');
-  await expect(sheets).toContainText('Rondo 5x2 com transição');
+  await expect(sheets).toContainText('Ficha de treino Sub-11');
 
   await sheets.getByRole('button', { name: 'Passar a ficha para a biblioteca' }).click();
-  await expect(sheets).toContainText('✓ na biblioteca', { timeout: 30_000 });
+  await expect(sheets).toContainText('✓ 2 exercícios', { timeout: 30_000 });
+  expect(modes).toEqual(['exercicios']);
   const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
-  await expect(library).toContainText('Rondo 5x2 com transição');
-  await expect(library).toContainText('Organização: quadrado de 12x12 metros');
-  await library
-    .getByRole('listitem')
-    .filter({ hasText: 'Rondo 5x2 com transição' })
-    .getByRole('button', { name: 'Editar' })
-    .click();
+  const rondo = library.getByRole('listitem').filter({ hasText: 'Rondo 5x2' });
+  await expect(rondo).toContainText('Circulação de bola sob pressão');
+  await expect(rondo).toContainText('🎒 4 cones · 2 coletes · 2 bolas');
+  await expect(library.getByRole('listitem').filter({ hasText: 'Finalização 2x1' })).toContainText('15 min');
+  // Only the drawing: much wider than tall, not the whole (tall) page
+  const size = await rondo.locator('img').evaluate((img: HTMLImageElement) => [img.naturalWidth, img.naturalHeight]);
+  expect(size[0]).toBeGreaterThan(size[1]);
+
+  await rondo.getByRole('button', { name: 'Editar' }).click();
   const form = page.getByRole('region', { name: 'Editar exercício' });
-  await expect(form.getByLabel('Descrição / regras (opcional)')).toHaveValue(/Pontos-chave: apoio rápido/);
-  await expect(form.getByRole('img', { name: /Desenho/ })).toBeVisible();
+  await expect(form.getByLabel('Descrição / regras (opcional)')).toHaveValue(/os defesas saem a conduzir/);
+  await expect(form.getByLabel('Descrição / regras (opcional)')).not.toHaveValue(/Remate em 6 segundos/);
   await expect
     .poll(
       async () =>
-        [...(await cloudRecords()).values()].some(
-          (r) => r.kind === 'exercise' && r.name === 'Rondo 5x2 com transição' && r.hasImage
-        ),
-      { timeout: 30_000, message: 'ficha na nuvem com imagem' }
+        [...(await cloudRecords()).values()].filter(
+          (r) => r.kind === 'exercise' && /^(Rondo 5x2|Finalização 2x1)$/.test(r.name || '') && r.hasImage
+        ).length,
+      { timeout: 30_000, message: 'exercícios da ficha na nuvem com o desenho' }
     )
-    .toBe(true);
+    .toBe(2);
 
   // The original PDF still opens on this device
-  await sheets.getByRole('button', { name: 'Ver Rondo 5x2 com transição' }).click();
+  await sheets.getByRole('button', { name: 'Ver Ficha de treino Sub-11' }).click();
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 20_000 });
 });
