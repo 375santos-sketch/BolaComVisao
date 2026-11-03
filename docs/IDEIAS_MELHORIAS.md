@@ -73,3 +73,5 @@ Só para a equipa técnica e para o design (nada para os pais). Implementar dois
 - Classificação: ir buscar os resultados da série a resultados.fpf.pt (ver conversa de 24/10/2026).
 - Widget com o aspeto da app no iPhone (app Scriptable), em alternativa ao widget do Calendário.
 - Consentimento RGPD dos pais.
+- Cronometragem pela câmara (guardada a 03/11/2026): telemóvel num tripé na linha de chegada deteta a passagem do atleta; tempos de sprint e agilidade ao centésimo, direto para a Bateria de testes.
+- Força do remate pelo vídeo (guardada a 03/11/2026): filmar o remate em câmara lenta e calcular a velocidade da bola em km/h; recorde pessoal e evolução de cada atleta, sem comparar colegas.
