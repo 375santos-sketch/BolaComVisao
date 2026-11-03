@@ -331,8 +331,6 @@ export interface Exercise {
   objective?: string;
   /** Drawing or photo of the exercise, imported and compressed (JPEG data URL, about 150 KB at most). */
   image?: string;
-  /** 🧒 The exercise explained to the children in 3 short sentences (to read out). */
-  kidsText?: string;
   /** 📄 The old PDF sheet (kept only on the device it was imported on) this exercise was made from. */
   fromPdfId?: string;
   /** The page of that sheet where the exercise is (set when the sheet was split into its exercises). */
