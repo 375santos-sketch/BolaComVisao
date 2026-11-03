@@ -1,28 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { allTeamsAgenda } from '../lib/allTeamsAgenda';
-import { cleanKidsRequest, cleanKidsText, kidsPrompt } from '../lib/kidsExplain';
 import { attendanceReminder } from '../lib/homeSummary';
 import { signatureFor, withSignature } from '../lib/signature';
 import { AppState, Training } from '../types';
-
-describe('explicar às crianças', () => {
-  it('checks the request and asks for 3 simple sentences for the age group', () => {
-    expect(cleanKidsRequest({})).toBeNull();
-    const r = cleanKidsRequest({ name: ' Rondo ', description: 'Quadrado 15x15', ageGroup: 'Sub-9', simpler: true })!;
-    expect(r).toEqual({ name: 'Rondo', description: 'Quadrado 15x15', ageGroup: 'Sub-9', simpler: true });
-    const prompt = kidsPrompt(r);
-    expect(prompt).toContain('escalão Sub-9');
-    expect(prompt).toContain('exatamente 3 frases curtas');
-    expect(prompt).toContain('como para crianças de 6 anos');
-  });
-
-  it('keeps short plain lines', () => {
-    expect(cleanKidsText('**Olá**\n1. ⚽ Passem a bola ao amarelo.\n- 🎯 Vale ponto.\n\n🏃 Troca quem perde.')).toBe(
-      'Olá\n⚽ Passem a bola ao amarelo.\n🎯 Vale ponto.\n🏃 Troca quem perde.'
-    );
-    expect(cleanKidsText('ok')).toBeNull();
-  });
-});
 
 describe('agenda de todas as equipas', () => {
   const state = {

@@ -365,10 +365,15 @@ export default function App() {
     return () => window.removeEventListener('beforeunload', warn);
   }, [cloudSync.hasUnsavedChanges]);
 
+  // Each message stays 3 s: a new one restarts the count (before, the timer of an earlier message could hide it
+  // straight away)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => {
       setToastMessage(null);
+      toastTimerRef.current = null;
     }, 3000);
   };
 

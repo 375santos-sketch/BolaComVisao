@@ -1866,18 +1866,7 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   expect((await download).suggestedFilename()).toMatch(/^Curriculo_.*\.pdf$/);
 });
 
-test('explicar às crianças, assinatura nos PDFs e visita guiada', async ({ page }) => {
-  await page.route('**/api/criancas', async (route) => {
-    const body = route.request().postDataJSON();
-    await route.fulfill({
-      json: {
-        success: true,
-        text: body.simpler
-          ? '⚽ Passem a bola.\n🎯 Ao amarelo vale ponto.\n🏃 Quem perde troca.'
-          : '⚽ Vocês são 4 à volta do quadrado.\n🎯 Passem ao amarelo: vale 1 ponto!\n🏃 Quem perder a bola troca.'
-      }
-    });
-  });
+test('exercício sem explicação para as crianças, assinatura nos PDFs e visita guiada', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /agenda/i);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
@@ -1886,11 +1875,9 @@ test('explicar às crianças, assinatura nos PDFs e visita guiada', async ({ pag
   const form = page.getByRole('region', { name: 'Editar exercício' });
   await form.getByLabel('Nome').fill('Rondo 4+1');
   await form.getByLabel('Descrição / regras (opcional)').fill('Quadrado 15x15 m, 4 fora e 1 joker contra 3.');
-  const kids = form.getByRole('region', { name: 'Para as crianças' });
-  await kids.getByRole('button', { name: '✨ Explicar às crianças' }).click();
-  await expect(kids.getByLabel('Explicação para as crianças')).toHaveValue(/Vocês são 4/);
-  await kids.getByRole('button', { name: '🔄 Mais simples' }).click();
-  await expect(kids.getByLabel('Explicação para as crianças')).toHaveValue(/Passem a bola/);
+  // The "explicar às crianças" part was taken out of the exercises
+  await expect(form.getByRole('region', { name: 'Para as crianças' })).toHaveCount(0);
+  await expect(form.getByRole('button', { name: /Explicar às crianças/ })).toHaveCount(0);
   await form.getByRole('button', { name: 'Guardar exercício' }).click();
   await expect(page.getByRole('region', { name: 'Biblioteca de exercícios' })).toContainText('Rondo 4+1');
 
@@ -1898,11 +1885,21 @@ test('explicar às crianças, assinatura nos PDFs e visita guiada', async ({ pag
   await openMore(page, /Assinatura/);
   const sign = page.getByRole('dialog', { name: 'Assinatura' });
   const board = sign.getByLabel('Quadro para assinar');
+  // The window slides in: wait until the board stops moving before measuring it, or the stroke misses it
+  await board.hover({ position: { x: 20, y: 40 } });
   const box = (await board.boundingBox())!;
   await page.mouse.move(box.x + 20, box.y + box.height / 2);
   await page.mouse.down();
   for (let i = 1; i <= 10; i++) await page.mouse.move(box.x + 20 + i * 25, box.y + box.height / 2 + (i % 2 ? -20 : 20));
   await page.mouse.up();
+  // Something was drawn on the board (dark pixels on the white)
+  expect(
+    await board.evaluate((c: HTMLCanvasElement) => {
+      const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+      for (let i = 3; i < d.length; i += 4) if (d[i] > 0) return true;
+      return false;
+    })
+  ).toBe(true);
   await sign.getByRole('button', { name: '✓ Guardar' }).click();
   await expect(page.getByText('Assinatura guardada ✓')).toBeVisible();
   await openMore(page, /Assinatura/);
