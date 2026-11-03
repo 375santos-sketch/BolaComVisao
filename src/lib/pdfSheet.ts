@@ -1,63 +1,52 @@
-import { Exercise, ExerciseCategory } from '../types';
-import { PDFDocumentItem } from './pdfLibraryDB';
+import { Exercise } from '../types';
+import { cleanPrintExercises } from './printExercise';
 import { uid } from './utils';
 
 /**
  * 📄 Fichas PDF: the exercise sheets imported in the old Biblioteca de PDFs stayed in the browser of the device they
- * were imported on (IndexedDB, never in the cloud). Each one becomes an exercise of the library: the first page as its
- * picture and the sheet's text as its explanation, so it reaches every device and the session plans.
+ * were imported on (IndexedDB, never in the cloud). Each page is read by the AI, which finds every exercise on it:
+ * each one goes to the library with only its own drawing (cut from the page) and its own explanation.
  */
 
-const CATEGORIES: ExerciseCategory[] = ['aquecimento', 'tecnica', 'tatica', 'fisico', 'jogo', 'bolas_paradas'];
+/** Pages read from a sheet, at most (a long manual is read in its first pages). */
+const MAX_SHEET_PAGES = 15;
 
-/** Most of the explanation a sheet keeps (the library form shows it whole). */
-const MAX_TEXT = 4000;
-
-/** The text read from a PDF, tidied: one space between words, paragraphs kept, page numbers and blank lines out. */
-export function sheetText(raw: string): string {
-  return (raw || '')
-    .replace(/\r/g, '')
-    .split('\n')
-    .map((l) => l.replace(/[ \t\u00a0]+/g, ' ').trim())
-    .filter((l) => l && !/^(p[áa]g(ina)?\.?\s*)?\d{1,3}(\s*(\/|de)\s*\d{1,3})?$/i.test(l))
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .slice(0, MAX_TEXT)
-    .trim();
-}
-
-/** "Rondo_4x2-v2.pdf" → "Rondo 4x2 v2" (the title the coach gave wins). */
-export function sheetName(doc: Pick<PDFDocumentItem, 'title' | 'fileName'>): string {
-  const name = (doc.title || doc.fileName || '')
-    .replace(/\.pdf$/i, '')
-    .replace(/[_-]+/g, ' ')
-    .replace(/\s+/g, ' ');
-  return name.trim().slice(0, 80) || 'Ficha PDF';
-}
-
-/** The exercise made from a sheet (picture and text already read from the PDF). */
-export function sheetExercise(
-  doc: Pick<PDFDocumentItem, 'id' | 'title' | 'fileName' | 'category' | 'description'>,
-  read: { image?: string; text?: string },
+/** The exercises of one page (the AI's answer cleaned), each with its drawing cut from the page by `crop`. */
+export async function pageExercises(
+  answer: unknown,
+  page: number,
+  pdfId: string | undefined,
+  crop: (box: { x: number; y: number; w: number; h: number }) => Promise<string | undefined>,
   now = new Date().toISOString()
-): Exercise {
-  const text = sheetText(read.text || '');
-  const name = sheetName(doc);
-  // The card shows the coach's note, or else the sheet's first line that is not its title
-  const firstLine = text.split('\n').find((l) => l.toLowerCase() !== name.toLowerCase()) || '';
-  const objective = ((doc.description || '').trim() || firstLine).slice(0, 160);
-  return {
-    id: uid(),
-    name,
-    category: CATEGORIES.includes(doc.category as ExerciseCategory) ? (doc.category as ExerciseCategory) : 'tecnica',
-    durationMinutes: 15,
-    createdAt: now,
-    objective,
-    ...(text ? { description: text } : {}),
-    ...(read.image ? { image: read.image } : {}),
-    fromPdfId: doc.id
-  };
+): Promise<Exercise[]> {
+  const out: Exercise[] = [];
+  for (const read of cleanPrintExercises(answer)) {
+    const image = read.drawing ? await crop(read.drawing).catch(() => undefined) : undefined;
+    out.push({
+      id: uid(),
+      name: read.name,
+      category: read.category,
+      durationMinutes: read.durationMinutes || 15,
+      createdAt: now,
+      objective: read.objective || '',
+      ...(read.description ? { description: read.description } : {}),
+      ...(read.material ? { material: read.material } : {}),
+      ...(image ? { image } : {}),
+      ...(pdfId ? { fromPdfId: pdfId } : {}),
+      fromPdfPage: page
+    });
+  }
+  return out;
 }
+
+/** The library with a sheet's new exercises in place of what had been made from it before. */
+export function replaceSheetExercises(library: Exercise[], pdfId: string | undefined, made: Exercise[]): Exercise[] {
+  return [...library.filter((e) => !pdfId || e.fromPdfId !== pdfId), ...made];
+}
+
+/** Whether a sheet is already in the library, split into its exercises (the first version kept whole pages). */
+export const sheetDone = (library: Exercise[], pdfId: string) =>
+  library.some((e) => e.fromPdfId === pdfId && e.fromPdfPage !== undefined);
 
 const dataBytes = (dataUrl: string) => {
   const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
@@ -67,45 +56,31 @@ const dataBytes = (dataUrl: string) => {
   return bytes;
 };
 
-/** Reads a PDF (data URL): its first page as a small JPEG and the text of its first pages. */
-export async function readPdfSheet(fileData: string): Promise<{ image?: string; text: string }> {
+/** Each page of a PDF (data URL) as a JPEG sharp enough for the AI to read and to cut the drawings from. */
+export async function pdfPageImages(fileData: string, onPage?: (page: number, pages: number) => void) {
   const { loadPdfjs } = await import('./pdfjs');
   const { compressImageSource } = await import('./imageCompress');
   const pdfjs = await loadPdfjs();
   const pdf = await pdfjs.getDocument({ data: dataBytes(fileData) }).promise;
   try {
-    const texts: string[] = [];
-    for (let n = 1; n <= Math.min(pdf.numPages, 4); n++) {
+    const pages = Math.min(pdf.numPages, MAX_SHEET_PAGES);
+    const images: string[] = [];
+    for (let n = 1; n <= pages; n++) {
+      onPage?.(n, pages);
       const page = await pdf.getPage(n);
-      const content = await page.getTextContent();
-      let line = '';
-      for (const item of content.items as Array<{ str?: string; hasEOL?: boolean }>) {
-        line += item.str || '';
-        if (item.hasEOL) line += '\n';
-        else if (item.str) line += ' ';
-      }
-      texts.push(line);
-    }
-    let image: string | undefined;
-    try {
-      const page = await pdf.getPage(1);
       const base = page.getViewport({ scale: 1 });
-      const viewport = page.getViewport({ scale: Math.min(3, 1400 / Math.max(base.width, base.height)) });
+      const viewport = page.getViewport({ scale: Math.min(4, 2000 / Math.max(base.width, base.height)) });
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(viewport.width);
       canvas.height = Math.round(viewport.height);
       const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-        image = await compressImageSource(canvas.toDataURL('image/jpeg', 0.9), 1200, 220_000);
-      }
-    } catch (err) {
-      console.warn('Imagem da ficha PDF:', err); // the text alone is still worth keeping
-      image = undefined;
+      if (!ctx) throw new Error('Não foi possível preparar a página.');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+      images.push(await compressImageSource(canvas.toDataURL('image/jpeg', 0.92), 1800, 600_000));
     }
-    return { image, text: texts.join('\n') };
+    return images;
   } finally {
     pdf.cleanup();
   }

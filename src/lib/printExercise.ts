@@ -41,6 +41,25 @@ export const EXERCISE_SCHEMA = {
   required: ['name', 'category']
 };
 
+/** Fichas PDF: a page can have several exercises, each with its own drawing and explanation. */
+export const EXERCISES_PROMPT = `Esta imagem é uma página de uma ficha de exercícios de treino de futebol, em português ou noutra língua.
+A página pode ter um ou vários exercícios, cada um normalmente com um desenho (esquema do campo) e uma explicação.
+Para CADA exercício da página, responde em português de Portugal:
+- name: o nome do exercício (curto, por exemplo "Rondo 4x2"); inventa um nome curto se não houver
+- category: uma de aquecimento, tecnica, tatica, fisico, jogo, bolas_paradas
+- durationMinutes: a duração em minutos, se estiver escrita (senão 0)
+- objective: o objetivo do exercício, numa frase
+- description: a explicação desse exercício (organização, regras, variantes, pontos-chave), com as palavras da página, sem inventar e sem misturar com os outros exercícios
+- material: quantos cones, coletes, bolas, balizas (pequenas), estacas, arcos, barreiras e escadas usa, pelo texto ou contando no desenho; 0 no que não usa ou não se percebe
+- drawing: a caixa que contém SÓ o desenho desse exercício (sem o texto, sem cabeçalhos nem logótipos), em frações da página (x e y do canto de cima à esquerda, w largura, h altura, de 0 a 1); se o exercício não tiver desenho, w = 0 e h = 0.
+Ignora capas, índices, cabeçalhos, logótipos e números de página. Se a página não tiver nenhum exercício, responde com exercises vazio.`;
+
+export const EXERCISES_SCHEMA = {
+  type: 'OBJECT',
+  properties: { exercises: { type: 'ARRAY', items: EXERCISE_SCHEMA } },
+  required: ['exercises']
+};
+
 interface PrintExercise {
   name: string;
   category: ExerciseCategory;
@@ -101,4 +120,18 @@ export function cleanPrintExercise(raw: unknown): PrintExercise | null {
     ...(material ? { material } : {}),
     ...(drawing ? { drawing } : {})
   };
+}
+
+/** The exercises read from a page of a sheet (at most 12), leaving out what is neither an explanation nor a drawing. */
+export function cleanPrintExercises(raw: unknown): PrintExercise[] {
+  const list = Array.isArray(raw)
+    ? raw
+    : raw && typeof raw === 'object'
+      ? (raw as { exercises?: unknown }).exercises
+      : null;
+  if (!Array.isArray(list)) return [];
+  return list
+    .slice(0, 12)
+    .map((item) => cleanPrintExercise(item))
+    .filter((ex): ex is PrintExercise => Boolean(ex && (ex.description || ex.drawing)));
 }

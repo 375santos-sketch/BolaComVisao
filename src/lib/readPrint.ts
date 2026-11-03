@@ -10,7 +10,10 @@ export async function readPrintImage(file: File, mode: 'resultados' | 'calendari
 }
 
 /** Same, for a picture already prepared (a data URL), e.g. when the app also crops the drawing from it. */
-export async function readPrintData(image: string, mode: 'resultados' | 'calendario' | 'exercicio'): Promise<unknown> {
+export async function readPrintData(
+  image: string,
+  mode: 'resultados' | 'calendario' | 'exercicio' | 'exercicios'
+): Promise<unknown> {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error('Entre na app com a sua conta para ler prints.');
   const resp = await fetch('/api/ler-jornada', {
