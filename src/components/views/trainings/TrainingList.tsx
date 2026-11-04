@@ -6,6 +6,7 @@ import { TrainingFilters } from './TrainingFilters';
 import { TrainingListFilter } from './hooks/useTrainingFilters';
 
 const PlanShareModal = lazy(() => import('./PlanShareModal').then((m) => ({ default: m.PlanShareModal })));
+const FieldSetupModal = lazy(() => import('./FieldSetupModal').then((m) => ({ default: m.FieldSetupModal })));
 
 interface TrainingListProps {
   state: AppState;
@@ -65,6 +66,8 @@ export const TrainingList: React.FC<TrainingListProps> = ({
   onUpdateState
 }) => {
   const [showPlanShare, setShowPlanShare] = useState(false);
+  const [fieldFor, setFieldFor] = useState<string | null>(null);
+  const fieldTraining = fieldFor ? (state.trainings || []).find((x) => x.id === fieldFor) : undefined;
   return (
     <div className="space-y-3.5 text-left">
       {/* Today's training first; new ones are less frequent */}
@@ -112,6 +115,21 @@ export const TrainingList: React.FC<TrainingListProps> = ({
           />
         </Suspense>
       )}
+      {fieldTraining && (
+        <Suspense fallback={null}>
+          <FieldSetupModal
+            state={state}
+            training={fieldTraining}
+            onUpdateState={onUpdateState}
+            onShowToast={onShowToast}
+            onOpenPlanShare={() => {
+              setFieldFor(null);
+              setShowPlanShare(true);
+            }}
+            onClose={() => setFieldFor(null)}
+          />
+        </Suspense>
+      )}
 
       {/* Quick Filter Bar */}
       <TrainingFilters
@@ -155,6 +173,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
                       onOpenEditForm={onOpenEditForm}
                       onDeleteTraining={onDeleteTraining}
                       onShowToast={onShowToast}
+                      onOpenFieldSetup={() => setFieldFor(tr.id)}
                     />
                   ))}
                 </div>

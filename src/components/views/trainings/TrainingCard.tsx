@@ -22,6 +22,8 @@ interface TrainingCardProps {
   onOpenEditForm: (training: Training) => void;
   onDeleteTraining: (trainingId: string) => void;
   onShowToast: (msg: string) => void;
+  /** 📐 Opens "Montar o campo" for this training. */
+  onOpenFieldSetup?: () => void;
 }
 
 export const TrainingCard: React.FC<TrainingCardProps> = ({
@@ -38,7 +40,8 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
   onDuplicateTraining,
   onOpenEditForm,
   onDeleteTraining,
-  onShowToast
+  onShowToast,
+  onOpenFieldSetup
 }) => {
   const isCompleted = tr.completed !== false;
   const absNames = (tr.absences || []).map(getPlayerName);
@@ -169,6 +172,12 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
           <HeatBreaksCard training={tr} places={[tr.location || '', teamSettings(state).clubTown || '']} />
 
           <KitBagCard training={tr} library={state.exerciseLibrary || []} onShowToast={onShowToast} />
+
+          {onOpenFieldSetup && (tr.sessionPlan?.blocks?.length || 0) > 0 && (
+            <button type="button" onClick={onOpenFieldSetup} className="ui-btn ui-btn-secondary w-full py-2.5 text-xs">
+              📐 Montar o campo
+            </button>
+          )}
 
           {/* Session Plan Blocks Drawer Section */}
           {tr.sessionPlan &&

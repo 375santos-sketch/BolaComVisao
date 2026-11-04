@@ -2019,3 +2019,77 @@ test('fichas PDF antigas: cada exercício passa para a biblioteca só com o seu 
   await sheets.getByRole('button', { name: 'Ver Ficha de treino Sub-11' }).click();
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 20_000 });
 });
+
+test('montar o campo: meio campo à quinta, medidas em falta, passo a passo e envio ao adjunto', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
+  for (const [name, rules] of [
+    ['Quadrado de aquecimento', 'Quadrado de 15x15, passe e movimento.'],
+    ['Jogo de posse', 'Duas equipas, quem perde a bola sai.']
+  ]) {
+    await page.getByRole('button', { name: '➕ Novo exercício' }).click();
+    const form = page.getByRole('region', { name: 'Editar exercício' });
+    await form.getByLabel('Nome').fill(name);
+    await form.getByLabel('Descrição / regras (opcional)').fill(rules);
+    await form.getByRole('button', { name: 'Guardar exercício' }).click();
+    await expect(library).toContainText(name);
+  }
+
+  // A Thursday training with both exercises
+  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
+  await page.locator('input[type="date"]').first().fill('2099-03-05');
+  await page.getByRole('button', { name: /Da biblioteca/ }).click();
+  const pick = page.getByRole('group', { name: 'Escolher da biblioteca' });
+  await pick.getByRole('button', { name: /Quadrado de aquecimento/ }).click();
+  await page.getByRole('button', { name: /Da biblioteca/ }).click();
+  await pick.getByRole('button', { name: /Jogo de posse/ }).click();
+  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.locator('[data-training-row]').filter({ hasText: /05Qui/ }).click();
+  await page.getByRole('button', { name: '📐 Montar o campo' }).click();
+
+  const setup = page.getByRole('dialog', { name: 'Montar o campo' });
+  // Thursdays: half of the 7-a-side pitch
+  await expect(setup.getByRole('radio', { name: /Meio campo de 7/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(setup).toContainText('Fica guardado para as quintas');
+  // The size written in the exercise is used; the other one is asked once
+  const missing = setup.getByRole('region', { name: 'Medidas em falta' });
+  await expect(missing).toContainText('Jogo de posse');
+  await missing.getByLabel('Largura de Jogo de posse').fill('30');
+  await missing.getByLabel('Comprimento de Jogo de posse').fill('20');
+  await missing.getByRole('button', { name: 'Guardar medidas de Jogo de posse' }).click();
+  await expect(missing).toBeHidden();
+
+  const drawn = setup.getByRole('region', { name: 'Campo desenhado' });
+  await expect(drawn.getByRole('img', { name: 'Campo com as zonas dos exercícios' })).toBeVisible();
+  await expect(drawn).toContainText('A Quadrado de aquecimento');
+  await expect(drawn).toContainText('B Jogo de posse');
+  await setup.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/montar-campo.png` : undefined });
+
+  // Half a pitch: the game goes in the warm-up's space once it is over
+  await setup.getByRole('tab', { name: 'Passo a passo' }).click();
+  const steps = setup.getByRole('region', { name: 'Passo a passo' });
+  await expect(steps).toContainText('Da 🚩, anda 2 passos ao longo da linha de fundo');
+  await expect(steps).toContainText(
+    'Quando acabar a zona A, muda os cones dela para um retângulo de 30 passos × 20 passos'
+  );
+  await steps.getByRole('checkbox').first().click();
+  await expect(steps).toContainText('1 de 2 feitos');
+  await setup.getByRole('button', { name: /Ver em metros/ }).click();
+  await expect(steps).toContainText('30 m × 20 m');
+
+  // The whole pitch: both fit at the same time
+  await setup
+    .getByRole('radio', { name: /Campo de 7/ })
+    .first()
+    .click();
+  await expect(setup.getByRole('radio', { name: '⚽ Campo de 7' })).toHaveAttribute('aria-checked', 'true');
+  await expect(steps).not.toContainText('Quando acabar');
+
+  // No link for the assistant yet: it opens the link window
+  await setup.getByRole('button', { name: '📲 Mandar ao adjunto' }).click();
+  await expect(page.getByRole('dialog', { name: 'Plano para o adjunto' })).toBeVisible();
+});
