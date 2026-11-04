@@ -9,6 +9,36 @@ import { cleanPrintExercise } from '../../../lib/printExercise';
 import { EXERCISE_SPACES, ExerciseIdeaRequest } from '../../../lib/exerciseIdea';
 import { createExerciseIdea } from '../../../services/exerciseIdea';
 import { uid } from '../../../lib/utils';
+import { LEVELS, LevelMark, levelHistory, levelTrend } from '../../../lib/exerciseLevel';
+
+/** 🎚️ How the exercise went the last times (😓 → 👌 → 😴) and what it means. */
+const LevelHistory: React.FC<{ marks: LevelMark[] }> = ({ marks }) => {
+  if (!marks.length) return null;
+  const trend = levelTrend(marks);
+  return (
+    <div aria-label="Como correu" className="mt-1">
+      <div className="flex flex-wrap items-center gap-1 text-[10px] text-slate-300">
+        {marks.slice(-4).map((m, i) => (
+          <React.Fragment key={`${m.date}-${i}`}>
+            {i > 0 && <span className="text-slate-500">→</span>}
+            <span className="whitespace-nowrap rounded-md border border-slate-700 bg-slate-900 px-1.5 py-0.5">
+              {LEVELS[m.level].emoji} {m.date.slice(8, 10)}/{m.date.slice(5, 7)}
+            </span>
+          </React.Fragment>
+        ))}
+      </div>
+      {trend && (
+        <div
+          className={`mt-0.5 text-[10px] ${
+            trend.tone === 'up' ? 'text-emerald-300' : trend.tone === 'down' ? 'text-rose-300' : 'text-slate-400'
+          }`}
+        >
+          {trend.text}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
   { id: 'aquecimento', label: '🔥 Aquecimento' },
@@ -559,6 +589,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
                   <div className="text-[11px] text-slate-400 mt-0.5">🎒 {materialSummary(e.material)}</div>
                 )}
                 <div className="text-[10px] text-cyan-300/80 mt-0.5">{usageLabel(usage.get(e.id))}</div>
+                <LevelHistory marks={levelHistory(trainings, e.id)} />
                 <div className="flex gap-3 mt-1.5 text-[11px]">
                   <button type="button" className="text-cyan-300 font-bold" onClick={() => setEditing(e)}>
                     Editar

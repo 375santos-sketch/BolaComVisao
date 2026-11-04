@@ -7,6 +7,8 @@ import { Header } from '../../Header';
 import { BatchTrainingSection } from './BatchTrainingSection';
 import { getPDFDocumentById, PDFDocumentItem } from '../../../lib/pdfLibraryDB';
 import { PDFViewerModal } from './PDFViewerModal';
+import { VariantSuggestion } from './VariantSuggestion';
+import { fieldOf } from '../../../lib/fieldSetup';
 import { TrainingTemplates } from './TrainingTemplates';
 import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
 import { TrainingFormData, TRAINING_TYPES } from './types';
@@ -614,6 +616,24 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                           </button>
                         </div>
                       </div>
+
+                      {/* 🎚️ How it went last time: a variant to make it harder or easier */}
+                      {exerciseOf(block.exerciseId) && (
+                        <VariantSuggestion
+                          block={block}
+                          exercise={exerciseOf(block.exerciseId)!}
+                          trainings={(state.trainings || []).filter((x) => x.id !== trainingForm.id)}
+                          date={trainingForm.date}
+                          field={fieldOf(
+                            {
+                              date: trainingForm.date || '2026-01-01',
+                              field: (state.trainings || []).find((x) => x.id === trainingForm.id)?.field
+                            },
+                            teamSettings(state).trainingFields
+                          )}
+                          onChange={(b) => handleUpdateBlock(block.id, b)}
+                        />
+                      )}
 
                       {/* Drawing from the library, or keep this block in the library */}
                       {exerciseOf(block.exerciseId)?.image ? (

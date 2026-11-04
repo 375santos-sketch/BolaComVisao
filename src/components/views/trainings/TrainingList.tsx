@@ -174,6 +174,26 @@ export const TrainingList: React.FC<TrainingListProps> = ({
                       onDeleteTraining={onDeleteTraining}
                       onShowToast={onShowToast}
                       onOpenFieldSetup={() => setFieldFor(tr.id)}
+                      onRateBlock={(blockId, level) =>
+                        onUpdateState({
+                          trainings: (state.trainings || []).map((x) =>
+                            x.id === tr.id && x.sessionPlan
+                              ? {
+                                  ...x,
+                                  sessionPlan: {
+                                    ...x.sessionPlan,
+                                    blocks: x.sessionPlan.blocks.map((b) => {
+                                      if (b.id !== blockId) return b;
+                                      const rest = { ...b };
+                                      delete rest.level;
+                                      return level ? { ...rest, level } : rest;
+                                    })
+                                  }
+                                }
+                              : x
+                          )
+                        })
+                      }
                     />
                   ))}
                 </div>

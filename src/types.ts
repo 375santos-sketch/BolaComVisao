@@ -355,6 +355,10 @@ export interface SessionBlock {
   notes?: string;
   /** 📐 Size of the block's space in metres (width × length), when it is not an exercise of the library. */
   area?: { w: number; l: number };
+  /** 🎚️ How the exercise went (tapped by the coach after it). */
+  level?: 'dificil' | 'certo' | 'facil';
+  /** 🎚️ The suggestion from the last time was already applied or dismissed for this block. */
+  levelChecked?: boolean;
 }
 
 export interface SessionPlan {

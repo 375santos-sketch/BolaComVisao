@@ -2093,3 +2093,69 @@ test('montar o campo: meio campo à quinta, medidas em falta, passo a passo e en
   await setup.getByRole('button', { name: '📲 Mandar ao adjunto' }).click();
   await expect(page.getByRole('dialog', { name: 'Plano para o adjunto' })).toBeVisible();
 });
+
+test('exercício no nível certo: marcar como correu, variante no treino seguinte e evolução na biblioteca', async ({
+  page
+}) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  await page.getByRole('button', { name: '➕ Novo exercício' }).click();
+  const form = page.getByRole('region', { name: 'Editar exercício' });
+  await form.getByLabel('Nome').fill('Rondo com joker');
+  await form.getByLabel('Descrição / regras (opcional)').fill('Quadrado de 15x15, o joker joga com quem tem a bola.');
+  await form.getByRole('button', { name: 'Guardar exercício' }).click();
+
+  const newTraining = async (date: string) => {
+    await page.getByRole('button', { name: /Lista/ }).first().click();
+    await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
+    await page.locator('input[type="date"]').first().fill(date);
+    await page.getByRole('button', { name: /Da biblioteca/ }).click();
+    await page
+      .getByRole('group', { name: 'Escolher da biblioteca' })
+      .getByRole('button', { name: /Rondo com joker/ })
+      .click();
+  };
+
+  // Monday: the rondo was easy
+  await newTraining('2099-04-06');
+  await expect(page.getByRole('region', { name: /Sugestão para/ })).toHaveCount(0);
+  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.locator('[data-training-row]').filter({ hasText: /06Seg/ }).click();
+  const rate = page.getByRole('group', { name: 'Como correu: Rondo com joker' });
+  await rate.getByRole('button', { name: '😴 Fácil' }).click();
+  await expect(rate.getByRole('button', { name: '😴 Fácil' })).toHaveAttribute('aria-pressed', 'true');
+
+  // Thursday: the plan proposes how to make it harder
+  await newTraining('2099-04-09');
+  const tip = page.getByRole('region', { name: 'Sugestão para Rondo com joker' });
+  await expect(tip).toContainText('😴 Da última vez (seg 06/04) foi fácil.');
+  await expect(tip.getByLabel('📐 Espaço mais pequeno: 12×12 (era 15×15)')).toBeChecked();
+  await expect(tip.getByLabel('✋ Máximo 2 toques')).toBeChecked();
+  await expect(tip.getByLabel('➖ Sem o joker (igualdade numérica)')).not.toBeChecked();
+  await tip.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/nivel-sugestao.png` : undefined });
+  await tip.getByRole('button', { name: 'Aplicar ao plano' }).click();
+  await expect(tip).toBeHidden();
+  await expect(page.getByPlaceholder(/Instruções específicas para este bloco/).first()).toHaveValue(
+    '⬆️ Mais difícil: espaço 12×12, máximo 2 toques.'
+  );
+  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+
+  // The new space goes to "Montar o campo"
+  await page.locator('[data-training-row]').filter({ hasText: /09Qui/ }).click();
+  await page.getByRole('button', { name: '📐 Montar o campo' }).click();
+  await expect(page.getByRole('region', { name: 'Campo desenhado' })).toContainText('A Rondo com joker');
+  await page.getByRole('dialog', { name: 'Montar o campo' }).getByRole('tab', { name: 'Passo a passo' }).click();
+  await expect(page.getByRole('region', { name: 'Passo a passo' })).toContainText('quadrado de 12 passos');
+  await page.getByRole('button', { name: 'Fechar montar o campo' }).click();
+
+  // The library shows how it went
+  await page.getByRole('button', { name: /Exercícios/ }).click();
+  const card = page
+    .getByRole('region', { name: 'Biblioteca de exercícios' })
+    .getByRole('listitem')
+    .filter({ hasText: 'Rondo com joker' });
+  await expect(card.getByLabel('Como correu')).toContainText('😴 06/04');
+  await expect(card).toContainText('Da última vez foi fácil: da próxima, dificulta.');
+});

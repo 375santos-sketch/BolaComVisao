@@ -5,6 +5,7 @@ import { AttendanceGrid } from './AttendanceGrid';
 import { KitBagCard } from './KitBagCard';
 import { HeatBreaksCard } from './HeatBreaksCard';
 import { teamSettings } from '../../../lib/teamSettings';
+import { ExerciseLevel, LEVELS } from '../../../lib/exerciseLevel';
 
 interface TrainingCardProps {
   training: Training;
@@ -24,6 +25,8 @@ interface TrainingCardProps {
   onShowToast: (msg: string) => void;
   /** 📐 Opens "Montar o campo" for this training. */
   onOpenFieldSetup?: () => void;
+  /** 🎚️ How an exercise of the plan went (tapping the same one again clears it). */
+  onRateBlock?: (blockId: string, level: ExerciseLevel | undefined) => void;
 }
 
 export const TrainingCard: React.FC<TrainingCardProps> = ({
@@ -41,7 +44,8 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
   onOpenEditForm,
   onDeleteTraining,
   onShowToast,
-  onOpenFieldSetup
+  onOpenFieldSetup,
+  onRateBlock
 }) => {
   const isCompleted = tr.completed !== false;
   const absNames = (tr.absences || []).map(getPlayerName);
@@ -221,7 +225,39 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
                             )}
                           </div>
                           {block.notes && (
-                            <p className="text-[11px] text-slate-400 pl-5.5 leading-snug">{block.notes}</p>
+                            <p className="text-[11px] text-slate-400 pl-5.5 leading-snug whitespace-pre-line">
+                              {block.notes}
+                            </p>
+                          )}
+                          {onRateBlock && block.exerciseId && (
+                            <div
+                              role="group"
+                              aria-label={`Como correu: ${block.title}`}
+                              className="flex gap-1.5 pt-1 font-sans"
+                            >
+                              {(Object.keys(LEVELS) as ExerciseLevel[]).map((lv) => {
+                                const on = block.level === lv;
+                                return (
+                                  <button
+                                    key={lv}
+                                    type="button"
+                                    aria-pressed={on}
+                                    onClick={() => onRateBlock(block.id, on ? undefined : lv)}
+                                    className={`flex-1 rounded-lg border px-1 py-1.5 text-[11px] font-bold ${
+                                      on
+                                        ? lv === 'dificil'
+                                          ? 'border-rose-500 bg-rose-900/70 text-white'
+                                          : lv === 'certo'
+                                            ? 'border-emerald-500 bg-emerald-900/70 text-white'
+                                            : 'border-sky-400 bg-sky-900/70 text-white'
+                                        : 'border-slate-700 bg-slate-900 text-slate-300'
+                                    }`}
+                                  >
+                                    {LEVELS[lv].emoji} {LEVELS[lv].label}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           )}
                         </div>
                         <span className="text-cyan-400 font-bold shrink-0 text-[11px]">
