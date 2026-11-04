@@ -1,6 +1,7 @@
 import { AppState, Training } from '../types';
 import { fromRest } from './calendarFeed';
 import { kitBag } from './kitBag';
+import { FieldKind, FieldSetup, cleanSetup, fieldOf, fieldSetup, fieldSvg, setupSteps } from './fieldSetup';
 
 /**
  * Treinos → 🔗 Link para o adjunto: one secret link per team that always shows the plan of today's training (or of
@@ -13,7 +14,6 @@ export interface SharedBlock {
   category?: string;
   durationMinutes: number;
   notes?: string;
-  /** 🧒 The exercise explained to the children. */
   image?: string;
 }
 
@@ -26,6 +26,8 @@ export interface SharedPlan {
   objective?: string;
   /** Lista do saco: ["16 cones", "10 coletes"] */
   kit?: string[];
+  /** 📐 Montar o campo: where each exercise goes on the pitch. */
+  setup?: FieldSetup;
   blocks: SharedBlock[];
 }
 
@@ -44,7 +46,11 @@ export function nextTraining(trainings: Training[], today: string): Training | u
   );
 }
 
-export function sharedPlanOf(state: Pick<AppState, 'trainings' | 'exerciseLibrary'>, today: string): SharedPlan | null {
+export function sharedPlanOf(
+  state: Pick<AppState, 'trainings' | 'exerciseLibrary'>,
+  today: string,
+  fieldsByWeekday?: Record<string, FieldKind>
+): SharedPlan | null {
   const t = nextTraining(state.trainings || [], today);
   if (!t) return null;
   let budget = IMAGES_BUDGET;
@@ -67,6 +73,7 @@ export function sharedPlanOf(state: Pick<AppState, 'trainings' | 'exerciseLibrar
     };
   });
   const kit = kitBag(t.sessionPlan?.blocks, state.exerciseLibrary).map((i) => i.label);
+  const setup = fieldSetup(t.sessionPlan?.blocks, state.exerciseLibrary, fieldOf(t, fieldsByWeekday));
   return {
     date: t.date.slice(0, 10),
     ...(t.time ? { time: t.time } : {}),
@@ -75,6 +82,7 @@ export function sharedPlanOf(state: Pick<AppState, 'trainings' | 'exerciseLibrar
     ...(t.trainingNumber ? { number: t.trainingNumber } : {}),
     ...(t.sessionPlan?.objective?.trim() ? { objective: t.sessionPlan.objective.trim() } : {}),
     ...(kit.length ? { kit } : {}),
+    ...(setup.zones.length ? { setup: { ...setup, missing: [], crowded: [] } } : {}),
     blocks
   };
 }
@@ -123,6 +131,7 @@ export function planFromRestDocument(doc: { fields?: Record<string, any> } | nul
                 .slice(0, 12)
                 .map((k: string) => k.slice(0, 60))
             : undefined,
+          setup: cleanSetup(p.setup),
           blocks: (Array.isArray(p.blocks) ? p.blocks : []).slice(0, 30).map((b: any) => ({
             title: String(b?.title || 'Bloco'),
             category: typeof b?.category === 'string' ? b.category : undefined,
@@ -150,6 +159,7 @@ export function renderPlanPage(
 .b{background:#fff;border-radius:12px;padding:10px;margin-top:8px}.h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.m{font-weight:800;min-width:52px}.tag{font-size:9px;font-weight:800;color:#fff;padding:2px 7px;border-radius:9px;text-transform:uppercase}
 .b p{color:#3b4a5a;font-size:14px;margin-top:6px;line-height:1.45;white-space:pre-wrap}.b img{width:100%;border-radius:8px;margin-top:8px;background:#fff}.now{outline:2px solid #10b981}
 .timer{position:fixed;left:12px;right:12px;bottom:12px;max-width:616px;margin:0 auto;background:#14202e;color:#fff;border-radius:14px;padding:12px 14px;display:none;justify-content:space-between;align-items:center;gap:10px}.timer b{font-size:22px}
+.st{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid #e6ebf0;font-size:14px;line-height:1.4}.st input{width:22px;height:22px;flex:none;margin-top:2px}.st .n{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#14202e;font-size:12px}.st small{display:block;color:#5f6f80;font-size:12px;margin-top:2px}.st input:checked~span{opacity:.5}
 .empty{background:#fff;border-radius:12px;padding:24px;text-align:center;color:#5f6f80;margin-top:12px}
 </style></head><body>`;
   const header = (title: string) =>
@@ -199,5 +209,18 @@ var t=document.getElementById('t');if(!cur){t.style.display='none';return;}t.sty
 var left=Math.max(0,Math.round((+cur.dataset.to-m)*60));document.getElementById('tl').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');}
 tick();setInterval(tick,1000);})();</script>`
     : '';
-  return `${head}${header(`Treino${plan.number ? ` nº ${plan.number}` : ''}`)}<div class="w">${past}<div class="facts">${facts}</div>${plan.location ? `<div style="margin-top:8px;color:#5f6f80;font-size:13px">📍 ${esc(plan.location)}</div>` : ''}${plan.objective ? `<div class="obj">🎯 ${esc(plan.objective)}</div>` : ''}${plan.kit?.length ? `<div class="obj" style="font-weight:600">🎒 Levar: ${plan.kit.map(esc).join(' · ')}</div>` : ''}${bar}${blocks || '<div class="empty">O plano deste treino ainda não tem blocos.</div>'}</div>${live}</body></html>`;
+  // 📐 Montar o campo: the pitch and the steps, ticked on this phone while setting up
+  const setup = plan.setup
+    ? `<div class="b" id="campo"><div class="h"><b>📐 Montar o campo</b><span style="color:#5f6f80;font-size:12px">${esc(plan.setup.field === 'meio-f7' ? 'Meio campo de futebol 7' : 'Campo de futebol 7')}</span></div><div style="margin-top:8px;border-radius:10px;overflow:hidden">${fieldSvg(plan.setup)}</div><p style="font-size:12px;color:#5f6f80">1 passo = 1 passo largo de adulto (cerca de 1 metro). Começa na 🚩 bandeirola de canto.</p>${setupSteps(
+        plan.setup
+      )
+        .map(
+          (st, i) =>
+            `<label class="st"><input type="checkbox" data-k="${i}"><span class="n" style="background:${st.color}">${esc(st.zone)}</span><span>${esc(st.text)}<small>${esc(st.sub)}</small></span></label>`
+        )
+        .join('')}</div><script>
+(function(){var k='bcv_campo_${plan.date}';var s={};try{s=JSON.parse(localStorage.getItem(k)||'{}')}catch(e){}
+[].forEach.call(document.querySelectorAll('#campo input'),function(c){c.checked=!!s[c.dataset.k];c.onchange=function(){s[c.dataset.k]=c.checked;try{localStorage.setItem(k,JSON.stringify(s))}catch(e){}}});})();</script>`
+    : '';
+  return `${head}${header(`Treino${plan.number ? ` nº ${plan.number}` : ''}`)}<div class="w">${past}<div class="facts">${facts}</div>${plan.location ? `<div style="margin-top:8px;color:#5f6f80;font-size:13px">📍 ${esc(plan.location)}</div>` : ''}${plan.objective ? `<div class="obj">🎯 ${esc(plan.objective)}</div>` : ''}${plan.kit?.length ? `<div class="obj" style="font-weight:600">🎒 Levar: ${plan.kit.map(esc).join(' · ')}</div>` : ''}${setup}${bar}${blocks || '<div class="empty">O plano deste treino ainda não tem blocos.</div>'}</div>${live}</body></html>`;
 }

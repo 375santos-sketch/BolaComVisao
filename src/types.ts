@@ -274,6 +274,8 @@ export interface Training {
   durationMinutes?: number;
   season?: string;
   sessionPlan?: SessionPlan;
+  /** 📐 The pitch of this training, when it is not the usual one for its weekday. */
+  field?: 'f7' | 'meio-f7';
 }
 
 export type NotificationType =
@@ -335,6 +337,8 @@ export interface Exercise {
   fromPdfId?: string;
   /** The page of that sheet where the exercise is (set when the sheet was split into its exercises). */
   fromPdfPage?: number;
+  /** 📐 Size of the exercise's space in metres (width × length), for "Montar o campo". */
+  area?: { w: number; l: number };
   /** How many cones, bibs, balls… it needs ("Levar para o treino" adds up a training's exercises). */
   material?: ExerciseMaterial;
 }
@@ -349,6 +353,8 @@ export interface SessionBlock {
   category?: ExerciseCategory;
   durationMinutes: number;
   notes?: string;
+  /** 📐 Size of the block's space in metres (width × length), when it is not an exercise of the library. */
+  area?: { w: number; l: number };
 }
 
 export interface SessionPlan {
@@ -685,6 +691,8 @@ export interface SquadProfile {
   trainingMinutes?: number;
   /** Start time of the trainings by weekday (0 = Sunday … 6 = Saturday), "HH:MM". */
   trainingTimes?: Record<string, string>;
+  /** 📐 The usual pitch for each weekday ("1" = Monday): a whole 7-a-side pitch or half of one. */
+  trainingFields?: Record<string, 'f7' | 'meio-f7'>;
   clubTown?: string;
   yellowsForBan?: number;
   /** The team's rehearsed set pieces (corners, free kicks, throw-ins…), each its own cloud record. */

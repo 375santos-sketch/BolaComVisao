@@ -1,4 +1,5 @@
 import { AppState, SquadProfile } from '../types';
+import { DEFAULT_TRAINING_FIELDS } from './fieldSetup';
 
 /**
  * Settings of the active team kept in the team (Definições → Clube), like the league tables: the club's main colour,
@@ -24,14 +25,20 @@ export function teamSettings(state: TeamState) {
       team?.yellowsForBan && team.yellowsForBan > 0 ? Math.round(team.yellowsForBan) : DEFAULT_YELLOWS_FOR_BAN,
     trainingMinutes:
       team?.trainingMinutes && team.trainingMinutes > 0 ? Math.round(team.trainingMinutes) : DEFAULT_TRAINING_MINUTES,
-    trainingTimes: team?.trainingTimes || DEFAULT_TRAINING_TIMES
+    trainingTimes: team?.trainingTimes || DEFAULT_TRAINING_TIMES,
+    trainingFields: { ...DEFAULT_TRAINING_FIELDS, ...(team?.trainingFields || {}) }
   };
 }
 
 /** The team list with the active team's settings changed (null when there is no active team). */
 export function withTeamSettings(
   state: TeamState,
-  changes: Partial<Pick<SquadProfile, 'clubColor' | 'clubTown' | 'yellowsForBan' | 'trainingMinutes' | 'trainingTimes'>>
+  changes: Partial<
+    Pick<
+      SquadProfile,
+      'clubColor' | 'clubTown' | 'yellowsForBan' | 'trainingMinutes' | 'trainingTimes' | 'trainingFields'
+    >
+  >
 ): AppState['teams'] | null {
   if (!activeTeam(state)) return null;
   return (state.teams || []).map((t) => (t.id === state.activeTeamId ? { ...t, ...changes } : t));

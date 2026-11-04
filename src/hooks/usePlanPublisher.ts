@@ -12,7 +12,7 @@ export function planPayloadOf(state: AppState, today = localDateISO()) {
   return {
     teamName: calendarTeamName(state),
     color: teamSettings(state).clubColor,
-    plan: sharedPlanOf(state, today)
+    plan: sharedPlanOf(state, today, teamSettings(state).trainingFields)
   };
 }
 
