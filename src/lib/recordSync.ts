@@ -14,7 +14,16 @@ import { normalizeClubState } from './storage';
  */
 
 export type EntityKind =
-  'player' | 'match' | 'training' | 'schedule' | 'message' | 'scouting' | 'exercise' | 'setpiece' | 'tacticplay';
+  | 'player'
+  | 'match'
+  | 'training'
+  | 'schedule'
+  | 'message'
+  | 'scouting'
+  | 'exercise'
+  | 'setpiece'
+  | 'tacticplay'
+  | 'teamphoto';
 export type RecordKind = EntityKind | 'club';
 
 /** Team array that holds each kind of record. */
@@ -30,7 +39,9 @@ const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppState> = {
   // Set pieces carry a drawing too
   setpiece: 'setPieces',
   // Plays of the former tactics board (removed from the app): kept so stored plays are not lost
-  tacticplay: 'tacticPlays'
+  tacticplay: 'tacticPlays',
+  // Team photos (start and end of the season) are big: each one is its own document
+  teamphoto: 'teamPhotos'
 };
 const ENTITY_KINDS = Object.keys(ENTITY_FIELDS) as EntityKind[];
 

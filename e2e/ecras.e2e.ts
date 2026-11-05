@@ -2168,3 +2168,30 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
   await expect(card.getByLabel('Como correu')).toContainText('😴 06/04');
   await expect(card).toContainText('Da última vez foi fácil: da próxima, dificulta.');
 });
+
+test('antes e depois da época: foto da equipa na nuvem, autorização dos pais e imagem para partilhar', async ({
+  page
+}) => {
+  await signedIn(page);
+  await openMore(page, /Antes e depois da época/);
+  const dialog = page.getByRole('dialog', { name: 'Antes e depois da época' });
+  await dialog.getByLabel('Foto da equipa no início da época').setInputFiles('e2e/fixtures/exercicio.jpg');
+  await expect(page.getByText('Foto do início guardada ✓')).toBeVisible();
+  await expect(dialog.getByRole('img', { name: /Foto da equipa: Setembro/ })).toBeVisible();
+  // Off by default: without the parents' authorisation the picture has only the numbers
+  const auth = dialog.getByLabel(/Os pais autorizaram/);
+  await expect(auth).not.toBeChecked();
+  await auth.check();
+  await expect(dialog.getByRole('region', { name: 'Números da época' })).toContainText(/Treinos/i);
+  await expect(dialog.getByRole('img', { name: 'Imagem antes e depois da época' })).toBeVisible();
+  await expect
+    .poll(async () => [...(await cloudRecords()).values()].filter((r) => r.kind === 'teamphoto' && r.hasImage).length, {
+      timeout: 30_000,
+      message: 'foto da equipa na nuvem'
+    })
+    .toBeGreaterThan(0);
+  await dialog.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/antes-depois-app.png` : undefined });
+  const download = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: '📲 Partilhar imagem' }).click();
+  expect((await download).suggestedFilename()).toMatch(/^Antes_e_depois_.*\.png$/);
+});

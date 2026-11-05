@@ -276,7 +276,7 @@ service cloud.firestore {
         data.size() <= 10 &&
         data.keys().hasAll(['kind', 'teamId', 'entityId', 'updatedAt', 'deleted']) &&
         data.keys().hasOnly(['kind', 'teamId', 'entityId', 'updatedAt', 'updatedBy', 'deleted', 'data']) &&
-        data.kind in ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting', 'exercise', 'setpiece', 'tacticplay'] &&
+        data.kind in ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting', 'exercise', 'setpiece', 'tacticplay', 'teamphoto'] &&
         data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
         data.entityId is string && data.entityId.size() > 0 && data.entityId.size() <= 256 &&
         data.updatedAt is number &&
