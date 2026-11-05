@@ -2199,3 +2199,38 @@ test('antes e depois da época: foto da equipa na nuvem, autorização dos pais 
   await dialog.getByRole('button', { name: '📲 Partilhar imagem' }).click();
   expect((await download).suggestedFilename()).toMatch(/^Antes_e_depois_.*\.png$/);
 });
+
+test('atleta inativo: conta sempre como falta no treino até mudar o estado', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await addPlayer(page, 'Inativo Teste', '88');
+  await page.getByRole('heading', { name: 'Inativo Teste' }).click();
+  await page.getByRole('button', { name: /Editar Dados/ }).click();
+  await page
+    .locator('select')
+    .filter({ has: page.locator('option[value=inativo]') })
+    .selectOption('inativo');
+  await page.locator('#player-form button[type=submit]').click();
+
+  await navTo(page, /início/i);
+  await page
+    .getByRole('navigation', { name: 'Atalhos' })
+    .getByRole('button', { name: /Treino de hoje/ })
+    .click();
+  const today = page.getByRole('dialog', { name: 'Treino de hoje' });
+  // Shown as absent ("Inativo"), with no button to mark them present
+  const row = today.getByTitle(/Atleta inativo/).filter({ hasText: 'Inativo Teste' });
+  await expect(row).toContainText('⏸️ Inativo');
+  await expect(today.getByRole('button', { name: /Inativo Teste/ })).toHaveCount(0);
+  await today.getByRole('button', { name: /Guardar (treino|presenças)/ }).click();
+
+  // The training counts the absence, with the reason "Inativo"
+  await navTo(page, /agenda/i);
+  await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
+  await page
+    .getByRole('button', { name: /Assiduidade/ })
+    .first()
+    .click();
+  await page.getByRole('button', { name: /Inativo Teste/ }).click();
+  await expect(page.getByRole('list', { name: 'Faltas de Inativo Teste' })).toContainText('Inativo');
+});

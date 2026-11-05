@@ -11,7 +11,7 @@ export const ABSENCE_REASONS: { id: AbsenceReason; label: string }[] = [
 ];
 
 export const absenceReasonLabel = (reason?: AbsenceReason): string =>
-  ABSENCE_REASONS.find((r) => r.id === reason)?.label || 'Sem motivo indicado';
+  reason === 'inativo' ? 'Inativo' : ABSENCE_REASONS.find((r) => r.id === reason)?.label || 'Sem motivo indicado';
 
 /** Today's date (YYYY-MM-DD) on this device's clock, not UTC. */
 export function localDateISO(d: Date = new Date()): string {

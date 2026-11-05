@@ -23,6 +23,8 @@ export interface Player {
   statusUntil?: string;
   /** Short reason shown in the call-up ("entorse", "2 jogos de castigo"). */
   statusNote?: string;
+  /** ⏸️ Day the athlete was made inactive: from then on every training counts as an absence ("Inativo"). */
+  inactiveSince?: string;
   photoUrl?: string;
   active: boolean;
   notes?: string;
@@ -258,7 +260,7 @@ export interface OpponentReport {
   updatedBy?: string;
 }
 
-export type AbsenceReason = 'doente' | 'lesionado' | 'escola' | 'familia' | 'injustificada';
+export type AbsenceReason = 'doente' | 'lesionado' | 'escola' | 'familia' | 'injustificada' | 'inativo';
 
 export interface Training {
   id: string;
