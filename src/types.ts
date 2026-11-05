@@ -337,6 +337,10 @@ export interface Exercise {
   fromPdfId?: string;
   /** The page of that sheet where the exercise is (set when the sheet was split into its exercises). */
   fromPdfPage?: number;
+  /** The type as the coach writes it ("Rondo", "Finalização"…); `category` is worked out from it for colours. */
+  typeText?: string;
+  /** The material as the coach writes it ("16 cones, 2 balizas pequenas, 10 coletes"); `material` is read from it. */
+  materialText?: string;
   /** 📐 Size of the exercise's space in metres (width × length), for "Montar o campo". */
   area?: { w: number; l: number };
   /** How many cones, bibs, balls… it needs ("Levar para o treino" adds up a training's exercises). */

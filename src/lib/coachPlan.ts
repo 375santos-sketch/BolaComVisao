@@ -58,7 +58,8 @@ export function sharedPlanOf(
     const ex = b.exerciseId ? (state.exerciseLibrary || []).find((e) => e.id === b.exerciseId) : undefined;
     const notes = [
       b.notes?.trim(),
-      ex?.description?.trim() && ex.description.trim() !== b.notes?.trim() ? ex.description.trim() : ''
+      ex?.description?.trim() && ex.description.trim() !== b.notes?.trim() ? ex.description.trim() : '',
+      ex?.variations?.trim() ? `Variantes: ${ex.variations.trim()}` : ''
     ]
       .filter(Boolean)
       .join('\n');

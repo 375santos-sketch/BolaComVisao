@@ -5,7 +5,7 @@ import { Exercise, ExerciseMaterial, MaterialId, SessionBlock } from '../types';
  * material moves from one exercise to the next, so the training needs the most any one exercise asks for, not the sum.
  */
 
-export const MATERIALS: { id: MaterialId; emoji: string; one: string; many: string }[] = [
+const MATERIALS: { id: MaterialId; emoji: string; one: string; many: string }[] = [
   { id: 'cones', emoji: '🔺', one: 'cone', many: 'cones' },
   { id: 'coletes', emoji: '🦺', one: 'colete', many: 'coletes' },
   { id: 'bolas', emoji: '⚽', one: 'bola', many: 'bolas' },
@@ -16,7 +16,7 @@ export const MATERIALS: { id: MaterialId; emoji: string; one: string; many: stri
   { id: 'escadas', emoji: '🪜', one: 'escada de coordenação', many: 'escadas de coordenação' }
 ];
 
-export const MAX_PER_MATERIAL = 99;
+const MAX_PER_MATERIAL = 99;
 
 const materialLabel = (id: MaterialId, n: number) => {
   const m = MATERIALS.find((x) => x.id === id)!;
@@ -41,7 +41,7 @@ export const materialSummary = (material?: ExerciseMaterial) =>
     .join(' · ');
 
 interface KitItem {
-  id: MaterialId;
+  id: string; // a material, or "outro:<text>" for something written that is not one of them
   emoji: string;
   count: number;
   label: string; // "16 cones"
@@ -58,12 +58,19 @@ export function kitBag(blocks: SessionBlock[] | undefined, library: Exercise[] |
       most[id] = Math.max(most[id] || 0, mat[id]!);
     });
   });
-  return MATERIALS.filter((m) => most[m.id]).map((m) => ({
-    id: m.id,
+  const known = MATERIALS.filter((m) => most[m.id]).map((m) => ({
+    id: m.id as string,
     emoji: m.emoji,
     count: most[m.id]!,
     label: materialLabel(m.id, most[m.id]!)
   }));
+  // What was written without being one of the known items ("8 argolas", "apito") goes in as written
+  const others = new Map<string, string>();
+  (blocks || []).forEach((b) => {
+    const ex = b.exerciseId ? (library || []).find((e) => e && e.id === b.exerciseId) : undefined;
+    for (const o of parseMaterialText(ex?.materialText).others) others.set(norm(o), o);
+  });
+  return [...known, ...[...others].map(([key, label]) => ({ id: `outro:${key}`, emoji: '🎒', count: 1, label }))];
 }
 
 /** Text to copy or send: "🎒 Treino de 02/11 (19:15)\n• 16 cones\n…" */
@@ -73,3 +80,46 @@ export function kitBagText(items: KitItem[], date: string, time?: string): strin
     '\n'
   );
 }
+
+const norm = (t: string) =>
+  t
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+/** Words that name each material (singular/plural, with or without the accent and "pequena"). */
+const MATERIAL_WORDS: Record<MaterialId, RegExp> = {
+  cones: /\b(cones?|sinalizadores?|pratos?|chapeus? chineses?)\b/,
+  coletes: /\bcoletes?\b/,
+  bolas: /\bbolas?\b/,
+  balizas: /\b(mini[- ]?)?balizas?\b/,
+  estacas: /\b(estacas?|varas?|postes?)\b/,
+  arcos: /\b(arcos?|argolas?)\b/,
+  barreiras: /\b(mini[- ]?)?barreiras?\b/,
+  escadas: /\bescadas?\b/
+};
+
+/**
+ * The material written by the coach ("16 cones, 2 balizas pequenas, coletes") read into quantities, for the list of
+ * what to take; what is not one of the known items stays as written (`others`).
+ */
+export function parseMaterialText(text: string | undefined): { material?: ExerciseMaterial; others: string[] } {
+  const out: ExerciseMaterial = {};
+  const others: string[] = [];
+  for (const raw of (text || '').split(/[\n,;·•]+|\s+e\s+/)) {
+    const part = raw.trim().replace(/^[-–*]\s*/, '');
+    if (!part) continue;
+    const t = norm(part);
+    const id = (Object.keys(MATERIAL_WORDS) as MaterialId[]).find((k) => MATERIAL_WORDS[k].test(t));
+    const n = Number(/(\d{1,2})/.exec(t)?.[1] || 0);
+    if (id) {
+      if (n > 0) out[id] = Math.min(MAX_PER_MATERIAL, Math.max(out[id] || 0, n));
+      else others.push(part);
+    } else others.push(part);
+  }
+  return { material: cleanMaterial(out), others };
+}
+
+/** The material as it shows in the form and the library: what the coach wrote, or the quantities. */
+export const materialTextOf = (ex: Pick<Exercise, 'materialText' | 'material'>) =>
+  ex.materialText ?? materialSummary(ex.material);

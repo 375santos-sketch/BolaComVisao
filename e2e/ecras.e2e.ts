@@ -1595,13 +1595,19 @@ test('lista do saco: material do exercício no treino, e modo sol que fica lembr
   await page.getByRole('button', { name: '➕ Novo exercício' }).click();
   const form = page.getByRole('region', { name: 'Editar exercício' });
   await form.getByLabel('Nome').fill('Jogo 5x5 com balizas');
-  await form.getByLabel('Quantidade de cones').fill('16');
-  await form.getByRole('button', { name: 'Mais balizas pequenas' }).click();
-  await form.getByRole('button', { name: 'Mais balizas pequenas' }).click();
-  await form.getByRole('button', { name: 'Mais bolas' }).click();
+  // Written by the coach: the type, the variants and the material
+  await form.getByLabel('Tipo').fill('Jogo reduzido');
+  await form.getByLabel('Variantes').fill('Mais difícil: golo só depois de 5 passes.');
+  await form.getByLabel(/Material/).fill('16 cones, 2 balizas pequenas, 1 bola e apito');
   await form.getByRole('button', { name: 'Guardar exercício' }).click();
   const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
-  await expect(library).toContainText('🎒 16 cones · 1 bola · 2 balizas pequenas');
+  const card = library.getByRole('listitem').filter({ hasText: 'Jogo 5x5 com balizas' });
+  await expect(card).toContainText('Jogo reduzido · 15 min');
+  await expect(card).toContainText('🎒 16 cones, 2 balizas pequenas, 1 bola e apito');
+  await card.getByRole('button', { name: 'Editar' }).click();
+  await expect(form.getByLabel('Variantes')).toHaveValue('Mais difícil: golo só depois de 5 passes.');
+  await expect(form.getByLabel('Tipo')).toHaveValue('Jogo reduzido');
+  await form.getByRole('button', { name: 'Cancelar' }).click();
 
   await page.getByRole('button', { name: /Lista/ }).first().click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
@@ -1615,6 +1621,7 @@ test('lista do saco: material do exercício no treino, e modo sol que fica lembr
   const kit = page.getByRole('region', { name: 'Levar para o treino' });
   await expect(kit).toContainText('16 cones');
   await expect(kit).toContainText('2 balizas pequenas');
+  await expect(kit).toContainText('apito');
   await kit.getByRole('checkbox', { name: /16 cones/ }).click();
   await expect(kit.getByRole('checkbox', { name: /16 cones/ })).toHaveAttribute('aria-checked', 'true');
 
@@ -1805,7 +1812,7 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   await ai.getByRole('button', { name: '✨ Criar exercício' }).click();
   const form = page.getByRole('region', { name: 'Editar exercício' });
   await expect(form.getByLabel('Nome')).toHaveValue('Rondo 4+1 com terceiro homem');
-  await expect(form.getByLabel('Quantidade de cones')).toHaveValue('4');
+  await expect(form.getByLabel(/Material/)).toHaveValue(/4 cones/);
   expect(asked[0]).toMatchObject({ goal: 'terceiro homem na saída de bola', players: 9, ageGroup: 'Sub-11' });
   await form.getByRole('button', { name: '🔄 Outra proposta' }).click();
   await expect(form.getByLabel('Nome')).toHaveValue('Jogo 4x4 com zona de saída');
@@ -2042,13 +2049,14 @@ test('montar o campo: meio campo à quinta, medidas em falta, passo a passo e en
   await page.getByRole('button', { name: /Lista/ }).first().click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page.locator('input[type="date"]').first().fill('2099-03-05');
+  await page.getByPlaceholder('Ex: Campo Sintético, Campo Principal, Pavilhão...').fill('Campo do teste de montar');
   await page.getByRole('button', { name: /Da biblioteca/ }).click();
   const pick = page.getByRole('group', { name: 'Escolher da biblioteca' });
   await pick.getByRole('button', { name: /Quadrado de aquecimento/ }).click();
   await page.getByRole('button', { name: /Da biblioteca/ }).click();
   await pick.getByRole('button', { name: /Jogo de posse/ }).click();
   await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
-  await page.locator('[data-training-row]').filter({ hasText: /05Qui/ }).click();
+  await page.locator('[data-training-row]').filter({ hasText: 'Campo do teste de montar' }).click();
   await page.getByRole('button', { name: '📐 Montar o campo' }).click();
 
   const setup = page.getByRole('dialog', { name: 'Montar o campo' });
@@ -2111,6 +2119,7 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
     await page.getByRole('button', { name: /Lista/ }).first().click();
     await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
     await page.locator('input[type="date"]').first().fill(date);
+    await page.getByPlaceholder('Ex: Campo Sintético, Campo Principal, Pavilhão...').fill(`Campo do nível ${date}`);
     await page.getByRole('button', { name: /Da biblioteca/ }).click();
     await page
       .getByRole('group', { name: 'Escolher da biblioteca' })
@@ -2122,7 +2131,7 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
   await newTraining('2099-04-06');
   await expect(page.getByRole('region', { name: /Sugestão para/ })).toHaveCount(0);
   await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
-  await page.locator('[data-training-row]').filter({ hasText: /06Seg/ }).click();
+  await page.locator('[data-training-row]').filter({ hasText: 'Campo do nível 2099-04-06' }).click();
   const rate = page.getByRole('group', { name: 'Como correu: Rondo com joker' });
   await rate.getByRole('button', { name: '😴 Fácil' }).click();
   await expect(rate.getByRole('button', { name: '😴 Fácil' })).toHaveAttribute('aria-pressed', 'true');
@@ -2143,7 +2152,7 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
   await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
 
   // The new space goes to "Montar o campo"
-  await page.locator('[data-training-row]').filter({ hasText: /09Qui/ }).click();
+  await page.locator('[data-training-row]').filter({ hasText: 'Campo do nível 2099-04-09' }).click();
   await page.getByRole('button', { name: '📐 Montar o campo' }).click();
   await expect(page.getByRole('region', { name: 'Campo desenhado' })).toContainText('A Rondo com joker');
   await page.getByRole('dialog', { name: 'Montar o campo' }).getByRole('tab', { name: 'Passo a passo' }).click();
