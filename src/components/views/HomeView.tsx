@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { teamSettings } from '../../lib/teamSettings';
 import { AppState, ScheduledMatch, Training, UserAccount, ClubEvent } from '../../types';
 import { TabType } from '../Navbar';
@@ -44,7 +44,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onShowToast
 }) => {
   const [birthdayImage, setBirthdayImage] = useState<BirthdayPerson | null>(null);
-  const [followLive, setFollowLive] = useState(false);
+  // 🔔 A notice tapped on the phone opens the app here with ?aoVivo=1: straight to "📡 Ao vivo"
+  const [followLive, setFollowLive] = useState(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.has('aoVivo')) return false;
+      url.searchParams.delete('aoVivo');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+      return true;
+    } catch {
+      return false;
+    }
+  });
+  // …and with the app already open, the tapped notice brings it here
+  useEffect(() => {
+    const open = () => setFollowLive(true);
+    window.addEventListener('bcv-ao-vivo', open);
+    return () => window.removeEventListener('bcv-ao-vivo', open);
+  }, []);
   // Who has a birthday today (athletes and staff)
   const birthdaysToday = useMemo(
     () => getAllBirthdays(state.roster || [], state.staffMembers || []).filter((b) => b.isToday),

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AppState, Match, GoalEvent, CardEvent, SubEvent, GoalType, MatchPeriod } from '../../../../types';
 import { uid, formatMinute, sortPlayerObjs, getMatchElapsedMs } from '../../../../lib/utils';
 import { getLineupSize } from '../../../../lib/constants';
+import { announceMatchChange } from '../../../../services/push';
 import {
   getMatchPhase,
   getMatchSquad,
@@ -80,6 +81,12 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
       liveAt: getNowTimestamp()
     };
     const newMatches = state.matches.map((x) => (x.id === stamped.id ? stamped : x));
+    // 🔔 The start and every goal: a notice to the other coaches' phones
+    announceMatchChange(
+      state,
+      state.matches.find((x) => x.id === stamped.id),
+      stamped
+    );
     onUpdateState({ matches: newMatches });
   };
 

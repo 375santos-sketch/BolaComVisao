@@ -465,3 +465,52 @@ describe('Conta sem código de clube (clube principal "main")', () => {
     ).rejects.toMatchObject(denied);
   });
 });
+
+describe('Avisos do jogo: telemóveis registados por cada treinador', () => {
+  beforeAll(async () => {
+    await setRules(RULES_NOW);
+  });
+  const subDoc = (club: string, id: string) => fs.doc(fb.db, 'club_workspace', club, 'push_subscriptions', id);
+  const subscription = (who: string, extra: Record<string, unknown> = {}) => ({
+    uid: uids[who],
+    endpoint: `https://web.push.apple.com/${who}`,
+    keys: { p256dh: 'BPk3', auth: 'aX9' },
+    prefs: { inicio: true, golo: true, fim: false },
+    teamIds: ['sub11'],
+    device: 'iPhone',
+    updatedAt: Date.now(),
+    ...extra
+  });
+
+  it('a coach registers their own phone and the colleagues of the club read the list (the server sends with it)', async () => {
+    await signInAs('coachA');
+    await fs.setDoc(subDoc('clubA', 'telemovelA'), subscription('coachA'));
+    await signInAs('colegaA');
+    expect((await fs.getDocs(fs.collection(fb.db, 'club_workspace', 'clubA', 'push_subscriptions'))).size).toBe(1);
+    // …and can remove a phone the push service no longer knows
+    await fs.setDoc(subDoc('clubA', 'telemovelColega'), subscription('colegaA'));
+    await fs.deleteDoc(subDoc('clubA', 'telemovelColega'));
+  });
+
+  it('nobody registers a phone in the name of another coach, nor changes it', async () => {
+    await signInAs('colegaA');
+    await expect(fs.setDoc(subDoc('clubA', 'falso'), subscription('coachA'))).rejects.toMatchObject(denied);
+    await expect(
+      fs.setDoc(subDoc('clubA', 'telemovelA'), subscription('colegaA', { endpoint: 'https://mal.example/x' }))
+    ).rejects.toMatchObject(denied);
+  });
+
+  it('another club cannot read or write them; only push addresses (https) and the known fields', async () => {
+    await signInAs('coachB');
+    await expect(
+      fs.getDocs(fs.collection(fb.db, 'club_workspace', 'clubA', 'push_subscriptions'))
+    ).rejects.toMatchObject(denied);
+    await signInAs('coachA');
+    await expect(
+      fs.setDoc(subDoc('clubA', 'inseguro'), subscription('coachA', { endpoint: 'http://inseguro/x' }))
+    ).rejects.toMatchObject(denied);
+    await expect(
+      fs.setDoc(subDoc('clubA', 'extra'), subscription('coachA', { email: 'x@y.pt' }))
+    ).rejects.toMatchObject(denied);
+  });
+});

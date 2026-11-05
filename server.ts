@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
-import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
+import { buildICS, feedFromRestDocument, fromRest } from './src/lib/calendarFeed';
 import {
   cleanPrintExercise,
   cleanPrintExercises,
@@ -13,6 +13,8 @@ import {
   EXERCISES_SCHEMA
 } from './src/lib/printExercise';
 import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
+import webpush from 'web-push';
+import { VAPID_PUBLIC_KEY, cleanNoticeRequest, cleanSubscription, subscriptionsToNotify } from './src/lib/pushEvents';
 import { ChronicleAudience, chroniclePrompt, cleanChronicle } from './src/lib/matchChronicle';
 import { cleanIdeaRequest, exerciseIdeaPrompt } from './src/lib/exerciseIdea';
 import {
@@ -465,6 +467,73 @@ async function startServer() {
     } catch (err) {
       console.error('Erro na rota /cal:', err);
       return res.status(502).type('text/plain').send('Calendário temporariamente indisponível.');
+    }
+  });
+
+  // 🔔 Avisos do jogo: the phone recording a game asks for a notice (start, goal, end); it goes to the phones of the
+  // other coaches of the club who asked for it, even with the app closed (Web Push). The subscriptions are read and
+  // cleaned with the sender's own sign-in, so the Firestore rules apply. The private key is the VAPID_PRIVATE_KEY
+  // secret of AI Studio.
+  app.post('/api/avisar', async (req, res) => {
+    try {
+      const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
+      const authHeader = req.headers.authorization || '';
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+      const verification = token && apiKey ? await verifyFirebaseIdToken(token, apiKey) : { valid: false };
+      if (!verification.valid || !verification.uid) {
+        return res.status(401).json({ success: false, error: 'Sessão expirada. Entre de novo na app.' });
+      }
+      const notice = cleanNoticeRequest(req.body);
+      if (!notice) return res.status(400).json({ success: false, error: 'Aviso inválido.' });
+      const privateKey = (process.env.VAPID_PRIVATE_KEY || '').trim();
+      if (!privateKey) {
+        return res.status(503).json({
+          success: false,
+          error: 'Os avisos ainda não estão ligados: falta a chave VAPID_PRIVATE_KEY nos Secrets do AI Studio.'
+        });
+      }
+      webpush.setVapidDetails(
+        process.env.APP_URL && /^https:\/\//.test(process.env.APP_URL)
+          ? process.env.APP_URL
+          : 'mailto:avisos@bolacomvisao.pt',
+        VAPID_PUBLIC_KEY,
+        privateKey
+      );
+      const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+      const base = process.env.FIRESTORE_EMULATOR_HOST
+        ? `http://${process.env.FIRESTORE_EMULATOR_HOST}`
+        : 'https://firestore.googleapis.com';
+      const collectionUrl = `${base}/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/club_workspace/${notice.clubId}/push_subscriptions`;
+      const authOnly = { Authorization: `Bearer ${token}` };
+      const listed = await fetch(`${collectionUrl}?pageSize=300`, { headers: authOnly });
+      if (!listed.ok) return res.status(403).json({ success: false, error: 'Sem acesso aos avisos deste clube.' });
+      const body = (await listed.json()) as { documents?: Array<{ name: string; fields?: Record<string, any> }> };
+      const subs = (body.documents || [])
+        .map((d) => cleanSubscription(d.name.split('/').pop() || '', fromRest({ mapValue: { fields: d.fields } })))
+        .filter((s): s is NonNullable<typeof s> => Boolean(s));
+      const targets = subscriptionsToNotify(subs, verification.uid, notice);
+      const payload = JSON.stringify({ title: notice.title, body: notice.body, tag: notice.tag, url: '/?aoVivo=1' });
+      let sent = 0;
+      await Promise.all(
+        targets.map(async (s) => {
+          try {
+            await webpush.sendNotification({ endpoint: s.endpoint, keys: s.keys }, payload, {
+              TTL: 3600,
+              urgency: 'high'
+            });
+            sent++;
+          } catch (err: any) {
+            // The phone's push service no longer knows this address: forget it
+            if (err?.statusCode === 404 || err?.statusCode === 410) {
+              await fetch(`${collectionUrl}/${s.id}`, { method: 'DELETE', headers: authOnly }).catch(() => undefined);
+            } else console.warn('Aviso do jogo não enviado:', err?.statusCode || err?.message || err);
+          }
+        })
+      );
+      return res.json({ success: true, sent, phones: targets.length });
+    } catch (err: any) {
+      console.error('Erro na rota /api/avisar:', err?.message || err);
+      return res.status(500).json({ success: false, error: 'Não foi possível enviar o aviso.' });
     }
   });
 
