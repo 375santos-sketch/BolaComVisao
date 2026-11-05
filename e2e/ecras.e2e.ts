@@ -2234,3 +2234,58 @@ test('atleta inativo: conta sempre como falta no treino até mudar o estado', as
   await page.getByRole('button', { name: /Inativo Teste/ }).click();
   await expect(page.getByRole('list', { name: 'Faltas de Inativo Teste' })).toContainText('Inativo');
 });
+
+test('acompanhar ao vivo: o outro treinador vê o jogo a acontecer no telemóvel dele', async ({ page, browser }) => {
+  await signedIn(page);
+  await navTo(page, /agenda/i);
+  await addToAgenda(page, 'Jogo');
+  await page.getByPlaceholder('Nome da equipa adversária').fill('Equipa Ao Vivo');
+  await page.locator('input[type=date]').first().fill(new Date().toISOString().slice(0, 10));
+  await page.locator('input[type=time]').first().fill('10:00');
+  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await openAgendaRow(page, /vs Equipa Ao Vivo/);
+  await page
+    .getByRole('button', { name: /Iniciar Jogo/ })
+    .first()
+    .click();
+  await page.getByRole('button', { name: /Selecionar 7 Titulares/i }).click();
+  await page.getByRole('button', { name: /1\.ºs 7/ }).click();
+  await page.getByRole('button', { name: /Confirmar 7 Titulares/i }).click();
+  await page.getByRole('button', { name: /Iniciar 1.ª parte/i }).click();
+
+  // The other coach (at home) sees the game on his Início and follows it
+  const watcherContext = await browser.newContext();
+  const watcher = await newCoachPage(watcherContext, COACH_B);
+  const liveCard = watcher.getByRole('region', { name: 'Jogo em direto' });
+  await expect(liveCard).toContainText('0 – 0', { timeout: 30_000 });
+  await expect(liveCard).toContainText('Registado por Treinador A');
+  await liveCard.getByRole('button', { name: '📡 Acompanhar ao vivo' }).click();
+  const follow = watcher.getByRole('dialog', { name: 'Ao vivo' });
+  await expect(follow.getByRole('region', { name: 'Resultado' })).toContainText('EM DIRETO');
+  // Only to watch: no buttons to change the game
+  await expect(follow.getByRole('button')).toHaveText(['✕']);
+
+  // A goal on the director's phone arrives on the coach's phone a moment later
+  await page.getByRole('button', { name: /GOLO MARCADO/i }).click();
+  await page.locator('select').nth(0).selectOption('p2'); // 7 - Tomás Gonçalves
+  await page.locator('select').nth(1).selectOption('p6'); // 3 - Lucas Pereira
+  await page.getByRole('button', { name: 'Confirmar Golo' }).click();
+  await expect(follow.getByRole('alert')).toContainText('⚽ Golo! Dragões 1 – 0', { timeout: 30_000 });
+  await expect(follow.getByRole('region', { name: 'Resultado' })).toContainText('1 – 0');
+  const events = follow.getByRole('region', { name: 'Lances' });
+  await expect(events).toContainText('⚽ Golo · Tomás');
+  await expect(events).toContainText('Assist. Lucas');
+
+  // Then a goal conceded and a card
+  await page.getByRole('button', { name: /GOLO SOFRIDO/i }).click();
+  await page.getByRole('button', { name: 'Confirmar Golo Sofrido' }).click();
+  await page.getByRole('button', { name: /Cartão/ }).click();
+  await page.locator('select').first().selectOption('p5'); // 2 - Martim Costa
+  await page.getByRole('button', { name: 'Confirmar Cartão' }).click();
+  await expect(follow.getByRole('region', { name: 'Resultado' })).toContainText('1 – 1', { timeout: 30_000 });
+  await expect(events).toContainText('Golo sofrido');
+  await expect(events).toContainText('🟨 Martim', { timeout: 30_000 });
+  await expect(follow.getByRole('region', { name: 'Números do jogo' })).toContainText('Cartões amarelos');
+  await watcher.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/ao-vivo.png` : undefined });
+  await watcherContext.close();
+});
