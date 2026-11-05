@@ -52,6 +52,7 @@ const StatsView = lazyWithRetry(() => import('./components/views/StatsView'), 'S
 const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 'DatabaseModal');
 const MonthlyReportModal = lazyWithRetry(() => import('./components/MonthlyReportModal'));
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
+const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
 const SignatureModal = lazyWithRetry(() => import('./components/SignatureModal'));
 const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
@@ -137,6 +138,7 @@ export default function App() {
   const [showDatabase, setShowDatabase] = useState<boolean>(false);
   const [showMonthlyReport, setShowMonthlyReport] = useState<boolean>(false);
   const [showCareer, setShowCareer] = useState<boolean>(false);
+  const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
   const [showSignature, setShowSignature] = useState<boolean>(false);
   const [tourOpen, setTourOpen] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
@@ -1026,6 +1028,7 @@ export default function App() {
           onOpenInviteStaff={() => setShowInviteStaff(true)}
           onOpenSeasons={() => setShowSeasonSelector(true)}
           onOpenCareer={() => setShowCareer(true)}
+          onOpenSeasonGrowth={() => setShowSeasonGrowth(true)}
           onOpenSignature={() => setShowSignature(true)}
           onOpenTour={() => {
             handleNavigate('home');
@@ -1051,6 +1054,16 @@ export default function App() {
               onUpdateState={updateState}
               onShowToast={showToast}
               onClose={() => setShowSignature(false)}
+            />
+          </Suspense>
+        )}
+        {showSeasonGrowth && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <SeasonGrowthModal
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onClose={() => setShowSeasonGrowth(false)}
             />
           </Suspense>
         )}

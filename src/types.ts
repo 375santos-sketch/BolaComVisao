@@ -707,6 +707,17 @@ export interface SquadProfile {
   setPieces?: SetPiece[];
   /** Animated plays drawn on the tactics board, each its own cloud record. */
   tacticPlays?: TacticPlay[];
+  /** 📸 Team photos (start and end of each season), each its own cloud record. */
+  teamPhotos?: TeamPhoto[];
+}
+
+/** 📸 A photo of the whole team, at the start or at the end of a season (compressed JPEG data URL). */
+export interface TeamPhoto {
+  id: string;
+  season: string;
+  moment: 'inicio' | 'fim';
+  image: string;
+  createdAt: string;
 }
 
 /** A piece on the tactics board: our player, an opponent or the ball. */
@@ -1025,6 +1036,8 @@ export interface AppState {
   setPieces?: SetPiece[];
   /** Copy of the active team's tactics-board plays (the teams hold them; see SquadProfile.tacticPlays). */
   tacticPlays?: TacticPlay[];
+  /** Copy of the active team's photos (the teams hold them; see SquadProfile.teamPhotos). */
+  teamPhotos?: TeamPhoto[];
   exerciseLibrary?: Exercise[];
   subscription?: ClubSubscription;
   updatedAt?: number;

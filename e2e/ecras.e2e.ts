@@ -1681,6 +1681,10 @@ test('crónica do jogo e cromo do atleta (imagem e PDF de todos)', async ({ page
 });
 
 test('vídeo do jogo: link do YouTube, início das partes e cada lance no seu momento', async ({ page }) => {
+  // The test does not depend on YouTube's own player (its scripts change and can throw on their own): an empty page
+  await page.route(/youtube(-nocookie)?\.com\//, (route) =>
+    route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Vídeo</title>' })
+  );
   await signedIn(page);
   await navTo(page, /agenda/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
@@ -2167,4 +2171,31 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
     .filter({ hasText: 'Rondo com joker' });
   await expect(card.getByLabel('Como correu')).toContainText('😴 06/04');
   await expect(card).toContainText('Da última vez foi fácil: da próxima, dificulta.');
+});
+
+test('antes e depois da época: foto da equipa na nuvem, autorização dos pais e imagem para partilhar', async ({
+  page
+}) => {
+  await signedIn(page);
+  await openMore(page, /Antes e depois da época/);
+  const dialog = page.getByRole('dialog', { name: 'Antes e depois da época' });
+  await dialog.getByLabel('Foto da equipa no início da época').setInputFiles('e2e/fixtures/exercicio.jpg');
+  await expect(page.getByText('Foto do início guardada ✓')).toBeVisible();
+  await expect(dialog.getByRole('img', { name: /Foto da equipa: Setembro/ })).toBeVisible();
+  // Off by default: without the parents' authorisation the picture has only the numbers
+  const auth = dialog.getByLabel(/Os pais autorizaram/);
+  await expect(auth).not.toBeChecked();
+  await auth.check();
+  await expect(dialog.getByRole('region', { name: 'Números da época' })).toContainText(/Treinos/i);
+  await expect(dialog.getByRole('img', { name: 'Imagem antes e depois da época' })).toBeVisible();
+  await expect
+    .poll(async () => [...(await cloudRecords()).values()].filter((r) => r.kind === 'teamphoto' && r.hasImage).length, {
+      timeout: 30_000,
+      message: 'foto da equipa na nuvem'
+    })
+    .toBeGreaterThan(0);
+  await dialog.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/antes-depois-app.png` : undefined });
+  const download = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: '📲 Partilhar imagem' }).click();
+  expect((await download).suggestedFilename()).toMatch(/^Antes_e_depois_.*\.png$/);
 });

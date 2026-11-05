@@ -19,6 +19,8 @@ interface MoreDrawerProps {
   onOpenInviteStaff?: () => void;
   onOpenSeasons?: () => void;
   onOpenCareer?: () => void;
+  /** 📸 Antes e depois da época. */
+  onOpenSeasonGrowth?: () => void;
   onOpenSignature?: () => void;
   onOpenTour?: () => void;
   pendingUsersCount?: number;
@@ -37,6 +39,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onOpenInviteStaff,
   onOpenSeasons,
   onOpenCareer,
+  onOpenSeasonGrowth,
   onOpenSignature,
   onOpenTour,
   pendingUsersCount = 0,
@@ -93,6 +96,16 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
                 title: 'Épocas',
                 detail: `${state.season || defaultSeason()} · ver épocas anteriores`,
                 run: onOpenSeasons
+              }
+            ]
+          : []),
+        ...(onOpenSeasonGrowth
+          ? [
+              {
+                icon: 'trophy' as IconName,
+                title: 'Antes e depois da época',
+                detail: 'Fotos da equipa e números da época numa imagem',
+                run: onOpenSeasonGrowth
               }
             ]
           : []),
