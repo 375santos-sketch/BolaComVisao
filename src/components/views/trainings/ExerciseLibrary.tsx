@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { AutoTextarea } from '../../ui/AutoTextarea';
 import { Exercise, ExerciseCategory, Training } from '../../../types';
-import { MATERIALS, MAX_PER_MATERIAL, cleanMaterial, materialSummary } from '../../../lib/kitBag';
+import { materialTextOf, parseMaterialText } from '../../../lib/kitBag';
+import { TYPE_SUGGESTIONS, categoryFromType, typeOf } from '../../../lib/exerciseType';
 import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
 import { compressImageFile, compressImageSource, cropImageSource } from '../../../lib/imageCompress';
 import { readPrintData } from '../../../lib/readPrint';
@@ -48,7 +49,6 @@ const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
   { id: 'jogo', label: '🥅 Jogo' },
   { id: 'bolas_paradas', label: '🎯 Bolas paradas' }
 ];
-const categoryLabel = (c?: ExerciseCategory) => EXERCISE_CATEGORIES.find((x) => x.id === c)?.label || '';
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];
@@ -122,6 +122,12 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
       return;
     }
     const clean: Exercise = { ...editing, name: editing.name.trim(), objective: editing.objective?.trim() || '' };
+    for (const key of ['variations', 'typeText', 'materialText'] as const) {
+      const v = clean[key]?.trim();
+      if (v) clean[key] = v;
+      else delete clean[key];
+    }
+    if (clean.materialText !== undefined) clean.material = parseMaterialText(clean.materialText).material;
     if (!clean.material) delete clean.material;
     // The old "explicar às crianças" text is no longer used
     delete (clean as Exercise & { kidsText?: string }).kidsText;
@@ -252,6 +258,16 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
             onChange={(e) => setEditing({ ...editing, objective: e.target.value })}
           />
         </label>
+        <label className="block text-[11px] text-slate-400">
+          Variantes
+          <AutoTextarea
+            className={input}
+            rows={2}
+            value={editing.variations || ''}
+            placeholder="Ex: Mais difícil: só 2 toques. Mais fácil: um joker para quem tem a bola."
+            onChange={(e) => setEditing({ ...editing, variations: e.target.value })}
+          />
+        </label>
         <div className="grid grid-cols-2 gap-2">
           <label className="block text-[11px] text-slate-400">
             Duração (min)
@@ -268,17 +284,24 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
           </label>
           <label className="block text-[11px] text-slate-400">
             Tipo
-            <select
+            <input
               className={input}
-              value={editing.category}
-              onChange={(e) => setEditing({ ...editing, category: e.target.value as ExerciseCategory })}
-            >
-              {EXERCISE_CATEGORIES.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
+              list="tipos-de-exercicio"
+              value={typeOf(editing)}
+              placeholder="Ex: Rondo"
+              onChange={(e) =>
+                setEditing({
+                  ...editing,
+                  typeText: e.target.value,
+                  category: categoryFromType(e.target.value, editing.category)
+                })
+              }
+            />
+            <datalist id="tipos-de-exercicio">
+              {TYPE_SUGGESTIONS.map((t) => (
+                <option key={t} value={t} />
               ))}
-            </select>
+            </datalist>
           </label>
         </div>
         <label className="block text-[11px] text-slate-400">
@@ -287,59 +310,27 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
             className={input}
             rows={5}
             value={editing.description || ''}
-            placeholder="Espaço, número de jogadores, regras, variantes…"
+            placeholder="Espaço, número de jogadores, regras…"
             onChange={(e) => setEditing({ ...editing, description: e.target.value })}
           />
         </label>
 
-        <fieldset className="space-y-1.5">
-          <legend className="text-[11px] text-slate-400 mb-1">🎒 Material</legend>
-          {MATERIALS.map((m) => {
-            const n = editing.material?.[m.id] || 0;
-            const set = (v: number) =>
+        <label className="block text-[11px] text-slate-400">
+          🎒 Material
+          <AutoTextarea
+            className={input}
+            rows={2}
+            value={materialTextOf(editing)}
+            placeholder="Ex: 16 cones, 2 balizas pequenas, 10 coletes, 6 bolas"
+            onChange={(e) =>
               setEditing({
                 ...editing,
-                material: cleanMaterial({ ...editing.material, [m.id]: Math.max(0, Math.min(MAX_PER_MATERIAL, v)) })
-              });
-            return (
-              <div
-                key={m.id}
-                className={`ui-inset flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs ${n ? 'text-white' : 'text-slate-400'}`}
-              >
-                <span className="flex-1 font-semibold">
-                  {m.emoji} {m.many.charAt(0).toUpperCase() + m.many.slice(1)}
-                </span>
-                <button
-                  type="button"
-                  aria-label={`Menos ${m.many}`}
-                  onClick={() => set(n - 1)}
-                  className="ui-btn ui-btn-secondary w-8 h-8 text-base"
-                >
-                  −
-                </button>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  max={MAX_PER_MATERIAL}
-                  aria-label={`Quantidade de ${m.many}`}
-                  value={n || ''}
-                  placeholder="0"
-                  onChange={(e) => set(Math.round(Number(e.target.value) || 0))}
-                  className="ui-input w-12 text-center text-sm font-bold !px-1"
-                />
-                <button
-                  type="button"
-                  aria-label={`Mais ${m.many}`}
-                  onClick={() => set(n + 1)}
-                  className="ui-btn ui-btn-secondary w-8 h-8 text-base"
-                >
-                  +
-                </button>
-              </div>
-            );
-          })}
-        </fieldset>
+                materialText: e.target.value,
+                material: parseMaterialText(e.target.value).material
+              })
+            }
+          />
+        </label>
 
         <div className="space-y-2">
           <div className="text-[11px] text-slate-400">Desenho do exercício</div>
@@ -582,12 +573,10 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold text-white truncate">{e.name}</div>
                 <div className="text-[10px] text-slate-400 font-mono">
-                  {categoryLabel(e.category)} · {e.durationMinutes} min
+                  {typeOf(e)} · {e.durationMinutes} min
                 </div>
                 {e.objective && <div className="text-[11px] text-slate-300 line-clamp-2 mt-0.5">{e.objective}</div>}
-                {e.material && (
-                  <div className="text-[11px] text-slate-400 mt-0.5">🎒 {materialSummary(e.material)}</div>
-                )}
+                {materialTextOf(e) && <div className="text-[11px] text-slate-400 mt-0.5">🎒 {materialTextOf(e)}</div>}
                 <div className="text-[10px] text-cyan-300/80 mt-0.5">{usageLabel(usage.get(e.id))}</div>
                 <LevelHistory marks={levelHistory(trainings, e.id)} />
                 <div className="flex gap-3 mt-1.5 text-[11px]">
