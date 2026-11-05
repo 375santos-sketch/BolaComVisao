@@ -1681,6 +1681,10 @@ test('crónica do jogo e cromo do atleta (imagem e PDF de todos)', async ({ page
 });
 
 test('vídeo do jogo: link do YouTube, início das partes e cada lance no seu momento', async ({ page }) => {
+  // The test does not depend on YouTube's own player (its scripts change and can throw on their own): an empty page
+  await page.route(/youtube(-nocookie)?\.com\//, (route) =>
+    route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Vídeo</title>' })
+  );
   await signedIn(page);
   await navTo(page, /agenda/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
