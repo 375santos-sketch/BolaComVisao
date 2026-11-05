@@ -2282,6 +2282,15 @@ test('acompanhar ao vivo: o outro treinador vê o jogo a acontecer no telemóvel
   await page.getByRole('button', { name: /Cartão/ }).click();
   await page.locator('select').first().selectOption('p5'); // 2 - Martim Costa
   await page.getByRole('button', { name: 'Confirmar Cartão' }).click();
+  // First in the cloud (the director's phone sent it)…
+  await expect
+    .poll(
+      async () =>
+        [...(await cloudRecords()).values()].find((r) => r.kind === 'match' && r.opponent === 'Equipa Ao Vivo')?.goals,
+      { timeout: 30_000, message: 'golo sofrido na nuvem' }
+    )
+    .toBe(2);
+  // …then on the other phone (it received it)
   await expect(follow.getByRole('region', { name: 'Resultado' })).toContainText('1 – 1', { timeout: 30_000 });
   await expect(events).toContainText('Golo sofrido');
   await expect(events).toContainText('🟨 Martim', { timeout: 30_000 });
