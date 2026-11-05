@@ -14,6 +14,21 @@ interface AttendanceGridProps {
 export const AttendanceGrid: React.FC<AttendanceGridProps> = ({ players, absences, reasons, onToggle, onReason }) => (
   <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5 items-start">
     {players.map((p) => {
+      // ⏸️ Inactive athletes always count as absent, until their status changes in the athlete's sheet
+      if (p.status === 'inativo')
+        return (
+          <div
+            key={p.id}
+            title="Atleta inativo: conta sempre como falta até mudar o estado na ficha do atleta"
+            className="rounded-lg border border-slate-700 bg-slate-900/60 p-2 text-xs text-slate-400 flex items-center justify-between gap-1.5"
+          >
+            <span className="truncate">
+              {p.number !== null && p.number !== undefined ? `#${p.number} ` : ''}
+              {p.name}
+            </span>
+            <span className="text-[10px] shrink-0">⏸️ Inativo</span>
+          </div>
+        );
       const isAbs = absences.includes(p.id);
       return (
         <div

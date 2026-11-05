@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { withInactiveAbsences } from './lib/inactiveAbsences';
+import { localDateISO } from './lib/trainingQuick';
 import { AppState, UserAccount, AppNotification } from './types';
 import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
 import { subscribeToClubCloud, migrateClubToRecords, getCloudMode } from './services/clubCloud';
@@ -314,6 +316,14 @@ export default function App() {
       return updated;
     });
   };
+
+  // ⏸️ Inactive athletes count as absent in every training from the day they were made inactive
+  useEffect(() => {
+    const fixed = withInactiveAbsences(state.roster, state.trainings, localDateISO());
+    if (fixed) updateState(fixed);
+    // updateState is stable enough here: it only reads the latest state through setState
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.roster, state.trainings]);
 
   // Full-size photos saved by older versions filled the phone's storage: reduce them once.
   useShrinkOldPhotos(state, latestStateRef, updateState);
