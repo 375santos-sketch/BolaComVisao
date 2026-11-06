@@ -73,7 +73,13 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
   const [isFinishing, setIsFinishing] = useState(false);
 
   const updateMatchInState = (updatedMatch: Match) => {
-    const newMatches = state.matches.map((x) => (x.id === updatedMatch.id ? updatedMatch : x));
+    // 📡 Who is recording it and when: the other coaches follow the game live
+    const stamped: Match = {
+      ...updatedMatch,
+      ...(state.currentUser?.name ? { liveBy: state.currentUser.name } : {}),
+      liveAt: getNowTimestamp()
+    };
+    const newMatches = state.matches.map((x) => (x.id === stamped.id ? stamped : x));
     onUpdateState({ matches: newMatches });
   };
 

@@ -208,6 +208,9 @@ export interface Match {
   capitao: string | null;
   notes?: string;
   timer?: MatchTimer;
+  /** 📡 Who is recording the game now (shown to the coaches following it) and when they last changed it. */
+  liveBy?: string;
+  liveAt?: number;
   timeline?: MatchTimeline;
   originalSchedule?: ScheduledMatch;
   // Match stats & PDF reference

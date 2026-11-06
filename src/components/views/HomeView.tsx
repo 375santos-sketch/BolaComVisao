@@ -5,6 +5,7 @@ import { TabType } from '../Navbar';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { UnifiedEvent } from '../dashboard/DashboardNextEvent';
 import { TodayFocusCard } from '../dashboard/TodayFocusCard';
+import { LiveFollowModal, LiveMatchCard } from '../live/LiveFollow';
 import { Icon, IconName } from '../ui/Icon';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
@@ -43,6 +44,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onShowToast
 }) => {
   const [birthdayImage, setBirthdayImage] = useState<BirthdayPerson | null>(null);
+  const [followLive, setFollowLive] = useState(false);
   // Who has a birthday today (athletes and staff)
   const birthdaysToday = useMemo(
     () => getAllBirthdays(state.roster || [], state.staffMembers || []).filter((b) => b.isToday),
@@ -194,6 +196,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
         latestPendingUser={latestPendingUser}
         onExportBackup={onExportBackup}
       />
+
+      {/* 📡 A game being recorded now (by the director or another coach): follow it live */}
+      <LiveMatchCard state={state} onOpen={() => setFollowLive(true)} />
+      {followLive && <LiveFollowModal state={state} onClose={() => setFollowLive(false)} />}
 
       {/* 2. HOJE: Today Focus Card (Jogo, Treino, Reunião) */}
       <TodayFocusCard

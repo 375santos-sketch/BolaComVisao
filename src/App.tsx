@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { withInactiveAbsences } from './lib/inactiveAbsences';
+import { liveMatchOf } from './lib/liveFollow';
 import { localDateISO } from './lib/trainingQuick';
 import { AppState, UserAccount, AppNotification } from './types';
 import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
@@ -309,7 +310,8 @@ export default function App() {
           () => {
             pushStateToCloud(updated, isWiping);
           },
-          isWiping ? 200 : 3500
+          // 📡 During a game, changes go out fast so the coaches following it see them live
+          isWiping ? 200 : updates.matches !== undefined && liveMatchOf(updated.matches) ? 800 : 3500
         );
       }
 
