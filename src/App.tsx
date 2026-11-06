@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
 import { withInactiveAbsences } from './lib/inactiveAbsences';
 import { liveMatchOf } from './lib/liveFollow';
 import { localDateISO } from './lib/trainingQuick';
@@ -77,7 +77,11 @@ export default function App() {
   useCalendarPublisher(state);
   usePlanPublisher(state);
   const latestStateRef = useRef(state);
-  useEffect(() => {
+  // At commit time, not in a passive effect: a passive effect left over from an older render runs when the next
+  // update starts, i.e. after a cloud snapshot already put a newer state here, and would put the older one back
+  // (the next snapshot then took that older copy for a local edit and sent it to the cloud: a goal seen live
+  // disappeared again).
+  useLayoutEffect(() => {
     latestStateRef.current = state;
   }, [state]);
 
