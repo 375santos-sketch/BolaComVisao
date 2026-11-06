@@ -312,6 +312,21 @@ service cloud.firestore {
         data.updatedAt is number;
     }
 
+    function isValidPushSubscription(data) {
+      return data is map &&
+        data.keys().hasAll(['uid', 'endpoint', 'keys', 'prefs', 'teamIds', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'endpoint', 'keys', 'prefs', 'teamIds', 'updatedAt', 'device']) &&
+        data.uid is string &&
+        data.endpoint is string && data.endpoint.size() <= 1024 && data.endpoint.matches('^https://.*') &&
+        data.keys is map && data.keys.keys().hasOnly(['p256dh', 'auth']) &&
+        data.keys.p256dh is string && data.keys.p256dh.size() <= 256 &&
+        data.keys.auth is string && data.keys.auth.size() <= 128 &&
+        data.prefs is map && data.prefs.keys().hasOnly(['inicio', 'golo', 'fim']) &&
+        data.teamIds is list && data.teamIds.size() <= 20 &&
+        (!data.keys().hasAny(['device']) || (data.device is string && data.device.size() <= 80)) &&
+        data.updatedAt is number;
+    }
+
     // "Jogador do jogo" vote for the parents: candidates are shown by first name + initial and shirt number only.
     function isValidMvpPoll(data) {
       return data is map &&
@@ -447,6 +462,20 @@ service cloud.firestore {
           isValidClubRecord(incoming());
         // Records are deleted with tombstones (deleted: true); hard deletes only by the Administrator.
         allow delete: if isMasterAdmin();
+      }
+
+      // 🔔 Avisos do jogo: the phones where each coach wants the notices of the club's games (a Web Push
+      // subscription: an address of the phone's push service and its keys, no personal data). Every coach of the club
+      // reads them (the app's server sends the notices with the sender's sign-in); each one writes only their own.
+      match /push_subscriptions/{subId} {
+        allow get, list: if canAccessClubWorkspace(workspaceId);
+        allow create, update: if canAccessClubWorkspace(workspaceId) &&
+          isValidId(subId) &&
+          isValidPushSubscription(incoming()) &&
+          incoming().uid == request.auth.uid &&
+          (resource == null || resource.data.uid == request.auth.uid);
+        // A coach removes their own phone; the server removes phones the push service no longer knows
+        allow delete: if canAccessClubWorkspace(workspaceId);
       }
     }
 

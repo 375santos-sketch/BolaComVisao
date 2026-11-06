@@ -2298,3 +2298,38 @@ test('acompanhar ao vivo: o outro treinador vê o jogo a acontecer no telemóvel
   await watcher.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/ao-vivo.png` : undefined });
   await watcherContext.close();
 });
+
+test('avisos do jogo: cada treinador liga no seu telemóvel; no iPhone primeiro instala a app', async ({
+  page,
+  browser
+}) => {
+  await signedIn(page);
+  await openMore(page, /Avisos do jogo/);
+  const settings = page.getByRole('dialog', { name: 'Avisos do jogo' });
+  await expect(settings.getByRole('switch', { name: /Receber avisos neste telemóvel/ })).toHaveAttribute(
+    'aria-checked',
+    'false'
+  );
+  for (const option of ['⚽ Início do jogo', '🥅 Golos', '🏁 Fim do jogo'])
+    await expect(settings.getByRole('checkbox', { name: new RegExp(option) })).toBeChecked();
+  await settings.getByRole('checkbox', { name: /Fim do jogo/ }).uncheck();
+  await settings.getByRole('button', { name: 'Fechar avisos' }).click();
+  await openMore(page, /Avisos do jogo/);
+  await expect(settings.getByRole('checkbox', { name: /Fim do jogo/ })).not.toBeChecked();
+
+  // On an iPhone, in Safari (app not installed): the steps to add it to the home screen first
+  const iphone = await browser.newContext({
+    userAgent:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
+    viewport: { width: 393, height: 852 }
+  });
+  const phone = await newCoachPage(iphone, COACH_A);
+  await openMore(phone, /Avisos do jogo/);
+  const install = phone.getByRole('region', { name: 'Instalar no iPhone' });
+  await expect(install).toContainText('Adicionar ao ecrã principal');
+  await expect(phone.getByRole('switch')).toHaveCount(0);
+  await phone
+    .getByRole('dialog', { name: 'Avisos do jogo' })
+    .screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/avisos-iphone.png` : undefined });
+  await iphone.close();
+});

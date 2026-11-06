@@ -6,6 +6,7 @@ import { getLineupSize } from '../../lib/constants';
 import { getMatchCallup, getNowTimeString } from '../../lib/matchPhaseUtils';
 import { Header } from '../Header';
 import { useLiveMatch } from './liveMatch/hooks/useLiveMatch';
+import { announceMatchChange } from '../../services/push';
 import { LiveMatchScore } from './liveMatch/components/LiveMatchScore';
 import { GoalEventsList } from './liveMatch/components/GoalEventsList';
 import { ConcededGoalEventsList } from './liveMatch/components/ConcededGoalEventsList';
@@ -233,6 +234,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 
     const updatedMatches = state.matches.map((x) => (x.id === match.id ? finishedMatch : x));
     onUpdateState({ matches: updatedMatches });
+    announceMatchChange(state, match, finishedMatch);
 
     setIsFinishing(false);
     setShowFinishModal(false);

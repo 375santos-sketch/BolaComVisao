@@ -140,3 +140,41 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
+// 🔔 Avisos do jogo: a notice sent by the app's server (start of a game, a goal, the final score) shown even with the
+// app closed. Tapping it opens the app on "📡 Ao vivo".
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    data = { title: 'BolaComVisão', body: event.data ? event.data.text() : '' };
+  }
+  const title = data.title || 'BolaComVisão';
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || '',
+      tag: data.tag || 'bolacomvisao',
+      renotify: true,
+      icon: '/logo.jpg',
+      badge: '/logo.jpg',
+      data: { url: data.url || '/?aoVivo=1' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/?aoVivo=1';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ('focus' in client) {
+          client.postMessage({ type: 'bcv-ao-vivo' });
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});

@@ -19,6 +19,8 @@ interface MoreDrawerProps {
   onOpenInviteStaff?: () => void;
   onOpenSeasons?: () => void;
   onOpenCareer?: () => void;
+  /** 🔔 Avisos do jogo. */
+  onOpenPushSettings?: () => void;
   /** 📸 Antes e depois da época. */
   onOpenSeasonGrowth?: () => void;
   onOpenSignature?: () => void;
@@ -39,6 +41,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onOpenInviteStaff,
   onOpenSeasons,
   onOpenCareer,
+  onOpenPushSettings,
   onOpenSeasonGrowth,
   onOpenSignature,
   onOpenTour,
@@ -143,6 +146,16 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
                 detail: careerWarnings[0] || (career.title ? `${career.title}` : 'Título de treinador e formações'),
                 badge: careerWarnings.length ? 'Atenção' : undefined,
                 run: onOpenCareer
+              }
+            ]
+          : []),
+        ...(onOpenPushSettings
+          ? [
+              {
+                icon: 'zap' as IconName,
+                title: 'Avisos do jogo',
+                detail: 'Início, golos e fim no telemóvel, mesmo com a app fechada',
+                run: onOpenPushSettings
               }
             ]
           : []),

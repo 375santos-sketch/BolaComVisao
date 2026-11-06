@@ -56,6 +56,7 @@ const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 
 const MonthlyReportModal = lazyWithRetry(() => import('./components/MonthlyReportModal'));
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
+const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsModal'));
 const SignatureModal = lazyWithRetry(() => import('./components/SignatureModal'));
 const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
@@ -142,6 +143,7 @@ export default function App() {
   const [showMonthlyReport, setShowMonthlyReport] = useState<boolean>(false);
   const [showCareer, setShowCareer] = useState<boolean>(false);
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
+  const [showPushSettings, setShowPushSettings] = useState<boolean>(false);
   const [showSignature, setShowSignature] = useState<boolean>(false);
   const [tourOpen, setTourOpen] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
@@ -698,6 +700,18 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // 🔔 A notice of the game tapped while the app is open: to the Início, on "📡 Ao vivo"
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.serviceWorker) return;
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.type !== 'bcv-ao-vivo') return;
+      handleNavigate('home');
+      setTimeout(() => window.dispatchEvent(new Event('bcv-ao-vivo')), 300);
+    };
+    navigator.serviceWorker.addEventListener('message', onMessage);
+    return () => navigator.serviceWorker.removeEventListener('message', onMessage);
+  }, []);
+
   const handleLogout = async () => {
     const userName = state.currentUser?.name || 'Treinador';
 
@@ -1041,6 +1055,7 @@ export default function App() {
           onOpenSeasons={() => setShowSeasonSelector(true)}
           onOpenCareer={() => setShowCareer(true)}
           onOpenSeasonGrowth={() => setShowSeasonGrowth(true)}
+          onOpenPushSettings={() => setShowPushSettings(true)}
           onOpenSignature={() => setShowSignature(true)}
           onOpenTour={() => {
             handleNavigate('home');
@@ -1067,6 +1082,11 @@ export default function App() {
               onShowToast={showToast}
               onClose={() => setShowSignature(false)}
             />
+          </Suspense>
+        )}
+        {showPushSettings && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <PushSettingsModal state={state} onShowToast={showToast} onClose={() => setShowPushSettings(false)} />
           </Suspense>
         )}
         {showSeasonGrowth && (
