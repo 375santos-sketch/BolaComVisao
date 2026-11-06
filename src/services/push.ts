@@ -1,4 +1,4 @@
-import { deleteDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { PushMessage, PushPrefs, VAPID_PUBLIC_KEY, matchPushMessage } from '../lib/pushEvents';
 import { AppState, Match } from '../types';
@@ -155,13 +155,22 @@ export async function sendNotice(
 ): Promise<{ sent: number; phones: number }> {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error('Entre na app com a sua conta.');
+  const phones = collection(db, 'club_workspace', clubId, 'push_subscriptions');
+  const snap = await getDocs(phones).catch(() => {
+    throw new Error('Sem acesso aos avisos deste clube: confirme que entrou na app com a conta do clube.');
+  });
+  const subscriptions = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   const resp = await fetch('/api/avisar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ clubId, teamId, ...message })
+    body: JSON.stringify({ clubId, teamId, ...message, subscriptions })
   });
   const data = await resp.json().catch(() => ({}));
   if (!resp.ok || !data.success) throw new Error(data.error || 'Não foi possível enviar o aviso.');
+  // Phones the push service no longer knows are forgotten
+  for (const id of Array.isArray(data.gone) ? data.gone : []) {
+    if (typeof id === 'string') deleteDoc(doc(phones, id)).catch(() => undefined);
+  }
   return { sent: data.sent || 0, phones: data.phones || 0 };
 }
 

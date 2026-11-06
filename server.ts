@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
-import { buildICS, feedFromRestDocument, fromRest } from './src/lib/calendarFeed';
+import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
 import {
   cleanPrintExercise,
   cleanPrintExercises,
@@ -471,8 +471,8 @@ async function startServer() {
   });
 
   // 🔔 Avisos do jogo: the phone recording a game asks for a notice (start, goal, end); it goes to the phones of the
-  // other coaches of the club who asked for it, even with the app closed (Web Push). The subscriptions are read and
-  // cleaned with the sender's own sign-in, so the Firestore rules apply. The private key is the VAPID_PRIVATE_KEY
+  // other coaches of the club who asked for it, even with the app closed (Web Push). The app sends the club's phones
+  // (read with the sender's own sign-in, so the Firestore rules apply); they are cleaned here. The private key is the VAPID_PRIVATE_KEY
   // secret of AI Studio.
   app.post('/api/avisar', async (req, res) => {
     try {
@@ -499,21 +499,15 @@ async function startServer() {
         VAPID_PUBLIC_KEY,
         privateKey
       );
-      const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
-      const base = process.env.FIRESTORE_EMULATOR_HOST
-        ? `http://${process.env.FIRESTORE_EMULATOR_HOST}`
-        : 'https://firestore.googleapis.com';
-      const collectionUrl = `${base}/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/club_workspace/${notice.clubId}/push_subscriptions`;
-      const authOnly = { Authorization: `Bearer ${token}` };
-      const listed = await fetch(`${collectionUrl}?pageSize=300`, { headers: authOnly });
-      if (!listed.ok) return res.status(403).json({ success: false, error: 'Sem acesso aos avisos deste clube.' });
-      const body = (await listed.json()) as { documents?: Array<{ name: string; fields?: Record<string, any> }> };
-      const subs = (body.documents || [])
-        .map((d) => cleanSubscription(d.name.split('/').pop() || '', fromRest({ mapValue: { fields: d.fields } })))
-        .filter((s): s is NonNullable<typeof s> => Boolean(s));
-      const targets = subscriptionsToNotify(subs, verification.uid, notice);
+      // The phones of the club, read by the app with the sender's own sign-in (the Firestore rules apply there)
+      const listed: unknown[] = Array.isArray(req.body?.subscriptions) ? req.body.subscriptions.slice(0, 300) : [];
+      const subs = listed
+        .map((raw) => cleanSubscription(String((raw as { id?: unknown })?.id || ''), raw))
+        .filter((s): s is NonNullable<typeof s> => Boolean(s) && /^[a-zA-Z0-9_-]{1,128}$/.test(s!.id));
+      const targets = subscriptionsToNotify(subs, verification.uid, notice).slice(0, notice.kind === 'teste' ? 5 : 300);
       const payload = JSON.stringify({ title: notice.title, body: notice.body, tag: notice.tag, url: '/?aoVivo=1' });
       let sent = 0;
+      const gone: string[] = [];
       await Promise.all(
         targets.map(async (s) => {
           try {
@@ -523,14 +517,13 @@ async function startServer() {
             });
             sent++;
           } catch (err: any) {
-            // The phone's push service no longer knows this address: forget it
-            if (err?.statusCode === 404 || err?.statusCode === 410) {
-              await fetch(`${collectionUrl}/${s.id}`, { method: 'DELETE', headers: authOnly }).catch(() => undefined);
-            } else console.warn('Aviso do jogo não enviado:', err?.statusCode || err?.message || err);
+            // The phone's push service no longer knows this address: the app forgets it
+            if (err?.statusCode === 404 || err?.statusCode === 410) gone.push(s.id);
+            else console.warn('Aviso do jogo não enviado:', err?.statusCode || err?.message || err);
           }
         })
       );
-      return res.json({ success: true, sent, phones: targets.length });
+      return res.json({ success: true, sent, phones: targets.length, gone });
     } catch (err: any) {
       console.error('Erro na rota /api/avisar:', err?.message || err);
       return res.status(500).json({ success: false, error: 'Não foi possível enviar o aviso.' });
