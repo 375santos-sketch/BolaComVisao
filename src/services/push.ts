@@ -42,6 +42,34 @@ const keyBytes = (base64: string) => {
   return Uint8Array.from(raw, (c) => c.charCodeAt(0));
 };
 
+/** A step that never answers (a phone without its service worker, no internet) ends with a clear message. */
+function withTimeout<T>(job: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(message)), ms);
+    job.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (err) => {
+        clearTimeout(t);
+        reject(err);
+      }
+    );
+  });
+}
+
+/** The app's service worker on this phone, registered now when it is missing (it receives the notices). */
+async function serviceWorker(): Promise<ServiceWorkerRegistration> {
+  const existing = await navigator.serviceWorker.getRegistration().catch(() => undefined);
+  if (!existing) await navigator.serviceWorker.register('/sw.js');
+  return withTimeout(
+    navigator.serviceWorker.ready,
+    15000,
+    'A app ainda não está pronta para avisos neste telemóvel. Feche a app, abra-a de novo pelo ícone e tente outra vez.'
+  );
+}
+
 async function idOf(endpoint: string) {
   const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint));
   return Array.from(new Uint8Array(hash))
@@ -62,18 +90,26 @@ export async function enablePush(clubId: string, teamIds: string[], prefs: PushP
         : 'Este telemóvel ou navegador não recebe avisos.'
     );
   }
-  const permission = await Notification.requestPermission();
+  const permission = await withTimeout(
+    Notification.requestPermission(),
+    60000,
+    'O telemóvel não pediu autorização para os avisos. Feche a app, abra-a de novo pelo ícone e tente outra vez.'
+  );
   if (permission !== 'granted') {
     throw new Error('Os avisos foram recusados. Autorize as notificações da app nas definições do telemóvel.');
   }
-  const reg = await navigator.serviceWorker.ready;
-  const sub =
-    (await reg.pushManager.getSubscription()) ||
-    (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_PUBLIC_KEY) }));
+  const reg = await serviceWorker();
+  const sub = await withTimeout(
+    (async () =>
+      (await reg.pushManager.getSubscription()) ||
+      (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_PUBLIC_KEY) })))(),
+    20000,
+    'O telemóvel não respondeu ao ligar os avisos. Verifique a internet e tente outra vez.'
+  );
   const json = sub.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
   if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) throw new Error('Não foi possível ligar os avisos.');
   const id = await idOf(json.endpoint);
-  await setDoc(doc(db, 'club_workspace', clubId, 'push_subscriptions', id), {
+  const saving = setDoc(doc(db, 'club_workspace', clubId, 'push_subscriptions', id), {
     uid,
     endpoint: json.endpoint,
     keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
@@ -82,6 +118,11 @@ export async function enablePush(clubId: string, teamIds: string[], prefs: PushP
     device: support.ios ? 'iPhone' : /Android/.test(navigator.userAgent) ? 'Android' : 'Computador',
     updatedAt: Date.now()
   });
+  await withTimeout(
+    saving,
+    20000,
+    'Sem ligação à internet: não foi possível registar este telemóvel. Tente outra vez.'
+  );
   try {
     localStorage.setItem(SAVED, id);
   } catch {
@@ -93,8 +134,8 @@ export async function enablePush(clubId: string, teamIds: string[], prefs: PushP
 export async function disablePush(clubId: string): Promise<void> {
   const id = savedSubscriptionId();
   try {
-    const reg = await navigator.serviceWorker.ready;
-    await (await reg.pushManager.getSubscription())?.unsubscribe();
+    const reg = await navigator.serviceWorker.getRegistration();
+    await (await reg?.pushManager.getSubscription())?.unsubscribe();
   } catch {
     /* already off */
   }
