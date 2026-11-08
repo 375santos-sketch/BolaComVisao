@@ -3,6 +3,7 @@ import {
   cleanNoticeRequest,
   cleanPrefs,
   cleanSubscription,
+  testResult,
   matchPushMessage,
   subscriptionsToNotify
 } from './pushEvents';
@@ -110,5 +111,18 @@ describe('avisos do jogo: no servidor', () => {
     ).toBeNull();
     expect(cleanSubscription('x', { uid: 'u', endpoint: 'https://a' })).toBeNull();
     expect(cleanPrefs({ golo: false })).toEqual({ inicio: true, golo: false, fim: true });
+  });
+});
+
+describe('testResult', () => {
+  it('says what the test notice did', () => {
+    expect(testResult({ sent: 1, phones: 1, failed: [] })).toMatch(/aceite/);
+    expect(testResult({ sent: 0, phones: 0, failed: [] })).toMatch(/não aparece registado/);
+    expect(testResult({ sent: 0, phones: 1, failed: [{ status: 403, reason: 'BadJwtToken' }] })).toMatch(
+      /recusou a chave/
+    );
+    expect(testResult({ sent: 0, phones: 1, failed: [{ status: 400, reason: 'BadDeviceToken' }] })).toMatch(
+      /código 400: BadDeviceToken/
+    );
   });
 });

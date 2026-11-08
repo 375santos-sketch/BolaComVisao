@@ -157,3 +157,14 @@ export function subscriptionsToNotify(
       (s.teamIds.length === 0 || s.teamIds.includes(notice.teamId))
   );
 }
+
+/** What the test notice did, in words (the reason when the phone's push service refused it). */
+export function testResult(r: { sent: number; phones: number; failed: Array<{ status: number; reason: string }> }) {
+  if (r.sent)
+    return `Aviso enviado e aceite pelo serviço de avisos do telemóvel (${r.sent}). Se não tocou, veja Definições → Notificações → BolaComVisão e o modo Foco.`;
+  if (!r.phones) return 'Este telemóvel não aparece registado: desligue e volte a ligar os avisos e tente outra vez.';
+  const f = r.failed[0];
+  if (f && (f.status === 403 || /BadJwtToken|VapidPkHashMismatch/i.test(f.reason)))
+    return `O serviço de avisos recusou a chave da app (código ${f.status}). Desligue e volte a ligar os avisos neste telemóvel.`;
+  return `O serviço de avisos do telemóvel recusou o aviso${f ? ` (código ${f.status || '?'}${f.reason ? `: ${f.reason}` : ''})` : ''}.`;
+}

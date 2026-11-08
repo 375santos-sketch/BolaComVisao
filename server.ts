@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
@@ -492,13 +493,19 @@ async function startServer() {
           error: 'Os avisos ainda não estão ligados: falta a chave VAPID_PRIVATE_KEY nos Secrets do AI Studio.'
         });
       }
-      webpush.setVapidDetails(
-        process.env.APP_URL && /^https:\/\//.test(process.env.APP_URL)
-          ? process.env.APP_URL
-          : 'mailto:avisos@bolacomvisao.pt',
-        VAPID_PUBLIC_KEY,
-        privateKey
-      );
+      // The private key must be the pair of the public key in the app (a wrong paste in AI Studio fails here)
+      try {
+        const ecdh = crypto.createECDH('prime256v1');
+        ecdh.setPrivateKey(Buffer.from(privateKey, 'base64url'));
+        if (ecdh.getPublicKey('base64url') !== VAPID_PUBLIC_KEY) throw new Error('par errado');
+        webpush.setVapidDetails('mailto:avisos@bolacomvisao.pt', VAPID_PUBLIC_KEY, privateKey);
+      } catch {
+        return res.status(503).json({
+          success: false,
+          error:
+            'A chave VAPID_PRIVATE_KEY dos Secrets do AI Studio não está certa: copie de novo só o valor (sem espaços nem aspas) e publique outra vez.'
+        });
+      }
       // The phones of the club, read by the app with the sender's own sign-in (the Firestore rules apply there)
       const listed: unknown[] = Array.isArray(req.body?.subscriptions) ? req.body.subscriptions.slice(0, 300) : [];
       const subs = listed
@@ -508,6 +515,7 @@ async function startServer() {
       const payload = JSON.stringify({ title: notice.title, body: notice.body, tag: notice.tag, url: '/?aoVivo=1' });
       let sent = 0;
       const gone: string[] = [];
+      const failed: Array<{ status: number; reason: string }> = [];
       await Promise.all(
         targets.map(async (s) => {
           try {
@@ -519,11 +527,17 @@ async function startServer() {
           } catch (err: any) {
             // The phone's push service no longer knows this address: the app forgets it
             if (err?.statusCode === 404 || err?.statusCode === 410) gone.push(s.id);
-            else console.warn('Aviso do jogo não enviado:', err?.statusCode || err?.message || err);
+            else {
+              console.warn('Aviso do jogo não enviado:', err?.statusCode || err?.message || err, err?.body || '');
+              failed.push({
+                status: Number(err?.statusCode) || 0,
+                reason: String(err?.body || err?.message || '').slice(0, 120)
+              });
+            }
           }
         })
       );
-      return res.json({ success: true, sent, phones: targets.length, gone });
+      return res.json({ success: true, sent, phones: targets.length, gone, failed });
     } catch (err: any) {
       console.error('Erro na rota /api/avisar:', err?.message || err);
       return res.status(500).json({ success: false, error: 'Não foi possível enviar o aviso.' });
