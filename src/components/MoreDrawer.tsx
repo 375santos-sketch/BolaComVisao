@@ -21,6 +21,8 @@ interface MoreDrawerProps {
   onOpenCareer?: () => void;
   /** 🔔 Avisos do jogo. */
   onOpenPushSettings?: () => void;
+  /** 📡 Link do jogo para os pais. */
+  onOpenParentsLink?: () => void;
   /** 📸 Antes e depois da época. */
   onOpenSeasonGrowth?: () => void;
   onOpenSignature?: () => void;
@@ -42,6 +44,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onOpenSeasons,
   onOpenCareer,
   onOpenPushSettings,
+  onOpenParentsLink,
   onOpenSeasonGrowth,
   onOpenSignature,
   onOpenTour,
@@ -156,6 +159,16 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
                 title: 'Avisos do jogo',
                 detail: 'Início, golos e fim no telemóvel, mesmo com a app fechada',
                 run: onOpenPushSettings
+              }
+            ]
+          : []),
+        ...(onOpenParentsLink
+          ? [
+              {
+                icon: 'users' as IconName,
+                title: 'Link do jogo para os pais',
+                detail: 'Os pais veem o jogo em direto, sem conta nem app',
+                run: onOpenParentsLink
               }
             ]
           : []),

@@ -333,6 +333,54 @@ describe('Plano para o adjunto (link secreto)', () => {
   });
 });
 
+describe('Link do jogo para os pais (link secreto)', () => {
+  const TOKEN = 'Viv7aBcDeFgHiJkLmNoPqRsT';
+  const live = (clubId: string, extra: Record<string, unknown> = {}) => ({
+    clubId,
+    teamId: 'sub11',
+    teamName: 'Leões Sub-11',
+    color: '#16a34a',
+    game: { opponent: 'FC Ribeira', phase: 'parte2', ours: 2, theirs: 1, lineup1: ['Tomás', 'Rui'], goals: [] },
+    next: null,
+    updatedAt: Date.now(),
+    ...extra
+  });
+  const liveDoc = (token = TOKEN) => fs.doc(fb.db, 'public_lives', token);
+  const url = `http://${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/public_lives`;
+
+  beforeAll(async () => {
+    await setRules(RULES_NOW);
+  });
+
+  it('a coach publishes the game and anyone with the link reads it (nobody lists the links)', async () => {
+    await signInAs('coachA');
+    await fs.setDoc(liveDoc(), live('clubA'));
+    await fs.setDoc(liveDoc(), live('clubA', { game: null }));
+    await fs.setDoc(liveDoc(), live('clubA'));
+    const res = await fetch(`${url}/${TOKEN}`);
+    expect(res.status).toBe(200);
+    expect(JSON.stringify(await res.json())).toContain('FC Ribeira');
+    expect((await fetch(url)).status).toBe(403);
+  });
+
+  it('another club, an anonymous visitor or extra (personal) fields are refused', async () => {
+    await signInAs('coachB');
+    await expect(fs.setDoc(liveDoc(), live('clubB'))).rejects.toMatchObject(denied);
+    await expect(fs.deleteDoc(liveDoc())).rejects.toMatchObject(denied);
+    await signInAs('coachA');
+    await expect(fs.setDoc(liveDoc(), live('clubA', { subs: ['Sai Rui, entra Tomás'] }))).rejects.toMatchObject(denied);
+    await expect(fs.setDoc(liveDoc('curto'), live('clubA'))).rejects.toMatchObject(denied);
+    await fa.signOut(fb.auth);
+    await expect(fs.setDoc(liveDoc('AnonimoVivoAbcdef123456'), live('clubA'))).rejects.toMatchObject(denied);
+  });
+
+  it('a coach of the club switches the link off', async () => {
+    await signInAs('colegaA');
+    await fs.deleteDoc(liveDoc());
+    expect((await fetch(`${url}/${TOKEN}`)).status).toBe(404);
+  });
+});
+
 describe('Votação dos pais no jogador do jogo (link secreto)', () => {
   const TOKEN = 'Vot7aBcDeFgHiJkLmNoPqRsT';
   const CLOSED = 'VotFechadaAbcDefGhiJkLmN';

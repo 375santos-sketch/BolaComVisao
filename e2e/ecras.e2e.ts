@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { COACH_A, COACH_B, FIRESTORE, owner, PASSWORD } from './seed';
 import { buildICS, feedFromRestDocument } from '../src/lib/calendarFeed';
+import { parentsLiveFromRestDocument, renderParentsLivePage } from '../src/lib/parentsLive';
 import {
   cloudRecords,
   enterPanel,
@@ -2297,6 +2298,52 @@ test('acompanhar ao vivo: o outro treinador vê o jogo a acontecer no telemóvel
   await expect(follow.getByRole('region', { name: 'Números do jogo' })).toContainText('Cartões amarelos');
   await watcher.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/ao-vivo.png` : undefined });
   await watcherContext.close();
+});
+
+test('link do jogo para os pais: quem tem o link vê o jogo sem conta, sem substituições', async ({ page, browser }) => {
+  // The game of the test above is still being played (Treinador A records it)
+  await signedIn(page);
+  await openMore(page, /Link do jogo para os pais/);
+  const share = page.getByRole('dialog', { name: 'Link para os pais' });
+  await share.getByRole('button', { name: 'Criar link para os pais' }).click();
+  const input = share.getByLabel('Endereço do link');
+  await expect(input).toHaveValue(/\/aovivo\/[a-zA-Z0-9]{24}$/);
+  const link = await input.inputValue();
+
+  // A parent opens it on their phone: no account, no app (the page the app's server makes from the published game)
+  const token = link.split('/').pop()!;
+  const published = async () => {
+    const res = await fetch(`${FIRESTORE}/public_lives/${token}`);
+    return res.ok ? parentsLiveFromRestDocument(await res.json()) : null;
+  };
+  const parentContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const parent = await parentContext.newPage();
+  const open = async () => {
+    const live = await published();
+    await parent.setContent(live ? renderParentsLivePage(live, token) : '<p>Este link do jogo não existe</p>');
+    return parent.locator('main').innerText();
+  };
+  await expect.poll(open, { timeout: 30_000 }).toContain('Equipa Ao Vivo');
+  const body = parent.locator('main');
+  await expect(body).toContainText('1 – 1');
+  await expect(body).toContainText('EM DIRETO');
+  await expect(body).toContainText('Golo · Tomás');
+  await expect(body).toContainText('Golo sofrido');
+  await expect(body).toContainText('EQUIPA INICIAL (1.ª PARTE)');
+  // Never the substitutions; the cards only when the coach turns them on
+  await expect(body).not.toContainText(/Substitui|Sai |entra /);
+  await expect(body).not.toContainText('🟨');
+  await share.getByLabel('Cartões').check();
+  await expect.poll(open, { timeout: 30_000 }).toContain('🟨 Martim');
+  await parent.screenshot({
+    path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/link-pais.png` : undefined,
+    fullPage: true
+  });
+
+  // Switched off: the link stops working
+  await share.getByRole('button', { name: 'Desligar o link' }).click();
+  await expect.poll(published, { timeout: 30_000 }).toBeNull();
+  await parentContext.close();
 });
 
 test('avisos do jogo: cada treinador liga no seu telemóvel; no iPhone primeiro instala a app', async ({
