@@ -12,10 +12,11 @@ import {
 } from '../../lib/statsPanel';
 import { sortPlayerObjs, homeFirstScore } from '../../lib/utils';
 import { BarChart } from './BarChart';
+import { GoalsLineChart } from '../trends/GoalsLineChart';
 
-// Categorical slots 1 and 2 of the validated dark palette (checked against the app surface #0f172a).
-const OURS = '#3987e5';
-const THEIRS = '#d95926';
+// The app's colours: cyan for us, grey-blue for the opponent (the same as the line chart).
+const OURS = '#22c3ee';
+const THEIRS = '#8b9bb4';
 
 const SCOPES: { id: PanelScope; label: string }[] = [
   { id: 'epoca', label: 'Época' },
@@ -266,6 +267,28 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
               />
               <Tile value={team.played ? (team.scored / team.played).toFixed(1) : '—'} label="Golos/jogo" />
             </div>
+            {team.games.length >= 2 && (
+              <div aria-label="Evolução jogo a jogo">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                    Evolução jogo a jogo
+                  </span>
+                  <span className="flex gap-3 text-[11px] text-ui-muted">
+                    <span className="flex items-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-ui-brand" /> Marcados
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-ui-muted" /> Sofridos
+                    </span>
+                  </span>
+                </div>
+                <GoalsLineChart
+                  games={[...team.games]
+                    .sort((a, b) => a.date.localeCompare(b.date))
+                    .map((g, i) => ({ id: `${g.date}-${i}`, date: g.date, scored: g.scored, conceded: g.conceded }))}
+                />
+              </div>
+            )}
             <BarChart
               title="Golos por jogo"
               categories={team.games.map((g) => short(g.opponent))}

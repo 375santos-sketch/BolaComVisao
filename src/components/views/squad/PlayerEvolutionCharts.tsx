@@ -4,7 +4,7 @@ import { PlayerSeason } from '../../../lib/playerSeason';
 import { homeFirstScore } from '../../../lib/utils';
 
 // Dark-surface step of the validated palette (one series) and neutral tokens for track, grid and text
-const BAR = '#3987e5';
+const BAR = '#22c3ee';
 const TRACK = '#1e3448';
 const GRID = '#2b4257';
 const MUTED = '#8aa4ba';

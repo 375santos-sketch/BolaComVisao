@@ -1,5 +1,5 @@
 import { SessionPhasesBar } from './SessionPhasesBar';
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { AutoTextarea } from '../../ui/AutoTextarea';
 import { AppState, Exercise, ExerciseCategory, Player, SessionBlock, Training } from '../../../types';
 import { t } from '../../../i18n/dict';
@@ -7,13 +7,15 @@ import { uid } from '../../../lib/utils';
 import { Header } from '../../Header';
 import { BatchTrainingSection } from './BatchTrainingSection';
 import { getPDFDocumentById, PDFDocumentItem } from '../../../lib/pdfLibraryDB';
-import { PDFViewerModal } from './PDFViewerModal';
 import { VariantSuggestion } from './VariantSuggestion';
 import { fieldOf } from '../../../lib/fieldSetup';
 import { TrainingTemplates } from './TrainingTemplates';
 import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
 import { TrainingFormData, TRAINING_TYPES } from './types';
 import { teamSettings } from '../../../lib/teamSettings';
+
+// The PDF reader is heavy: it loads only when a PDF is opened
+const PDFViewerModal = lazy(() => import('./PDFViewerModal').then((m) => ({ default: m.PDFViewerModal })));
 
 interface TrainingEditorProps {
   trainingForm: TrainingFormData;
@@ -790,7 +792,11 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
       </div>
 
       {/* PDF Viewer Modal */}
-      {viewerDoc && <PDFViewerModal document={viewerDoc} onClose={() => setViewerDoc(null)} />}
+      {viewerDoc && (
+        <Suspense fallback={null}>
+          <PDFViewerModal document={viewerDoc} onClose={() => setViewerDoc(null)} />
+        </Suspense>
+      )}
     </>
   );
 };
