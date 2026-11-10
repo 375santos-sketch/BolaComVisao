@@ -6,8 +6,8 @@
  * app's navy surfaces, dark text becomes the app's light text, and blues, greens, reds and ambers become the app's
  * cyan, success, danger and warning. The content of the documents does not change, only their colours.
  *
- * The training plan is printed and written on by hand (attendance boxes, notes), so it uses the light version: white
- * paper with the same app colours as accents.
+ * The documents are printed, so they use the light version: white paper, the app's navy in the header, footer and
+ * section bars, and the app's cyan for the marks. The dark version (navy pages) stays available.
  */
 
 export type Rgb = [number, number, number];
@@ -31,7 +31,7 @@ export const APP = {
   violet: [167, 139, 250] as Rgb
 };
 
-/** The same tokens on white paper (training plan). */
+/** The same tokens on white paper: navy text, light cards, the app's cyan for marks (a deeper cyan for text). */
 const PAPER: Record<keyof typeof APP, Rgb> = {
   bg: [255, 255, 255],
   surface: [245, 247, 250],
@@ -42,7 +42,7 @@ const PAPER: Record<keyof typeof APP, Rgb> = {
   text: [11, 18, 32],
   muted: [84, 98, 120],
   brand: [8, 145, 178],
-  brandInk: [255, 255, 255],
+  brandInk: [4, 32, 43],
   success: [21, 128, 61],
   warning: [180, 120, 0],
   danger: [200, 40, 40],
@@ -112,8 +112,9 @@ export function darkColor(c: Rgb, kind: Kind): Rgb {
 }
 
 /** The app's tokens on white paper; other colours stay as they were drawn. */
-export function lightColor(c: Rgb): Rgb {
+export function lightColor(c: Rgb, kind: Kind = 'text'): Rgb {
   const token = TOKEN_OF.get(key(c));
+  if (token === 'brand' && kind !== 'text') return APP.brand; // bars, rings, lines: the app's own cyan
   return token ? PAPER[token] : c;
 }
 
@@ -145,7 +146,7 @@ export function applyPdfTheme(doc: any, theme: PdfTheme) {
     doc[name] = (...args: unknown[]) => {
       const c = raw ? null : parse(args);
       if (!c) return orig[name](...args);
-      const out = theme === 'dark' ? darkColor(c, kind) : lightColor(c);
+      const out = theme === 'dark' ? darkColor(c, kind) : lightColor(c, kind);
       return orig[name](...out);
     };
   };
