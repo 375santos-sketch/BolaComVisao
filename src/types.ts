@@ -721,6 +721,8 @@ export interface SquadProfile {
   calendarToken?: string;
   /** Secret part of the assistant coach's plan link (/plano/{token}); none = not shared. */
   planToken?: string;
+  /** 🔭 Adversários: what the staff knows about each opponent (kept in the club record, like the templates). */
+  opponentFiles?: OpponentFile[];
   /** Secret part of the parents' live link (/aovivo/{token}); none = not shared. */
   liveToken?: string;
   /** The parents' live link also shows the cards (off unless the coach turns it on). */
@@ -1121,4 +1123,18 @@ export interface TeamDatabaseRow {
   order: number;
   updatedAt: number;
   updatedBy: string;
+}
+
+/** 🔭 The staff's file on an opponent: usual system, strengths, weaknesses, notes and the plan against them. */
+export interface OpponentFile {
+  id: string;
+  /** The opponent's name as the coach wrote it (matched to games with the same name rules as the reports). */
+  name: string;
+  formation?: string;
+  strengths?: string[];
+  weaknesses?: string[];
+  notes?: string;
+  /** How to prepare for them (shown when preparing the next game against them). */
+  strategy?: string;
+  updatedAt: number;
 }

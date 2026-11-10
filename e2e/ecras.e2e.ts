@@ -1058,6 +1058,43 @@ test('quadro tático: sistema, atletas nos lugares, arrastar, setas e estratégi
   await board.getByRole('button', { name: 'Fechar quadro tático' }).click();
 });
 
+test('adversários: resultados, próximo jogo e ficha da equipa técnica que aparece no Pré-jogo', async ({ page }) => {
+  await signedIn(page);
+  await openMore(page, /Adversários/);
+  const dialog = page.getByRole('dialog', { name: 'Adversários' });
+  const list = dialog.getByRole('list', { name: 'Lista de adversários' });
+  await expect(list).toContainText('Tramagal SU');
+  await expect(list).toContainText('Abrantes');
+  await list.getByRole('button', { name: /Tramagal SU/ }).click();
+  await expect(dialog.getByRole('region', { name: 'Resultados contra este adversário' })).toContainText(
+    /1 jogo · \d+V/
+  );
+  await dialog.getByRole('button', { name: '‹ Todos os adversários' }).click();
+  await list.getByRole('button', { name: /Abrantes/ }).click();
+  const file = dialog.getByRole('region', { name: 'Ficha do adversário' });
+  await file.getByLabel('Formação habitual').fill('3-2-1');
+  await file.getByLabel('Pontos fortes (um por linha)').fill('Jogo aéreo\nContra-ataque');
+  await file.getByLabel('Estratégia para o próximo jogo').fill('Pressionar a saída curta do guarda-redes');
+  await file.getByRole('button', { name: 'Guardar ficha' }).click();
+  await expect(page.getByText('Ficha guardada ✓')).toBeVisible();
+  await dialog.getByRole('button', { name: 'Fechar adversários' }).click();
+
+  // The file comes up when preparing the game against them
+  await navTo(page, /jogo/i);
+  await expect(page.getByRole('region', { name: 'Ficha do adversário' })).toContainText(
+    'Pressionar a saída curta do guarda-redes'
+  );
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
+        return JSON.stringify(await res.json()).includes('Pressionar a saída curta');
+      },
+      { timeout: 30_000, message: 'ficha guardada na nuvem' }
+    )
+    .toBe(true);
+});
+
 test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /jogo/i);
