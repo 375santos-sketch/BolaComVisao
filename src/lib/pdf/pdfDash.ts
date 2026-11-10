@@ -16,6 +16,12 @@ type Tone = 'brand' | 'success' | 'warning' | 'danger' | 'muted' | 'text';
 const toneColor = (tone: Tone = 'brand'): Rgb =>
   tone === 'muted' ? APP.muted : tone === 'text' ? APP.text : APP[tone];
 
+/** A soft fill of a colour for pills: on white paper a pale tint, on the navy pages a dark one. */
+function tint(doc: Doc, c: Rgb): Rgb {
+  const base: Rgb = doc.pdfTheme === 'dark' ? APP.surface2 : [255, 255, 255];
+  return c.map((v, i) => Math.round(base[i] + (v - base[i]) * (doc.pdfTheme === 'dark' ? 0.2 : 0.14))) as Rgb;
+}
+
 /** A rounded card: surface, thin line. */
 export function card(doc: Doc, x: number, y: number, w: number, h: number, fill: Rgb = APP.surface) {
   doc.setFillColor(...fill);
@@ -171,7 +177,7 @@ function pill(doc: Doc, text: string, x: number, y: number, tone: Tone, align: '
   const w = doc.getTextWidth(text) + 6;
   const left = align === 'center' ? x - w / 2 : x;
   const c = toneColor(tone);
-  doc.setFillColor(...(c.map((v, i) => Math.round(APP.surface2[i] + (v - APP.surface2[i]) * 0.2)) as Rgb));
+  doc.setFillColor(...tint(doc, c));
   doc.setDrawColor(...c);
   doc.setLineWidth(0.3);
   doc.roundedRect(left, y, w, 5.4, 2.7, 2.7, 'FD');
@@ -309,7 +315,7 @@ export function table(
         doc.setFontSize(size - 1);
         const pw = Math.min(c.w - 3, doc.getTextWidth(shown) + 5);
         const tone = toneColor(style.pill);
-        doc.setFillColor(...(tone.map((v, i) => Math.round(APP.surface2[i] + (v - APP.surface2[i]) * 0.2)) as Rgb));
+        doc.setFillColor(...tint(doc, tone));
         doc.setDrawColor(...tone);
         doc.setLineWidth(0.25);
         doc.roundedRect(cx + 1.5, y + rowH / 2 - 2.4, pw, 4.8, 2.4, 2.4, 'FD');
@@ -349,4 +355,60 @@ export function sidePanel(doc: Doc, x: number, y: number, w: number, title: stri
     doc.text(value, x + w - 4, ly, { align: 'right' });
   });
   return h;
+}
+
+/**
+ * Lines over the games, oldest first (e.g. goals scored and conceded per game), on a light grid with the values on
+ * the left and "J1, J2…" below. Returns nothing (fills the box).
+ */
+export function lineChart(
+  doc: Doc,
+  series: { values: number[]; color: Rgb; label: string }[],
+  x: number,
+  y: number,
+  w: number,
+  h: number
+) {
+  const n = Math.max(...series.map((s) => s.values.length));
+  if (n === 0) return;
+  const max = Math.max(1, ...series.flatMap((s) => s.values));
+  const left = x + 7;
+  const bottom = y + h - 5;
+  const top = y + 7;
+  const step = max <= 5 ? 1 : Math.ceil(max / 5);
+  const yOf = (v: number) => bottom - (v / (Math.ceil(max / step) * step)) * (bottom - top);
+  const xOf = (i: number) => (n === 1 ? left + (w - 9) / 2 : left + 2 + (i / (n - 1)) * (w - 11));
+  // legend
+  let lx = x + w / 2 - series.length * 18;
+  series.forEach((s) => {
+    doc.setFillColor(...s.color);
+    doc.circle(lx, y + 2, 1.1, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...APP.muted);
+    doc.text(s.label, lx + 2.2, y + 3);
+    lx += doc.getTextWidth(s.label) + 9;
+  });
+  doc.setLineWidth(0.15);
+  for (let v = 0; v <= Math.ceil(max / step) * step; v += step) {
+    doc.setDrawColor(...APP.line);
+    doc.line(left, yOf(v), x + w, yOf(v));
+    doc.setFontSize(6.5);
+    doc.setTextColor(...APP.muted);
+    doc.text(String(v), left - 2, yOf(v) + 1, { align: 'right' });
+  }
+  const every = Math.ceil(n / 18);
+  for (let i = 0; i < n; i += every) {
+    doc.setFontSize(6);
+    doc.setTextColor(...APP.muted);
+    doc.text(`J${i + 1}`, xOf(i), bottom + 4, { align: 'center' });
+  }
+  series.forEach((s) => {
+    doc.setDrawColor(...s.color);
+    doc.setLineWidth(0.6);
+    for (let i = 1; i < s.values.length; i++) doc.line(xOf(i - 1), yOf(s.values[i - 1]), xOf(i), yOf(s.values[i]));
+    doc.setFillColor(...s.color);
+    s.values.forEach((v, i) => doc.circle(xOf(i), yOf(v), 0.75, 'F'));
+  });
+  doc.setLineWidth(0.2);
 }

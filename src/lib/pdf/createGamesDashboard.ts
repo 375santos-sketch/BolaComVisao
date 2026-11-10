@@ -4,7 +4,7 @@ import { PLAYING_TIME_TARGET } from '../playingTime';
 import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters, drawSectionTitle, pdfBrand } from './pdfLayout';
 import { DashboardSelection, selectDashboardGames } from './createSeasonReport';
 import { APP } from './pdfTheme';
-import { card, kpiRow, table as darkTable } from './pdfDash';
+import { card, kpiRow, lineChart, table as darkTable } from './pdfDash';
 
 type Doc = InstanceType<Awaited<ReturnType<typeof getJsPDF>>>;
 type RGB = [number, number, number];
@@ -115,6 +115,24 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
 
   drawKpis(doc, d, y);
   y += 2 * 23 + 4;
+
+  // Goals scored and conceded game by game, oldest first
+  if (d.games.length >= 2) {
+    section('Evolução', 'Golos marcados e sofridos em cada jogo, do mais antigo para o mais recente.', 52);
+    const ordered = [...d.games].sort((a, b) => a.date.localeCompare(b.date));
+    lineChart(
+      doc,
+      [
+        { values: ordered.map((g) => g.scored), color: APP.brand, label: 'Golos marcados' },
+        { values: ordered.map((g) => g.conceded), color: APP.text, label: 'Golos sofridos' }
+      ],
+      L,
+      y,
+      W,
+      46
+    );
+    y += 50;
+  }
 
   // Minutes per athlete
   const rowH = 6.2;

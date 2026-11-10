@@ -14,12 +14,13 @@ describe('PDF nas cores da app', () => {
     expect(darkColor(APP.brand, 'fill')).toEqual(APP.brand);
   });
 
-  it('keeps white paper for the hand-written training plan', () => {
+  it('prints on white paper: navy text and the cyan of the app for marks', () => {
     expect(lightColor(APP.text)).toEqual([11, 18, 32]);
     expect(lightColor([200, 40, 40])).toEqual([200, 40, 40]);
+    expect(lightColor(APP.brand, 'fill')).toEqual(APP.brand);
   });
 
-  it('draws the match report on navy pages with the same facts', async () => {
+  it('draws the match report with the navy header and the same facts', async () => {
     const state = normalizeClubState({ myClubName: 'Clube Teste' } as AppState);
     const match = {
       id: 'm1',
@@ -37,7 +38,7 @@ describe('PDF nas cores da app', () => {
     const raw = (await generateMatchSheetPDF(match, state, false)).doc.output() as string;
     expect(raw).toContain('(1 - 0)');
     expect(raw).toContain('VIT');
-    // the page background in the app's navy
+    // the header band in the app's navy
     expect(raw).toMatch(/0\.04 0\.07 0\.13 rg/);
   });
 });

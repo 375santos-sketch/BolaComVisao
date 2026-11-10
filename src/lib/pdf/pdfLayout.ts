@@ -4,11 +4,8 @@ import { APP, PdfTheme, Rgb, applyPdfTheme } from './pdfTheme';
 
 export type { Rgb } from './pdfTheme';
 
-/**
- * jsPDF with the app's look: navy pages and the app's colours (see pdfTheme). The training plan, written on by hand,
- * asks for the 'light' version.
- */
-export async function getJsPDF(theme: PdfTheme = 'dark') {
+/** jsPDF with the app's colours on white paper (see pdfTheme). */
+export async function getJsPDF(theme: PdfTheme = 'light') {
   const mod = await import('jspdf');
   const Base = mod.default || (mod as any).jsPDF || mod;
   return class ThemedPDF extends (Base as any) {
@@ -62,63 +59,97 @@ function drawClubEmblem(
   doc.text((clubName.trim()[0] || 'C').toUpperCase(), x + size / 2, y + size / 2 + size * 0.15, { align: 'center' });
 }
 
+/** The app's navy, drawn as it is (the header, footer and section bars stay navy on paper). */
+const NAVY: Rgb = [11, 18, 32];
+const NAVY_2: Rgb = [17, 26, 43];
+const ON_NAVY_MUTED: Rgb = [139, 155, 180];
+
+/** Two slanted cyan stripes, like the app's mark, from x on a band of height h starting at y. */
+function stripes(doc: jsPDF, x: number, y: number, h: number) {
+  const slant = h * 0.55;
+  [
+    [0, 5, [34, 195, 238]],
+    [7.5, 2.4, [8, 145, 178]]
+  ].forEach(([dx, w, color]) => {
+    doc.setFillColor(...(color as Rgb));
+    const x0 = x + (dx as number);
+    doc.lines(
+      [
+        [w as number, 0],
+        [-slant, h],
+        [-(w as number), 0],
+        [slant, -h]
+      ],
+      x0 + slant,
+      y,
+      [1, 1],
+      'F',
+      true
+    );
+  });
+}
+
 /**
- * Top of every document, like the app's header: "BOLACOMVISÃO" in cyan, the club's symbol, the title, "Clube · Escalão ·
- * Época" and the date in a pill, over a thin line with a cyan start. Content starts below y = 38.
+ * Top of every document: a navy band with the club's symbol, "BOLACOMVISÃO" in cyan, the title in white,
+ * "Clube · Escalão · Época" and the date, with the app's cyan stripes. Content starts below y = 36.
  */
 export function drawDocumentHeader(doc: jsPDF, state: AppState, title: string, subtitle?: string) {
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : 'O Meu Clube';
   const brand = pdfBrand(state);
+  const season = `Época ${state.season || defaultSeason()}`;
+  doc.bolaFooter = `${myClub}  ·  ${season}`;
+  const draw = () => {
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 0, 210, 32, 'F');
+    stripes(doc, 140, 0, 32);
+    doc.setFillColor(...brand);
+    doc.rect(0, 32, 210, 0.8, 'F');
 
-  drawClubEmblem(doc, 15, 10, 17, myClub, brand, state.clubLogoUrl);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...brand);
+    doc.text('BOLACOMVISÃO', 37, 11.5, { charSpace: 0.6 });
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6.5);
-  doc.setTextColor(...brand);
-  doc.text('BOLACOMVISÃO', 37, 11.5, { charSpace: 0.6 });
+    doc.setTextColor(255, 255, 255);
+    let size = 18;
+    doc.setFontSize(size);
+    while (size > 11 && doc.getTextWidth(sentence(title)) > 100) doc.setFontSize(--size);
+    doc.text(sentence(title), 37, 19.5);
 
-  doc.setTextColor(...PDF_INK);
-  doc.setFontSize(19);
-  doc.text(sentence(title), 37, 19.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...ON_NAVY_MUTED);
+    const line = [myClub, state.category, season, subtitle].filter(Boolean).join('  ·  ');
+    doc.text(doc.splitTextToSize(line, 100)[0], 37, 26);
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...PDF_MUTED);
-  const line = [myClub, state.category, `Época ${state.season || defaultSeason()}`, subtitle]
-    .filter(Boolean)
-    .join('  ·  ');
-  doc.text(doc.splitTextToSize(line, 118)[0], 37, 26);
-
-  const issued = `Emitido a ${new Date().toLocaleDateString('pt-PT')}`;
-  doc.setFontSize(7.5);
-  const pillW = doc.getTextWidth(issued) + 7;
-  doc.setFillColor(...APP.surface2);
-  doc.setDrawColor(...PDF_LINE);
-  doc.setLineWidth(0.25);
-  doc.roundedRect(195 - pillW, 14.5, pillW, 6.5, 3.25, 3.25, 'FD');
-  doc.setTextColor(...PDF_MUTED);
-  doc.text(issued, 195 - pillW / 2, 18.8, { align: 'center' });
-
-  doc.setDrawColor(...PDF_LINE);
-  doc.setLineWidth(0.3);
-  doc.line(15, 31, 195, 31);
-  doc.setDrawColor(...brand);
-  doc.setLineWidth(0.9);
-  doc.line(15, 31, 45, 31);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...brand);
+    doc.text(season, 195, 17, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...ON_NAVY_MUTED);
+    doc.text(`Emitido a ${new Date().toLocaleDateString('pt-PT')}`, 195, 22, { align: 'right' });
+  };
+  if (doc.rawColors) doc.rawColors(draw);
+  else draw();
+  drawClubEmblem(doc, 15, 7.5, 17, myClub, brand, state.clubLogoUrl);
   doc.setLineWidth(0.2);
 }
 
-/** Section title: a cyan mark and small light capitals over a thin line. Returns the height used (mm). */
+/** Section title: a navy bar with the title in white capitals and a cyan mark. Returns the height used (mm). */
 export function drawSectionTitle(doc: jsPDF, brand: Rgb, text: string, x: number, y: number, width: number) {
-  doc.setFillColor(...brand);
-  doc.roundedRect(x, y + 0.6, 1.3, 3.6, 0.6, 0.6, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...PDF_INK);
-  doc.text(text.toUpperCase(), x + 3.2, y + 3.5, { charSpace: 0.2 });
-  doc.setDrawColor(...PDF_LINE);
-  doc.setLineWidth(0.3);
-  doc.line(x, y + 5.3, x + width, y + 5.3);
+  const draw = () => {
+    doc.setFillColor(...NAVY_2);
+    doc.roundedRect(x, y - 0.6, width, 6.4, 1.2, 1.2, 'F');
+    doc.setFillColor(...brand);
+    doc.rect(x + 2.5, y + 1.2, 1.2, 2.8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.2);
+    doc.setTextColor(255, 255, 255);
+    doc.text(text.toUpperCase(), x + 5.5, y + 3.75, { charSpace: 0.2 });
+  };
+  if (doc.rawColors) doc.rawColors(draw);
+  else draw();
   return 8.5;
 }
 
@@ -169,16 +200,25 @@ export function addBolaComVisaoPageFooters(doc: jsPDF) {
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setDrawColor(...PDF_LINE);
-    doc.setLineWidth(0.3);
-    doc.line(15, 285, 195, 285);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...APP.brand);
-    doc.text('BolaComVisão', 15, 289);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...PDF_MUTED);
-    doc.text(`Página ${i} de ${pageCount}`, 195, 289, { align: 'right' });
+    const draw = () => {
+      doc.setFillColor(...NAVY);
+      doc.rect(0, 286, 210, 11, 'F');
+      stripes(doc, 186, 286, 11);
+      doc.setFillColor(...APP.brand);
+      doc.rect(0, 286, 210, 0.6, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text('BolaComVisão', 15, 292.6);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...ON_NAVY_MUTED);
+      if (doc.bolaFooter) doc.text(doc.bolaFooter, 105, 292.6, { align: 'center' });
+      doc.setTextColor(255, 255, 255);
+      doc.text(`Página ${i} de ${pageCount}`, 182, 292.6, { align: 'right' });
+    };
+    if (doc.rawColors) doc.rawColors(draw);
+    else draw();
   }
 }
 
