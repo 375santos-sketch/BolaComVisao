@@ -225,7 +225,7 @@ export async function generateTrainingSessionPDF(training: Training, state: AppS
 
 /** Session plan PDF (for the assistant coach): blocks with duration and objective, and the drawing of each exercise. */
 export async function buildTrainingSessionPDF(training: Training, state: AppState) {
-  const jsPDF = await getJsPDF();
+  const jsPDF = await getJsPDF('light');
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',

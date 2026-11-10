@@ -40,7 +40,7 @@ export async function buildMonthlyReportPDF(report: MonthlyReport, state: AppSta
   };
 
   const heading = (text: string) => {
-    ensure(16);
+    ensure(24);
     y += 1;
     y += drawSectionTitle(doc, brand, text, LEFT, y, WIDTH) + 1;
   };

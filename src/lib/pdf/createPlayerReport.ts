@@ -13,6 +13,8 @@ import {
 import { buildPlayerSeason } from '../playerSeason';
 import { absenceReasonLabel } from '../trainingQuick';
 import { PLAYING_TIME_TARGET } from '../playingTime';
+import { APP } from './pdfTheme';
+import { kpiRow, ring } from './pdfDash';
 
 /**
  * 2. Dossier Oficial do Plantel em PDF
@@ -34,10 +36,39 @@ export async function generateSquadPDF(state: AppState) {
   // Header with Left Club Crest & Right BolaComVisao Logo
   drawDocumentHeader(doc, state, 'Plantel', `${activePlayers.length} atletas`);
 
-  let curY = 48;
+  let curY = 37;
 
-  // Table header
+  // The squad in numbers: how many athletes and how many are available, injured or suspended
+  const statusCount = (st: string) => activePlayers.filter((p) => (p.status || 'disponivel') === st).length;
+  curY +=
+    kpiRow(
+      doc,
+      [
+        { label: 'Atletas', value: String(activePlayers.length) },
+        { label: 'Disponíveis', value: String(statusCount('disponivel')), tone: 'success' },
+        {
+          label: 'Lesionados',
+          value: String(statusCount('lesionado')),
+          tone: statusCount('lesionado') ? 'danger' : 'muted'
+        },
+        {
+          label: 'Suspensos',
+          value: String(statusCount('suspenso')),
+          tone: statusCount('suspenso') ? 'warning' : 'muted'
+        }
+      ],
+      curY
+    ) + 5;
+
+  // Table header (a band, drawn again on every new page)
   curY += drawSectionTitle(doc, pdfBrand(state), 'Atletas', 15, curY, 180) + 2;
+  const headerBand = (yy: number) => {
+    doc.setFillColor(...APP.surface2);
+    doc.roundedRect(15, yy - 4, 180, 6, 1.5, 1.5, 'F');
+    doc.setFillColor(...APP.brand);
+    doc.rect(15, yy + 1.6, 180, 0.4, 'F');
+  };
+  headerBand(curY);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
@@ -49,14 +80,13 @@ export async function generateSquadPDF(state: AppState) {
   doc.text('IDADE / PÉ', 140, curY);
   doc.text('ESTADO', 170, curY);
 
-  doc.setDrawColor(200, 220, 235);
-  doc.line(15, curY + 2, 195, curY + 2);
   curY += 6;
 
   activePlayers.forEach((p, idx) => {
-    if (curY > 255) {
+    if (curY > 268) {
       doc.addPage();
       curY = 20;
+      headerBand(curY);
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
@@ -68,8 +98,6 @@ export async function generateSquadPDF(state: AppState) {
       doc.text('IDADE / PÉ', 140, curY);
       doc.text('ESTADO', 170, curY);
 
-      doc.setDrawColor(200, 220, 235);
-      doc.line(15, curY + 2, 195, curY + 2);
       curY += 6;
     }
 
@@ -78,10 +106,8 @@ export async function generateSquadPDF(state: AppState) {
     const photoX = 27.5;
     const photoY = curY - 3;
 
-    if (idx % 2 === 0) {
-      doc.setFillColor(248, 251, 253);
-      doc.rect(15, curY - 4, 180, rowHeight, 'F');
-    }
+    doc.setFillColor(...(idx % 2 === 0 ? APP.surface : APP.bg));
+    doc.rect(15, curY - 4, 180, rowHeight, 'F');
 
     // Number
     doc.setFont('helvetica', 'bold');
@@ -156,8 +182,6 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
 
   const number =
     player.number !== null && player.number !== undefined && `${player.number}` !== '' ? `#${player.number} ` : '';
-  w.centered(`${number}${player.name}`, { size: 14, bold: true });
-  w.skip(-0.5);
   const age = player.birthDate ? computeAge(player.birthDate) : null;
   const info = [
     player.positions,
@@ -166,8 +190,63 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
   ]
     .filter(Boolean)
     .join('  •  ');
-  if (info) w.centered(info, { size: 9, color: [71, 85, 105] });
-  w.skip(3);
+
+  // The athlete's card: initials, name and details on the left; share of minutes and training attendance as rings
+  const top = 36;
+  doc.setFillColor(...APP.surface);
+  doc.setDrawColor(...APP.line);
+  doc.setLineWidth(0.25);
+  doc.roundedRect(14, top, 182, 34, 3, 3, 'FD');
+  doc.setFillColor(...APP.brand);
+  doc.roundedRect(14, top, 182, 1.2, 0.6, 0.6, 'F');
+  const initials = player.name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0].toUpperCase())
+    .join('');
+  doc.setFillColor(...APP.surface3);
+  doc.setDrawColor(...APP.brand);
+  doc.setLineWidth(0.6);
+  doc.circle(31, top + 17.5, 10, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.setTextColor(...APP.brand);
+  doc.text(initials || '?', 31, top + 22, { align: 'center' });
+  doc.setFontSize(15);
+  doc.setTextColor(...APP.text);
+  doc.text((doc.splitTextToSize(`${number}${player.name}`, 92) as string[])[0], 46, top + 15);
+  if (info) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...APP.muted);
+    doc.text((doc.splitTextToSize(info, 92) as string[])[0], 46, top + 22);
+  }
+  ring(
+    doc,
+    155,
+    top + 15,
+    7.5,
+    g.calledUp ? g.share : 0,
+    APP.brand,
+    g.calledUp ? `${Math.round(g.share * 100)}%` : '—',
+    {
+      label: 'dos minutos'
+    }
+  );
+  ring(
+    doc,
+    180,
+    top + 15,
+    7.5,
+    s.trainings.held ? s.trainings.rate / 100 : 0,
+    APP.success,
+    s.trainings.held ? `${s.trainings.rate}%` : '—',
+    {
+      label: 'nos treinos'
+    }
+  );
+  w.skip(top + 38 - w.y);
 
   // Summary tiles
   const tiles: [string, string, string][] = [
@@ -181,26 +260,13 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
       s.trainings.held ? `${s.trainings.present} de ${s.trainings.held}` : 'sem treinos'
     ]
   ];
-  const tileW = (182 - 4 * 2.5) / 5;
-  const top = w.y;
-  tiles.forEach(([label, value, sub], i) => {
-    const x = 14 + i * (tileW + 2.5);
-    doc.setFillColor(241, 245, 249);
-    doc.setDrawColor(...PDF_TRACK);
-    doc.roundedRect(x, top, tileW, 18, 2, 2, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...PDF_MUTED);
-    doc.text(label.toUpperCase(), x + tileW / 2, top + 4.5, { align: 'center' });
-    doc.setFontSize(13);
-    doc.setTextColor(...PDF_INK);
-    doc.text(value, x + tileW / 2, top + 11, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.3);
-    doc.setTextColor(...PDF_MUTED);
-    doc.text(sub, x + tileW / 2, top + 15.5, { align: 'center' });
-  });
-  w.skip(27);
+  kpiRow(
+    doc,
+    tiles.map(([label, value, sub]) => ({ label, value, sub })),
+    w.y,
+    { x: 14, width: 182 }
+  );
+  w.skip(26);
   const extras = [
     s.yellowCards || s.redCards ? `Cartões: ${s.yellowCards} amarelo(s), ${s.redCards} vermelho(s)` : '',
     s.ratingAverage !== null ? `Nota média do treinador: ${s.ratingAverage}` : ''
@@ -225,10 +291,8 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
   } else {
     doc.setFontSize(8.5);
     s.recentGames.forEach((r, i) => {
-      if (i % 2 === 1) {
-        doc.setFillColor(248, 250, 252);
-        doc.rect(14, w.y - 3.6, 182, 5, 'F');
-      }
+      doc.setFillColor(...(i % 2 === 0 ? APP.surface : APP.bg));
+      doc.rect(14, w.y - 3.6, 182, 5, 'F');
       const date = r.date.slice(0, 10).split('-').reverse().slice(0, 2).join('/');
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(...PDF_INK);
@@ -287,12 +351,12 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
   return doc;
 }
 
-// Light-surface step of the validated palette (one series) and neutral tokens
-export const PDF_BAR: [number, number, number] = [42, 120, 214];
-export const PDF_TRACK: [number, number, number] = [226, 232, 240];
-const PDF_GRID: [number, number, number] = [203, 213, 225];
-export const PDF_MUTED: [number, number, number] = [100, 116, 139];
-export const PDF_INK: [number, number, number] = [15, 23, 42];
+// The app's colours: cyan bars on a navy track
+export const PDF_BAR: [number, number, number] = APP.brand;
+export const PDF_TRACK: [number, number, number] = APP.surface3;
+const PDF_GRID: [number, number, number] = APP.line;
+export const PDF_MUTED: [number, number, number] = APP.muted;
+export const PDF_INK: [number, number, number] = APP.text;
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
 type Writer = ReturnType<typeof createTextReportWriter>;
