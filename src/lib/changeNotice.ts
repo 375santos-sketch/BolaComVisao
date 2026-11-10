@@ -8,7 +8,7 @@ import { AppState } from '../types';
 
 export type ChangeKind = 'hora' | 'local' | 'cancelado' | 'lembrete';
 
-export interface UpcomingEvent {
+interface UpcomingEvent {
   id: string;
   kind: 'treino' | 'jogo';
   date: string;
