@@ -27,6 +27,10 @@ interface MoreDrawerProps {
   onOpenTacticsBoard?: () => void;
   /** 🔭 Adversários. */
   onOpenOpponents?: () => void;
+  /** 📣 Comunicação. */
+  onOpenCommunication?: () => void;
+  /** 🤖 Assistente. */
+  onOpenAssistant?: () => void;
   /** 📸 Antes e depois da época. */
   onOpenSeasonGrowth?: () => void;
   onOpenSignature?: () => void;
@@ -51,6 +55,8 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onOpenParentsLink,
   onOpenTacticsBoard,
   onOpenOpponents,
+  onOpenCommunication,
+  onOpenAssistant,
   onOpenSeasonGrowth,
   onOpenSignature,
   onOpenTour,
@@ -80,6 +86,26 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
           detail: 'Gráficos, golos por período, PDF e Excel',
           run: () => onNavigate('analise_jogos')
         },
+        ...(onOpenAssistant
+          ? [
+              {
+                icon: 'zap' as IconName,
+                title: 'Assistente',
+                detail: 'Perguntas sobre a equipa e as ferramentas com IA',
+                run: onOpenAssistant
+              }
+            ]
+          : []),
+        ...(onOpenCommunication
+          ? [
+              {
+                icon: 'bell' as IconName,
+                title: 'Comunicação',
+                detail: 'Avisos de alterações e os canais para os pais',
+                run: onOpenCommunication
+              }
+            ]
+          : []),
         ...(onOpenOpponents
           ? [
               {

@@ -61,6 +61,8 @@ const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsM
 const ParentsLinkModal = lazyWithRetry(() => import('./components/ParentsLinkModal'));
 const TacticsBoardModal = lazyWithRetry(() => import('./components/TacticsBoardModal'));
 const OpponentsModal = lazyWithRetry(() => import('./components/OpponentsModal'));
+const CommunicationModal = lazyWithRetry(() => import('./components/CommunicationModal'));
+const AssistantHubModal = lazyWithRetry(() => import('./components/AssistantHubModal'));
 const SignatureModal = lazyWithRetry(() => import('./components/SignatureModal'));
 const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
@@ -156,6 +158,8 @@ export default function App() {
   const [showParentsLink, setShowParentsLink] = useState<boolean>(false);
   const [showTacticsBoard, setShowTacticsBoard] = useState<boolean>(false);
   const [showOpponents, setShowOpponents] = useState<boolean>(false);
+  const [showCommunication, setShowCommunication] = useState<boolean>(false);
+  const [showAssistantHub, setShowAssistantHub] = useState<boolean>(false);
   const [showSignature, setShowSignature] = useState<boolean>(false);
   const [tourOpen, setTourOpen] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
@@ -1071,6 +1075,8 @@ export default function App() {
           onOpenParentsLink={() => setShowParentsLink(true)}
           onOpenTacticsBoard={() => setShowTacticsBoard(true)}
           onOpenOpponents={() => setShowOpponents(true)}
+          onOpenCommunication={() => setShowCommunication(true)}
+          onOpenAssistant={() => setShowAssistantHub(true)}
           onOpenSignature={() => setShowSignature(true)}
           onOpenTour={() => {
             handleNavigate('home');
@@ -1102,6 +1108,35 @@ export default function App() {
         {showPushSettings && (
           <Suspense fallback={<ViewLoadingFallback />}>
             <PushSettingsModal state={state} onShowToast={showToast} onClose={() => setShowPushSettings(false)} />
+          </Suspense>
+        )}
+        {showCommunication && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <CommunicationModal
+              state={state}
+              onNavigate={handleNavigate}
+              onOpenParentsLink={() => {
+                setShowCommunication(false);
+                setShowParentsLink(true);
+              }}
+              onOpenPushSettings={() => {
+                setShowCommunication(false);
+                setShowPushSettings(true);
+              }}
+              onShowToast={showToast}
+              onClose={() => setShowCommunication(false)}
+            />
+          </Suspense>
+        )}
+        {showAssistantHub && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <AssistantHubModal
+              state={state}
+              onNavigate={handleNavigate}
+              onOpenMonthlyReport={() => setShowMonthlyReport(true)}
+              onShowToast={showToast}
+              onClose={() => setShowAssistantHub(false)}
+            />
           </Suspense>
         )}
         {showOpponents && (

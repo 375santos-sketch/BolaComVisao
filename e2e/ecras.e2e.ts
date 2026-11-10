@@ -1095,6 +1095,31 @@ test('adversários: resultados, próximo jogo e ficha da equipa técnica que apa
     .toBe(true);
 });
 
+test('comunicação e assistente: aviso de alteração para os pais e as ferramentas num só sítio', async ({ page }) => {
+  await signedIn(page);
+  await openMore(page, /Comunicação/);
+  const com = page.getByRole('dialog', { name: 'Comunicação' });
+  const notice = com.getByRole('region', { name: 'Aviso de alteração' });
+  await notice.getByRole('group', { name: 'O que mudou' }).getByRole('button', { name: '🕒 Hora' }).click();
+  await notice.getByLabel('Novo valor').fill('18:30');
+  await expect(notice.getByLabel('Mensagem')).toContainText('Alteração de horário');
+  await expect(notice.getByLabel('Mensagem')).toContainText('para as 18:30');
+  await expect(notice.getByRole('link', { name: /Enviar pelo WhatsApp/ })).toHaveAttribute(
+    'href',
+    /wa\.me\/\?text=.*18%3A30/
+  );
+  // The channels open where each one lives
+  await com.getByRole('button', { name: /Link do jogo para os pais/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Link para os pais' })).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar link para os pais' }).click();
+
+  await openMore(page, /Assistente/);
+  const hub = page.getByRole('dialog', { name: 'Assistente' });
+  await expect(hub.getByRole('region', { name: 'Em preparação' })).toContainText('ainda não disponível');
+  await hub.getByRole('button', { name: /Tendências da equipa/ }).click();
+  await expect(page.getByRole('region', { name: 'Tendências da equipa' })).toBeVisible();
+});
+
 test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /jogo/i);
