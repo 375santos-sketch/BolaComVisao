@@ -5,7 +5,7 @@ import { ExerciseCategory, SessionBlock } from '../types';
  * between) and the cool-down ("calma"). Minutes per part, against the session's length.
  */
 
-export type SessionPhase = 'aquecimento' | 'fundamental' | 'calma';
+type SessionPhase = 'aquecimento' | 'fundamental' | 'calma';
 
 export const PHASE_LABELS: Record<SessionPhase, string> = {
   aquecimento: 'Aquecimento',
@@ -16,7 +16,7 @@ export const PHASE_LABELS: Record<SessionPhase, string> = {
 export const phaseOf = (category?: ExerciseCategory): SessionPhase =>
   category === 'aquecimento' ? 'aquecimento' : category === 'calma' ? 'calma' : 'fundamental';
 
-export interface SessionPhaseSummary {
+interface SessionPhaseSummary {
   phase: SessionPhase;
   minutes: number;
   blocks: number;
