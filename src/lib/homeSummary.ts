@@ -6,6 +6,7 @@ import { upcomingGames } from './preMatchPlan';
 import { addDaysISO, localDateISO } from './trainingQuick';
 import { calculateMatchScore, isSeasonMatching, seasonFromDate } from './utils';
 import { cardAlerts, cardStatuses } from './cardSuspensions';
+import { computeSeasonPlayingTime } from './playingTime';
 import { DEFAULT_YELLOWS_FOR_BAN } from './teamSettings';
 
 /** Season attendance below this (with enough trainings) is worth a notice on the home screen. */
@@ -197,4 +198,31 @@ export function attendanceReminder(
     tab: 'treinos',
     targetId: 'hoje'
   };
+}
+
+export interface FormGame {
+  id: string;
+  date: string;
+  opponent: string;
+  scored: number;
+  conceded: number;
+}
+
+/** The last finished games of the season (at most `max`), oldest first, for the small chart on Início. */
+export function recentForm(state: Pick<SummaryState, 'matches' | 'season'>, max = 10): FormGame[] {
+  return seasonMatches(state)
+    .filter((m) => m.finished)
+    .sort((a, b) => `${a.date || ''}`.localeCompare(`${b.date || ''}`) || (a.liveAt || 0) - (b.liveAt || 0))
+    .slice(-max)
+    .map((m) => ({ id: m.id, date: m.date, opponent: m.opponent, ...calculateMatchScore(m) }));
+}
+
+/** Athletes below the minutes target this season (over all the season's games), and how many athletes count. */
+export function minutesBehind(state: Pick<SummaryState, 'matches' | 'season' | 'roster' | 'category'>) {
+  const rows = computeSeasonPlayingTime(
+    seasonMatches(state).filter((m) => m.finished),
+    state.roster || [],
+    state.category
+  );
+  return { behind: rows.filter((r) => r.belowTarget), total: rows.length };
 }

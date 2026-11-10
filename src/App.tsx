@@ -781,7 +781,11 @@ export default function App() {
 
   return (
     <CloudSyncContext.Provider value={cloudSync}>
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 font-sans pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] pt-[env(safe-area-inset-top,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] overflow-x-hidden">
+      <div
+        className={`min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 font-sans pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-8 pt-[env(safe-area-inset-top,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] overflow-x-hidden ${
+          currentTab === 'teams' ? '' : 'lg:pl-60'
+        }`}
+      >
         {/* Top Banner for PWA Install Prompt */}
         <InstallPwaBanner />
 
