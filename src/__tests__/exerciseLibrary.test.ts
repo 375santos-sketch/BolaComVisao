@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { buildTrainingSessionPDF } from '../lib/pdf/createTrainingReport';
+import { attendanceSheetOf, buildTrainingSessionPDF } from '../lib/pdf/createTrainingReport';
+import { writeFileSync } from 'fs';
 import { extractRecords, assembleState } from '../lib/recordSync';
 import { normalizeClubState } from '../lib/storage';
 import { dataUrlBytes } from '../lib/imageCompress';
-import { AppState, Exercise, Training } from '../types';
+import { AppState, Exercise, Player, Training } from '../types';
 
 const image = `data:image/jpeg;base64,${readFileSync(join(__dirname, '../../e2e/fixtures/exercicio.jpg')).toString('base64')}`;
 const rondo: Exercise = {
@@ -84,5 +85,49 @@ describe('Biblioteca de exercícios', () => {
 
   it('measures the size of an image data URL', () => {
     expect(dataUrlBytes('data:image/jpeg;base64,QUJD')).toBe(3);
+  });
+
+  it('the PDF has the attendance sheet: every athlete with a box, without the inactive ones', async () => {
+    const names = [
+      'Tomás Gonçalves',
+      'Rui Martins',
+      'Martim Costa',
+      'André Lopes',
+      'Duarte Reis',
+      'Lucas Pereira',
+      'Gabriel Sousa',
+      'Tiago Nunes',
+      'Gonçalo Pinto',
+      'Afonso Ramos',
+      'Rodrigo Alves',
+      'Santiago Mota',
+      'Francisco Dias',
+      'Vicente Lima',
+      'Salvador Rocha',
+      'Guilherme Faria'
+    ];
+    const roster = names.map((name, i) => ({
+      id: `p${i}`,
+      name,
+      number: i + 1,
+      positions: '',
+      active: true
+    })) as Player[];
+    roster.push({
+      id: 'px',
+      name: 'Inativo Silva',
+      number: 99,
+      positions: '',
+      active: true,
+      status: 'inativo'
+    } as Player);
+    expect(attendanceSheetOf(roster).map((p) => p.name)).toEqual(names);
+    const { doc } = await buildTrainingSessionPDF(training, { ...(state as AppState), roster });
+    if (process.env.PDF_OUT) writeFileSync(process.env.PDF_OUT, Buffer.from(doc.output('arraybuffer')));
+    const raw = doc.output() as string;
+    expect(raw).toContain('Presen');
+    expect(raw).toContain('Guilherme Faria');
+    expect(raw).toContain('Presentes: ______ de 16');
+    expect(raw).not.toContain('Inativo Silva');
   });
 });
