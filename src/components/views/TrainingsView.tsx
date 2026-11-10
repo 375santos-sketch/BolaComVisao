@@ -12,6 +12,7 @@ import { useTrainingFilters } from './trainings/hooks/useTrainingFilters';
 import { TrainingHeader } from './trainings/TrainingHeader';
 import { PdfSheetsSection } from './trainings/PdfSheetsSection';
 import { ExerciseLibrary } from './trainings/ExerciseLibrary';
+import { SeasonPlanView } from './trainings/SeasonPlanView';
 import { TrainingList } from './trainings/TrainingList';
 import { TrainingAttendance } from './trainings/TrainingAttendance';
 import { TrainingEditor } from './trainings/TrainingEditor';
@@ -326,6 +327,14 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
             onShowToast={onShowToast}
           />
         </>
+      ) : activeTab === 'season' ? (
+        <SeasonPlanView
+          state={state}
+          onOpenTraining={(id) => {
+            setActiveTab('list');
+            setExpandedTraining(id);
+          }}
+        />
       ) : activeTab === 'stats' ? (
         <TrainingAttendance
           state={state}

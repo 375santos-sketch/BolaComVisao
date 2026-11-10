@@ -25,4 +25,4 @@ export const TRAINING_TYPES = [
   '🎯 Geral'
 ];
 
-export type TrainingsTab = 'list' | 'stats' | 'library';
+export type TrainingsTab = 'list' | 'season' | 'stats' | 'library';
