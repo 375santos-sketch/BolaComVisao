@@ -151,7 +151,9 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     setShowFinishModal,
     setIsFinishing,
     playersOnPitch,
-    handleTogglePause
+    handleTogglePause,
+    lastAction,
+    undoLastAction
   } = useLiveMatch({ state, onUpdateState, onShowToast });
 
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
@@ -322,7 +324,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   const isLineup1stHalfReady = starting1stHalfCount === lineupSize;
 
   return (
-    <div className="pb-32 animate-fadeIn max-w-4xl mx-auto px-2 sm:px-4 space-y-4">
+    <div className="modo-jogo pb-32 animate-fadeIn max-w-4xl mx-auto px-2 sm:px-4 space-y-4">
       <Header
         title={t(state.lang, 'match_curr')}
         lang={state.lang}
@@ -732,6 +734,22 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         </div>
       )}
 
+      {/* ↩︎ Desfazer: the last action, always at hand while the game is recorded */}
+      {lastAction && (
+        <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 mx-auto max-w-4xl px-3">
+          <button
+            type="button"
+            onClick={() => {
+              const undone = undoLastAction();
+              if (undone) onShowToast(`Desfeito: ${undone}`);
+            }}
+            className="ui-btn ui-btn-warning w-full py-3 text-sm font-extrabold shadow-lg"
+          >
+            ↩︎ Desfazer: {lastAction.label}
+          </button>
+        </div>
+      )}
+
       {/* Finish Match Bottom CTA with Checklist Pre-Validation */}
       <div className="mt-8 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="text-xs text-slate-400 text-center sm:text-left">
@@ -739,7 +757,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         </div>
         <button
           onClick={() => setShowChecklistModal(true)}
-          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black text-sm font-['Chakra_Petch'] uppercase tracking-wider shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-ui-success hover:brightness-110 text-slate-950 font-black text-sm font-['Chakra_Petch'] uppercase tracking-wider shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           <span>📋</span>
           <span>Validar e Terminar Jogo</span>

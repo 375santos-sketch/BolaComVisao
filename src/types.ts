@@ -35,6 +35,31 @@ export interface Player {
   captain?: boolean;
   /** 📏 Testes: results per round ("2026/2027-set") and test ("sprint20" → 3.94). */
   fitnessTests?: Record<string, Record<string, number>>;
+  /** 📈 Evolução: periodic evaluations by the coach (only for coaches: never in reports, shares or comparisons). */
+  evaluations?: PlayerEvaluation[];
+  /** 🎯 Individual goals the athlete works on (only for coaches). */
+  individualGoals?: PlayerGoal[];
+}
+
+/** The five areas of an athlete's evaluation (1 to 5 each). */
+export type EvaluationArea = 'tecnica' | 'tatica' | 'fisica' | 'psicologica' | 'jogo';
+
+export interface PlayerEvaluation {
+  id: string;
+  /** Day of the evaluation (YYYY-MM-DD). */
+  date: string;
+  scores: Record<EvaluationArea, number>;
+  note?: string;
+}
+
+export interface PlayerGoal {
+  id: string;
+  text: string;
+  area?: EvaluationArea;
+  /** Day it was set (YYYY-MM-DD). */
+  createdAt: string;
+  /** Day it was reached (YYYY-MM-DD). */
+  doneAt?: string;
 }
 
 export type GoalType =
@@ -313,7 +338,7 @@ export type AttendancePeriod = '7d' | '30d' | '90d' | 'season';
 export type AttendanceTrend = 'melhorou' | 'diminuiu' | 'estavel' | 'insuficiente';
 export type AttendanceCategory = 'excelente' | 'boa' | 'atencao' | 'baixa';
 
-export type ExerciseCategory = 'aquecimento' | 'tecnica' | 'tatica' | 'fisico' | 'jogo' | 'bolas_paradas';
+export type ExerciseCategory = 'aquecimento' | 'tecnica' | 'tatica' | 'fisico' | 'jogo' | 'bolas_paradas' | 'calma';
 
 /** Material an exercise needs (Lista do saco). */
 export type MaterialId = 'cones' | 'coletes' | 'bolas' | 'balizas' | 'estacas' | 'arcos' | 'barreiras' | 'escadas';
@@ -350,6 +375,8 @@ export interface Exercise {
   area?: { w: number; l: number };
   /** How many cones, bibs, balls… it needs ("Levar para o treino" adds up a training's exercises). */
   material?: ExerciseMaterial;
+  /** ⭐ Kept among the coach's favourites (shown first and with their own filter in the library). */
+  favorite?: boolean;
 }
 
 export interface SessionBlock {
@@ -694,6 +721,8 @@ export interface SquadProfile {
   calendarToken?: string;
   /** Secret part of the assistant coach's plan link (/plano/{token}); none = not shared. */
   planToken?: string;
+  /** 🔭 Adversários: what the staff knows about each opponent (kept in the club record, like the templates). */
+  opponentFiles?: OpponentFile[];
   /** Secret part of the parents' live link (/aovivo/{token}); none = not shared. */
   liveToken?: string;
   /** The parents' live link also shows the cards (off unless the coach turns it on). */
@@ -742,6 +771,8 @@ interface BoardPiece {
 interface PlayFrame {
   positions: Record<string, { x: number; y: number }>;
   note?: string;
+  /** Movements drawn on the board (percent of the pitch, from → to). */
+  arrows?: Array<{ x1: number; y1: number; x2: number; y2: number }>;
 }
 
 /** Quadro tático: a play in steps that the app animates (saída de bola, pressão, canto…). */
@@ -749,6 +780,8 @@ export interface TacticPlay {
   id: string;
   name: string;
   format: 5 | 7 | 9 | 11;
+  /** Game system of our team ("2-3-1"), when the board was made from one. */
+  system?: string;
   pieces: BoardPiece[];
   frames: PlayFrame[];
   createdAt: string;
@@ -1090,4 +1123,18 @@ export interface TeamDatabaseRow {
   order: number;
   updatedAt: number;
   updatedBy: string;
+}
+
+/** 🔭 The staff's file on an opponent: usual system, strengths, weaknesses, notes and the plan against them. */
+export interface OpponentFile {
+  id: string;
+  /** The opponent's name as the coach wrote it (matched to games with the same name rules as the reports). */
+  name: string;
+  formation?: string;
+  strengths?: string[];
+  weaknesses?: string[];
+  notes?: string;
+  /** How to prepare for them (shown when preparing the next game against them). */
+  strategy?: string;
+  updatedAt: number;
 }

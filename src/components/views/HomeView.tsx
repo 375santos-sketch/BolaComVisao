@@ -9,7 +9,8 @@ import { LiveFollowModal, LiveMatchCard } from '../live/LiveFollow';
 import { Icon, IconName } from '../ui/Icon';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { attendanceReminder, homeNotices, seasonSummary } from '../../lib/homeSummary';
+import { attendanceReminder, homeNotices, seasonMatches, seasonSummary } from '../../lib/homeSummary';
+import { HomeOverview } from '../dashboard/HomeOverview';
 import { AssistantCard } from '../assistant/AssistantCard';
 import { BirthdayImageModal } from '../birthday/BirthdayImageModal';
 import { BirthdayPerson, getAllBirthdays } from '../../lib/birthdayUtils';
@@ -226,6 +227,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
         onNavigate={onNavigate}
       />
 
+      {/* 📊 The season in four figures and the focus of the week (from the team's trends) */}
+      <HomeOverview
+        season={state.season}
+        summary={summary}
+        matches={seasonMatches(state)}
+        onOpenStats={() => onNavigate('stats')}
+        onOpenAnalysis={() => onNavigate('analise_jogos')}
+      />
+
       {/* 🎂 Birthdays today, with the picture to share */}
       {birthdaysToday.length > 0 && (
         <section aria-label="Aniversários de hoje" className="ui-card p-3.5 border-fuchsia-500/40 space-y-2">
@@ -262,9 +272,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
             key={sc.label}
             type="button"
             onClick={() => onNavigate(sc.tab, sc.targetId)}
-            className="ui-card px-3 py-3 rounded-2xl text-sm font-bold text-slate-100 flex items-center gap-2.5 text-left hover:border-slate-600"
+            className="ui-card px-3 py-3 text-sm font-bold text-ui-text flex items-center gap-2.5 text-left hover:border-ui-line-strong"
           >
-            <Icon name={sc.icon} className="w-5 h-5 text-cyan-400 shrink-0" />
+            <Icon name={sc.icon} className="w-5 h-5 text-ui-brand shrink-0" />
             <span>{sc.label}</span>
           </button>
         ))}
@@ -273,7 +283,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* 3. What needs attention (only when there is something) */}
       {notices.length > 0 && (
         <section aria-label="Avisos">
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Avisos</h2>
+          <h2 className="ui-kicker mb-2 px-1">Para fazer</h2>
           <div className="ui-card divide-y divide-slate-800 overflow-hidden">
             {notices.map((n) => {
               // "Convocatória por fechar: vs Abrantes (sábado 01/11)" → short title, the detail below
@@ -308,36 +318,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* Questions about the team, answered from the app's data */}
       <AssistantCard state={state} />
 
-      {/* 4. Season at a glance */}
-      <section aria-label="Resumo da época" className="ui-card p-3.5 flex flex-wrap items-center justify-between gap-3">
-        <div className="text-sm text-slate-200 font-mono">
-          <span className="text-xs text-cyan-400 font-bold font-sans mr-2">Época {state.season}</span>
-          {summary.played === 0 ? (
-            <span className="text-slate-400">Ainda sem jogos</span>
-          ) : (
-            <span>
-              {summary.played} jogos · <b className="text-emerald-400">{summary.wins}V</b>{' '}
-              <b className="text-slate-300">{summary.draws}E</b> <b className="text-rose-400">{summary.losses}D</b> ·
-              golos {summary.scored}-{summary.conceded}
-            </span>
-          )}
-          {summary.attendance !== null && <span> · assiduidade {summary.attendance}%</span>}
-        </div>
-        <button
-          type="button"
-          onClick={() => onNavigate('stats')}
-          className="text-xs font-bold text-cyan-300 hover:text-cyan-200"
-        >
-          Ver estatísticas ➔
-        </button>
-      </section>
-
       {/* 5. Next 7 days */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
         {/* Next 4 Scheduled Events Agenda */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xs font-bold uppercase tracking-wide text-slate-400">Próximos 7 dias</h2>
+            <h2 className="ui-kicker px-1">Próximos 7 dias</h2>
             <button
               onClick={() => onNavigate('calendario')}
               className="text-xs text-cyan-400 hover:text-cyan-300 font-bold"
@@ -346,7 +332,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
           </div>
 
-          <Card className="bg-slate-900/90 border-slate-800 p-1.5 sm:p-2 divide-y divide-slate-800/80">
+          <Card padding="none" className="p-1.5 sm:p-2 divide-y divide-ui-line">
             {nextDays.length > 0 ? (
               nextDays.map((evt) => (
                 <div

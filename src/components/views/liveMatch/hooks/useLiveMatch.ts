@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { describeMatchChange, undoMatch } from '../../../../lib/matchUndo';
 import { AppState, Match, GoalEvent, CardEvent, SubEvent, GoalType, MatchPeriod } from '../../../../types';
 import { uid, formatMinute, sortPlayerObjs, getMatchElapsedMs } from '../../../../lib/utils';
 import { getLineupSize } from '../../../../lib/constants';
@@ -73,7 +74,13 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
 
-  const updateMatchInState = (updatedMatch: Match) => {
+  // ↩︎ Desfazer: the game before each change (the last 20), with what the change did
+  const [undoStack, setUndoStack] = useState<Array<{ before: Match; label: string; at: number }>>([]);
+
+  const updateMatchInState = (updatedMatch: Match, fromUndo = false) => {
+    const previous = state.matches.find((x) => x.id === updatedMatch.id);
+    const label = fromUndo ? null : describeMatchChange(previous, updatedMatch);
+    if (label && previous) setUndoStack((stack) => [...stack.slice(-19), { before: previous, label, at: Date.now() }]);
     // 📡 Who is recording it and when: the other coaches follow the game live
     const stamped: Match = {
       ...updatedMatch,
@@ -715,9 +722,23 @@ export function useLiveMatch({ state, onUpdateState, onShowToast }: UseLiveMatch
   const playersAtEndOfFirstHalf = match ? getPlayersAtEndOfFirstHalf(match) : [];
   const suggestedMinute = getSuggestedMinute(match, state.category);
 
+  /** Takes the last change back (the clock and the phase of the game stay as they are). */
+  const undoLastAction = () => {
+    const last = undoStack[undoStack.length - 1];
+    if (!last) return null;
+    const current = state.matches.find((x) => x.id === last.before.id);
+    if (!current) return null;
+    updateMatchInState(undoMatch(last.before, current), true);
+    setUndoStack((stack) => stack.slice(0, -1));
+    return last.label;
+  };
+  const lastAction = undoStack[undoStack.length - 1] || null;
+
   return {
     match,
     matchPhase,
+    lastAction,
+    undoLastAction,
     suggestedMinute,
     playersOnPitch,
     playersAtEndOfFirstHalf,

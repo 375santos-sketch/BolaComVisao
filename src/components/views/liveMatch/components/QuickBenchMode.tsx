@@ -96,7 +96,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
   const recentGoals = [...(match.goals || [])].reverse().slice(0, 3);
 
   return (
-    <div className="space-y-4 animate-fadeIn">
+    <div className="modo-jogo-rapido space-y-4 animate-fadeIn">
       {/* 1. Placar Rápido Minimalista */}
       <div className="ui-card p-4 sm:p-5 flex items-center justify-between">
         <div className="flex-1 text-center">

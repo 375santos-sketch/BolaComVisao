@@ -123,7 +123,7 @@ export function homeNotices(
   return notices.slice(0, MAX_HOME_NOTICES);
 }
 
-interface SeasonSummary {
+export interface SeasonSummary {
   played: number;
   wins: number;
   draws: number;
@@ -133,6 +133,10 @@ interface SeasonSummary {
   /** Team attendance in the trainings held this season, or null without trainings. */
   attendance: number | null;
 }
+
+/** The games of the season being shown (the trends and the season figures use the same games). */
+export const seasonMatches = (state: Pick<SummaryState, 'matches' | 'season'>) =>
+  (state.matches || []).filter((m) => m && isSeasonMatching(m.season || seasonFromDate(m.date), state.season));
 
 export function seasonSummary(state: SummaryState, today: string = localDateISO()): SeasonSummary {
   const games = (state.matches || []).filter(

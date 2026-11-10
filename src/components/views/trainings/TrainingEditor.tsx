@@ -1,3 +1,4 @@
+import { SessionPhasesBar } from './SessionPhasesBar';
 import React, { useState } from 'react';
 import { AutoTextarea } from '../../ui/AutoTextarea';
 import { AppState, Exercise, ExerciseCategory, Player, SessionBlock, Training } from '../../../types';
@@ -435,6 +436,10 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                 </div>
               </div>
 
+              <div className="mb-4">
+                <SessionPhasesBar blocks={trainingForm.sessionBlocks} lengthMinutes={totalDuration} />
+              </div>
+
               {/* Session Objective */}
               <div className="field mb-4">
                 <label className="flex items-center gap-1.5">
@@ -483,7 +488,12 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                     </p>
                   ) : (
                     [...library]
-                      .sort((a, b) => a.name.localeCompare(b.name, 'pt-PT'))
+                      // ⭐ Favourites first
+                      .sort(
+                        (a, b) =>
+                          Number(Boolean(b.favorite)) - Number(Boolean(a.favorite)) ||
+                          a.name.localeCompare(b.name, 'pt-PT')
+                      )
                       .map((ex) => (
                         <button
                           key={ex.id}
@@ -499,7 +509,10 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                             </span>
                           )}
                           <span className="min-w-0 flex-1">
-                            <span className="block text-xs font-bold text-white truncate">{ex.name}</span>
+                            <span className="block text-xs font-bold text-white truncate">
+                              {ex.favorite ? '⭐ ' : ''}
+                              {ex.name}
+                            </span>
                             <span className="block text-[10px] text-slate-400 font-mono truncate">
                               {ex.durationMinutes} min{ex.objective ? ` · ${ex.objective}` : ''}
                             </span>
@@ -581,6 +594,8 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                             <option value="tatica">⚡ Tática</option>
                             <option value="fisico">🏃 Físico</option>
                             <option value="jogo">🥅 Jogo</option>
+                            <option value="bolas_paradas">🎯 Bolas paradas</option>
+                            <option value="calma">🧘 Retorno à calma</option>
                           </select>
 
                           {/* Move Up/Down */}

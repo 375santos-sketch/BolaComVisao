@@ -59,14 +59,17 @@ test('entrar: escolha da equipa e painel inicial', async ({ page }) => {
   await enterPanel(page);
   await expect(page.getByText('Treinador A', { exact: true })).toBeVisible();
 
-  // Simple home: shortcuts, what needs attention, the season in one line, the next 7 days.
+  // Simple home: the season in four figures, shortcuts, what needs attention, the next 7 days.
   const notices = page.getByRole('region', { name: 'Avisos' });
   await expect(notices).toContainText('Convocatória por fechar: vs Abrantes');
   // Share over all the games' minutes: athletes never called up count too (0%)
   await expect(notices).toContainText(
     'Precisam de minutos: Gabriel Sousa (0%), Henrique Alves (0%), Lucas Pereira (0%) e mais 4'
   );
-  await expect(page.getByRole('region', { name: 'Resumo da época' })).toContainText('2 jogos · 1V 1E 0D · golos 2-1');
+  const season = page.getByRole('region', { name: 'Resumo da época' });
+  await expect(season.getByRole('button', { name: /Marcados/ })).toContainText('2em 2 jogos');
+  await expect(season.getByRole('button', { name: /Sofridos/ })).toContainText('1em 2 jogos');
+  await expect(season.getByRole('button', { name: /V-E-D/ })).toContainText('1-1-0');
   await expect(page.getByText('VISÃO DO TREINADOR')).toHaveCount(0);
 
   // "Treino de hoje" opens today's attendance straight away (closed without saving).
@@ -824,6 +827,13 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
   const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
   await expect(library).toContainText('Rondo 4x2');
   await expect(library).toContainText('15 min');
+  // ⭐ Favourites have their own filter (and come first in the library and in the session's picker)
+  await library.getByRole('button', { name: 'Favorito: Rondo 4x2' }).click();
+  await expect(library.getByRole('button', { name: 'Favorito: Rondo 4x2' })).toHaveAttribute('aria-pressed', 'true');
+  const filters = library.getByRole('group', { name: 'Filtrar exercícios' });
+  await filters.getByRole('button', { name: '⭐ Favoritos' }).click();
+  await expect(library).toContainText('Rondo 4x2');
+  await filters.getByRole('button', { name: 'Todos' }).click();
   await expect
     .poll(async () => [...(await cloudRecords()).values()].find((r) => r.kind === 'exercise')?.name, {
       timeout: 30_000,
@@ -841,6 +851,8 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
     .click();
   await expect(page.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
   await expect(page.getByText('Planeado: 15 /')).toBeVisible();
+  // The session in three parts: what is missing is said
+  await expect(page.getByRole('region', { name: 'Partes da sessão' }).first()).toContainText('Sem aquecimento');
 
   // Keep it as a model, save the training, and the library shows the exercise was used
   const models = page.getByRole('region', { name: 'Modelos de treino' });
@@ -906,6 +918,7 @@ test('fim de época: mensagem do treinador guardada na nuvem e PDF para a famíl
   await signedIn(page);
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('tab', { name: 'Perfil e notas' }).click();
   const report = page.getByRole('region', { name: 'Relatório de fim de época' });
   await report.getByLabel('Mensagem do treinador para a família').fill('Uma época de grande evolução. Parabéns!');
   await report.getByRole('button', { name: 'Guardar mensagem' }).click();
@@ -929,6 +942,182 @@ test('fim de época: mensagem do treinador guardada na nuvem e PDF para a famíl
   await page.getByRole('button', { name: 'Mais ações do plantel' }).click();
   await page.getByRole('menuitem', { name: /Fim de época/ }).click();
   expect((await all).suggestedFilename()).toMatch(/^Fim_de_Epoca_Plantel_/);
+});
+
+test('evolução do atleta: avaliação em 5 áreas com radar e objetivos individuais, só para os treinadores', async ({
+  page
+}) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('tab', { name: 'Evolução' }).click();
+  const evaluations = page.getByRole('region', { name: 'Avaliações' });
+  await expect(evaluations).toContainText('Ainda sem avaliações');
+  await evaluations.getByRole('button', { name: '+ Nova avaliação' }).click();
+  const form = page.getByRole('region', { name: 'Nova avaliação' });
+  // Saving needs all five areas
+  await expect(form.getByRole('button', { name: 'Guardar avaliação' })).toBeDisabled();
+  for (const [area, v] of [
+    ['Técnica', 4],
+    ['Tática', 3],
+    ['Física', 3],
+    ['Psicológica e comportamental', 4],
+    ['Compreensão do jogo', 3]
+  ] as const)
+    await form.getByRole('button', { name: `${area} ${v}`, exact: true }).click();
+  await form.getByLabel('Observação do treinador').fill('Já procura o passe vertical');
+  await form.getByRole('button', { name: 'Guardar avaliação' }).click();
+  await expect(page.getByText('Avaliação guardada ✓')).toBeVisible();
+  await expect(evaluations.getByRole('img', { name: /Competências: Técnica 4, Tática 3/ })).toBeVisible();
+  await expect(evaluations.getByRole('list', { name: 'Lista de avaliações' })).toContainText('média 3,4');
+  await expect(evaluations).toContainText('Já procura o passe vertical');
+
+  const goals = page.getByRole('region', { name: 'Objetivos individuais' });
+  await goals.getByLabel('Novo objetivo').fill('Receber orientado para a frente');
+  await goals.getByLabel('Área do objetivo').selectOption('tecnica');
+  await goals.getByRole('button', { name: 'Adicionar' }).click();
+  await expect(goals).toContainText('Técnica · desde');
+  await goals.getByLabel('Cumprido: Receber orientado para a frente').check();
+  await expect(goals).toContainText('cumprido a');
+
+  // Kept in the athlete's record in the cloud (the other coaches see it too)
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
+        const raw = JSON.stringify(await res.json());
+        return raw.includes('Já procura o passe vertical') && raw.includes('Receber orientado para a frente');
+      },
+      { timeout: 30_000, message: 'avaliação e objetivo no registo do atleta' }
+    )
+    .toBe(true);
+  await page.getByRole('region', { name: 'Avaliações' }).screenshot({
+    path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/evolucao-atleta.png` : undefined
+  });
+});
+
+test('quadro tático: sistema, atletas nos lugares, arrastar, setas e estratégia guardada na nuvem', async ({
+  page
+}) => {
+  await signedIn(page);
+  await openMore(page, /Quadro tático/);
+  const board = page.getByRole('dialog', { name: 'Quadro tático' });
+  await board.getByLabel('Nome da estratégia').fill('Saída curta');
+  await board.getByLabel('Sistema').selectOption('3-2-1');
+  // Tap a place, choose the athlete
+  const tap = async (name: string) => {
+    const b = (await board.getByRole('button', { name }).boundingBox())!;
+    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  };
+  // The welcome message sits over the bottom of the pitch for a moment
+  await expect(page.getByText(/Bem-vindo/)).toBeHidden({ timeout: 10_000 });
+  await tap('Lugar 1: vazio');
+  await board
+    .getByRole('region', { name: 'Escolher atleta' })
+    .getByRole('button', { name: /Rui Silva/ })
+    .click();
+  await expect(board.getByRole('button', { name: 'Lugar 1: Rui Silva' })).toBeVisible();
+  await expect(board.getByRole('region', { name: 'Suplentes' })).not.toContainText('Rui');
+  // Drag a place and draw a movement
+  const pitch = board.getByRole('img', { name: /Campo: Saída curta em 3-2-1/ });
+  const box = (await pitch.boundingBox())!;
+  const piece = (await board.getByRole('button', { name: 'Lugar 2: vazio' }).boundingBox())!;
+  await page.mouse.move(piece.x + piece.width / 2, piece.y + piece.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.5, { steps: 5 });
+  await page.mouse.up();
+  await board.getByRole('button', { name: /Desenhar setas/ }).click();
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.8);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.4, { steps: 5 });
+  await page.mouse.up();
+  await expect(board.getByRole('button', { name: '↩︎ Apagar última seta' })).toBeEnabled();
+  await board.getByRole('button', { name: 'Guardar estratégia' }).click();
+  await expect(page.getByText('"Saída curta" guardada ✓')).toBeVisible();
+  await board.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/quadro-tatico.png` : undefined });
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
+        const docs = ((await res.json()).documents || []) as Array<{ fields: Record<string, any> }>;
+        const play = docs.find(
+          (d) =>
+            d.fields.kind?.stringValue === 'tacticplay' &&
+            d.fields.data?.mapValue?.fields?.name?.stringValue === 'Saída curta'
+        );
+        const data = play?.fields.data?.mapValue?.fields;
+        return data ? `${data.system?.stringValue} ${JSON.stringify(data.frames).includes('arrows')}` : null;
+      },
+      { timeout: 30_000, message: 'estratégia guardada na nuvem' }
+    )
+    .toBe('3-2-1 true');
+  // Another version to change
+  await board.getByRole('button', { name: 'Nova versão' }).click();
+  await expect(board.getByLabel('Nome da estratégia')).toHaveValue('Saída curta (versão 2)');
+  page.once('dialog', (d) => d.accept());
+  await board.getByRole('button', { name: 'Fechar quadro tático' }).click();
+});
+
+test('adversários: resultados, próximo jogo e ficha da equipa técnica que aparece no Pré-jogo', async ({ page }) => {
+  await signedIn(page);
+  await openMore(page, /Adversários/);
+  const dialog = page.getByRole('dialog', { name: 'Adversários' });
+  const list = dialog.getByRole('list', { name: 'Lista de adversários' });
+  await expect(list).toContainText('Tramagal SU');
+  await expect(list).toContainText('Abrantes');
+  await list.getByRole('button', { name: /Tramagal SU/ }).click();
+  await expect(dialog.getByRole('region', { name: 'Resultados contra este adversário' })).toContainText(
+    /1 jogo · \d+V/
+  );
+  await dialog.getByRole('button', { name: '‹ Todos os adversários' }).click();
+  await list.getByRole('button', { name: /Abrantes/ }).click();
+  const file = dialog.getByRole('region', { name: 'Ficha do adversário' });
+  await file.getByLabel('Formação habitual').fill('3-2-1');
+  await file.getByLabel('Pontos fortes (um por linha)').fill('Jogo aéreo\nContra-ataque');
+  await file.getByLabel('Estratégia para o próximo jogo').fill('Pressionar a saída curta do guarda-redes');
+  await file.getByRole('button', { name: 'Guardar ficha' }).click();
+  await expect(page.getByText('Ficha guardada ✓')).toBeVisible();
+  await dialog.getByRole('button', { name: 'Fechar adversários' }).click();
+
+  // The file comes up when preparing the game against them
+  await navTo(page, /jogo/i);
+  await expect(page.getByRole('region', { name: 'Ficha do adversário' })).toContainText(
+    'Pressionar a saída curta do guarda-redes'
+  );
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
+        return JSON.stringify(await res.json()).includes('Pressionar a saída curta');
+      },
+      { timeout: 30_000, message: 'ficha guardada na nuvem' }
+    )
+    .toBe(true);
+});
+
+test('comunicação e assistente: aviso de alteração para os pais e as ferramentas num só sítio', async ({ page }) => {
+  await signedIn(page);
+  await openMore(page, /Comunicação/);
+  const com = page.getByRole('dialog', { name: 'Comunicação' });
+  const notice = com.getByRole('region', { name: 'Aviso de alteração' });
+  await notice.getByRole('group', { name: 'O que mudou' }).getByRole('button', { name: '🕒 Hora' }).click();
+  await notice.getByLabel('Novo valor').fill('18:30');
+  await expect(notice.getByLabel('Mensagem')).toContainText('Alteração de horário');
+  await expect(notice.getByLabel('Mensagem')).toContainText('para as 18:30');
+  await expect(notice.getByRole('link', { name: /Enviar pelo WhatsApp/ })).toHaveAttribute(
+    'href',
+    /wa\.me\/\?text=.*18%3A30/
+  );
+  // The channels open where each one lives
+  await com.getByRole('button', { name: /Link do jogo para os pais/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Link para os pais' })).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar link para os pais' }).click();
+
+  await openMore(page, /Assistente/);
+  const hub = page.getByRole('dialog', { name: 'Assistente' });
+  await expect(hub.getByRole('region', { name: 'Em preparação' })).toContainText('ainda não disponível');
+  await hub.getByRole('button', { name: /Tendências da equipa/ }).click();
+  await expect(page.getByRole('region', { name: 'Tendências da equipa' })).toBeVisible();
 });
 
 test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
@@ -1224,6 +1413,11 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await page.getByRole('button', { name: /GOLO MARCADO/i }).click();
   await page.locator('select').first().selectOption('p10');
   await page.getByRole('button', { name: 'Confirmar Golo' }).click();
+  // ↩︎ Any action can be undone with one tap (here a corner tapped by mistake)
+  await page.getByTitle('Adicionar Canto').first().click();
+  await page.getByRole('button', { name: '↩︎ Desfazer: Canto a favor' }).click();
+  await expect(page.getByText('Desfeito: Canto a favor')).toBeVisible();
+  await expect(page.getByRole('button', { name: '↩︎ Desfazer: Golo marcado' })).toBeVisible();
   await advance('05:00');
 
   // Playing minutes: 25 + 10, Duarte left at 16', Henrique came on at 16'.
@@ -1659,6 +1853,7 @@ test('crónica do jogo e cromo do atleta (imagem e PDF de todos)', async ({ page
 
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('tab', { name: 'Perfil e notas' }).click();
   await page.getByRole('button', { name: '🃏 Cromo do atleta' }).click();
   const card = page.getByRole('dialog', { name: 'Cromo do atleta' });
   await expect(card.getByRole('img', { name: 'Cromo de Rui Silva' })).toBeVisible();
@@ -1765,6 +1960,7 @@ test('testes: resultados por momento com cronómetro e evolução só na ficha d
   // The athlete's own evolution, in the athlete's sheet
   await page.getByRole('button', { name: 'Plantel', exact: false }).first().click();
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('tab', { name: 'Testes' }).click();
   const own = page.getByRole('region', { name: 'Testes da época' });
   await expect(own).toContainText(/Sprint 20 m.*4,10 s → 2,\d\d s 🚀/);
   await expect(own).toContainText('Melhorou em 1 de 1 teste 💪');

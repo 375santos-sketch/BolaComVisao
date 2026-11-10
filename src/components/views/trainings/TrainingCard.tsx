@@ -3,6 +3,7 @@ import { AbsenceReason, AppState, Player, Training } from '../../../types';
 import { generateTrainingSessionPDF } from '../../../lib/pdfUtils';
 import { AttendanceGrid } from './AttendanceGrid';
 import { KitBagCard } from './KitBagCard';
+import { SessionPhasesBar } from './SessionPhasesBar';
 import { HeatBreaksCard } from './HeatBreaksCard';
 import { teamSettings } from '../../../lib/teamSettings';
 import { ExerciseLevel, LEVELS } from '../../../lib/exerciseLevel';
@@ -204,6 +205,11 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
                     🎯 <b>Objetivo:</b> {tr.sessionPlan.objective}
                   </div>
                 )}
+
+                <SessionPhasesBar
+                  blocks={tr.sessionPlan.blocks}
+                  lengthMinutes={tr.durationMinutes || teamSettings(state).trainingMinutes}
+                />
 
                 {tr.sessionPlan.blocks && tr.sessionPlan.blocks.length > 0 && (
                   <div className="space-y-1.5 pt-1">

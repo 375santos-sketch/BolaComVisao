@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { TrendsSection } from '../trends/TeamTrends';
+import { seasonMatches } from '../../lib/homeSummary';
 import { AppState } from '../../types';
 import { t } from '../../i18n/dict';
 import { Header } from '../Header';
@@ -274,7 +276,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             onClick={() => setViewMode('simplified')}
             className={`px-3.5 sm:px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
               viewMode === 'simplified'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black shadow-md shadow-cyan-500/20'
+                ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
@@ -286,7 +288,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             onClick={() => setViewMode('coach')}
             className={`px-3.5 sm:px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
               viewMode === 'coach'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black shadow-md shadow-cyan-500/20'
+                ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
@@ -298,7 +300,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             onClick={() => setViewMode('detailed')}
             className={`px-3.5 sm:px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
               viewMode === 'detailed'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black shadow-md shadow-cyan-500/20'
+                ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
@@ -309,7 +311,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
           <button
             type="button"
             onClick={() => setShowCoachReportModal(true)}
-            className="px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 bg-gradient-to-r from-cyan-500/20 to-blue-600/20 hover:from-cyan-500/30 hover:to-blue-600/30 border border-cyan-500/40 text-cyan-300 hover:text-white cursor-pointer"
+            className="px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 bg-ui-brand/10 hover:bg-ui-brand/20 border border-cyan-500/40 text-cyan-300 hover:text-white cursor-pointer"
           >
             <span>📄 Relatório PDF/MD</span>
           </button>
@@ -371,6 +373,11 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
       )}
 
       {/* 1. VISÃO SIMPLIFICADA (ESTRUTURA COMPACTA & IPHONE: 4 CARDS, COMO MARCAMOS/SOFREMOS, QUANDO, INSIGHTS E VER DETALHADA) */}
+      {/* 📈 What changed in the last games and what to do about it (the season being shown) */}
+      {viewMode === 'simplified' && (
+        <TrendsSection matches={seasonMatches(state)} onPlan={() => onNavigate('treinos')} />
+      )}
+
       {viewMode === 'simplified' && (
         <SimplifiedOverview
           analysis={analysis}
