@@ -979,6 +979,8 @@ export interface CoachCareer {
   courses: CoachCourse[];
   /** Clubs the coach has been through, with the year or season. */
   clubs?: CoachClub[];
+  /** The coach's photo for the CV (small compressed JPEG data URL). */
+  photo?: string;
 }
 
 export interface CoachClub {

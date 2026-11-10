@@ -1873,9 +1873,14 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   ]);
   await expect(career.getByRole('alert').first()).toContainText(/O título caduca em [23] meses/);
   await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/carreira.png` : undefined });
+  // The coach's photo goes at the top of the CV
+  await career.getByLabel('Foto do treinador').setInputFiles('e2e/fixtures/exercicio.jpg');
+  await expect(career.getByRole('img', { name: 'A minha foto' })).toBeVisible();
   const download = page.waitForEvent('download');
   await career.getByRole('button', { name: '📄 Currículo em PDF' }).click();
-  expect((await download).suggestedFilename()).toMatch(/^Curriculo_.*\.pdf$/);
+  const pdf = await download;
+  expect(pdf.suggestedFilename()).toMatch(/^Curriculo_.*\.pdf$/);
+  expect(readFileSync(await pdf.path()).toString('latin1')).toMatch(/\/Subtype\s*\/Image/);
 });
 
 test('exercício sem explicação para as crianças, assinatura nos PDFs e visita guiada', async ({ page }) => {
