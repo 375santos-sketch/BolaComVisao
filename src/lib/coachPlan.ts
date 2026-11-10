@@ -102,7 +102,8 @@ const CATEGORIES: Record<string, [string, string]> = {
   tatica: ['Tático', '#8b5cf6'],
   fisico: ['Físico', '#ef4444'],
   jogo: ['Jogo', '#10b981'],
-  bolas_paradas: ['Bolas paradas', '#64748b']
+  bolas_paradas: ['Bolas paradas', '#64748b'],
+  calma: ['Retorno à calma', '#14b8a6']
 };
 const WEEKDAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 

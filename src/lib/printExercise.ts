@@ -9,7 +9,7 @@ import { cleanMaterial } from './kitBag';
 export const EXERCISE_PROMPT = `Esta imagem é uma foto de um exercício de treino de futebol (de uma folha, de um livro ou do ecrã de outro telemóvel), em português ou noutra língua.
 Lê o exercício e responde em português de Portugal:
 - name: o nome do exercício (curto, por exemplo "Rondo 4x2"); inventa um nome curto se não houver
-- category: uma de aquecimento, tecnica, tatica, fisico, jogo, bolas_paradas
+- category: uma de aquecimento, tecnica, tatica, fisico, jogo, bolas_paradas, calma (retorno à calma)
 - durationMinutes: a duração em minutos, se estiver escrita (senão 0)
 - objective: o objetivo do exercício, numa frase
 - description: como se faz (espaço, jogadores, regras, variantes), com as palavras da imagem, sem inventar
@@ -46,7 +46,7 @@ export const EXERCISES_PROMPT = `Esta imagem é uma página de uma ficha de exer
 A página pode ter um ou vários exercícios, cada um normalmente com um desenho (esquema do campo) e uma explicação.
 Para CADA exercício da página, responde em português de Portugal:
 - name: o nome do exercício (curto, por exemplo "Rondo 4x2"); inventa um nome curto se não houver
-- category: uma de aquecimento, tecnica, tatica, fisico, jogo, bolas_paradas
+- category: uma de aquecimento, tecnica, tatica, fisico, jogo, bolas_paradas, calma (retorno à calma)
 - durationMinutes: a duração em minutos, se estiver escrita (senão 0)
 - objective: o objetivo do exercício, numa frase
 - description: a explicação desse exercício (organização, regras, variantes, pontos-chave), com as palavras da página, sem inventar e sem misturar com os outros exercícios
@@ -71,7 +71,7 @@ interface PrintExercise {
   drawing?: { x: number; y: number; w: number; h: number };
 }
 
-const CATEGORIES: ExerciseCategory[] = ['aquecimento', 'tecnica', 'tatica', 'fisico', 'jogo', 'bolas_paradas'];
+const CATEGORIES: ExerciseCategory[] = ['aquecimento', 'tecnica', 'tatica', 'fisico', 'jogo', 'bolas_paradas', 'calma'];
 
 const text = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+\n/g, '\n').trim().slice(0, max) : '');
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : Number(v));

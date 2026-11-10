@@ -827,6 +827,13 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
   const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
   await expect(library).toContainText('Rondo 4x2');
   await expect(library).toContainText('15 min');
+  // ⭐ Favourites have their own filter (and come first in the library and in the session's picker)
+  await library.getByRole('button', { name: 'Favorito: Rondo 4x2' }).click();
+  await expect(library.getByRole('button', { name: 'Favorito: Rondo 4x2' })).toHaveAttribute('aria-pressed', 'true');
+  const filters = library.getByRole('group', { name: 'Filtrar exercícios' });
+  await filters.getByRole('button', { name: '⭐ Favoritos' }).click();
+  await expect(library).toContainText('Rondo 4x2');
+  await filters.getByRole('button', { name: 'Todos' }).click();
   await expect
     .poll(async () => [...(await cloudRecords()).values()].find((r) => r.kind === 'exercise')?.name, {
       timeout: 30_000,
@@ -844,6 +851,8 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
     .click();
   await expect(page.getByRole('img', { name: 'Desenho: Rondo 4x2' })).toBeVisible();
   await expect(page.getByText('Planeado: 15 /')).toBeVisible();
+  // The session in three parts: what is missing is said
+  await expect(page.getByRole('region', { name: 'Partes da sessão' }).first()).toContainText('Sem aquecimento');
 
   // Keep it as a model, save the training, and the library shows the exercise was used
   const models = page.getByRole('region', { name: 'Modelos de treino' });

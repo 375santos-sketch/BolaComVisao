@@ -514,7 +514,8 @@ const CATEGORIES: Record<string, [string, [number, number, number]]> = {
   tatica: ['Tático', [139, 92, 246]],
   fisico: ['Físico', [239, 68, 68]],
   jogo: ['Jogo', [16, 185, 129]],
-  bolas_paradas: ['Bolas paradas', [100, 116, 139]]
+  bolas_paradas: ['Bolas paradas', [100, 116, 139]],
+  calma: ['Retorno à calma', [20, 184, 166]]
 };
 const categoryName = (c?: string) => (c ? CATEGORIES[c]?.[0] || c : '');
 const categoryColor = (c?: string): [number, number, number] => (c && CATEGORIES[c]?.[1]) || [71, 85, 105];

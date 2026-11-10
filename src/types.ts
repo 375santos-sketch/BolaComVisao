@@ -338,7 +338,7 @@ export type AttendancePeriod = '7d' | '30d' | '90d' | 'season';
 export type AttendanceTrend = 'melhorou' | 'diminuiu' | 'estavel' | 'insuficiente';
 export type AttendanceCategory = 'excelente' | 'boa' | 'atencao' | 'baixa';
 
-export type ExerciseCategory = 'aquecimento' | 'tecnica' | 'tatica' | 'fisico' | 'jogo' | 'bolas_paradas';
+export type ExerciseCategory = 'aquecimento' | 'tecnica' | 'tatica' | 'fisico' | 'jogo' | 'bolas_paradas' | 'calma';
 
 /** Material an exercise needs (Lista do saco). */
 export type MaterialId = 'cones' | 'coletes' | 'bolas' | 'balizas' | 'estacas' | 'arcos' | 'barreiras' | 'escadas';
@@ -375,6 +375,8 @@ export interface Exercise {
   area?: { w: number; l: number };
   /** How many cones, bibs, balls… it needs ("Levar para o treino" adds up a training's exercises). */
   material?: ExerciseMaterial;
+  /** ⭐ Kept among the coach's favourites (shown first and with their own filter in the library). */
+  favorite?: boolean;
 }
 
 export interface SessionBlock {

@@ -47,7 +47,8 @@ const EXERCISE_CATEGORIES: { id: ExerciseCategory; label: string }[] = [
   { id: 'tatica', label: '⚡ Tática' },
   { id: 'fisico', label: '🏃 Físico' },
   { id: 'jogo', label: '🥅 Jogo' },
-  { id: 'bolas_paradas', label: '🎯 Bolas paradas' }
+  { id: 'bolas_paradas', label: '🎯 Bolas paradas' },
+  { id: 'calma', label: '🧘 Retorno à calma' }
 ];
 
 interface ExerciseLibraryProps {
@@ -97,6 +98,8 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
   const [fromIdea, setFromIdea] = useState<ExerciseIdeaRequest | null>(null);
 
   const [order, setOrder] = useState<'nome' | 'mais' | 'esquecidos'>('nome');
+  // ⭐ Favourites and the category (type group) of the exercises shown
+  const [group, setGroup] = useState<'todas' | 'favoritos' | ExerciseCategory>('todas');
   const usage = useMemo(() => exerciseUsage(trainings), [trainings]);
 
   const list = useMemo(() => {
@@ -105,15 +108,30 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
     const times = (e: Exercise) => usage.get(e.id)?.times || 0;
     const last = (e: Exercise) => usage.get(e.id)?.lastDate || '';
     return [...exercises]
-      .filter((e) => !q || `${e.name} ${e.objective || ''}`.toLowerCase().includes(q))
-      .sort((a, b) =>
-        order === 'mais'
-          ? times(b) - times(a) || byName(a, b)
-          : order === 'esquecidos'
-            ? last(a).localeCompare(last(b)) || byName(a, b)
-            : byName(a, b)
+      .filter(
+        (e) =>
+          !q ||
+          `${e.name} ${e.objective || ''} ${e.typeText || ''} ${e.description || ''} ${e.materialText || ''}`
+            .toLowerCase()
+            .includes(q)
+      )
+      .filter((e) => (group === 'todas' ? true : group === 'favoritos' ? e.favorite : e.category === group))
+      .sort(
+        (a, b) =>
+          // Favourites first, then the chosen order
+          Number(Boolean(b.favorite)) - Number(Boolean(a.favorite)) ||
+          (order === 'mais'
+            ? times(b) - times(a) || byName(a, b)
+            : order === 'esquecidos'
+              ? last(a).localeCompare(last(b)) || byName(a, b)
+              : byName(a, b))
       );
-  }, [exercises, search, order, usage]);
+  }, [exercises, search, order, usage, group]);
+  const groups = EXERCISE_CATEGORIES.filter((c) => exercises.some((e) => e.category === c.id));
+  const toggleFavorite = (e: Exercise) => {
+    onSave(exercises.map((x) => (x.id === e.id ? { ...x, favorite: !x.favorite } : x)));
+    onShowToast(e.favorite ? 'Retirado dos favoritos' : 'Nos favoritos ⭐');
+  };
 
   const save = () => {
     if (!editing) return;
@@ -555,11 +573,34 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
           ))}
         </div>
       )}
+      {exercises.length > 0 && (
+        <div role="group" aria-label="Filtrar exercícios" className="flex gap-1.5 overflow-x-auto pb-1">
+          {(
+            [
+              ['todas', 'Todos'],
+              ['favoritos', '⭐ Favoritos'],
+              ...groups.map((c) => [c.id, c.label] as const)
+            ] as Array<readonly [typeof group, string]>
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={group === id}
+              onClick={() => setGroup(id)}
+              className={`ui-btn shrink-0 px-2.5 py-1 text-[11px] ${group === id ? 'ui-btn-primary' : 'ui-btn-secondary'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       {list.length === 0 ? (
         <div className="card text-center text-xs text-slate-400 py-8">
           {exercises.length === 0
             ? 'Ainda sem exercícios. Crie o primeiro e use-o depois no plano de cada treino.'
-            : 'Nenhum exercício com esse nome.'}
+            : group === 'favoritos'
+              ? 'Ainda sem favoritos: toque na ⭐ de um exercício.'
+              : 'Nenhum exercício com esse nome.'}
         </div>
       ) : (
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -571,9 +612,21 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
                 <div className="ui-inset w-20 h-16 flex items-center justify-center text-xl shrink-0">📋</div>
               )}
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-bold text-white truncate">{e.name}</div>
+                <div className="flex items-start gap-1">
+                  <div className="min-w-0 flex-1 text-xs font-bold text-white truncate">{e.name}</div>
+                  <button
+                    type="button"
+                    aria-label={`Favorito: ${e.name}`}
+                    aria-pressed={Boolean(e.favorite)}
+                    onClick={() => toggleFavorite(e)}
+                    className={`-mt-1 shrink-0 px-1 text-base leading-none ${e.favorite ? 'text-amber-400' : 'text-slate-600 hover:text-slate-400'}`}
+                  >
+                    {e.favorite ? '★' : '☆'}
+                  </button>
+                </div>
                 <div className="text-[10px] text-slate-400 font-mono">
                   {typeOf(e)} · {e.durationMinutes} min
+                  {e.playersCount ? ` · 👥 ${e.playersCount}` : ''}
                 </div>
                 {e.objective && <div className="text-[11px] text-slate-300 line-clamp-2 mt-0.5">{e.objective}</div>}
                 {materialTextOf(e) && <div className="text-[11px] text-slate-400 mt-0.5">🎒 {materialTextOf(e)}</div>}
@@ -587,6 +640,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
                     type="button"
                     className="text-rose-300"
                     onClick={() => {
+                      if (!window.confirm(`Apagar "${e.name}" da biblioteca?`)) return;
                       onSave(exercises.filter((x) => x.id !== e.id));
                       onShowToast('Exercício apagado da biblioteca');
                     }}

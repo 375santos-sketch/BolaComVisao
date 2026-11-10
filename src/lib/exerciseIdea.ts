@@ -19,7 +19,7 @@ export interface ExerciseIdeaRequest {
   avoid?: string[];
 }
 
-const CATEGORIES: ExerciseCategory[] = ['aquecimento', 'tecnica', 'tatica', 'fisico', 'jogo', 'bolas_paradas'];
+const CATEGORIES: ExerciseCategory[] = ['aquecimento', 'tecnica', 'tatica', 'fisico', 'jogo', 'bolas_paradas', 'calma'];
 const text = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
 const int = (v: unknown, min: number, max: number, fallback: number) => {
   const n = Math.round(Number(v));
@@ -57,7 +57,8 @@ const CATEGORY_WORDS: Record<ExerciseCategory, string> = {
   tatica: 'tático',
   fisico: 'físico (sempre com bola, se possível)',
   jogo: 'jogo reduzido / condicionado',
-  bolas_paradas: 'bolas paradas'
+  bolas_paradas: 'bolas paradas',
+  calma: 'retorno à calma'
 };
 
 export function exerciseIdeaPrompt(r: ExerciseIdeaRequest): string {

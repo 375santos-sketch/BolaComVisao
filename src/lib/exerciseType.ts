@@ -2,7 +2,7 @@ import { Exercise, ExerciseCategory } from '../types';
 
 /**
  * The exercise's type is written by the coach ("Rondo", "Finalização", "Jogo reduzido"…). The app still works out one
- * of its six groups from it, for the colours of the plan and the "Montar o campo"/"nível certo" suggestions.
+ * of its seven groups from it, for the colours of the plan and the "Montar o campo"/"nível certo" suggestions.
  */
 
 const GROUP_NAMES: Record<ExerciseCategory, string> = {
@@ -11,7 +11,8 @@ const GROUP_NAMES: Record<ExerciseCategory, string> = {
   tatica: 'Tática',
   fisico: 'Físico',
   jogo: 'Jogo',
-  bolas_paradas: 'Bolas paradas'
+  bolas_paradas: 'Bolas paradas',
+  calma: 'Retorno à calma'
 };
 
 /** Suggestions while writing (the coach can write anything else). */
@@ -35,6 +36,7 @@ export function categoryFromType(text: string, fallback: ExerciseCategory = 'tec
   const t = norm(text);
   if (!t.trim()) return fallback;
   if (/aquec|ativa/.test(t)) return 'aquecimento';
+  if (/calma|alongam|relaxa|retorno/.test(t)) return 'calma';
   if (/parad|canto|livre|penalti|lancamento/.test(t)) return 'bolas_paradas';
   if (/fisic|velocid|resist|forca|agilid|coordena|sprint/.test(t)) return 'fisico';
   if (/jogo|reduzid|\d\s*x\s*\d|partida/.test(t)) return 'jogo';
