@@ -16,7 +16,22 @@ async function buildCoachCvPDF(state: AppState, today = new Date().toISOString()
   drawDocumentHeader(doc, state, 'Currículo de treinador');
   const career = careerOf(state);
   const status = careerStatus(career, today);
-  const w = createTextReportWriter(doc, 42, pdfBrand(state));
+  // The coach's photo above the name, kept in proportion inside a 30 × 36 mm frame
+  let top = 42;
+  if (career.photo && /^data:image\/(jpeg|png);base64,/.test(career.photo)) {
+    try {
+      const props = doc.getImageProperties(career.photo);
+      const scale = Math.min(30 / props.width, 36 / props.height);
+      const pw = props.width * scale;
+      const ph = props.height * scale;
+      const pageW = doc.internal.pageSize.getWidth();
+      doc.addImage(career.photo, (pageW - pw) / 2, 40, pw, ph);
+      top = 40 + ph + 6;
+    } catch {
+      top = 42; // an unreadable photo: the CV goes without it
+    }
+  }
+  const w = createTextReportWriter(doc, top, pdfBrand(state));
   w.centered(state.currentUser?.name || 'Treinador', { size: 16, bold: true });
   w.skip(2);
 

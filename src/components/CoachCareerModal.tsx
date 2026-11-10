@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppState, CoachCareer, CoachClub, CoachCourse } from '../types';
 import { careerOf, careerStatus, clubDetail, dateLabel, sortClubs, sortCourses, withCareer } from '../lib/coachCareer';
 import { uid } from '../lib/utils';
+import { compressImageFile } from '../lib/imageCompress';
 
 interface CoachCareerModalProps {
   state: AppState;
@@ -173,6 +174,58 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
             🔔 {w}
           </p>
         ))}
+
+        <section aria-label="A minha foto" className="flex items-center gap-3">
+          {career.photo ? (
+            <img
+              src={career.photo}
+              alt="A minha foto"
+              className="h-20 w-16 shrink-0 rounded-xl object-cover bg-slate-800"
+            />
+          ) : (
+            <div className="grid h-20 w-16 shrink-0 place-items-center rounded-xl border-2 border-dashed border-slate-600 text-2xl">
+              👤
+            </div>
+          )}
+          <div className="flex-1 space-y-1.5">
+            <p className="text-[11px] text-slate-400">A tua foto aparece no topo do currículo em PDF.</p>
+            <div className="flex flex-wrap gap-2">
+              <label className="ui-btn ui-btn-secondary cursor-pointer px-3 py-1.5 text-[11px]">
+                📷 {career.photo ? 'Trocar foto' : 'Pôr a minha foto'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  aria-label="Foto do treinador"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = '';
+                    if (!file) return;
+                    try {
+                      save({ ...career, photo: await compressImageFile(file, 500, 70_000) });
+                      onShowToast('Foto guardada ✓');
+                    } catch (err) {
+                      onShowToast((err as Error).message || 'Não foi possível usar esta foto.');
+                    }
+                  }}
+                />
+              </label>
+              {career.photo && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const rest = { ...career };
+                    delete rest.photo;
+                    save(rest);
+                  }}
+                  className="ui-btn ui-btn-soft-danger px-3 py-1.5 text-[11px]"
+                >
+                  Tirar foto
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
 
         <section
           aria-label="Título de treinador"

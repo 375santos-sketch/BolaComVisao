@@ -1,4 +1,4 @@
-import { AppState, Training } from '../../types';
+import { AppState, Player, Training } from '../../types';
 import { sortPlayerObjs } from '../utils';
 import { t } from '../../i18n/dict';
 import {
@@ -454,6 +454,43 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
     doc.setLineDashPattern([1, 1], 0);
     for (let k = 1; k <= 3 && curY + k * 8 < PAGE_BOTTOM; k++) doc.line(15, curY + k * 8, 195, curY + k * 8);
     doc.setLineDashPattern([], 0);
+    curY += 3 * 8 + 4;
+  }
+
+  // ✍️ Presenças à mão: every athlete of the team with a box to mark with an X (inactive athletes left out)
+  const athletes = attendanceSheetOf(state.roster);
+  if (athletes.length) {
+    const ROW = 7.5;
+    const half = Math.ceil(athletes.length / 2);
+    const needed = 12 + half * ROW + 8;
+    if (curY + needed > PAGE_BOTTOM) newPage();
+    else curY += 4;
+    curY += drawSectionTitle(doc, brand, `Presenças · marcar com X quem esteve no treino`, 15, curY, 180);
+    athletes.forEach((p, idx) => {
+      const x = idx < half ? 15 : 107;
+      const y = curY + (idx < half ? idx : idx - half) * ROW;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...PDF_MUTED);
+      doc.text(p.number != null ? String(p.number) : '', x + 6, y + 5, { align: 'right' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...PDF_INK);
+      doc.text(doc.splitTextToSize(p.name.trim(), 68)[0] as string, x + 9, y + 5);
+      doc.setDrawColor(90, 100, 112);
+      doc.setLineWidth(0.4);
+      doc.rect(x + 80, y + 1, 5.5, 5.5, 'S');
+      doc.setDrawColor(...PDF_LINE);
+      doc.setLineWidth(0.2);
+      doc.line(x, y + ROW - 0.3, x + 88, y + ROW - 0.3);
+    });
+    curY += half * ROW + 4;
+    if (curY + 8 > PAGE_BOTTOM) newPage();
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...PDF_INK);
+    doc.text(`Presentes: ______ de ${athletes.length}`, 15, curY + 4);
+    curY += 10;
   }
 
   addBolaComVisaoPageFooters(doc);
@@ -462,6 +499,13 @@ export async function buildTrainingSessionPDF(training: Training, state: AppStat
   const numPart = training.trainingNumber ? `_Treino_${training.trainingNumber}` : '';
   const filename = `Plano${numPart}_${sanitize(myClub)}_${training.date || 'sem_data'}.pdf`;
   return { doc, filename };
+}
+
+/** The athletes on the training's attendance sheet: the whole team except the inactive ones, by shirt number. */
+export function attendanceSheetOf(roster: Player[] | undefined): Player[] {
+  return (roster || [])
+    .filter((p) => p && p.name?.trim() && p.active !== false && p.status !== 'inativo')
+    .sort((a, b) => (a.number ?? 999) - (b.number ?? 999) || a.name.localeCompare(b.name, 'pt'));
 }
 
 const CATEGORIES: Record<string, [string, [number, number, number]]> = {

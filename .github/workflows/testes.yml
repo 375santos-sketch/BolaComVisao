@@ -17,7 +17,7 @@ concurrency:
 jobs:
   verify:
     name: Tipos, lint, formatação, testes unitários e build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -37,7 +37,7 @@ jobs:
 
   ecras:
     name: Testes de ecrã e de integração (emuladores)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 

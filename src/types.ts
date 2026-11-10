@@ -694,6 +694,10 @@ export interface SquadProfile {
   calendarToken?: string;
   /** Secret part of the assistant coach's plan link (/plano/{token}); none = not shared. */
   planToken?: string;
+  /** Secret part of the parents' live link (/aovivo/{token}); none = not shared. */
+  liveToken?: string;
+  /** The parents' live link also shows the cards (off unless the coach turns it on). */
+  liveShowCards?: boolean;
   /** Championship series (one per season): other games of the series, for the league table. */
   leagues?: LeagueSetup[];
   /** Training templates (Treinos → Modelos): a session plan kept to start new trainings from it. */
@@ -975,6 +979,8 @@ export interface CoachCareer {
   courses: CoachCourse[];
   /** Clubs the coach has been through, with the year or season. */
   clubs?: CoachClub[];
+  /** The coach's photo for the CV (small compressed JPEG data URL). */
+  photo?: string;
 }
 
 export interface CoachClub {

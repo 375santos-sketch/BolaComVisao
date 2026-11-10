@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
@@ -15,6 +16,7 @@ import {
 import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
 import webpush from 'web-push';
 import { VAPID_PUBLIC_KEY, cleanNoticeRequest, cleanSubscription, subscriptionsToNotify } from './src/lib/pushEvents';
+import { parentsLiveFromRestDocument, renderParentsLiveContent, renderParentsLivePage } from './src/lib/parentsLive';
 import { ChronicleAudience, chroniclePrompt, cleanChronicle } from './src/lib/matchChronicle';
 import { cleanIdeaRequest, exerciseIdeaPrompt } from './src/lib/exerciseIdea';
 import {
@@ -492,13 +494,19 @@ async function startServer() {
           error: 'Os avisos ainda não estão ligados: falta a chave VAPID_PRIVATE_KEY nos Secrets do AI Studio.'
         });
       }
-      webpush.setVapidDetails(
-        process.env.APP_URL && /^https:\/\//.test(process.env.APP_URL)
-          ? process.env.APP_URL
-          : 'mailto:avisos@bolacomvisao.pt',
-        VAPID_PUBLIC_KEY,
-        privateKey
-      );
+      // The private key must be the pair of the public key in the app (a wrong paste in AI Studio fails here)
+      try {
+        const ecdh = crypto.createECDH('prime256v1');
+        ecdh.setPrivateKey(Buffer.from(privateKey, 'base64url'));
+        if (ecdh.getPublicKey('base64url') !== VAPID_PUBLIC_KEY) throw new Error('par errado');
+        webpush.setVapidDetails('mailto:avisos@bolacomvisao.pt', VAPID_PUBLIC_KEY, privateKey);
+      } catch {
+        return res.status(503).json({
+          success: false,
+          error:
+            'A chave VAPID_PRIVATE_KEY dos Secrets do AI Studio não está certa: copie de novo só o valor (sem espaços nem aspas) e publique outra vez.'
+        });
+      }
       // The phones of the club, read by the app with the sender's own sign-in (the Firestore rules apply there)
       const listed: unknown[] = Array.isArray(req.body?.subscriptions) ? req.body.subscriptions.slice(0, 300) : [];
       const subs = listed
@@ -508,6 +516,7 @@ async function startServer() {
       const payload = JSON.stringify({ title: notice.title, body: notice.body, tag: notice.tag, url: '/?aoVivo=1' });
       let sent = 0;
       const gone: string[] = [];
+      const failed: Array<{ status: number; reason: string }> = [];
       await Promise.all(
         targets.map(async (s) => {
           try {
@@ -519,14 +528,60 @@ async function startServer() {
           } catch (err: any) {
             // The phone's push service no longer knows this address: the app forgets it
             if (err?.statusCode === 404 || err?.statusCode === 410) gone.push(s.id);
-            else console.warn('Aviso do jogo não enviado:', err?.statusCode || err?.message || err);
+            else {
+              console.warn('Aviso do jogo não enviado:', err?.statusCode || err?.message || err, err?.body || '');
+              failed.push({
+                status: Number(err?.statusCode) || 0,
+                reason: String(err?.body || err?.message || '').slice(0, 120)
+              });
+            }
           }
         })
       );
-      return res.json({ success: true, sent, phones: targets.length, gone });
+      return res.json({ success: true, sent, phones: targets.length, gone, failed });
     } catch (err: any) {
       console.error('Erro na rota /api/avisar:', err?.message || err);
       return res.status(500).json({ success: false, error: 'Não foi possível enviar o aviso.' });
+    }
+  });
+
+  // 📡 Parents' live link (/aovivo/{token}): the game read from public_lives/{token}. The page asks again every 5
+  // seconds; one read of Firestore serves every parent for 4 seconds.
+  const liveCache = new Map<string, { at: number; doc: any }>();
+  app.get('/aovivo/:token', async (req, res) => {
+    const token = /^[a-zA-Z0-9]{20,64}$/.test(req.params.token || '') ? req.params.token : '';
+    const notFound = () =>
+      res
+        .status(404)
+        .type('html')
+        .send(
+          '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><p style="font-family:sans-serif;padding:24px">Este link do jogo não existe ou foi desligado pelo treinador.</p>'
+        );
+    if (!token) return notFound();
+    try {
+      let cached = liveCache.get(token);
+      if (!cached || Date.now() - cached.at > 4000) {
+        const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+        const base = process.env.FIRESTORE_EMULATOR_HOST
+          ? `http://${process.env.FIRESTORE_EMULATOR_HOST}`
+          : 'https://firestore.googleapis.com';
+        const key = firebaseConfig.apiKey ? `?key=${encodeURIComponent(firebaseConfig.apiKey)}` : '';
+        const resp = await fetch(
+          `${base}/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/public_lives/${token}${key}`
+        );
+        cached = { at: Date.now(), doc: resp.ok ? await resp.json() : null };
+        if (liveCache.size > 500) liveCache.clear();
+        liveCache.set(token, cached);
+      }
+      const page = cached.doc ? parentsLiveFromRestDocument(cached.doc) : null;
+      if (!page) return notFound();
+      res.set('Cache-Control', 'no-store');
+      res.set('X-Robots-Tag', 'noindex');
+      if (req.query.conteudo) return res.type('html').send(renderParentsLiveContent(page));
+      return res.type('html').send(renderParentsLivePage(page, token));
+    } catch (err) {
+      console.error('Erro na rota /aovivo:', err);
+      return res.status(502).type('text/plain').send('Jogo temporariamente indisponível.');
     }
   });
 

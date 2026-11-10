@@ -312,6 +312,19 @@ service cloud.firestore {
         data.updatedAt is number;
     }
 
+    function isValidPublicLive(data) {
+      return data is map &&
+        data.keys().hasAll(['clubId', 'teamId', 'teamName', 'updatedAt']) &&
+        data.keys().hasOnly(['clubId', 'teamId', 'teamName', 'color', 'game', 'next', 'updatedAt']) &&
+        data.clubId is string && data.clubId.size() > 0 && data.clubId.size() <= 128 &&
+        data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
+        data.teamName is string && data.teamName.size() <= 200 &&
+        (!data.keys().hasAny(['color']) || (data.color is string && data.color.size() <= 16)) &&
+        (!data.keys().hasAny(['game']) || data.game == null || data.game is map) &&
+        (!data.keys().hasAny(['next']) || data.next == null || data.next is map) &&
+        data.updatedAt is number;
+    }
+
     function isValidPushSubscription(data) {
       return data is map &&
         data.keys().hasAll(['uid', 'endpoint', 'keys', 'prefs', 'teamIds', 'updatedAt']) &&
@@ -365,6 +378,18 @@ service cloud.firestore {
         isValidPublicPlan(incoming()) && canAccessClubWorkspace(incoming().clubId);
       allow update: if canAccessClubWorkspace(resource.data.clubId) &&
         isValidPublicPlan(incoming()) && incoming().clubId == resource.data.clubId;
+      allow delete: if canAccessClubWorkspace(resource.data.clubId);
+    }
+
+    // 📡 Parents' live link (Mais → "Link do jogo para os pais"): same model as the assistant's plan. Anyone with the
+    // secret link reads that one document (the game, without substitutions); only the club's coaches write it.
+    match /public_lives/{token} {
+      allow get: if token.size() >= 20;
+      allow list: if false;
+      allow create: if isValidId(token) && token.size() >= 20 &&
+        isValidPublicLive(incoming()) && canAccessClubWorkspace(incoming().clubId);
+      allow update: if canAccessClubWorkspace(resource.data.clubId) &&
+        isValidPublicLive(incoming()) && incoming().clubId == resource.data.clubId;
       allow delete: if canAccessClubWorkspace(resource.data.clubId);
     }
 

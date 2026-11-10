@@ -39,6 +39,7 @@ import { ViewLoadingFallback } from './components/ViewLoadingFallback';
 import { lazyWithRetry } from './lib/lazyWithRetry';
 import { useCalendarPublisher } from './hooks/useCalendarPublisher';
 import { usePlanPublisher } from './hooks/usePlanPublisher';
+import { useLivePublisher } from './hooks/useLivePublisher';
 import { useShrinkOldPhotos } from './hooks/useShrinkOldPhotos';
 
 // Dynamic Lazy Views (Zero initial bundle cost + auto-recovery)
@@ -57,6 +58,7 @@ const MonthlyReportModal = lazyWithRetry(() => import('./components/MonthlyRepor
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
 const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsModal'));
+const ParentsLinkModal = lazyWithRetry(() => import('./components/ParentsLinkModal'));
 const SignatureModal = lazyWithRetry(() => import('./components/SignatureModal'));
 const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
@@ -76,6 +78,7 @@ export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
   useCalendarPublisher(state);
   usePlanPublisher(state);
+  useLivePublisher(state);
   const latestStateRef = useRef(state);
   // At commit time, not in a passive effect: a passive effect left over from an older render runs when the next
   // update starts, i.e. after a cloud snapshot already put a newer state here, and would put the older one back
@@ -148,6 +151,7 @@ export default function App() {
   const [showCareer, setShowCareer] = useState<boolean>(false);
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
   const [showPushSettings, setShowPushSettings] = useState<boolean>(false);
+  const [showParentsLink, setShowParentsLink] = useState<boolean>(false);
   const [showSignature, setShowSignature] = useState<boolean>(false);
   const [tourOpen, setTourOpen] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
@@ -1060,6 +1064,7 @@ export default function App() {
           onOpenCareer={() => setShowCareer(true)}
           onOpenSeasonGrowth={() => setShowSeasonGrowth(true)}
           onOpenPushSettings={() => setShowPushSettings(true)}
+          onOpenParentsLink={() => setShowParentsLink(true)}
           onOpenSignature={() => setShowSignature(true)}
           onOpenTour={() => {
             handleNavigate('home');
@@ -1091,6 +1096,16 @@ export default function App() {
         {showPushSettings && (
           <Suspense fallback={<ViewLoadingFallback />}>
             <PushSettingsModal state={state} onShowToast={showToast} onClose={() => setShowPushSettings(false)} />
+          </Suspense>
+        )}
+        {showParentsLink && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <ParentsLinkModal
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onClose={() => setShowParentsLink(false)}
+            />
           </Suspense>
         )}
         {showSeasonGrowth && (

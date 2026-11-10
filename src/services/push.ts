@@ -152,7 +152,7 @@ export async function sendNotice(
   clubId: string,
   teamId: string,
   message: Pick<PushMessage, 'title' | 'body' | 'tag'> & { kind: PushMessage['kind'] | 'teste' }
-): Promise<{ sent: number; phones: number }> {
+): Promise<{ sent: number; phones: number; failed: Array<{ status: number; reason: string }> }> {
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error('Entre na app com a sua conta.');
   const phones = collection(db, 'club_workspace', clubId, 'push_subscriptions');
@@ -171,7 +171,7 @@ export async function sendNotice(
   for (const id of Array.isArray(data.gone) ? data.gone : []) {
     if (typeof id === 'string') deleteDoc(doc(phones, id)).catch(() => undefined);
   }
-  return { sent: data.sent || 0, phones: data.phones || 0 };
+  return { sent: data.sent || 0, phones: data.phones || 0, failed: Array.isArray(data.failed) ? data.failed : [] };
 }
 
 /**

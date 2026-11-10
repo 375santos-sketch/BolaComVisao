@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppState } from '../types';
-import { DEFAULT_PUSH_PREFS, PushPrefs, cleanPrefs } from '../lib/pushEvents';
+import { DEFAULT_PUSH_PREFS, PushPrefs, cleanPrefs, testResult } from '../lib/pushEvents';
 import { disablePush, enablePush, pushSupport, savedSubscriptionId, sendNotice } from '../services/push';
 
 interface PushSettingsModalProps {
@@ -76,19 +76,19 @@ const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onShowToas
     if (on) run(() => enablePush(clubId, teamIds, next));
   };
 
+  // The notice of a test: with the app open the iPhone may not ring, so it goes out after a few seconds (time to
+  // lock the screen), and the result says exactly what happened.
   const test = () =>
     run(async () => {
+      onShowToast('Bloqueia já o ecrã: o aviso de teste chega dentro de 10 segundos.');
+      await new Promise((r) => setTimeout(r, 10000));
       const r = await sendNotice(clubId, state.activeTeamId || 'equipa', {
         kind: 'teste',
         title: '🔔 Aviso de teste',
         body: 'Os avisos do jogo estão a chegar a este telemóvel ✓',
         tag: 'teste'
       });
-      onShowToast(
-        r.sent
-          ? 'Aviso de teste enviado: deve aparecer dentro de segundos.'
-          : 'Este telemóvel ainda não está registado.'
-      );
+      onShowToast(testResult(r));
     });
 
   return (
