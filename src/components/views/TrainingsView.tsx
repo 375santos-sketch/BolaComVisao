@@ -330,6 +330,8 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
       ) : activeTab === 'season' ? (
         <SeasonPlanView
           state={state}
+          onUpdateState={onUpdateState}
+          onShowToast={onShowToast}
           onOpenTraining={(id) => {
             setActiveTab('list');
             setExpandedTraining(id);

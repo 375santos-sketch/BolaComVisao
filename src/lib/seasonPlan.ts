@@ -157,3 +157,34 @@ export function themesByMonth(state: PlanState, today: string = localDateISO()):
     });
   return [...months.values()].sort((a, b) => a.month.localeCompare(b.month));
 }
+
+/** The months of the season shown in Época (the months of its weeks), in order. */
+export function seasonMonths(weeks: SeasonWeek[]): string[] {
+  return [...new Set(weeks.map((w) => w.start.slice(0, 7)))];
+}
+
+/** Objectives typed one per line → a clean list (at most 5, each up to 120 characters). */
+export function objectivesFromText(text: string): string[] {
+  return text
+    .split('\n')
+    .map((l) =>
+      l
+        .replace(/^\s*(?:[-•*]|\d+[.)])\s+/, '')
+        .trim()
+        .slice(0, 120)
+    )
+    .filter(Boolean)
+    .slice(0, 5);
+}
+
+/** The objectives with one month changed; an empty list removes the month. */
+export function withMonthObjectives(
+  current: Record<string, string[]> | undefined,
+  month: string,
+  objectives: string[]
+): Record<string, string[]> {
+  const next = { ...(current || {}) };
+  if (objectives.length) next[month] = objectives;
+  else delete next[month];
+  return next;
+}

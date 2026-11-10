@@ -723,6 +723,8 @@ export interface SquadProfile {
   planToken?: string;
   /** 🔭 Adversários: what the staff knows about each opponent (kept in the club record, like the templates). */
   opponentFiles?: OpponentFile[];
+  /** 🗓️ Treinos → Época: the staff's objectives for each month ("2026-10" → one objective per line). */
+  monthObjectives?: Record<string, string[]>;
   /** Secret part of the parents' live link (/aovivo/{token}); none = not shared. */
   liveToken?: string;
   /** The parents' live link also shows the cards (off unless the coach turns it on). */

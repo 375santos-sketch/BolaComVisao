@@ -66,3 +66,23 @@ describe('Treinos → Época', () => {
     ]);
   });
 });
+
+describe('Objetivos por mês', () => {
+  it('cleans the lines typed (bullets, blanks, at most 5) and keeps numbers that are part of the text', async () => {
+    const { objectivesFromText } = await import('../lib/seasonPlan');
+    expect(objectivesFromText('- Saída de bola\n\n1. Pressão alta\n4x4 em espaço curto\na\nb\nc')).toEqual([
+      'Saída de bola',
+      'Pressão alta',
+      '4x4 em espaço curto',
+      'a',
+      'b'
+    ]);
+  });
+
+  it('changes one month and removes it when empty', async () => {
+    const { withMonthObjectives } = await import('../lib/seasonPlan');
+    const one = withMonthObjectives(undefined, '2026-10', ['Saída de bola']);
+    expect(one).toEqual({ '2026-10': ['Saída de bola'] });
+    expect(withMonthObjectives(one, '2026-10', [])).toEqual({});
+  });
+});

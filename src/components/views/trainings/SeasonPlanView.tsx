@@ -1,6 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AppState } from '../../../types';
-import { MonthThemes, SeasonWeek, THEME_LABELS, ThemeKey, seasonWeeks, themesByMonth } from '../../../lib/seasonPlan';
+import {
+  MonthThemes,
+  SeasonWeek,
+  THEME_LABELS,
+  ThemeKey,
+  objectivesFromText,
+  seasonWeeks,
+  themesByMonth,
+  withMonthObjectives
+} from '../../../lib/seasonPlan';
 
 /** One colour per theme, from the app's palette. */
 const THEME_COLORS: Record<ThemeKey, string> = {
@@ -19,6 +28,89 @@ const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const ddmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 const weekday = (iso: string) => WEEKDAYS[new Date(`${iso}T12:00:00`).getDay()];
 const monthName = (ym: string) => `${MONTHS[Number(ym.slice(5, 7)) - 1] || ym} ${ym.slice(2, 4)}`;
+const MONTH_NAMES = [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro'
+];
+const longMonth = (ym: string) => `${MONTH_NAMES[Number(ym.slice(5, 7)) - 1] || ym} ${ym.slice(0, 4)}`;
+
+/** The start of a month in the weeks list: its name and the staff's objectives for it, which can be edited here. */
+const MonthHeader: React.FC<{
+  month: string;
+  objectives: string[];
+  onSave: (objectives: string[]) => void;
+}> = ({ month, objectives, onSave }) => {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState('');
+  return (
+    <li className="lg:col-span-2" aria-label={`Mês de ${longMonth(month)}`}>
+      <div className="flex items-center justify-between gap-2 px-1 pt-2">
+        <h3 className="text-sm font-extrabold text-ui-text">{longMonth(month)}</h3>
+        {!editing && (
+          <button
+            type="button"
+            onClick={() => {
+              setText(objectives.join('\n'));
+              setEditing(true);
+            }}
+            className="text-xs font-bold text-ui-brand"
+          >
+            {objectives.length ? 'Editar objetivos' : '+ Objetivos do mês'}
+          </button>
+        )}
+      </div>
+      {editing ? (
+        <div className="ui-card mt-1 space-y-2 p-3">
+          <label className="block text-[11px] text-ui-muted">
+            Objetivos de {longMonth(month)} (um por linha, até 5)
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows={4}
+              placeholder={'ex.: Saída de bola a 3\nPressão logo após a perda'}
+              className="ui-input mt-1 text-sm"
+            />
+          </label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onSave(objectivesFromText(text));
+                setEditing(false);
+              }}
+              className="ui-btn ui-btn-primary flex-1 py-2 text-sm"
+            >
+              Guardar objetivos
+            </button>
+            <button type="button" onClick={() => setEditing(false)} className="ui-btn ui-btn-secondary px-3 text-sm">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        objectives.length > 0 && (
+          <ul className="mt-1 flex flex-wrap gap-1.5" aria-label={`Objetivos de ${longMonth(month)}`}>
+            {objectives.map((o) => (
+              <li key={o} className="ui-badge ui-badge-brand">
+                🎯 {o}
+              </li>
+            ))}
+          </ul>
+        )
+      )}
+    </li>
+  );
+};
 
 /** Minutes of training per theme in each month: one bar per month, split by theme. */
 const ThemesChart: React.FC<{ months: MonthThemes[] }> = ({ months }) => {
@@ -144,11 +236,24 @@ const Week: React.FC<{ week: SeasonWeek; index: number; onOpenTraining: (id: str
 };
 
 /** Treinos → Época: the months by theme, then every week of the season with its trainings and games. */
-export const SeasonPlanView: React.FC<{ state: AppState; onOpenTraining: (id: string) => void }> = ({
-  state,
-  onOpenTraining
-}) => {
+export const SeasonPlanView: React.FC<{
+  state: AppState;
+  onUpdateState: (updates: Partial<AppState>) => void;
+  onShowToast: (msg: string) => void;
+  onOpenTraining: (id: string) => void;
+}> = ({ state, onUpdateState, onShowToast, onOpenTraining }) => {
   const weeks = seasonWeeks(state);
+  const team = (state.teams || []).find((t) => t.id === state.activeTeamId);
+  const saveObjectives = (month: string, objectives: string[]) => {
+    onUpdateState({
+      teams: (state.teams || []).map((t) =>
+        t.id === state.activeTeamId
+          ? { ...t, monthObjectives: withMonthObjectives(t.monthObjectives, month, objectives) }
+          : t
+      )
+    });
+    onShowToast(objectives.length ? `Objetivos de ${longMonth(month)} guardados ✓` : 'Objetivos apagados');
+  };
   const months = themesByMonth(state);
   const list = useRef<HTMLOListElement>(null);
   useEffect(() => {
@@ -175,9 +280,22 @@ export const SeasonPlanView: React.FC<{ state: AppState; onOpenTraining: (id: st
         <span className="ml-auto">{weeks.length} semanas</span>
       </div>
       <ol ref={list} aria-label="Semanas da época" className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-        {weeks.map((w, i) => (
-          <Week key={w.start} week={w} index={i} onOpenTraining={onOpenTraining} />
-        ))}
+        {weeks.map((w, i) => {
+          const month = w.start.slice(0, 7);
+          const first = i === 0 || weeks[i - 1].start.slice(0, 7) !== month;
+          return (
+            <React.Fragment key={w.start}>
+              {first && team && (
+                <MonthHeader
+                  month={month}
+                  objectives={team.monthObjectives?.[month] || []}
+                  onSave={(o) => saveObjectives(month, o)}
+                />
+              )}
+              <Week week={w} index={i} onOpenTraining={onOpenTraining} />
+            </React.Fragment>
+          );
+        })}
       </ol>
     </div>
   );
