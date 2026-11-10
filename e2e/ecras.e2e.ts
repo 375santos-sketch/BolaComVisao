@@ -1289,6 +1289,11 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await page.getByRole('button', { name: /GOLO MARCADO/i }).click();
   await page.locator('select').first().selectOption('p10');
   await page.getByRole('button', { name: 'Confirmar Golo' }).click();
+  // ↩︎ Any action can be undone with one tap (here a corner tapped by mistake)
+  await page.getByTitle('Adicionar Canto').first().click();
+  await page.getByRole('button', { name: '↩︎ Desfazer: Canto a favor' }).click();
+  await expect(page.getByText('Desfeito: Canto a favor')).toBeVisible();
+  await expect(page.getByRole('button', { name: '↩︎ Desfazer: Golo marcado' })).toBeVisible();
   await advance('05:00');
 
   // Playing minutes: 25 + 10, Duarte left at 16', Henrique came on at 16'.

@@ -1772,3 +1772,30 @@ html.sol .ui-badge-danger,
 html.sol .ui-btn-soft-danger {
   color: #991b1b;
 }
+
+/*
+ * ⚽ Modo Jogo: its own look for the game. Higher contrast (lighter secondary text, stronger lines) so it reads
+ * outdoors at a glance, and with the phone sideways the quick buttons sit in two columns.
+ */
+.modo-jogo {
+  --color-ui-muted: #b4c1d4;
+  --color-ui-line: #33496b;
+  --color-slate-400: #b4c1d4;
+  --color-slate-500: #94a3bb;
+}
+html.sol .modo-jogo {
+  --color-ui-muted: #1e293b;
+  --color-slate-400: oklch(37.2% 0.044 257.287);
+  --color-slate-500: oklch(30% 0.044 257.287);
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .modo-jogo-rapido {
+    column-count: 2;
+    column-gap: 0.75rem;
+  }
+  .modo-jogo-rapido > * {
+    break-inside: avoid;
+    margin-top: 0 !important;
+    margin-bottom: 0.75rem;
+  }
+}
