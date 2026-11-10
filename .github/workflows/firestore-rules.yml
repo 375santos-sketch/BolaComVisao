@@ -25,7 +25,7 @@ concurrency:
 jobs:
   test:
     name: Testar regras (emuladores)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -52,7 +52,7 @@ jobs:
     name: Publicar regras no Firebase
     needs: test
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       # Secrets can't be read in step conditions: expose only whether each one exists.
       HAS_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
