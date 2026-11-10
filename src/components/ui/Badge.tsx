@@ -27,14 +27,15 @@ export const Badge: React.FC<BadgeProps> = ({
     md: 'px-2.5 py-1 text-xs gap-1.5'
   };
 
+  // Colour with a meaning (index.css): brand, success, warning, danger; slate is neutral
   const variantStyles: Record<BadgeVariant, string> = {
-    cyan: 'bg-cyan-950/80 text-cyan-300 border-cyan-500/40',
-    emerald: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40',
-    amber: 'bg-amber-950/80 text-amber-300 border-amber-500/40',
-    rose: 'bg-rose-950/80 text-rose-300 border-rose-500/40',
-    slate: 'bg-slate-900/90 text-slate-300 border-slate-700/80',
-    purple: 'bg-purple-950/80 text-purple-300 border-purple-500/40',
-    indigo: 'bg-indigo-950/80 text-indigo-300 border-indigo-500/40'
+    cyan: 'ui-badge-brand',
+    emerald: 'ui-badge-success',
+    amber: 'ui-badge-warning',
+    rose: 'ui-badge-danger',
+    slate: '',
+    purple: 'bg-purple-500/15 text-purple-300',
+    indigo: 'bg-indigo-500/15 text-indigo-300'
   };
 
   const dotColors: Record<BadgeVariant, string> = {
@@ -49,7 +50,7 @@ export const Badge: React.FC<BadgeProps> = ({
 
   return (
     <span
-      className={`inline-flex items-center font-mono font-bold uppercase tracking-wider rounded-lg border leading-tight ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
+      className={`ui-badge font-mono uppercase tracking-wider leading-tight ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
       {...props}
     >
       {dot && (

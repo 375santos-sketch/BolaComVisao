@@ -12,20 +12,45 @@
   --font-mono: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-display: 'Chakra Petch', 'Plus Jakarta Sans', sans-serif;
 
-  --color-ui-bg: #060e17;
-  --color-ui-surface: #0d1b2a;
-  --color-ui-surface-2: #12263a;
-  --color-ui-inset: #08131f;
-  --color-ui-line: #1c3247;
-  --color-ui-line-strong: #2a4763;
-  --color-ui-text: #e8f1f8;
-  --color-ui-muted: #8aa4bb;
+  /* Dark Premium: three surface levels give depth (no decorative gradients); colour always means something:
+     brand = actions and selection, success = OK/evolution, warning = attention, danger = critical only. */
+  --color-ui-bg: #0b1220;
+  --color-ui-surface: #111a2b;
+  --color-ui-surface-2: #162238;
+  --color-ui-surface-3: #1c2a44;
+  --color-ui-inset: #0d1626;
+  --color-ui-line: #22324d;
+  --color-ui-line-strong: #2f4466;
+  --color-ui-text: #e7eef7;
+  --color-ui-muted: #8b9bb4;
   --color-ui-brand: #22c3ee;
   --color-ui-brand-strong: #0ea5d0;
-  --color-ui-brand-ink: #03131f;
-  --color-ui-danger: #f43f5e;
-  --color-ui-success: #10b981;
-  --color-ui-warning: #f59e0b;
+  --color-ui-brand-ink: #04202b;
+  --color-ui-danger: #ef4444;
+  --color-ui-success: #22c55e;
+  --color-ui-warning: #f5b301;
+
+  /* The dark end of the neutral scales follows the same surfaces, so every screen gets the new look at once
+     (the "Modo sol" below turns these scales around for the light theme, as before). */
+  --color-slate-950: #0b1220;
+  --color-slate-900: #111a2b;
+  --color-slate-800: #1c2a44;
+  --color-slate-700: #2c3f5f;
+  --color-slate-600: #475a78;
+  --color-slate-500: #66789a;
+  --color-slate-400: #8b9bb4;
+  --color-slate-300: #c3cede;
+  --color-gray-950: #0b1220;
+  --color-gray-900: #111a2b;
+  --color-gray-800: #1c2a44;
+  --color-gray-700: #2c3f5f;
+
+  /* Shape and depth */
+  --radius-ui-sm: 0.5rem;
+  --radius-ui: 0.75rem;
+  --radius-ui-lg: 1.25rem;
+  --shadow-ui-1: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-ui-2: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px rgb(0 0 0 / 0.28);
 }
 
 @layer base {
@@ -47,7 +72,7 @@
     justify-content: center;
     gap: 0.4rem;
     padding: 0.5rem 0.875rem;
-    border-radius: 0.75rem;
+    border-radius: 0.625rem;
     border: 1px solid transparent;
     font-family: var(--font-sans);
     font-size: 0.8125rem;
@@ -79,13 +104,16 @@
   .ui-btn-primary {
     background: var(--color-ui-brand);
     color: var(--color-ui-brand-ink);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.25) inset,
+      0 4px 14px color-mix(in srgb, var(--color-ui-brand) 22%, transparent);
   }
   .ui-btn-primary:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-ui-brand) 85%, white);
   }
   .ui-btn-success {
     background: var(--color-ui-success);
-    color: #02140d;
+    color: #03170a;
   }
   .ui-btn-danger {
     background: var(--color-ui-danger);
@@ -93,7 +121,7 @@
   }
   .ui-btn-warning {
     background: var(--color-ui-warning);
-    color: #1a0f00;
+    color: #1a1300;
   }
   .ui-btn-secondary {
     background: var(--color-ui-surface-2);
@@ -117,31 +145,112 @@
     color: var(--color-cyan-300);
   }
   .ui-btn-soft-success {
-    background: rgb(16 185 129 / 0.1);
-    border-color: rgb(16 185 129 / 0.35);
-    color: #6ee7b7;
+    background: color-mix(in srgb, var(--color-ui-success) 12%, transparent);
+    border-color: color-mix(in srgb, var(--color-ui-success) 35%, transparent);
+    color: #86efac;
   }
   .ui-btn-soft-danger {
-    background: rgb(244 63 94 / 0.1);
-    border-color: rgb(244 63 94 / 0.35);
-    color: #fda4af;
+    background: color-mix(in srgb, var(--color-ui-danger) 12%, transparent);
+    border-color: color-mix(in srgb, var(--color-ui-danger) 35%, transparent);
+    color: #fca5a5;
   }
   .ui-btn-soft-warning {
-    background: rgb(245 158 11 / 0.1);
-    border-color: rgb(245 158 11 / 0.35);
+    background: color-mix(in srgb, var(--color-ui-warning) 12%, transparent);
+    border-color: color-mix(in srgb, var(--color-ui-warning) 35%, transparent);
     color: #fcd34d;
   }
 
   .ui-card {
     background: var(--color-ui-surface);
     border: 1px solid var(--color-ui-line);
-    border-radius: 1rem;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+    border-radius: var(--radius-ui);
+    box-shadow: var(--shadow-ui-1);
+  }
+  /* A card that stands out from the ones around it (next game, the main figure of a screen) */
+  .ui-card-raised {
+    background: var(--color-ui-surface-2);
+    border: 1px solid var(--color-ui-line-strong);
+    border-radius: var(--radius-ui);
+    box-shadow: var(--shadow-ui-2);
   }
   .ui-inset {
     background: var(--color-ui-inset);
     border: 1px solid var(--color-ui-line);
-    border-radius: 0.75rem;
+    border-radius: var(--radius-ui);
+  }
+
+  /* Small label above a section ("PRÓXIMO JOGO", "PARA FAZER") */
+  .ui-kicker {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ui-muted);
+  }
+  /* A figure that matters (goals, %, minutes): large, in the scoreboard font */
+  .ui-figure {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--color-ui-text);
+  }
+
+  /* Status labels: the colour says what it means */
+  .ui-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    line-height: 1.4;
+    white-space: nowrap;
+    background: var(--color-ui-surface-3);
+    color: var(--color-ui-muted);
+  }
+  .ui-badge-brand {
+    background: color-mix(in srgb, var(--color-ui-brand) 14%, transparent);
+    color: #7dd3fc;
+  }
+  .ui-badge-success {
+    background: color-mix(in srgb, var(--color-ui-success) 14%, transparent);
+    color: #86efac;
+  }
+  .ui-badge-warning {
+    background: color-mix(in srgb, var(--color-ui-warning) 14%, transparent);
+    color: #fcd34d;
+  }
+  .ui-badge-danger {
+    background: color-mix(in srgb, var(--color-ui-danger) 15%, transparent);
+    color: #fca5a5;
+  }
+
+  /* While something loads: a calm shimmer instead of an empty space */
+  .ui-skeleton {
+    border-radius: var(--radius-ui-sm);
+    background: linear-gradient(
+      90deg,
+      var(--color-ui-surface-2) 0%,
+      var(--color-ui-surface-3) 50%,
+      var(--color-ui-surface-2) 100%
+    );
+    background-size: 200% 100%;
+    animation: ui-shimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes ui-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ui-skeleton {
+      animation: none;
+    }
   }
 
   .ui-input {
@@ -159,7 +268,7 @@
       box-shadow 0.15s ease;
   }
   .ui-input::placeholder {
-    color: #5f7a91;
+    color: var(--color-slate-500);
   }
   .ui-input:focus {
     outline: none;
@@ -171,26 +280,26 @@
   }
 
   .ui-overlay {
-    background: rgb(2 7 14 / 0.78);
+    background: rgb(5 9 18 / 0.72);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
 }
 
 :root {
-  --bg: #060e17;
-  --surface: #0d1b2a;
-  --surface-2: #12263a;
+  --bg: var(--color-ui-bg);
+  --surface: var(--color-ui-surface);
+  --surface-2: var(--color-ui-surface-2);
   --chalk: #ffffff;
   --muted: #8aa4bb;
   --gold: #22c3ee;
   --gold-dim: #093f58;
-  --red: #ef4444;
+  --red: var(--color-ui-danger);
   --red-dim: #450a0a;
-  --yellow: #f59e0b;
-  --green: #10b981;
+  --yellow: var(--color-ui-warning);
+  --green: var(--color-ui-success);
   --green-dim: #084d2a;
-  --line: #1c3247;
+  --line: var(--color-ui-line);
   --btn-gold-txt: #041525;
   --btn-red-txt: #ffffff;
   --btn-green-txt: #041525;
@@ -1428,6 +1537,7 @@ html.sol {
   --color-ui-bg: #eef2f6;
   --color-ui-surface: #ffffff;
   --color-ui-surface-2: #e3e9ef;
+  --color-ui-surface-3: #d6dee8;
   --color-ui-inset: #f3f6f9;
   --color-ui-line: #c5d0db;
   --color-ui-line-strong: #8a9bb0;
@@ -1638,4 +1748,27 @@ html.sol .ui-card,
 html.sol .ui-inset,
 html.sol .ui-input {
   border-width: 1.5px;
+}
+html.sol .ui-card-raised {
+  border-width: 1.5px;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.12);
+}
+html.sol .ui-card {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+}
+/* Labels and soft buttons in the light theme: darker text so they read in the sun */
+html.sol .ui-badge-brand {
+  color: #075985;
+}
+html.sol .ui-badge-success,
+html.sol .ui-btn-soft-success {
+  color: #166534;
+}
+html.sol .ui-badge-warning,
+html.sol .ui-btn-soft-warning {
+  color: #854d0e;
+}
+html.sol .ui-badge-danger,
+html.sol .ui-btn-soft-danger {
+  color: #991b1b;
 }

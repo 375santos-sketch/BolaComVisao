@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="w-full mb-3 sm:mb-4 pb-2.5 sm:pb-3 border-b border-slate-800/80 select-none">
+    <header className="w-full mb-3 sm:mb-4 pb-2.5 sm:pb-3 border-b border-ui-line select-none">
       <div className="flex items-center justify-between gap-3">
         {/* Club Brand & Current Page Title */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -92,14 +92,14 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Desktop / Tablet Navigation Work Areas Links */}
         {onNavigate && (
-          <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-xl text-xs font-semibold">
+          <nav className="hidden md:flex items-center gap-1 bg-ui-surface border border-ui-line p-1 rounded-xl text-xs font-semibold shadow-[var(--shadow-ui-1)]">
             <button
               type="button"
               onClick={() => handleNav('home')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                 activeCategory === 'home'
-                  ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
+                  : 'text-ui-muted hover:text-ui-text hover:bg-ui-surface-2'
               }`}
             >
               Início
@@ -109,8 +109,8 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => handleNav('plantel')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                 activeCategory === 'equipa'
-                  ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
+                  : 'text-ui-muted hover:text-ui-text hover:bg-ui-surface-2'
               }`}
             >
               Equipa
@@ -120,8 +120,8 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => handleNav('calendario')}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                 activeCategory === 'planeamento'
-                  ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
+                  : 'text-ui-muted hover:text-ui-text hover:bg-ui-surface-2'
               }`}
             >
               Agenda
@@ -131,8 +131,8 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => handleNav(hasActiveMatch ? 'jogo' : 'prejogo')}
               className={`relative px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                 activeCategory === 'performance'
-                  ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
+                  : 'text-ui-muted hover:text-ui-text hover:bg-ui-surface-2'
               }`}
             >
               <span>Jogo</span>
