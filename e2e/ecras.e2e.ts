@@ -59,14 +59,17 @@ test('entrar: escolha da equipa e painel inicial', async ({ page }) => {
   await enterPanel(page);
   await expect(page.getByText('Treinador A', { exact: true })).toBeVisible();
 
-  // Simple home: shortcuts, what needs attention, the season in one line, the next 7 days.
+  // Simple home: the season in four figures, shortcuts, what needs attention, the next 7 days.
   const notices = page.getByRole('region', { name: 'Avisos' });
   await expect(notices).toContainText('Convocatória por fechar: vs Abrantes');
   // Share over all the games' minutes: athletes never called up count too (0%)
   await expect(notices).toContainText(
     'Precisam de minutos: Gabriel Sousa (0%), Henrique Alves (0%), Lucas Pereira (0%) e mais 4'
   );
-  await expect(page.getByRole('region', { name: 'Resumo da época' })).toContainText('2 jogos · 1V 1E 0D · golos 2-1');
+  const season = page.getByRole('region', { name: 'Resumo da época' });
+  await expect(season.getByRole('button', { name: /Marcados/ })).toContainText('2em 2 jogos');
+  await expect(season.getByRole('button', { name: /Sofridos/ })).toContainText('1em 2 jogos');
+  await expect(season.getByRole('button', { name: /V-E-D/ })).toContainText('1-1-0');
   await expect(page.getByText('VISÃO DO TREINADOR')).toHaveCount(0);
 
   // "Treino de hoje" opens today's attendance straight away (closed without saving).

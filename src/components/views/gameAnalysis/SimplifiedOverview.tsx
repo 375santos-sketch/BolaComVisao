@@ -599,7 +599,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       {/* 7. E DEPOIS: "Ver análise detalhada" (BOTÃO PROEMINENTE) */}
       {/* ──────────────────────────────────────────────────────────── */}
       <section className="pt-2 pb-6">
-        <div className="bg-gradient-to-r from-slate-900 via-slate-900/95 to-cyan-950/60 border border-cyan-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="ui-card-raised border-l-4 border-l-ui-brand rounded-2xl p-5 sm:p-6 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-2">
               <span className="text-xl">📊</span>
@@ -626,7 +626,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
             <button
               type="button"
               onClick={onOpenDetailedAnalysis}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all transform active:scale-95 whitespace-nowrap cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-ui-brand hover:brightness-110 text-ui-brand-ink font-black text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all transform active:scale-95 whitespace-nowrap cursor-pointer"
             >
               <span>Ver Análise Detalhada</span>
               <span>➔</span>

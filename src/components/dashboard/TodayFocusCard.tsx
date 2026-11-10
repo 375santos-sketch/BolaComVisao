@@ -11,12 +11,13 @@ interface TodayFocusCardProps {
   onNavigate: (tab: TabType, targetId?: string) => void;
 }
 
+// The kind of day shows in the coloured edge and the small title (no decorative gradients)
 const TONES = {
-  live: 'from-rose-950/90 border-rose-500/70 text-rose-300',
-  match: 'from-cyan-950/90 border-cyan-500/50 text-cyan-300',
-  training: 'from-emerald-950/90 border-emerald-500/50 text-emerald-300',
-  event: 'from-violet-950/90 border-violet-500/50 text-violet-300',
-  none: 'from-slate-900 border-slate-700 text-slate-400'
+  live: 'border-l-ui-danger text-rose-300',
+  match: 'border-l-ui-brand text-cyan-300',
+  training: 'border-l-ui-success text-emerald-300',
+  event: 'border-l-violet-400 text-violet-300',
+  none: 'border-l-ui-line-strong text-slate-400'
 };
 
 interface Action {
@@ -35,8 +36,8 @@ const Focus: React.FC<{
   details: string[];
   actions: Action[];
 }> = ({ id, tone, kicker, title, details, actions }) => (
-  <div id={id} className={`rounded-2xl border bg-gradient-to-br to-slate-900 p-4 ${TONES[tone]}`}>
-    <div className="text-[11px] font-bold uppercase tracking-wide">{kicker}</div>
+  <div id={id} className={`ui-card-raised border-l-4 p-4 ${TONES[tone]}`}>
+    <div className="text-[11px] font-extrabold uppercase tracking-[0.08em]">{kicker}</div>
     <div className="mt-0.5 text-2xl font-bold text-white font-['Chakra_Petch'] leading-tight">{title}</div>
     {details.length > 0 && <div className="mt-0.5 text-sm text-slate-400">{details.join(' · ')}</div>}
     <div className="mt-3 flex flex-wrap gap-2">

@@ -34,37 +34,31 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insights, comp
           let statColor = 'text-slate-200';
 
           if (insight.type === 'strength') {
-            borderClass =
-              'border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/20 shadow-emerald-950/20';
+            borderClass = 'border-emerald-500/30 bg-ui-surface border-l-4';
             badgeBg = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
             statColor = 'text-emerald-400';
           } else if (insight.type === 'warning') {
-            borderClass =
-              'border-rose-500/35 bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/25 shadow-rose-950/20';
+            borderClass = 'border-rose-500/35 bg-ui-surface border-l-4';
             badgeBg = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
             statColor = 'text-rose-400';
           } else if (insight.type === 'trend') {
-            borderClass =
-              'border-cyan-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/20 shadow-cyan-950/20';
+            borderClass = 'border-cyan-500/30 bg-ui-surface border-l-4';
             badgeBg = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
             statColor = 'text-cyan-300';
           } else if (insight.type === 'efficiency') {
-            borderClass =
-              'border-teal-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950/20 shadow-teal-950/20';
+            borderClass = 'border-teal-500/30 bg-ui-surface border-l-4';
             badgeBg = 'bg-teal-500/15 text-teal-300 border-teal-500/30';
             statColor = 'text-teal-300';
           } else if (insight.type === 'set_piece') {
-            borderClass =
-              'border-amber-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/20 shadow-amber-950/20';
+            borderClass = 'border-amber-500/30 bg-ui-surface border-l-4';
             badgeBg = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
             statColor = 'text-amber-300';
           } else if (insight.type === 'milestone') {
-            borderClass =
-              'border-blue-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/20 shadow-blue-950/20';
+            borderClass = 'border-blue-500/30 bg-ui-surface border-l-4';
             badgeBg = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
             statColor = 'text-blue-300';
           } else if (insight.type === 'opportunity') {
-            borderClass = 'border-purple-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/20';
+            borderClass = 'border-purple-500/30 bg-ui-surface border-l-4';
             badgeBg = 'bg-purple-500/15 text-purple-300 border-purple-500/30';
             statColor = 'text-purple-300';
           }
