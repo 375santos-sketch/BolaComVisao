@@ -166,7 +166,7 @@ const TacticsBoardModal: React.FC<TacticsBoardModalProps> = ({ state, onUpdateSt
             value={board.name}
             maxLength={60}
             onChange={(e) => change({ ...board, name: e.target.value })}
-            className="ui-input min-w-0 flex-1 text-sm font-bold"
+            className="ui-input min-w-0 basis-full sm:basis-0 flex-1 text-sm font-bold"
           />
           <select
             aria-label="Formato"
