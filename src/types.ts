@@ -769,6 +769,8 @@ interface BoardPiece {
 interface PlayFrame {
   positions: Record<string, { x: number; y: number }>;
   note?: string;
+  /** Movements drawn on the board (percent of the pitch, from → to). */
+  arrows?: Array<{ x1: number; y1: number; x2: number; y2: number }>;
 }
 
 /** Quadro tático: a play in steps that the app animates (saída de bola, pressão, canto…). */
@@ -776,6 +778,8 @@ export interface TacticPlay {
   id: string;
   name: string;
   format: 5 | 7 | 9 | 11;
+  /** Game system of our team ("2-3-1"), when the board was made from one. */
+  system?: string;
   pieces: BoardPiece[];
   frames: PlayFrame[];
   createdAt: string;

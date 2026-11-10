@@ -996,6 +996,68 @@ test('evolução do atleta: avaliação em 5 áreas com radar e objetivos indivi
   });
 });
 
+test('quadro tático: sistema, atletas nos lugares, arrastar, setas e estratégia guardada na nuvem', async ({
+  page
+}) => {
+  await signedIn(page);
+  await openMore(page, /Quadro tático/);
+  const board = page.getByRole('dialog', { name: 'Quadro tático' });
+  await board.getByLabel('Nome da estratégia').fill('Saída curta');
+  await board.getByLabel('Sistema').selectOption('3-2-1');
+  // Tap a place, choose the athlete
+  const tap = async (name: string) => {
+    const b = (await board.getByRole('button', { name }).boundingBox())!;
+    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  };
+  // The welcome message sits over the bottom of the pitch for a moment
+  await expect(page.getByText(/Bem-vindo/)).toBeHidden({ timeout: 10_000 });
+  await tap('Lugar 1: vazio');
+  await board
+    .getByRole('region', { name: 'Escolher atleta' })
+    .getByRole('button', { name: /Rui Silva/ })
+    .click();
+  await expect(board.getByRole('button', { name: 'Lugar 1: Rui Silva' })).toBeVisible();
+  await expect(board.getByRole('region', { name: 'Suplentes' })).not.toContainText('Rui');
+  // Drag a place and draw a movement
+  const pitch = board.getByRole('img', { name: /Campo: Saída curta em 3-2-1/ });
+  const box = (await pitch.boundingBox())!;
+  const piece = (await board.getByRole('button', { name: 'Lugar 2: vazio' }).boundingBox())!;
+  await page.mouse.move(piece.x + piece.width / 2, piece.y + piece.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.5, { steps: 5 });
+  await page.mouse.up();
+  await board.getByRole('button', { name: /Desenhar setas/ }).click();
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.8);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.4, { steps: 5 });
+  await page.mouse.up();
+  await expect(board.getByRole('button', { name: '↩︎ Apagar última seta' })).toBeEnabled();
+  await board.getByRole('button', { name: 'Guardar estratégia' }).click();
+  await expect(page.getByText('"Saída curta" guardada ✓')).toBeVisible();
+  await board.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/quadro-tatico.png` : undefined });
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
+        const docs = ((await res.json()).documents || []) as Array<{ fields: Record<string, any> }>;
+        const play = docs.find(
+          (d) =>
+            d.fields.kind?.stringValue === 'tacticplay' &&
+            d.fields.data?.mapValue?.fields?.name?.stringValue === 'Saída curta'
+        );
+        const data = play?.fields.data?.mapValue?.fields;
+        return data ? `${data.system?.stringValue} ${JSON.stringify(data.frames).includes('arrows')}` : null;
+      },
+      { timeout: 30_000, message: 'estratégia guardada na nuvem' }
+    )
+    .toBe('3-2-1 true');
+  // Another version to change
+  await board.getByRole('button', { name: 'Nova versão' }).click();
+  await expect(board.getByLabel('Nome da estratégia')).toHaveValue('Saída curta (versão 2)');
+  page.once('dialog', (d) => d.accept());
+  await board.getByRole('button', { name: 'Fechar quadro tático' }).click();
+});
+
 test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /jogo/i);

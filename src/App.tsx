@@ -59,6 +59,7 @@ const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerMod
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
 const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsModal'));
 const ParentsLinkModal = lazyWithRetry(() => import('./components/ParentsLinkModal'));
+const TacticsBoardModal = lazyWithRetry(() => import('./components/TacticsBoardModal'));
 const SignatureModal = lazyWithRetry(() => import('./components/SignatureModal'));
 const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
@@ -152,6 +153,7 @@ export default function App() {
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
   const [showPushSettings, setShowPushSettings] = useState<boolean>(false);
   const [showParentsLink, setShowParentsLink] = useState<boolean>(false);
+  const [showTacticsBoard, setShowTacticsBoard] = useState<boolean>(false);
   const [showSignature, setShowSignature] = useState<boolean>(false);
   const [tourOpen, setTourOpen] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
@@ -1065,6 +1067,7 @@ export default function App() {
           onOpenSeasonGrowth={() => setShowSeasonGrowth(true)}
           onOpenPushSettings={() => setShowPushSettings(true)}
           onOpenParentsLink={() => setShowParentsLink(true)}
+          onOpenTacticsBoard={() => setShowTacticsBoard(true)}
           onOpenSignature={() => setShowSignature(true)}
           onOpenTour={() => {
             handleNavigate('home');
@@ -1096,6 +1099,16 @@ export default function App() {
         {showPushSettings && (
           <Suspense fallback={<ViewLoadingFallback />}>
             <PushSettingsModal state={state} onShowToast={showToast} onClose={() => setShowPushSettings(false)} />
+          </Suspense>
+        )}
+        {showTacticsBoard && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <TacticsBoardModal
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onClose={() => setShowTacticsBoard(false)}
+            />
           </Suspense>
         )}
         {showParentsLink && (

@@ -23,6 +23,8 @@ interface MoreDrawerProps {
   onOpenPushSettings?: () => void;
   /** 📡 Link do jogo para os pais. */
   onOpenParentsLink?: () => void;
+  /** 🧠 Quadro tático. */
+  onOpenTacticsBoard?: () => void;
   /** 📸 Antes e depois da época. */
   onOpenSeasonGrowth?: () => void;
   onOpenSignature?: () => void;
@@ -45,6 +47,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onOpenCareer,
   onOpenPushSettings,
   onOpenParentsLink,
+  onOpenTacticsBoard,
   onOpenSeasonGrowth,
   onOpenSignature,
   onOpenTour,
@@ -74,6 +77,16 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
           detail: 'Gráficos, golos por período, PDF e Excel',
           run: () => onNavigate('analise_jogos')
         },
+        ...(onOpenTacticsBoard
+          ? [
+              {
+                icon: 'whistle' as IconName,
+                title: 'Quadro tático',
+                detail: 'Sistema, posições, setas e estratégias guardadas',
+                run: onOpenTacticsBoard
+              }
+            ]
+          : []),
         ...(onOpenMonthlyReport
           ? [
               {
