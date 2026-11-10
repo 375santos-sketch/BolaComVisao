@@ -10,6 +10,7 @@ import {
   PDF_SOFT
 } from './pdfLayout';
 import { dayLabel, gameTitle } from './pdfBlocks';
+import { APP } from './pdfTheme';
 import { competitionLabel, dateLabel } from '../preMatchPlan';
 import { previousReports } from '../opponentReport';
 import { shortName, slotPositions, systemLines } from '../startingLineup';
@@ -52,7 +53,7 @@ export async function buildPreMatchPlanPDF(game: ScheduledMatch, state: AppState
     doc.setFillColor(...brand);
     doc.roundedRect(15, y, 180, 15, 3, 3, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(...APP.brandInk);
     let size = 17;
     doc.setFontSize(size);
     const motto = `“${p.motto.trim()}”`;
@@ -119,7 +120,7 @@ export async function buildPreMatchPlanPDF(game: ScheduledMatch, state: AppState
     const text = doc.splitTextToSize(o, colW - 12) as string[];
     doc.setFillColor(...brand);
     doc.circle(colX + 3.5, right + 4, 3.5, 'F');
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(...APP.brandInk);
     doc.setFontSize(9);
     doc.text(String(i + 1), colX + 3.5, right + 5.2, { align: 'center' });
     doc.setFontSize(12);

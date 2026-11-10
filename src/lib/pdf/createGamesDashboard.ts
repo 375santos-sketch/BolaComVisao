@@ -3,18 +3,19 @@ import { buildGamesDashboard, GamesDashboard, RankRow } from '../gamesDashboard'
 import { PLAYING_TIME_TARGET } from '../playingTime';
 import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters, drawSectionTitle, pdfBrand } from './pdfLayout';
 import { DashboardSelection, selectDashboardGames } from './createSeasonReport';
+import { APP } from './pdfTheme';
+import { card, kpiRow, table as darkTable } from './pdfDash';
 
 type Doc = InstanceType<Awaited<ReturnType<typeof getJsPDF>>>;
 type RGB = [number, number, number];
 
-// Light-surface steps of the validated categorical palette (slots 1 and 2), plus a neutral for "only as substitute".
-const BLUE: RGB = [42, 120, 214];
-const ORANGE: RGB = [235, 104, 52];
-const GREY: RGB = [148, 163, 184];
-const INK: RGB = [15, 23, 42];
-const MUTED: RGB = [100, 116, 139];
-const LINE: RGB = [226, 232, 240];
-const CARD: RGB = [246, 248, 251];
+// The app's colours: cyan and amber for the two series, a quiet grey-blue for "only as substitute".
+const BLUE: RGB = APP.brand;
+const ORANGE: RGB = APP.warning;
+const GREY: RGB = APP.lineStrong;
+const INK: RGB = APP.text;
+const MUTED: RGB = APP.muted;
+const LINE: RGB = APP.line;
 
 const L = 15;
 const W = 180;
@@ -61,8 +62,9 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
     }
   };
 
-  // Title and one-line summary
-  text(label, 105, y, 13, INK, true, 'center');
+  // The choice of games and a one-line summary, in a card with the wins, draws and losses as one bar
+  y += 2;
+  const heroTop = y - 6;
   y += 6;
   const best = d.topGoals[0];
   const bestA = d.topAssists[0];
@@ -73,8 +75,37 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
   ]
     .filter(Boolean)
     .join(' ');
-  text(summary, 105, y, 9, MUTED, false, 'center');
-  y += 7;
+  doc.setFontSize(8.5);
+  const summaryLines = doc.splitTextToSize(summary, W - 14) as string[];
+  const heroH = 13 + summaryLines.length * 4 + (d.played ? 12 : 0) + 3;
+  card(doc, L, heroTop, W, heroH);
+  doc.setFillColor(...APP.brand);
+  doc.roundedRect(L, heroTop, W, 1.2, 0.6, 0.6, 'F');
+  text(label, 105, y - 6, 13, INK, true, 'center');
+  summaryLines.forEach((line) => {
+    text(line, 105, y, 8.5, MUTED, false, 'center');
+    y += 4;
+  });
+  y += 1;
+  if (d.played) {
+    const parts: [number, RGB, string][] = [
+      [d.wins, APP.success, `${d.wins} V`],
+      [d.draws, APP.warning, `${d.draws} E`],
+      [d.losses, APP.danger, `${d.losses} D`]
+    ];
+    let bx = L + 30;
+    const bw = W - 60;
+    parts.forEach(([n, color, tag]) => {
+      if (!n) return;
+      const w = (n / d.played) * bw;
+      doc.setFillColor(...color);
+      doc.rect(bx, y, w, 3.2, 'F');
+      if (w > 8) text(tag, bx + w / 2, y + 7.5, 7, color, true, 'center');
+      bx += w;
+    });
+    y += 10;
+  }
+  y = heroTop + heroH + 5;
 
   if (d.played === 0) {
     text('Sem jogos terminados nesta escolha.', 105, y + 6, 10, MUTED, false, 'center');
@@ -83,7 +114,7 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
   }
 
   drawKpis(doc, d, y);
-  y += 2 * 21 + 6;
+  y += 2 * 23 + 4;
 
   // Minutes per athlete
   const rowH = 6.2;
@@ -175,9 +206,8 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
 
   // Squad table
   section('Plantel', 'G+A = golos + assistências.', 14);
-  y = table(
+  y = darkTable(
     doc,
-    y,
     [
       { title: 'Nº', w: 12 },
       { title: 'Atleta', w: 62 },
@@ -196,17 +226,15 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
       String(s.assists),
       String(s.goals + s.assists)
     ]),
-    () => ensure(6),
-    () => y,
-    (v) => (y = v)
+    y - 3,
+    { rowH: 6 }
   );
   y += 4;
 
   // Games table
   section('Jogos', 'Um registo por ficha de jogo.', 14);
-  table(
+  darkTable(
     doc,
-    y,
     [
       { title: 'Data', w: 26 },
       { title: 'Adversário', w: 92 },
@@ -217,11 +245,16 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
       g.date.split('-').reverse().join('/'),
       g.opponent,
       g.home ? 'Casa' : 'Fora',
-      `${g.scored}-${g.conceded}`
+      {
+        text: `${g.scored}-${g.conceded}`,
+        style: {
+          bold: true,
+          color: g.scored > g.conceded ? APP.success : g.scored < g.conceded ? APP.danger : APP.warning
+        }
+      }
     ]),
-    () => ensure(6),
-    () => y,
-    (v) => (y = v)
+    y - 3,
+    { rowH: 6 }
   );
 
   addBolaComVisaoPageFooters(doc);
@@ -256,26 +289,23 @@ function drawKpis(doc: Doc, d: GamesDashboard, top: number) {
         : 'não registados'
     ]
   ];
-  const cw = (W - 2 * 4) / 3;
-  cards.forEach(([label, value, sub], i) => {
-    const x = L + (i % 3) * (cw + 4);
-    const y = top + Math.floor(i / 3) * 21;
-    doc.setFillColor(...CARD);
-    doc.setDrawColor(...LINE);
-    doc.roundedRect(x, y, cw, 18, 2, 2, 'FD');
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(...MUTED);
-    doc.text(label, x + 3, y + 4.6);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(...INK);
-    doc.text(value, x + 3, y + 11.4);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.2);
-    doc.setTextColor(...MUTED);
-    doc.text((doc.splitTextToSize(sub, cw - 6) as string[])[0], x + 3, y + 15.6);
-  });
+  kpiRow(
+    doc,
+    cards.slice(0, 3).map(([label, value, sub], i) => ({
+      label,
+      value,
+      sub,
+      tone: i === 2 && d.conceded ? 'danger' : i === 1 && d.scored ? 'success' : 'brand'
+    })),
+    top,
+    { h: 21 }
+  );
+  kpiRow(
+    doc,
+    cards.slice(3).map(([label, value, sub]) => ({ label, value, sub })),
+    top + 23,
+    { h: 21 }
+  );
 }
 
 function legend(doc: Doc, x: number, y: number, items: [string, RGB][]) {
@@ -364,56 +394,6 @@ function rankList(doc: Doc, x: number, y: number, title: string, rows: RankRow[]
     doc.line(x, yy + 2.2, x + w, yy + 2.2);
     yy += 6.5;
   });
-}
-
-type Col = { title: string; w: number; align?: 'left' | 'right' };
-
-function table(
-  doc: Doc,
-  startY: number,
-  cols: Col[],
-  rows: string[][],
-  ensure: () => void,
-  getY: () => number,
-  setY: (v: number) => void
-): number {
-  setY(startY);
-  const header = () => {
-    const y = getY();
-    doc.setFillColor(...LINE);
-    doc.rect(L, y - 4.2, W, 6, 'F');
-    let x = L + 2;
-    cols.forEach((c) => {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(...MUTED);
-      doc.text(c.title, c.align === 'right' ? x + c.w - 3 : x, y, { align: c.align || 'left' });
-      x += c.w;
-    });
-    setY(y + 6);
-  };
-  header();
-  rows.forEach((r, i) => {
-    const before = getY();
-    ensure();
-    if (getY() < before) header();
-    const y = getY();
-    if (i % 2 === 1) {
-      doc.setFillColor(...CARD);
-      doc.rect(L, y - 4.2, W, 5.8, 'F');
-    }
-    let x = L + 2;
-    cols.forEach((c, ci) => {
-      doc.setFont('helvetica', ci === 1 ? 'bold' : 'normal');
-      doc.setFontSize(8.5);
-      doc.setTextColor(...INK);
-      const v = (doc.splitTextToSize(r[ci] ?? '', c.w - 3) as string[])[0] || '';
-      doc.text(v, c.align === 'right' ? x + c.w - 3 : x, y, { align: c.align || 'left' });
-      x += c.w;
-    });
-    setY(y + 5.8);
-  });
-  return getY();
 }
 
 /** Estatísticas → "Exportar PDF" and the panel's "PDF": the dashboard for the chosen games (season by default). */
