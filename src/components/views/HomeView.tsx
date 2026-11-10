@@ -9,7 +9,14 @@ import { LiveFollowModal, LiveMatchCard } from '../live/LiveFollow';
 import { Icon, IconName } from '../ui/Icon';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { attendanceReminder, homeNotices, seasonMatches, seasonSummary } from '../../lib/homeSummary';
+import {
+  attendanceReminder,
+  homeNotices,
+  seasonMatches,
+  seasonSummary,
+  recentForm,
+  minutesBehind
+} from '../../lib/homeSummary';
 import { HomeOverview } from '../dashboard/HomeOverview';
 import { AssistantCard } from '../assistant/AssistantCard';
 import { BirthdayImageModal } from '../birthday/BirthdayImageModal';
@@ -232,6 +239,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
         season={state.season}
         summary={summary}
         matches={seasonMatches(state)}
+        form={recentForm(state)}
+        minutes={minutesBehind(state)}
         onOpenStats={() => onNavigate('stats')}
         onOpenAnalysis={() => onNavigate('analise_jogos')}
       />

@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Desktop / Tablet Navigation Work Areas Links */}
         {onNavigate && (
-          <nav className="hidden md:flex items-center gap-1 bg-ui-surface border border-ui-line p-1 rounded-xl text-xs font-semibold shadow-[var(--shadow-ui-1)]">
+          <nav className="hidden md:flex lg:hidden items-center gap-1 bg-ui-surface border border-ui-line p-1 rounded-xl text-xs font-semibold shadow-[var(--shadow-ui-1)]">
             <button
               type="button"
               onClick={() => handleNav('home')}
