@@ -35,6 +35,31 @@ export interface Player {
   captain?: boolean;
   /** 📏 Testes: results per round ("2026/2027-set") and test ("sprint20" → 3.94). */
   fitnessTests?: Record<string, Record<string, number>>;
+  /** 📈 Evolução: periodic evaluations by the coach (only for coaches: never in reports, shares or comparisons). */
+  evaluations?: PlayerEvaluation[];
+  /** 🎯 Individual goals the athlete works on (only for coaches). */
+  individualGoals?: PlayerGoal[];
+}
+
+/** The five areas of an athlete's evaluation (1 to 5 each). */
+export type EvaluationArea = 'tecnica' | 'tatica' | 'fisica' | 'psicologica' | 'jogo';
+
+export interface PlayerEvaluation {
+  id: string;
+  /** Day of the evaluation (YYYY-MM-DD). */
+  date: string;
+  scores: Record<EvaluationArea, number>;
+  note?: string;
+}
+
+export interface PlayerGoal {
+  id: string;
+  text: string;
+  area?: EvaluationArea;
+  /** Day it was set (YYYY-MM-DD). */
+  createdAt: string;
+  /** Day it was reached (YYYY-MM-DD). */
+  doneAt?: string;
 }
 
 export type GoalType =

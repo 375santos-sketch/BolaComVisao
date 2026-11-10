@@ -909,6 +909,7 @@ test('fim de época: mensagem do treinador guardada na nuvem e PDF para a famíl
   await signedIn(page);
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('tab', { name: 'Perfil e notas' }).click();
   const report = page.getByRole('region', { name: 'Relatório de fim de época' });
   await report.getByLabel('Mensagem do treinador para a família').fill('Uma época de grande evolução. Parabéns!');
   await report.getByRole('button', { name: 'Guardar mensagem' }).click();
@@ -932,6 +933,58 @@ test('fim de época: mensagem do treinador guardada na nuvem e PDF para a famíl
   await page.getByRole('button', { name: 'Mais ações do plantel' }).click();
   await page.getByRole('menuitem', { name: /Fim de época/ }).click();
   expect((await all).suggestedFilename()).toMatch(/^Fim_de_Epoca_Plantel_/);
+});
+
+test('evolução do atleta: avaliação em 5 áreas com radar e objetivos individuais, só para os treinadores', async ({
+  page
+}) => {
+  await signedIn(page);
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('tab', { name: 'Evolução' }).click();
+  const evaluations = page.getByRole('region', { name: 'Avaliações' });
+  await expect(evaluations).toContainText('Ainda sem avaliações');
+  await evaluations.getByRole('button', { name: '+ Nova avaliação' }).click();
+  const form = page.getByRole('region', { name: 'Nova avaliação' });
+  // Saving needs all five areas
+  await expect(form.getByRole('button', { name: 'Guardar avaliação' })).toBeDisabled();
+  for (const [area, v] of [
+    ['Técnica', 4],
+    ['Tática', 3],
+    ['Física', 3],
+    ['Psicológica e comportamental', 4],
+    ['Compreensão do jogo', 3]
+  ] as const)
+    await form.getByRole('button', { name: `${area} ${v}`, exact: true }).click();
+  await form.getByLabel('Observação do treinador').fill('Já procura o passe vertical');
+  await form.getByRole('button', { name: 'Guardar avaliação' }).click();
+  await expect(page.getByText('Avaliação guardada ✓')).toBeVisible();
+  await expect(evaluations.getByRole('img', { name: /Competências: Técnica 4, Tática 3/ })).toBeVisible();
+  await expect(evaluations.getByRole('list', { name: 'Lista de avaliações' })).toContainText('média 3,4');
+  await expect(evaluations).toContainText('Já procura o passe vertical');
+
+  const goals = page.getByRole('region', { name: 'Objetivos individuais' });
+  await goals.getByLabel('Novo objetivo').fill('Receber orientado para a frente');
+  await goals.getByLabel('Área do objetivo').selectOption('tecnica');
+  await goals.getByRole('button', { name: 'Adicionar' }).click();
+  await expect(goals).toContainText('Técnica · desde');
+  await goals.getByLabel('Cumprido: Receber orientado para a frente').check();
+  await expect(goals).toContainText('cumprido a');
+
+  // Kept in the athlete's record in the cloud (the other coaches see it too)
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
+        const raw = JSON.stringify(await res.json());
+        return raw.includes('Já procura o passe vertical') && raw.includes('Receber orientado para a frente');
+      },
+      { timeout: 30_000, message: 'avaliação e objetivo no registo do atleta' }
+    )
+    .toBe(true);
+  await page.getByRole('region', { name: 'Avaliações' }).screenshot({
+    path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/evolucao-atleta.png` : undefined
+  });
 });
 
 test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
@@ -1662,6 +1715,7 @@ test('crónica do jogo e cromo do atleta (imagem e PDF de todos)', async ({ page
 
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('tab', { name: 'Perfil e notas' }).click();
   await page.getByRole('button', { name: '🃏 Cromo do atleta' }).click();
   const card = page.getByRole('dialog', { name: 'Cromo do atleta' });
   await expect(card.getByRole('img', { name: 'Cromo de Rui Silva' })).toBeVisible();
@@ -1768,6 +1822,7 @@ test('testes: resultados por momento com cronómetro e evolução só na ficha d
   // The athlete's own evolution, in the athlete's sheet
   await page.getByRole('button', { name: 'Plantel', exact: false }).first().click();
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('tab', { name: 'Testes' }).click();
   const own = page.getByRole('region', { name: 'Testes da época' });
   await expect(own).toContainText(/Sprint 20 m.*4,10 s → 2,\d\d s 🚀/);
   await expect(own).toContainText('Melhorou em 1 de 1 teste 💪');
