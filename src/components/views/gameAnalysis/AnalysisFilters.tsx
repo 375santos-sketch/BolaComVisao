@@ -35,19 +35,20 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
         <div className="flex-1 flex flex-col sm:flex-row gap-2.5">
           {/* Search Query */}
           <div className="relative flex-1">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ui-muted text-sm">🔍</span>
             <input
               type="text"
               placeholder="Pesquisar por adversário, torneio..."
               value={filters.searchQuery || ''}
               onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
               className="ui-input w-full text-xs"
+              style={{ paddingLeft: '2.5rem' }}
             />
             {filters.searchQuery && (
               <button
                 type="button"
                 onClick={() => onFilterChange({ searchQuery: '' })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ui-muted hover:text-ui-text text-xs font-bold"
               >
                 ✕
               </button>
@@ -59,10 +60,10 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
             <select
               value={filters.eventType}
               onChange={(e) => onFilterChange({ eventType: e.target.value as EventTypeFilter })}
-              className={`w-full bg-slate-950/80 border rounded-2xl px-3.5 py-2.5 text-xs font-bold outline-none transition-all ${
+              className={`w-full bg-ui-inset/80 border rounded-2xl px-3.5 py-2.5 text-xs font-bold outline-none transition-all ${
                 filters.eventType !== 'todos'
-                  ? 'border-cyan-400 text-cyan-300 ring-1 ring-cyan-400/30'
-                  : 'border-slate-700/80 text-slate-200 focus:border-cyan-400'
+                  ? 'border-ui-brand text-ui-brand ring-1 ring-ui-brand/30'
+                  : 'border-ui-line-strong/80 text-ui-text focus:border-ui-brand'
               }`}
             >
               <optgroup label="📋 Todos">
@@ -102,13 +103,13 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
             onClick={onTogglePanel}
             className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold border transition-all ${
               showPanel || activeFiltersCount > 0
-                ? 'bg-cyan-500/10 border-cyan-400/60 text-cyan-300 shadow-sm'
-                : 'bg-slate-950/60 border-slate-700/80 text-slate-300 hover:bg-slate-800'
+                ? 'bg-ui-brand/10 border-ui-brand/60 text-ui-brand shadow-sm'
+                : 'bg-ui-inset/60 border-ui-line-strong/80 text-ui-text hover:bg-ui-surface-2'
             }`}
           >
             <span>⚙️ Filtros Avançados</span>
             {activeFiltersCount > 0 && (
-              <span className="bg-cyan-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full">
+              <span className="bg-ui-brand text-ui-brand-ink text-[10px] font-black px-2 py-0.5 rounded-full">
                 {activeFiltersCount}
               </span>
             )}
@@ -130,10 +131,10 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
       {/* Expanded Filter Panel */}
       {showPanel && (
-        <div className="mt-4 pt-4 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 animate-fadeIn">
+        <div className="mt-4 pt-4 border-t border-ui-line/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 animate-fadeIn">
           {/* Season Filter */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
               📅 Época
             </label>
             <select
@@ -152,7 +153,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Month Filter */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">📆 Mês</label>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">📆 Mês</label>
             <select
               value={filters.month}
               onChange={(e) => onFilterChange({ month: e.target.value })}
@@ -169,7 +170,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Opponent Filter */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
               ⚔️ Adversário
             </label>
             <select
@@ -188,7 +189,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Competition Type */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
               🏆 Competição
             </label>
             <select
@@ -205,7 +206,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Location (Home / Away) */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
               🏟️ Condição do Jogo
             </label>
             <div className="grid grid-cols-3 gap-1">
@@ -220,8 +221,8 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
                   onClick={() => onFilterChange({ location: loc.id as MatchLocation | 'todos' })}
                   className={`py-2 rounded-xl text-xs font-bold transition-all ${
                     filters.location === loc.id
-                      ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
-                      : 'bg-slate-950/80 text-slate-300 hover:bg-slate-800'
+                      ? 'bg-ui-brand text-ui-brand-ink font-black shadow-sm'
+                      : 'bg-ui-inset/80 text-ui-text hover:bg-ui-surface-2'
                   }`}
                 >
                   {loc.label}
@@ -232,7 +233,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Half Duration Setting (Item 2) */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
               ⏱️ Duração por Parte ({filters.halfDurationMinutes || categoryDefaultHalfDuration} min)
             </label>
             <select

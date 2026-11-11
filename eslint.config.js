@@ -81,7 +81,13 @@ export default tseslint.config(
       'src/components/views/gameCenter/**/*.tsx',
       'src/components/views/results/**/*.tsx',
       'src/components/views/setpieces/**/*.tsx',
-      'src/components/PerformanceSubNav.tsx'
+      'src/components/PerformanceSubNav.tsx',
+      // Módulo Análise
+      'src/components/views/GameAnalysisDashboard.tsx',
+      'src/components/views/gameAnalysis/**/*.tsx',
+      'src/components/views/coach/**/*.tsx',
+      'src/components/views/stats/**/*.tsx',
+      'src/components/stats/**/*.tsx'
     ],
     rules: {
       'no-restricted-syntax': [

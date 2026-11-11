@@ -30,13 +30,13 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
         <div className="card-title" style={{ marginBottom: 0 }}>
           ⏱️ Minutos de jogo
         </div>
-        <span className="text-[10px] font-mono text-slate-400">
+        <span className="text-[10px] font-mono text-ui-muted">
           % conv. = minutos ÷ minutos dos jogos em que foi convocado
         </span>
       </div>
 
       {below.length > 0 && (
-        <div className="mb-3 p-2.5 rounded-xl bg-amber-950/50 border border-amber-500/40 text-[11px] text-amber-200">
+        <div className="mb-3 p-2.5 rounded-xl bg-ui-warning-soft border border-ui-warning/40 text-[11px] text-ui-warning">
           Com menos minutos nos jogos em que foram convocados: {below.map((r) => r.name).join(', ')}. É só um alerta:
           quem joga decide o treinador.
         </div>
@@ -44,7 +44,7 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
 
       {missing.length > 0 && (
         <div
-          className="mb-3 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-[11px] text-rose-200 space-y-2"
+          className="mb-3 p-2.5 rounded-xl bg-ui-danger-soft border border-ui-danger/40 text-[11px] text-ui-danger space-y-2"
           data-testid="missing-starters"
         >
           <p>
@@ -75,7 +75,7 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
       <div className="overflow-x-auto">
         <table className="w-full text-[11px]">
           <thead>
-            <tr className="text-slate-400 font-mono text-left">
+            <tr className="text-ui-muted font-mono text-left">
               <th className="py-1 pr-2 font-normal">Atleta</th>
               <th className="py-1 px-1 font-normal text-right">Min.</th>
               <th
@@ -102,28 +102,28 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
             {withGames.map((r) => {
               const pct = Math.round(r.share * 100);
               return (
-                <tr key={r.playerId} className="border-t border-slate-800">
-                  <td className="py-1.5 pr-2 text-slate-200">
-                    <span className="text-slate-500 font-mono mr-1">{r.number ?? ''}</span>
+                <tr key={r.playerId} className="border-t border-ui-line">
+                  <td className="py-1.5 pr-2 text-ui-text">
+                    <span className="text-ui-muted font-mono mr-1">{r.number ?? ''}</span>
                     {r.name}
                   </td>
-                  <td className="py-1.5 px-1 text-right font-mono text-slate-300">{r.minutes}&apos;</td>
-                  <td className="py-1.5 px-1 text-right font-mono text-slate-300">{pct}%</td>
+                  <td className="py-1.5 px-1 text-right font-mono text-ui-text">{r.minutes}&apos;</td>
+                  <td className="py-1.5 px-1 text-right font-mono text-ui-text">{pct}%</td>
                   <td
                     className={`py-1.5 px-1 text-right font-mono font-bold ${
                       r.matchesCalledUp === 0
-                        ? 'text-slate-500'
+                        ? 'text-ui-muted'
                         : r.fewestMinutes
-                          ? 'text-amber-300'
-                          : 'text-emerald-300'
+                          ? 'text-ui-warning'
+                          : 'text-ui-success'
                     }`}
                   >
                     {r.matchesCalledUp ? `${Math.round(r.callupShare * 100)}%` : '—'}
                   </td>
-                  <td className="py-1.5 px-1 text-right font-mono text-slate-300">
+                  <td className="py-1.5 px-1 text-right font-mono text-ui-text">
                     {r.matchesPlayed}/{r.matchesCalledUp}
                   </td>
-                  <td className="py-1.5 pl-1 text-right font-mono text-slate-300">{r.starts}</td>
+                  <td className="py-1.5 pl-1 text-right font-mono text-ui-text">{r.starts}</td>
                 </tr>
               );
             })}
