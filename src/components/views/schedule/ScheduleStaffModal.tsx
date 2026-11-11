@@ -1,4 +1,5 @@
 import React from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { StaffFormData } from './types';
 import { AppState } from '../../../types';
 
@@ -91,22 +92,24 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
               <label className="text-xs font-mono text-ui-text block mb-1.5">
                 Data de Início <span className="text-ui-warning">*</span>
               </label>
-              <input
+              <DateTimePT
                 type="date"
+                label="Data"
                 value={staffForm.date}
-                onChange={(e) => setStaffForm({ ...staffForm, date: e.target.value })}
-                className="ui-input w-full text-xs"
+                onChange={(v) => setStaffForm({ ...staffForm, date: v })}
+                inputClassName="ui-input w-full text-xs"
               />
             </div>
 
             <div>
               <label className="text-xs font-mono text-ui-text block mb-1.5">Data de Fim (Opcional)</label>
-              <input
+              <DateTimePT
                 type="date"
+                label="Data de fim"
                 min={staffForm.date}
-                value={staffForm.endDate}
-                onChange={(e) => setStaffForm({ ...staffForm, endDate: e.target.value })}
-                className="ui-input w-full text-xs"
+                value={staffForm.endDate || ''}
+                onChange={(v) => setStaffForm({ ...staffForm, endDate: v })}
+                inputClassName="ui-input w-full text-xs"
               />
               <span className="text-[10px] font-mono text-ui-muted mt-1 block">
                 Deixar vazio para indisponibilidade de apenas 1 dia

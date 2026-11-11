@@ -1,4 +1,5 @@
 import React from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { CalendarEvent } from './types';
 
 interface ScheduleDayViewProps {
@@ -82,18 +83,19 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <input
+          <DateTimePT
             type="date"
+            label="Data"
             value={selectedDate}
-            onChange={(e) => {
-              if (e.target.value) {
-                setSelectedDate(e.target.value);
-                const dt = new Date(e.target.value + 'T12:00:00');
+            onChange={(v) => {
+              if (v) {
+                setSelectedDate(v);
+                const dt = new Date(v + 'T12:00:00');
                 setActiveYear(dt.getFullYear());
                 setActiveMonth(dt.getMonth());
               }
             }}
-            className="ui-input text-xs"
+            inputClassName="ui-input text-xs"
           />
         </div>
       </div>

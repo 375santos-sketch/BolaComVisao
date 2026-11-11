@@ -281,10 +281,10 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             >
               <div className="flex items-center gap-3">
                 <span className="ui-inset w-11 shrink-0 py-1 text-center rounded-xl">
-                  <span className="block text-base font-bold leading-tight text-white">
+                  <span className="block text-base font-bold leading-tight text-ui-text">
                     {(m.date || '').slice(8, 10)}
                   </span>
-                  <span className="block text-[10px] font-semibold uppercase text-slate-400">
+                  <span className="block text-[10px] font-semibold uppercase text-ui-muted">
                     {m.date
                       ? ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][
                           new Date(`${m.date.slice(0, 10)}T12:00:00`).getDay()
@@ -293,21 +293,21 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   </span>
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-slate-100 truncate">
+                  <div className="text-sm font-bold text-ui-text truncate">
                     vs <span>{m.opponent}</span>
                     {!m.finished && <span className="badge-open ml-1.5">{t(state.lang, 'res_ongoing')}</span>}
                   </div>
-                  <div className="text-xs text-slate-400 truncate">
+                  <div className="text-xs text-ui-muted truncate">
                     {(m.date || '').slice(8, 10)}/{(m.date || '').slice(5, 7)} · {locLabel} · {typeLabel}
                   </div>
                 </div>
                 <span
                   className={`shrink-0 rounded-lg px-2.5 py-1 text-sm font-bold tabular-nums ${
                     sc > co
-                      ? 'bg-emerald-500/15 text-emerald-300'
+                      ? 'bg-ui-success/15 text-ui-success'
                       : sc === co
-                        ? 'bg-amber-500/15 text-amber-300'
-                        : 'bg-rose-500/15 text-rose-300'
+                        ? 'bg-ui-warning/15 text-ui-warning'
+                        : 'bg-ui-danger/15 text-ui-danger'
                   }`}
                   aria-label={`Resultado ${(m.location || 'casa') === 'casa' ? `${sc}-${co}` : `${co}-${sc}`}`}
                 >
@@ -318,7 +318,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               {open && (
                 <div className="goal-list mt-3">
                   {m.capitao && (
-                    <div className="text-xs text-green-400 mb-2 uppercase font-bold">
+                    <div className="text-xs text-ui-success mb-2 uppercase font-bold">
                       © Capitão: {getPlayerName(m.capitao)}
                     </div>
                   )}
@@ -339,13 +339,13 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         {/* Remates Bar */}
                         {(totFor > 0 || totAdv > 0) && (
                           <div className="ui-inset p-2 flex items-center justify-between text-xs font-mono">
-                            <span className="text-[10px] text-cyan-300 font-bold uppercase">🎯 Remates à Baliza</span>
+                            <span className="text-[10px] text-ui-brand font-bold uppercase">🎯 Remates à Baliza</span>
                             <div className="flex items-center gap-3">
-                              <span className="text-cyan-400 font-bold">
+                              <span className="text-ui-brand font-bold">
                                 Nós: {totFor} ({inFor}d/{outFor}f)
                               </span>
-                              <span className="text-slate-600">vs</span>
-                              <span className="text-rose-400 font-bold">
+                              <span className="text-ui-muted">vs</span>
+                              <span className="text-ui-danger font-bold">
                                 Adv: {totAdv} ({inAdv}d/{outAdv}f)
                               </span>
                             </div>
@@ -354,26 +354,26 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
                         <div className="ui-inset grid grid-cols-4 gap-2 p-2 text-center">
                           <div>
-                            <div className="text-[9px] text-slate-400 uppercase font-bold">Cantos</div>
-                            <div className="text-xs sm:text-sm font-black font-mono text-cyan-400">
+                            <div className="text-[9px] text-ui-muted uppercase font-bold">Cantos</div>
+                            <div className="text-xs sm:text-sm font-black font-mono text-ui-brand">
                               {cFor} - {cAdv}
                             </div>
                           </div>
                           <div>
-                            <div className="text-[9px] text-slate-400 uppercase font-bold">Faltas Com.</div>
-                            <div className="text-xs sm:text-sm font-black font-mono text-amber-400">
+                            <div className="text-[9px] text-ui-muted uppercase font-bold">Faltas Com.</div>
+                            <div className="text-xs sm:text-sm font-black font-mono text-ui-warning">
                               {m.foulsCommitted ?? m.faltas ?? 0}
                             </div>
                           </div>
                           <div>
-                            <div className="text-[9px] text-slate-400 uppercase font-bold">Faltas Sofr.</div>
-                            <div className="text-xs sm:text-sm font-black font-mono text-emerald-400">
+                            <div className="text-[9px] text-ui-muted uppercase font-bold">Faltas Sofr.</div>
+                            <div className="text-xs sm:text-sm font-black font-mono text-ui-success">
                               {m.foulsSuffered ?? m.faltasAdv ?? 0}
                             </div>
                           </div>
                           <div>
-                            <div className="text-[9px] text-slate-400 uppercase font-bold">Substituições</div>
-                            <div className="text-xs sm:text-sm font-black font-mono text-purple-400">
+                            <div className="text-[9px] text-ui-muted uppercase font-bold">Substituições</div>
+                            <div className="text-xs sm:text-sm font-black font-mono text-ui-brand">
                               {(m.subs || []).length}
                             </div>
                           </div>
@@ -399,11 +399,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   {m.notes && <div className="notes-readonly mt-2.5">📝 {m.notes}</div>}
 
                   {/* Match Export Buttons (PDF & Excel BolaComVisao) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-800">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-ui-line">
                     <button
                       type="button"
                       disabled={isGeneratingPdfId === m.id}
-                      className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500/20 to-teal-500/20 hover:from-cyan-500/30 hover:to-teal-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-['Chakra_Petch'] font-bold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                      className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-ui-brand/20 to-ui-success/20 hover:from-ui-brand/30 hover:to-ui-success/30 text-ui-brand border border-ui-brand/40 text-xs font-['Chakra_Petch'] font-bold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 disabled:opacity-50"
                       onClick={async (e) => {
                         e.stopPropagation();
                         try {
@@ -446,7 +446,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
                   {m.finished && (
                     <div className="mt-2.5 flex items-center gap-2 text-xs" role="group" aria-label="Local do jogo">
-                      <span className="text-slate-400">Local do jogo:</span>
+                      <span className="text-ui-muted">Local do jogo:</span>
                       {(['casa', 'fora'] as const).map((loc) => {
                         const active = (m.location || 'casa') === loc;
                         return (
@@ -456,8 +456,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                             aria-pressed={active}
                             className={`px-3 py-1 rounded-lg border font-bold ${
                               active
-                                ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200'
-                                : 'border-slate-600 text-slate-400 hover:text-slate-200'
+                                ? 'bg-ui-brand/20 border-ui-brand text-ui-brand'
+                                : 'border-ui-line-strong text-ui-muted hover:text-ui-text'
                             }`}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -523,7 +523,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         </button>
                       </div>
                       {m.mvpVote?.votes && Object.keys(m.mvpVote.votes).length > 0 && (
-                        <p className="w-full text-[11px] text-amber-200/90 text-center mt-1">
+                        <p className="w-full text-[11px] text-ui-warning/90 text-center mt-1">
                           🗳️ Pais:{' '}
                           {Object.entries(m.mvpVote.votes)
                             .sort((a, b) => b[1] - a[1])

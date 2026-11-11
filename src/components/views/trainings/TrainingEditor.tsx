@@ -464,7 +464,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-ui-brand/20 flex-wrap gap-2">
                   <div>
                     <div className="panel-title mb-0.5 flex items-center gap-2">
-                      <span>📋 Plano da Sessão</span>
+                      <span>Plano da sessão</span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-ui-brand/20 text-ui-brand border border-ui-brand/40 font-mono">
                         {trainingForm.sessionBlocks.length}{' '}
                         {trainingForm.sessionBlocks.length === 1 ? 'bloco' : 'blocos'}
@@ -494,7 +494,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                 {/* Session Objective */}
                 <div className="field mb-4">
                   <label className="flex items-center gap-1.5">
-                    <span>🎯 Objetivo Principal da Sessão</span>
+                    <span>Objetivo principal da sessão</span>
                     <span className="text-[10px] text-ui-muted font-normal">(opcional)</span>
                   </label>
                   <AutoTextarea
@@ -512,7 +512,6 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                     onClick={handleAddCustomBlock}
                     className="ui-btn ui-btn-primary px-3 py-2 text-xs hover:brightness-110 flex items-center gap-1.5"
                   >
-                    <span>➕</span>
                     <span>Adicionar exercício</span>
                   </button>
                   <button
@@ -521,7 +520,6 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                     className="ui-btn ui-btn-soft px-3 py-2 text-xs flex items-center gap-1.5"
                     aria-expanded={showLibrary}
                   >
-                    <span>📚</span>
                     <span>Da biblioteca ({library.length})</span>
                   </button>
                 </div>
@@ -535,7 +533,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                     {library.length === 0 ? (
                       <p className="text-[11px] text-ui-muted p-2">
                         A biblioteca está vazia. Crie exercícios em Treinos → Exercícios, ou guarde aqui um bloco com
-                        &quot;📚 Guardar na biblioteca&quot;.
+                        &quot;Guardar na biblioteca&quot;.
                       </p>
                     ) : (
                       [...library]
@@ -556,11 +554,11 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                               <img
                                 src={ex.image}
                                 alt=""
-                                className="w-12 h-9 object-contain rounded bg-ui-surface shrink-0"
+                                className="w-12 h-9 object-contain rounded bg-[#ffffff] shrink-0"
                               />
                             ) : (
                               <span className="w-12 h-9 rounded bg-ui-surface flex items-center justify-center shrink-0">
-                                📋
+                                ·
                               </span>
                             )}
                             <span className="min-w-0 flex-1">
@@ -585,7 +583,6 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                 {/* Blocks List */}
                 {trainingForm.sessionBlocks.length === 0 ? (
                   <div className="ui-inset py-6 text-center p-4 space-y-2">
-                    <div className="text-2xl">📋</div>
                     <div className="text-xs font-mono text-ui-muted">
                       Nenhum bloco ou exercício adicionado a esta sessão.
                     </div>
@@ -616,7 +613,6 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                           <div className="flex flex-wrap items-center gap-2">
                             {/* Duration */}
                             <div className="ui-card flex items-center gap-1 px-2 py-1">
-                              <span className="text-[10px] text-ui-muted font-mono">⏱️</span>
                               <input
                                 type="number"
                                 min="1"
@@ -644,13 +640,13 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                               className="ui-input text-[11px]"
                             >
                               <option value="">Sem categoria</option>
-                              <option value="aquecimento">🔥 Aquecimento</option>
-                              <option value="tecnica">⚽ Técnica</option>
-                              <option value="tatica">⚡ Tática</option>
-                              <option value="fisico">🏃 Físico</option>
-                              <option value="jogo">🥅 Jogo</option>
-                              <option value="bolas_paradas">🎯 Bolas paradas</option>
-                              <option value="calma">🧘 Retorno à calma</option>
+                              <option value="aquecimento">Aquecimento</option>
+                              <option value="tecnica">Técnica</option>
+                              <option value="tatica">Tática</option>
+                              <option value="fisico">Físico</option>
+                              <option value="jogo">Jogo</option>
+                              <option value="bolas_paradas">Bolas paradas</option>
+                              <option value="calma">Retorno à calma</option>
                             </select>
 
                             {/* Move Up/Down */}
@@ -710,7 +706,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                           <img
                             src={exerciseOf(block.exerciseId)!.image}
                             alt={`Desenho: ${block.title}`}
-                            className="w-full max-h-48 object-contain rounded-xl bg-ui-surface"
+                            className="w-full max-h-48 object-contain rounded-xl bg-[#ffffff]"
                           />
                         ) : null}
                         {!exerciseOf(block.exerciseId) && (
@@ -719,7 +715,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                             onClick={() => handleSaveBlockToLibrary(block)}
                             className="text-[11px] text-ui-brand font-bold"
                           >
-                            📚 Guardar na biblioteca
+                            Guardar na biblioteca
                           </button>
                         )}
 
@@ -727,7 +723,6 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                         {block.pdfId && (
                           <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-ui-brand-soft border border-ui-brand/30 text-xs">
                             <div className="flex items-center gap-2 text-ui-brand font-mono overflow-hidden">
-                              <span>📄</span>
                               <span className="truncate">
                                 Ficha PDF: <strong>{block.pdfFileName || block.pdfTitle}</strong>
                               </span>
@@ -737,7 +732,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                               onClick={() => handleOpenBlockPDF(block.pdfId!)}
                               className="ui-btn ui-btn-primary px-2.5 py-1 text-[11px] shrink-0"
                             >
-                              👁️ Ver PDF
+                              Ver PDF
                             </button>
                           </div>
                         )}

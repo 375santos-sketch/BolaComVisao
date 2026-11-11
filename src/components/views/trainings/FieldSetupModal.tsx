@@ -117,13 +117,13 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
       >
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="text-base font-bold text-white">📐 Montar o campo</h3>
-            <p className="text-[11px] text-slate-400">
+            <h3 className="text-base font-bold text-ui-text">📐 Montar o campo</h3>
+            <p className="text-[11px] text-ui-muted">
               Treino de {training.date.slice(0, 10).split('-').reverse().join('/')}
               {training.time ? ` · ${training.time}` : ''}
             </p>
           </div>
-          <button type="button" onClick={onClose} aria-label="Fechar montar o campo" className="text-slate-400 text-lg">
+          <button type="button" onClick={onClose} aria-label="Fechar montar o campo" className="text-ui-muted text-lg">
             ✕
           </button>
         </div>
@@ -142,17 +142,17 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
             </button>
           ))}
         </div>
-        <p className="text-[10px] text-slate-500 -mt-1">Fica guardado para as {WEEKDAYS[weekday]}.</p>
+        <p className="text-[10px] text-ui-muted -mt-1">Fica guardado para as {WEEKDAYS[weekday]}.</p>
 
         {unknown.length > 0 && (
-          <section aria-label="Medidas em falta" className="rounded-2xl bg-amber-500/10 p-3 space-y-2">
-            <p className="text-xs font-semibold text-amber-200">
+          <section aria-label="Medidas em falta" className="rounded-2xl bg-ui-warning/10 p-3 space-y-2">
+            <p className="text-xs font-semibold text-ui-warning">
               Falta saber o tamanho {unknown.length === 1 ? 'deste exercício' : 'destes exercícios'} (em passos). Só é
               preciso uma vez.
             </p>
             {unknown.map((b) => (
               <div key={b.id} className="flex items-center gap-1.5">
-                <span className="min-w-0 flex-1 truncate text-xs font-bold text-white">{b.title || 'Bloco'}</span>
+                <span className="min-w-0 flex-1 truncate text-xs font-bold text-ui-text">{b.title || 'Bloco'}</span>
                 <input
                   inputMode="numeric"
                   aria-label={`Largura de ${b.title || 'Bloco'}`}
@@ -161,7 +161,7 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
                   value={sizes[b.id]?.w || ''}
                   onChange={(e) => setSizes({ ...sizes, [b.id]: { w: e.target.value, l: sizes[b.id]?.l || '' } })}
                 />
-                <span className="text-slate-400">×</span>
+                <span className="text-ui-muted">×</span>
                 <input
                   inputMode="numeric"
                   aria-label={`Comprimento de ${b.title || 'Bloco'}`}
@@ -184,14 +184,14 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
         )}
 
         {setup.zones.length === 0 ? (
-          <p className="ui-inset p-4 text-center text-xs text-slate-400">
+          <p className="ui-inset p-4 text-center text-xs text-ui-muted">
             {blocks.length
               ? 'Escreva as medidas dos exercícios acima e o campo aparece desenhado.'
               : 'Este treino ainda não tem plano. Junte exercícios ao plano e volte aqui.'}
           </p>
         ) : (
           <>
-            <div role="tablist" className="grid grid-cols-2 gap-1 rounded-xl bg-slate-900 p-1">
+            <div role="tablist" className="grid grid-cols-2 gap-1 rounded-xl bg-ui-surface p-1">
               {(['campo', 'passos'] as const).map((t) => (
                 <button
                   key={t}
@@ -199,7 +199,7 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
                   role="tab"
                   aria-selected={tab === t}
                   onClick={() => setTab(t)}
-                  className={`rounded-lg py-1.5 text-xs font-bold ${tab === t ? 'bg-cyan-400 text-slate-950' : 'text-slate-400'}`}
+                  className={`rounded-lg py-1.5 text-xs font-bold ${tab === t ? 'bg-ui-brand text-ui-brand-ink' : 'text-ui-muted'}`}
                 >
                   {t === 'campo' ? 'Campo' : 'Passo a passo'}
                 </button>
@@ -213,7 +213,7 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
                   className="overflow-hidden rounded-xl"
                   dangerouslySetInnerHTML={{ __html: fieldSvg(setup, unit) }}
                 />
-                <ul className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-300">
+                <ul className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-ui-text">
                   {setup.zones.map((z) => (
                     <li key={z.letter} className="flex items-center gap-1">
                       <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: z.color }} />
@@ -224,15 +224,15 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
               </section>
             ) : (
               <section aria-label="Passo a passo" className="space-y-1">
-                <div className="flex justify-between text-[11px] text-slate-400">
+                <div className="flex justify-between text-[11px] text-ui-muted">
                   <span>
                     {done.length} de {steps.length} feitos
                   </span>
                   <span>1 passo largo ≈ 1 metro · começa na 🚩</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded bg-slate-800">
+                <div className="h-1.5 overflow-hidden rounded bg-ui-surface-2">
                   <div
-                    className="h-full bg-emerald-400"
+                    className="h-full bg-ui-success"
                     style={{ width: `${steps.length ? (done.length / steps.length) * 100 : 0}%` }}
                   />
                 </div>
@@ -240,7 +240,7 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
                   {steps.map((s, i) => {
                     const on = done.includes(i);
                     return (
-                      <li key={i} className="border-t border-slate-800 first:border-0">
+                      <li key={i} className="border-t border-ui-line first:border-0">
                         <button
                           type="button"
                           role="checkbox"
@@ -249,20 +249,20 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
                           className="flex w-full items-start gap-2.5 py-2.5 text-left"
                         >
                           <span
-                            className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-black text-slate-950"
+                            className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-black text-ui-brand-ink"
                             style={{ background: s.color }}
                           >
                             {s.zone}
                           </span>
                           <span
-                            className={`flex-1 text-[13px] leading-snug ${on ? 'text-slate-500 line-through' : 'text-white'}`}
+                            className={`flex-1 text-[13px] leading-snug ${on ? 'text-ui-muted line-through' : 'text-ui-text'}`}
                           >
                             {s.text}
-                            <span className="mt-0.5 block text-[11px] text-slate-400">{s.sub}</span>
+                            <span className="mt-0.5 block text-[11px] text-ui-muted">{s.sub}</span>
                           </span>
                           <span
                             className={`grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 text-[11px] font-black ${
-                              on ? 'border-emerald-500 bg-emerald-500 text-slate-950' : 'border-slate-600'
+                              on ? 'border-ui-success bg-ui-success text-ui-brand-ink' : 'border-ui-line-strong'
                             }`}
                           >
                             {on ? '✓' : ''}
@@ -276,14 +276,14 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
             )}
 
             {setup.crowded.length > 0 && (
-              <p role="alert" className="rounded-xl bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-200">
+              <p role="alert" className="rounded-xl bg-ui-danger/15 px-3 py-2 text-xs font-semibold text-ui-danger">
                 Não cabe ao mesmo tempo no {FIELDS[field].label.toLowerCase()}: {setup.crowded.join(', ')}. Reduza as
                 medidas ou mude a ordem do plano.
               </p>
             )}
             {kit.length > 0 && (
-              <p className="text-[11px] text-slate-300">
-                <b className="text-slate-400">LEVAR:</b> {kit.map((k) => k.label).join(' · ')}
+              <p className="text-[11px] text-ui-text">
+                <b className="text-ui-muted">LEVAR:</b> {kit.map((k) => k.label).join(' · ')}
               </p>
             )}
             <div className="grid grid-cols-2 gap-2">
@@ -299,7 +299,7 @@ export const FieldSetupModal: React.FC<FieldSetupModalProps> = ({
               </button>
             </div>
             {!isNext && (
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[10px] text-ui-muted">
                 O link do adjunto mostra sempre o próximo treino: este campo aparece lá quando este for o próximo.
               </p>
             )}

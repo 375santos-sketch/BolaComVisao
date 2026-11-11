@@ -12,7 +12,11 @@ export const DateTimePT: React.FC<{
   onChange: (value: string) => void;
   label: string;
   className?: string;
-}> = ({ type, value, onChange, label, className = '' }) => {
+  /** Classes of the field itself (size and look of the form it sits in). */
+  inputClassName?: string;
+  required?: boolean;
+  min?: string;
+}> = ({ type, value, onChange, label, className = '', inputClassName = 'w-full', required, min }) => {
   const shown = type === 'date' ? datePT(value) : timePT(value);
   return (
     <div className={`relative ${className}`}>
@@ -20,6 +24,8 @@ export const DateTimePT: React.FC<{
         type={type}
         value={value}
         aria-label={label}
+        required={required}
+        min={min}
         onChange={(e) => onChange(e.target.value)}
         onClick={(e) => {
           try {
@@ -28,13 +34,14 @@ export const DateTimePT: React.FC<{
             /* the browser opens its own picker */
           }
         }}
-        className="w-full [&::-webkit-datetime-edit]:opacity-0"
+        className={`${inputClassName} [&::-webkit-datetime-edit]:opacity-0`}
         style={{ color: 'transparent' }}
       />
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-ui-text"
-        style={{ fontSize: 'inherit' }}
+        className={`pointer-events-none absolute inset-y-0 left-3 flex items-center text-ui-text ${
+          /text-xs/.test(inputClassName) ? 'text-xs' : ''
+        }`}
       >
         {shown || (type === 'date' ? 'dd/mm/aaaa' : 'hh:mm')}
       </span>

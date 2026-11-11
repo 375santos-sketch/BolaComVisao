@@ -1,4 +1,5 @@
 import React from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { ClubEventFormData } from './types';
 import { ClubEventType } from '../../../types';
 
@@ -125,22 +126,24 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
               <label className="text-xs font-mono text-ui-text block mb-1.5">
                 Data (ou Início) <span className="text-ui-brand">*</span>
               </label>
-              <input
+              <DateTimePT
                 type="date"
+                label="Data do evento"
                 value={clubEventForm.date}
-                onChange={(e) => setClubEventForm({ ...clubEventForm, date: e.target.value })}
-                className="ui-input w-full text-xs"
+                onChange={(v) => setClubEventForm({ ...clubEventForm, date: v })}
+                inputClassName="ui-input w-full text-xs"
               />
             </div>
 
             <div>
               <label className="text-xs font-mono text-ui-text block mb-1.5">Data de Fim (Opcional)</label>
-              <input
+              <DateTimePT
                 type="date"
+                label="Data de fim"
                 min={clubEventForm.date}
-                value={clubEventForm.endDate}
-                onChange={(e) => setClubEventForm({ ...clubEventForm, endDate: e.target.value })}
-                className="ui-input w-full text-xs"
+                value={clubEventForm.endDate || ''}
+                onChange={(v) => setClubEventForm({ ...clubEventForm, endDate: v })}
+                inputClassName="ui-input w-full text-xs"
               />
               <span className="text-[10px] font-mono text-ui-muted mt-1 block">Deixar vazio para evento de 1 dia</span>
             </div>
@@ -150,21 +153,23 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-mono text-ui-text block mb-1.5">Hora de Início</label>
-              <input
+              <DateTimePT
                 type="time"
+                label="Hora de início"
                 value={clubEventForm.time}
-                onChange={(e) => setClubEventForm({ ...clubEventForm, time: e.target.value })}
-                className="ui-input w-full text-xs"
+                onChange={(v) => setClubEventForm({ ...clubEventForm, time: v })}
+                inputClassName="ui-input w-full text-xs"
               />
             </div>
 
             <div>
               <label className="text-xs font-mono text-ui-text block mb-1.5">Hora de Fim (Opcional)</label>
-              <input
+              <DateTimePT
                 type="time"
+                label="Hora de fim"
                 value={clubEventForm.endTime}
-                onChange={(e) => setClubEventForm({ ...clubEventForm, endTime: e.target.value })}
-                className="ui-input w-full text-xs"
+                onChange={(v) => setClubEventForm({ ...clubEventForm, endTime: v })}
+                inputClassName="ui-input w-full text-xs"
               />
             </div>
           </div>

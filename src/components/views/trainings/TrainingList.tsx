@@ -103,7 +103,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
         onClick={() => setShowPlanShare(true)}
         className="text-xs font-semibold text-ui-brand hover:text-ui-brand"
       >
-        🔗 Plano para o adjunto (link)
+        Plano para o adjunto (link)
       </button>
       {showPlanShare && (
         <Suspense fallback={null}>

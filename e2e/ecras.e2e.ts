@@ -853,7 +853,10 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
     .toBe('Rondo 4x2');
 
   // New training: the exercise joins the session plan with its drawing
-  await page.getByRole('button', { name: /^Sessões/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page.getByRole('button', { name: /Da biblioteca \(1\)/ }).click();
   await page
@@ -876,7 +879,10 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
   await expect(page.getByRole('region', { name: 'Biblioteca de exercícios' })).toContainText(/Usado 1× · último hoje/);
 
   // A new training starts from the model; "Duplicar" opens a copy of a training to change and save
-  await page.getByRole('button', { name: /^Sessões/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page
     .getByRole('region', { name: 'Modelos de treino' })
@@ -1694,7 +1700,10 @@ test('foto do exercício, imagem da convocatória e plano para o adjunto', async
   await expect(page.getByRole('region', { name: 'Biblioteca de exercícios' })).toContainText('Rondo da foto');
 
   // Link for the assistant coach: created once, kept in the cloud with the next training's plan only
-  await page.getByRole('button', { name: /^Sessões/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Plano para o adjunto/ }).click();
   const share = page.getByRole('dialog', { name: 'Plano para o adjunto' });
   await share.getByRole('button', { name: 'Criar link para o adjunto' }).click();
@@ -1827,7 +1836,10 @@ test('lista do saco: material do exercício no treino, e modo sol que fica lembr
   await expect(form.getByLabel('Tipo')).toHaveValue('Jogo reduzido');
   await form.getByRole('button', { name: 'Cancelar' }).click();
 
-  await page.getByRole('button', { name: /^Sessões/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page.getByRole('button', { name: /Da biblioteca/ }).click();
   await page
@@ -2047,7 +2059,10 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   );
 
   // Hot day: water breaks between the blocks of the training
-  await page.getByRole('button', { name: /^Sessões/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page.getByPlaceholder('Ex: Campo Sintético, Campo Principal, Pavilhão...').fill('Campo Municipal');
   await page.getByRole('button', { name: /Da biblioteca/ }).click();
@@ -2275,7 +2290,10 @@ test('montar o campo: meio campo à quinta, medidas em falta, passo a passo e en
   }
 
   // A Thursday training with both exercises
-  await page.getByRole('button', { name: /^Sessões/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page.locator('input[type="date"]').first().fill('2099-03-05');
   await page.getByPlaceholder('Ex: Campo Sintético, Campo Principal, Pavilhão...').fill('Campo do teste de montar');
@@ -2345,7 +2363,10 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
   await form.getByRole('button', { name: 'Guardar exercício' }).click();
 
   const newTraining = async (date: string) => {
-    await page.getByRole('button', { name: /^Sessões/ }).first().click();
+    await page
+      .getByRole('button', { name: /^Sessões/ })
+      .first()
+      .click();
     await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
     await page.locator('input[type="date"]').first().fill(date);
     await page.getByPlaceholder('Ex: Campo Sintético, Campo Principal, Pavilhão...').fill(`Campo do nível ${date}`);

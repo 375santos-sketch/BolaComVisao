@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { Training } from '../../../types';
 import { uid } from '../../../lib/utils';
 import { WEEKDAY_CONFIG, QUICK_TIMES, calculateBatchTrainings } from './batchTrainingUtils';
@@ -164,16 +165,16 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
   return (
     <div className={`space-y-4 text-left ${isModal ? '' : 'animate-fadeIn'}`}>
       {/* Informative Header Banner */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/40 border border-cyan-500/40 shadow-lg relative overflow-hidden">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-ui-surface via-ui-surface to-ui-brand/40 border border-ui-brand/40 shadow-lg relative overflow-hidden">
         <div className="flex items-start gap-3 relative z-10">
-          <span className="text-2xl p-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 shrink-0">
+          <span className="text-2xl p-2 rounded-xl bg-ui-brand/20 border border-ui-brand/40 text-ui-brand shrink-0">
             📅
           </span>
           <div>
-            <h3 className="font-['Chakra_Petch'] font-black text-sm sm:text-base text-white uppercase tracking-wider">
+            <h3 className="font-['Chakra_Petch'] font-black text-sm sm:text-base text-ui-text uppercase tracking-wider">
               Adicionar Múltiplos Treinos por Período
             </h3>
-            <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
+            <p className="text-xs text-ui-text mt-0.5 leading-relaxed">
               Define o intervalo de datas, escolhe os dias da semana e personaliza os horários para gerar toda a grelha
               de treinos automaticamente.
             </p>
@@ -183,38 +184,40 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
 
       {/* 1. PERÍODO DE TEMPO & ATALHOS */}
       <div className="ui-card card space-y-3 p-4">
-        <div className="flex items-center justify-between pb-2 border-b border-cyan-500/20">
-          <label className="text-xs font-['Chakra_Petch'] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+        <div className="flex items-center justify-between pb-2 border-b border-ui-brand/20">
+          <label className="text-xs font-['Chakra_Petch'] font-bold text-ui-brand uppercase tracking-wider flex items-center gap-1.5">
             <span>🗓️ 1. Período de Tempo</span>
           </label>
-          <span className="text-[11px] font-mono text-slate-400">Início e Fim do planeamento</span>
+          <span className="text-[11px] font-mono text-ui-muted">Início e Fim do planeamento</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="field">
-            <label className="text-xs font-mono text-slate-300">Data de Início *</label>
-            <input
+            <label className="text-xs font-mono text-ui-text">Data de Início *</label>
+            <DateTimePT
               type="date"
+              label="Data de início"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="ui-input w-full text-xs"
+              onChange={(v) => setStartDate(v)}
+              inputClassName="ui-input w-full text-xs"
             />
           </div>
 
           <div className="field">
-            <label className="text-xs font-mono text-slate-300">Data de Fim *</label>
-            <input
+            <label className="text-xs font-mono text-ui-text">Data de Fim *</label>
+            <DateTimePT
               type="date"
+              label="Data de fim"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="ui-input w-full text-xs"
+              onChange={(v) => setEndDate(v)}
+              inputClassName="ui-input w-full text-xs"
             />
           </div>
         </div>
 
         {/* Quick Presets */}
         <div>
-          <span className="text-[10px] font-mono uppercase text-slate-400 block mb-1.5">
+          <span className="text-[10px] font-mono uppercase text-ui-muted block mb-1.5">
             ⚡ Atalhos Rápidos de Duração:
           </span>
           <div className="flex flex-wrap gap-1.5">
@@ -259,16 +262,16 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
 
       {/* 2. DIAS DE TREINO DA SEMANA */}
       <div className="ui-card card space-y-3 p-4">
-        <div className="flex items-center justify-between pb-2 border-b border-cyan-500/20">
-          <label className="text-xs font-['Chakra_Petch'] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+        <div className="flex items-center justify-between pb-2 border-b border-ui-brand/20">
+          <label className="text-xs font-['Chakra_Petch'] font-bold text-ui-brand uppercase tracking-wider flex items-center gap-1.5">
             <span>📅 2. Dias de Treino da Semana</span>
           </label>
-          <span className="text-[11px] font-mono text-cyan-400 font-bold">
+          <span className="text-[11px] font-mono text-ui-brand font-bold">
             {selectedDays.length} {selectedDays.length === 1 ? 'dia selecionado' : 'dias selecionados'}
           </span>
         </div>
 
-        <p className="text-xs font-mono text-slate-400">
+        <p className="text-xs font-mono text-ui-muted">
           Clica para ativar ou desativar os dias em que a equipa tem treinos:
         </p>
 
@@ -282,8 +285,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
                 onClick={() => handleToggleDay(d.day)}
                 className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${
                   isSelected
-                    ? 'bg-gradient-to-b from-cyan-500 to-blue-600 border-cyan-300 text-slate-950 font-black shadow-[0_0_12px_rgba(0,210,255,0.4)]'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
+                    ? 'bg-gradient-to-b from-ui-brand to-ui-brand border-ui-brand text-ui-brand-ink font-black shadow-[0_0_12px_rgba(0,210,255,0.4)]'
+                    : 'bg-ui-inset border-ui-line text-ui-muted hover:border-ui-line-strong hover:text-ui-text'
                 }`}
               >
                 <span className="text-xs font-['Chakra_Petch'] uppercase tracking-wider">{d.short}</span>
@@ -297,8 +300,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
 
       {/* 3. HORÁRIOS & CUSTOMIZAÇÃO POR DIA */}
       <div className="ui-card card space-y-3.5 p-4">
-        <div className="flex items-center justify-between pb-2 border-b border-cyan-500/20 flex-wrap gap-2">
-          <label className="text-xs font-['Chakra_Petch'] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+        <div className="flex items-center justify-between pb-2 border-b border-ui-brand/20 flex-wrap gap-2">
+          <label className="text-xs font-['Chakra_Petch'] font-bold text-ui-brand uppercase tracking-wider flex items-center gap-1.5">
             <span>⏱️ 3. Horários das Sessões</span>
           </label>
 
@@ -308,7 +311,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               type="button"
               onClick={() => setUseCustomDayTimes(false)}
               className={`px-3 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
-                !useCustomDayTimes ? 'bg-cyan-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                !useCustomDayTimes ? 'bg-ui-brand text-ui-brand-ink shadow-sm' : 'text-ui-muted hover:text-ui-text'
               }`}
             >
               Horário Único
@@ -317,7 +320,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               type="button"
               onClick={() => setUseCustomDayTimes(true)}
               className={`px-3 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
-                useCustomDayTimes ? 'bg-cyan-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                useCustomDayTimes ? 'bg-ui-brand text-ui-brand-ink shadow-sm' : 'text-ui-muted hover:text-ui-text'
               }`}
             >
               Horários por Dia
@@ -329,17 +332,19 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
           /* MODO HORÁRIO ÚNICO */
           <div className="ui-inset p-3 space-y-2.5">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <label className="text-xs font-mono text-slate-300">Hora de Início para todos os dias de treino:</label>
-              <input
+              <label className="text-xs font-mono text-ui-text">Hora de Início para todos os dias de treino:</label>
+              <DateTimePT
                 type="time"
+                label="Hora"
                 value={defaultTime}
-                onChange={(e) => setDefaultTime(e.target.value)}
-                className="ui-input w-32 text-xs text-center"
+                onChange={(v) => setDefaultTime(v)}
+                className="w-32"
+                inputClassName="ui-input w-full text-xs"
               />
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              <span className="text-[10px] font-mono text-slate-500">Horas Frequentes:</span>
+              <span className="text-[10px] font-mono text-ui-muted">Horas Frequentes:</span>
               {QUICK_TIMES.map((qt) => (
                 <button
                   key={qt}
@@ -347,8 +352,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
                   onClick={() => setDefaultTime(qt)}
                   className={`px-2 py-0.5 rounded-lg text-[11px] font-mono border transition-all ${
                     defaultTime === qt
-                      ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-bold'
-                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                      ? 'bg-ui-brand text-ui-brand-ink border-ui-brand font-bold'
+                      : 'bg-ui-surface text-ui-muted border-ui-line hover:text-ui-text'
                   }`}
                 >
                   {qt}
@@ -359,7 +364,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
         ) : (
           /* MODO HORÁRIOS ESPECÍFICOS POR DIA DA SEMANA */
           <div className="space-y-2">
-            <p className="text-xs font-mono text-slate-400">
+            <p className="text-xs font-mono text-ui-muted">
               Define o horário exato para cada um dos dias de treino selecionados:
             </p>
 
@@ -370,14 +375,16 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
                 return (
                   <div key={dow} className="ui-inset p-3 flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-['Chakra_Petch'] font-bold text-cyan-300 uppercase">
+                      <span className="text-xs font-['Chakra_Petch'] font-bold text-ui-brand uppercase">
                         {config?.name}
                       </span>
-                      <input
+                      <DateTimePT
                         type="time"
+                        label="Hora"
                         value={currentTime}
-                        onChange={(e) => handleSetDayTime(dow, e.target.value)}
-                        className="ui-input w-28 text-xs text-center"
+                        onChange={(v) => handleSetDayTime(dow, v)}
+                        className="w-28"
+                        inputClassName="ui-input w-full text-xs"
                       />
                     </div>
 
@@ -389,8 +396,8 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
                           onClick={() => handleSetDayTime(dow, qt)}
                           className={`px-1.5 py-0.5 rounded text-[10px] font-mono border transition-all ${
                             currentTime === qt
-                              ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-bold'
-                              : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                              ? 'bg-ui-brand text-ui-brand-ink border-ui-brand font-bold'
+                              : 'bg-ui-surface text-ui-muted border-ui-line hover:text-ui-text'
                           }`}
                         >
                           {qt}
@@ -407,15 +414,15 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
 
       {/* 4. DETALHES GERAIS DA SESSÃO */}
       <div className="ui-card card space-y-3.5 p-4">
-        <div className="pb-2 border-b border-cyan-500/20">
-          <label className="text-xs font-['Chakra_Petch'] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+        <div className="pb-2 border-b border-ui-brand/20">
+          <label className="text-xs font-['Chakra_Petch'] font-bold text-ui-brand uppercase tracking-wider flex items-center gap-1.5">
             <span>⚙️ 4. Detalhes Padrão das Sessões</span>
           </label>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="field">
-            <label className="text-xs font-mono text-slate-300">Local / Campo</label>
+            <label className="text-xs font-mono text-ui-text">Local / Campo</label>
             <input
               type="text"
               placeholder="Ex: Campo Sintético, Pavilhão..."
@@ -426,7 +433,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
           </div>
 
           <div className="field">
-            <label className="text-xs font-mono text-slate-300">Foco / Tipo Principal</label>
+            <label className="text-xs font-mono text-ui-text">Foco / Tipo Principal</label>
             <select value={type} onChange={(e) => setType(e.target.value)} className="ui-input w-full text-xs">
               <option value="⚡ Tático">⚡ Tático</option>
               <option value="⚽ Técnico / Finalização">⚽ Técnico / Finalização</option>
@@ -439,7 +446,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
           </div>
 
           <div className="field">
-            <label className="text-xs font-mono text-slate-300">Duração (Minutos)</label>
+            <label className="text-xs font-mono text-ui-text">Duração (Minutos)</label>
             <input
               type="number"
               min="30"
@@ -453,7 +460,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
         </div>
 
         <div className="field mb-0">
-          <label className="text-xs font-mono text-slate-300">Observações / Objetivos Padrão (Opcional)</label>
+          <label className="text-xs font-mono text-ui-text">Observações / Objetivos Padrão (Opcional)</label>
           <input
             type="text"
             placeholder="Ex: Treino da época regular · Trazer equipamento de treino completo"
@@ -466,10 +473,10 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
         {/* State Option */}
         <div className="ui-inset p-3 flex items-center justify-between flex-wrap gap-2">
           <div>
-            <span className="text-xs font-['Chakra_Petch'] font-bold text-white uppercase block">
+            <span className="text-xs font-['Chakra_Petch'] font-bold text-ui-text uppercase block">
               Estado Inicial das Sessões
             </span>
-            <span className="text-[11px] font-mono text-slate-400">
+            <span className="text-[11px] font-mono text-ui-muted">
               Recomendado: Agendado / Planeado (passa a concluído após a realização da sessão)
             </span>
           </div>
@@ -479,7 +486,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               type="button"
               onClick={() => setCompleted(false)}
               className={`px-3 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
-                !completed ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400'
+                !completed ? 'bg-ui-warning text-ui-brand-ink shadow-sm' : 'text-ui-muted'
               }`}
             >
               🟡 Agendado
@@ -488,7 +495,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
               type="button"
               onClick={() => setCompleted(true)}
               className={`px-3 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
-                completed ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400'
+                completed ? 'bg-ui-success text-ui-brand-ink shadow-sm' : 'text-ui-muted'
               }`}
             >
               🟢 Concluído
@@ -497,7 +504,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
         </div>
 
         {/* Duplicate Protection Option */}
-        <label className="flex items-center gap-2 text-xs font-mono text-slate-300 cursor-pointer pt-1">
+        <label className="flex items-center gap-2 text-xs font-mono text-ui-text cursor-pointer pt-1">
           <input
             type="checkbox"
             checked={avoidDuplicates}
@@ -509,39 +516,39 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
       </div>
 
       {/* 5. PRÉ-VISUALIZAÇÃO & RESUMO DO CÁLCULO */}
-      <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/60 border-2 border-cyan-500/40 shadow-xl space-y-3">
+      <div className="p-4 rounded-2xl bg-gradient-to-br from-ui-surface via-ui-surface to-ui-brand/60 border-2 border-ui-brand/40 shadow-xl space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 flex items-center justify-center font-bold text-sm">
+            <span className="w-8 h-8 rounded-xl bg-ui-brand/20 border border-ui-brand/40 text-ui-brand flex items-center justify-center font-bold text-sm">
               📊
             </span>
             <div>
-              <h4 className="font-['Chakra_Petch'] font-black text-sm text-white uppercase tracking-wider">
+              <h4 className="font-['Chakra_Petch'] font-black text-sm text-ui-text uppercase tracking-wider">
                 Resumo dos Treinos a Adicionar
               </h4>
-              <p className="text-[11px] font-mono text-cyan-300/80">
+              <p className="text-[11px] font-mono text-ui-brand/80">
                 {startDate} até {endDate}
               </p>
             </div>
           </div>
 
           <div className="text-right">
-            <span className="text-2xl font-black font-mono text-cyan-300">{finalTrainingsToCreate.length}</span>
-            <span className="text-xs font-['Chakra_Petch'] uppercase text-slate-400 block">treinos calculados</span>
+            <span className="text-2xl font-black font-mono text-ui-brand">{finalTrainingsToCreate.length}</span>
+            <span className="text-xs font-['Chakra_Petch'] uppercase text-ui-muted block">treinos calculados</span>
           </div>
         </div>
 
         {/* Breakdown chips */}
         <div className="flex flex-wrap gap-1.5 pt-1">
           {Object.entries(weekdayBreakdown).map(([dow, info]) => (
-            <div key={dow} className="ui-inset px-2.5 py-1 text-xs font-mono text-slate-200 flex items-center gap-1.5">
-              <span className="text-cyan-400 font-bold">{info.count}x</span>
+            <div key={dow} className="ui-inset px-2.5 py-1 text-xs font-mono text-ui-text flex items-center gap-1.5">
+              <span className="text-ui-brand font-bold">{info.count}x</span>
               <span>{info.name}s</span>
-              <span className="text-slate-400 font-normal">({info.time}h)</span>
+              <span className="text-ui-muted font-normal">({info.time}h)</span>
             </div>
           ))}
           {duplicateCount > 0 && avoidDuplicates && (
-            <div className="px-2.5 py-1 rounded-lg bg-amber-950/60 border border-amber-500/30 text-xs font-mono text-amber-300">
+            <div className="px-2.5 py-1 rounded-lg bg-ui-warning-soft border border-ui-warning/30 text-xs font-mono text-ui-warning">
               ⚠️ {duplicateCount} já existentes (omitidos)
             </div>
           )}
@@ -552,7 +559,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
           <button
             type="button"
             onClick={() => setShowPreviewList(!showPreviewList)}
-            className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold underline flex items-center gap-1"
+            className="text-xs font-mono text-ui-brand hover:text-ui-brand font-bold underline flex items-center gap-1"
           >
             <span>
               {showPreviewList
@@ -562,20 +569,20 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
           </button>
 
           {showPreviewList && (
-            <div className="ui-inset mt-2.5 max-h-48 overflow-y-auto p-2 space-y-1 divide-y divide-slate-900">
+            <div className="ui-inset mt-2.5 max-h-48 overflow-y-auto p-2 space-y-1 divide-y divide-ui-line">
               {finalTrainingsToCreate.map((item, idx) => (
                 <div
                   key={idx}
-                  className="pt-1 first:pt-0 flex items-center justify-between text-[11px] font-mono text-slate-300"
+                  className="pt-1 first:pt-0 flex items-center justify-between text-[11px] font-mono text-ui-text"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-cyan-400 font-bold">#{idx + 1}</span>
+                    <span className="text-ui-brand font-bold">#{idx + 1}</span>
                     <span>{item.dayName}</span>
-                    <span className="text-white font-bold">{item.formattedDate}</span>
+                    <span className="text-ui-text font-bold">{item.formattedDate}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-cyan-300">{item.time}h</span>
-                    <span className="text-slate-500">· {location}</span>
+                    <span className="text-ui-brand">{item.time}h</span>
+                    <span className="text-ui-muted">· {location}</span>
                   </div>
                 </div>
               ))}
@@ -596,7 +603,7 @@ export const BatchTrainingSection: React.FC<BatchTrainingSectionProps> = ({
           type="button"
           disabled={finalTrainingsToCreate.length === 0}
           onClick={handleGenerate}
-          className="flex-1 sm:flex-none px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs sm:text-sm uppercase tracking-wider active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex-1 sm:flex-none px-6 py-3.5 rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-brand-ink font-['Chakra_Petch'] font-black text-xs sm:text-sm uppercase tracking-wider active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <span>🚀</span>
           <span>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { MatchType } from '../../../types';
 import { MatchFormData } from './types';
 import { uid } from './constants';
@@ -149,23 +150,25 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <input
+                      <DateTimePT
                         type="date"
+                        label="Data"
                         value={g.date}
-                        onChange={(e) => {
-                          const newG = matchForm.games.map((x) => (x.id === g.id ? { ...x, date: e.target.value } : x));
+                        onChange={(v) => {
+                          const newG = matchForm.games.map((x) => (x.id === g.id ? { ...x, date: v } : x));
                           setMatchForm({ ...matchForm, games: newG });
                         }}
-                        className="ui-input text-xs"
+                        inputClassName="ui-input text-xs"
                       />
-                      <input
+                      <DateTimePT
                         type="time"
+                        label="Hora"
                         value={g.time}
-                        onChange={(e) => {
-                          const newG = matchForm.games.map((x) => (x.id === g.id ? { ...x, time: e.target.value } : x));
+                        onChange={(v) => {
+                          const newG = matchForm.games.map((x) => (x.id === g.id ? { ...x, time: v } : x));
                           setMatchForm({ ...matchForm, games: newG });
                         }}
-                        className="ui-input text-xs"
+                        inputClassName="ui-input text-xs"
                       />
                     </div>
                   </div>
@@ -211,20 +214,22 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs font-mono text-ui-text block mb-1">Data *</label>
-                  <input
+                  <DateTimePT
                     type="date"
+                    label="Data do jogo"
                     value={matchForm.date}
-                    onChange={(e) => setMatchForm({ ...matchForm, date: e.target.value })}
-                    className="ui-input w-full text-xs"
+                    onChange={(v) => setMatchForm({ ...matchForm, date: v })}
+                    inputClassName="ui-input w-full text-xs"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-mono text-ui-text block mb-1">Hora *</label>
-                  <input
+                  <DateTimePT
                     type="time"
+                    label="Hora do jogo"
                     value={matchForm.time}
-                    onChange={(e) => setMatchForm({ ...matchForm, time: e.target.value })}
-                    className="ui-input w-full text-xs"
+                    onChange={(v) => setMatchForm({ ...matchForm, time: v })}
+                    inputClassName="ui-input w-full text-xs"
                   />
                 </div>
               </div>
@@ -312,11 +317,12 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                 </div>
                 <div>
                   <label className="text-xs font-mono text-ui-text block mb-1">Hora de Concentração</label>
-                  <input
+                  <DateTimePT
                     type="time"
+                    label="Hora de concentração"
                     value={matchForm.meetingTime}
-                    onChange={(e) => setMatchForm({ ...matchForm, meetingTime: e.target.value })}
-                    className="ui-input w-full text-xs"
+                    onChange={(v) => setMatchForm({ ...matchForm, meetingTime: v })}
+                    inputClassName="ui-input w-full text-xs"
                   />
                 </div>
               </div>

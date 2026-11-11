@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { AbsenceReason, Player, Training } from '../../../types';
 import { withAttendance } from '../../../lib/trainingQuick';
 import { AttendanceGrid } from './AttendanceGrid';
@@ -56,11 +57,13 @@ export const TodayTrainingModal: React.FC<TodayTrainingModalProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <label className="text-[11px] text-ui-muted uppercase font-bold">
               Hora
-              <input
+              <DateTimePT
                 type="time"
+                label="Hora"
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="ui-input mt-1 w-full text-sm normal-case font-normal"
+                onChange={(v) => setTime(v)}
+                className="mt-1 normal-case font-normal"
+                inputClassName="ui-input w-full text-sm"
               />
             </label>
             <label className="text-[11px] text-ui-muted uppercase font-bold">

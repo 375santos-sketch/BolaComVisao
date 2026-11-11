@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { TrainingFormData } from './types';
 import { Training } from '../../../types';
 import { BatchTrainingSection } from '../trainings/BatchTrainingSection';
@@ -119,20 +120,22 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs font-mono text-ui-text block mb-1">Data *</label>
-                  <input
+                  <DateTimePT
                     type="date"
+                    label="Data do treino"
                     value={trainingForm.date}
-                    onChange={(e) => setTrainingForm({ ...trainingForm, date: e.target.value })}
-                    className="ui-input w-full text-xs"
+                    onChange={(v) => setTrainingForm({ ...trainingForm, date: v })}
+                    inputClassName="ui-input w-full text-xs"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-mono text-ui-text block mb-1">Hora *</label>
-                  <input
+                  <DateTimePT
                     type="time"
+                    label="Hora do treino"
                     value={trainingForm.time}
-                    onChange={(e) => setTrainingForm({ ...trainingForm, time: e.target.value })}
-                    className="ui-input w-full text-xs"
+                    onChange={(v) => setTrainingForm({ ...trainingForm, time: v })}
+                    inputClassName="ui-input w-full text-xs"
                   />
                 </div>
               </div>
