@@ -11,5 +11,6 @@
     "src/**/*.test.{ts,tsx}"
   ],
   "project": ["src/**/*.{ts,tsx}", "server.ts", "e2e/**/*.ts"],
-  "ignoreDependencies": ["tailwindcss"]
+  "ignoreDependencies": ["tailwindcss"],
+  "ignore": ["src/components/ui/Sheet.tsx", "src/components/ui/Field.tsx"]
 }

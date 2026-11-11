@@ -7,8 +7,6 @@ import { UnifiedEvent } from '../dashboard/DashboardNextEvent';
 import { TodayFocusCard } from '../dashboard/TodayFocusCard';
 import { LiveFollowModal, LiveMatchCard } from '../live/LiveFollow';
 import { Icon, IconName } from '../ui/Icon';
-import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
 import {
   attendanceReminder,
   homeNotices,
@@ -17,7 +15,9 @@ import {
   recentForm,
   minutesBehind
 } from '../../lib/homeSummary';
-import { HomeOverview } from '../dashboard/HomeOverview';
+import { FormCard, MinutesCard, SeasonTiles, WeeklyFocusCard } from '../dashboard/HomeOverview';
+import { SectionHeader } from '../ui/SectionHeader';
+import { EmptyState } from '../ui/EmptyState';
 import { AssistantCard } from '../assistant/AssistantCard';
 import { BirthdayImageModal } from '../birthday/BirthdayImageModal';
 import { BirthdayPerson, getAllBirthdays } from '../../lib/birthdayUtils';
@@ -206,10 +206,27 @@ export const HomeView: React.FC<HomeViewProps> = ({
     { icon: 'ball', label: 'Modo Jogo', tab: 'jogo' },
     { icon: 'users', label: 'Plantel', tab: 'plantel' }
   ];
+  const form = recentForm(state);
+  const kindLabel = (evt: UnifiedEvent) =>
+    evt.kind === 'jogo'
+      ? 'Jogo'
+      : evt.kind === 'treino'
+        ? 'Treino'
+        : evt.clubEventType === 'formacao'
+          ? 'Formação'
+          : evt.clubEventType === 'reuniao'
+            ? 'Reunião'
+            : evt.clubEventType === 'estagio'
+              ? 'Estágio'
+              : 'Evento';
 
+  /*
+   * Dashboard: one column on the phone, in order of what the coach needs first (today, the season, what to do, the
+   * last games, minutes, shortcuts, the week); on a computer a 12-column grid: today | the week, the season |
+   * minutes, what to do | shortcuts, then the last games. `order` sets the phone order and `lg:order` the computer one.
+   */
   return (
-    <div className="flex flex-col gap-4 max-w-7xl mx-auto pb-6">
-      {/* 1. Header with Club Branding & Quick Management Controls */}
+    <div className="mx-auto flex max-w-7xl flex-col gap-4 pb-6 sm:gap-5">
       <DashboardHeader
         state={state}
         onOpenSettings={onOpenSettings}
@@ -226,45 +243,176 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <LiveMatchCard state={state} onOpen={() => setFollowLive(true)} />
       {followLive && <LiveFollowModal state={state} onClose={() => setFollowLive(false)} />}
 
-      {/* 2. HOJE: Today Focus Card (Jogo, Treino, Reunião) */}
-      <TodayFocusCard
-        unifiedEvents={unifiedEvents}
-        scheduledMatches={scheduledMatches}
-        activeMatch={activeMatch}
-        onNavigate={onNavigate}
-      />
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-flow-dense lg:grid-cols-12">
+        {/* Today: the game, the training or the meeting, with the one or two things to do now */}
+        <div className="order-1 lg:order-1 lg:col-span-8">
+          <TodayFocusCard
+            unifiedEvents={unifiedEvents}
+            scheduledMatches={scheduledMatches}
+            activeMatch={activeMatch}
+            onNavigate={onNavigate}
+          />
+        </div>
 
-      {/* 📊 The season in four figures and the focus of the week (from the team's trends) */}
-      <HomeOverview
-        season={state.season}
-        summary={summary}
-        matches={seasonMatches(state)}
-        form={recentForm(state)}
-        minutes={minutesBehind(state)}
-        onOpenStats={() => onNavigate('stats')}
-        onOpenAnalysis={() => onNavigate('analise_jogos')}
-      />
-
-      {/* 🎂 Birthdays today, with the picture to share */}
-      {birthdaysToday.length > 0 && (
-        <section aria-label="Aniversários de hoje" className="ui-card p-3.5 border-fuchsia-500/40 space-y-2">
-          <div className="text-xs font-bold text-fuchsia-300 uppercase tracking-wide">🎂 Hoje faz anos</div>
-          {birthdaysToday.map((b) => (
-            <div key={b.id} className="flex items-center gap-2">
-              <div className="flex-1 min-w-0 text-sm text-white font-bold truncate">
-                {b.name} <span className="text-fuchsia-200 font-normal">· {b.nextAge} anos</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setBirthdayImage(b)}
-                className="ui-btn ui-btn-secondary shrink-0 px-3 py-1.5 text-xs"
-              >
-                🖼️ Imagem de parabéns
-              </button>
-            </div>
-          ))}
+        {/* The next 7 days: beside today on a computer, at the end on the phone */}
+        <section aria-label="Próximos 7 dias" className="order-8 space-y-2 lg:order-2 lg:col-span-4">
+          <SectionHeader
+            title="Próximos 7 dias"
+            action={{ label: 'Ver a agenda', onClick: () => onNavigate('calendario') }}
+          />
+          {nextDays.length > 0 ? (
+            <ul className="ui-card divide-y divide-ui-line overflow-hidden">
+              {nextDays.map((evt) => (
+                <li key={evt.id}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onNavigate(
+                        evt.kind === 'jogo' ? 'convocatoria' : evt.kind === 'treino' ? 'treinos' : 'calendario',
+                        evt.kind === 'jogo' ? evt.id : undefined
+                      )
+                    }
+                    className="flex w-full items-center gap-3 px-3.5 py-3 text-left transition-colors hover:bg-ui-surface-2"
+                  >
+                    <span className="ui-inset flex h-11 w-11 shrink-0 flex-col items-center justify-center">
+                      <span className="text-[10px] font-bold uppercase text-ui-brand">
+                        {new Date(evt.date).toLocaleDateString('pt-PT', { month: 'short' }).replace('.', '')}
+                      </span>
+                      <span className="ui-figure text-ui-body">{new Date(evt.date).getDate()}</span>
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center gap-1.5">
+                        <span
+                          className={`ui-badge ${evt.kind === 'jogo' ? 'ui-badge-brand' : evt.kind === 'treino' ? 'ui-badge-success' : ''}`}
+                        >
+                          {kindLabel(evt)}
+                        </span>
+                        <span className="truncate text-ui-body font-bold text-ui-text">{evt.title}</span>
+                      </span>
+                      <span className="mt-0.5 block truncate text-ui-caption text-ui-muted">
+                        {evt.time}h{evt.venue ? ` · ${evt.venue}` : ''}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-ui-muted" aria-hidden>
+                      ›
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState compact icon="calendar" title="Nada marcado para os próximos 7 dias." />
+          )}
         </section>
-      )}
+
+        {/* The season in four figures */}
+        <div className="order-2 lg:order-3 lg:col-span-8">
+          <SeasonTiles season={state.season} summary={summary} onOpenStats={() => onNavigate('stats')} />
+        </div>
+
+        {/* What needs attention (only when there is something) */}
+        {notices.length > 0 && (
+          <section aria-label="Avisos" className="order-3 space-y-2 lg:order-5 lg:col-span-8">
+            <SectionHeader title="Para fazer" />
+            <ul className="ui-card divide-y divide-ui-line overflow-hidden">
+              {notices.map((n) => {
+                // "Convocatória por fechar: vs Abrantes (sábado 01/11)" → short title, the detail below
+                const cut = n.text.indexOf(': ');
+                const title = cut > 0 ? n.text.slice(0, cut) : n.text;
+                const detail = cut > 0 ? n.text.slice(cut + 2) : '';
+                return (
+                  <li key={n.id}>
+                    <button
+                      type="button"
+                      onClick={() => onNavigate(n.tab, n.targetId)}
+                      className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-ui-surface-2"
+                    >
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-ui-warning" aria-hidden="true" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-ui-body font-bold text-ui-text">{title}</span>
+                        {detail && (
+                          <span className="block text-ui-caption text-ui-muted">
+                            <span className="sr-only">: </span>
+                            {detail}
+                          </span>
+                        )}
+                      </span>
+                      <span className="shrink-0 text-ui-muted" aria-hidden>
+                        ›
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
+        {/* The last games and the minutes, side by side on a computer */}
+        {form.length >= 2 && (
+          <div className="order-4 lg:order-7 lg:col-span-12">
+            <FormCard form={form} onOpenStats={() => onNavigate('stats')} />
+          </div>
+        )}
+        {form.length >= 2 && (
+          <div className="order-5 lg:order-4 lg:col-span-4">
+            <MinutesCard minutes={minutesBehind(state)} onOpenStats={() => onNavigate('stats')} />
+          </div>
+        )}
+
+        <div className="order-6 empty:hidden lg:order-8 lg:col-span-12">
+          <WeeklyFocusCard matches={seasonMatches(state)} onOpenAnalysis={() => onNavigate('analise_jogos')} />
+        </div>
+
+        {/* Shortcuts */}
+        <nav aria-label="Atalhos" className="order-7 space-y-2 lg:order-6 lg:col-span-4">
+          <SectionHeader title="Atalhos" className="hidden lg:flex" />
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+            {shortcuts.map((sc) => (
+              <button
+                key={sc.label}
+                type="button"
+                onClick={() => onNavigate(sc.tab, sc.targetId)}
+                className="ui-card flex items-center gap-3 px-3.5 py-3 text-left text-ui-body font-bold text-ui-text transition-colors hover:border-ui-line-strong"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-ui-sm bg-ui-brand-soft text-ui-brand">
+                  <Icon name={sc.icon} className="h-4 w-4" />
+                </span>
+                <span>{sc.label}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
+
+        {/* 🎂 Birthdays today, with the picture to share */}
+        {birthdaysToday.length > 0 && (
+          <section
+            aria-label="Aniversários de hoje"
+            className="ui-card order-9 space-y-2 p-4 lg:order-9 lg:col-span-12"
+          >
+            <div className="ui-kicker">🎂 Hoje faz anos</div>
+            {birthdaysToday.map((b) => (
+              <div key={b.id} className="flex items-center gap-2">
+                <div className="min-w-0 flex-1 truncate text-ui-body font-bold text-ui-text">
+                  {b.name} <span className="font-normal text-ui-muted">· {b.nextAge} anos</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBirthdayImage(b)}
+                  className="ui-btn ui-btn-secondary shrink-0 px-3 py-1.5 text-xs"
+                >
+                  🖼️ Imagem de parabéns
+                </button>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* Questions about the team, answered from the app's data */}
+        <div className="order-10 lg:order-10 lg:col-span-12">
+          <AssistantCard state={state} />
+        </div>
+      </div>
       {birthdayImage && (
         <BirthdayImageModal
           person={birthdayImage}
@@ -273,132 +421,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
           onClose={() => setBirthdayImage(null)}
         />
       )}
-
-      {/* 2. Shortcuts */}
-      <nav aria-label="Atalhos" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {shortcuts.map((sc) => (
-          <button
-            key={sc.label}
-            type="button"
-            onClick={() => onNavigate(sc.tab, sc.targetId)}
-            className="ui-card px-3 py-3 text-sm font-bold text-ui-text flex items-center gap-2.5 text-left hover:border-ui-line-strong"
-          >
-            <Icon name={sc.icon} className="w-5 h-5 text-ui-brand shrink-0" />
-            <span>{sc.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      {/* 3. What needs attention (only when there is something) */}
-      {notices.length > 0 && (
-        <section aria-label="Avisos">
-          <h2 className="ui-kicker mb-2 px-1">Para fazer</h2>
-          <div className="ui-card divide-y divide-slate-800 overflow-hidden">
-            {notices.map((n) => {
-              // "Convocatória por fechar: vs Abrantes (sábado 01/11)" → short title, the detail below
-              const cut = n.text.indexOf(': ');
-              const title = cut > 0 ? n.text.slice(0, cut) : n.text;
-              const detail = cut > 0 ? n.text.slice(cut + 2) : '';
-              return (
-                <button
-                  key={n.id}
-                  type="button"
-                  onClick={() => onNavigate(n.tab, n.targetId)}
-                  className="w-full text-left px-3.5 py-3 flex items-start gap-3 hover:bg-slate-800/40"
-                >
-                  <span className="mt-1.5 w-2 h-2 shrink-0 rounded-full bg-amber-400" aria-hidden="true" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold text-slate-100">{title}</span>
-                    {detail && (
-                      <span className="block text-xs text-slate-400 leading-snug">
-                        <span className="sr-only">: </span>
-                        {detail}
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-slate-500 text-sm shrink-0">›</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Questions about the team, answered from the app's data */}
-      <AssistantCard state={state} />
-
-      {/* 5. Next 7 days */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
-        {/* Next 4 Scheduled Events Agenda */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="ui-kicker px-1">Próximos 7 dias</h2>
-            <button
-              onClick={() => onNavigate('calendario')}
-              className="text-xs text-cyan-400 hover:text-cyan-300 font-bold"
-            >
-              Ver a agenda ›
-            </button>
-          </div>
-
-          <Card padding="none" className="p-1.5 sm:p-2 divide-y divide-ui-line">
-            {nextDays.length > 0 ? (
-              nextDays.map((evt) => (
-                <div
-                  key={evt.id}
-                  onClick={() =>
-                    onNavigate(
-                      evt.kind === 'jogo' ? 'convocatoria' : evt.kind === 'treino' ? 'treinos' : 'calendario',
-                      evt.kind === 'jogo' ? evt.id : undefined
-                    )
-                  }
-                  className="py-3 px-2 hover:bg-slate-800/50 rounded-xl transition-colors cursor-pointer flex items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="ui-inset w-12 h-12 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
-                        {new Date(evt.date).toLocaleDateString('pt-PT', { month: 'short' })}
-                      </span>
-                      <span className="text-sm font-bold text-white font-mono">{new Date(evt.date).getDate()}</span>
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <Badge
-                          variant={evt.kind === 'jogo' ? 'cyan' : evt.kind === 'treino' ? 'emerald' : 'purple'}
-                          size="xs"
-                        >
-                          {evt.kind === 'jogo'
-                            ? 'Jogo'
-                            : evt.kind === 'treino'
-                              ? 'Treino'
-                              : evt.clubEventType === 'formacao'
-                                ? 'Formação'
-                                : evt.clubEventType === 'reuniao'
-                                  ? 'Reunião'
-                                  : evt.clubEventType === 'estagio'
-                                    ? 'Estágio'
-                                    : 'Evento'}
-                        </Badge>
-                        <span className="text-xs sm:text-sm font-bold text-white truncate">{evt.title}</span>
-                      </div>
-                      <div className="text-[11px] font-mono text-slate-400 mt-0.5 truncate">
-                        {evt.time}h {evt.venue ? `• ${evt.venue}` : ''}
-                      </div>
-                    </div>
-                  </div>
-
-                  <span className="text-slate-500 font-mono text-xs shrink-0">➔</span>
-                </div>
-              ))
-            ) : (
-              <div className="py-6 text-center text-xs font-mono text-slate-500">
-                Nada marcado para os próximos 7 dias.
-              </div>
-            )}
-          </Card>
-        </div>
-      </div>
     </div>
   );
 };

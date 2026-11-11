@@ -1054,6 +1054,7 @@ export default function App() {
           lang={state.lang}
           onNavigate={(tab) => setCurrentTab(tab)}
           onOpenMore={() => setShowMoreDrawer(true)}
+          onOpenSettings={() => setShowSettings(true)}
           hasActiveMatch={hasActiveMatch}
           pendingCount={pendingUsersCount}
         />

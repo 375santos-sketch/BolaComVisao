@@ -1,7 +1,7 @@
 import React from 'react';
 
 /** One game on the chart: when, and the goals each side scored. */
-export interface GoalLineGame {
+interface GoalLineGame {
   id: string;
   date: string;
   scored: number;

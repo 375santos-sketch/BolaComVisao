@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 
 /**
  * 🧭 Visita guiada: on the first visit of each account (e.g. a new assistant coach), six steps over the home screen
- * showing where each thing is. Can be seen again in Mais → Visita guiada.
+ * showing where each thing is. Can be seen again in Clube → Visita guiada.
  */
 
 const navButton = (label: string) => () =>
@@ -28,9 +28,9 @@ const STEPS: { title: string; text: string; target?: () => HTMLElement | null }[
     target: shortcut(/Convocatória/)
   },
   {
-    title: 'Agenda',
-    text: 'Jogos, treinos e resultados. É aqui que planeias os treinos e vês a biblioteca de exercícios.',
-    target: navButton('Agenda')
+    title: 'Planeamento',
+    text: 'Agenda, treinos e resultados. É aqui que planeias os treinos e vês a biblioteca de exercícios.',
+    target: navButton('Planeamento')
   },
   {
     title: 'Jogo',
@@ -38,9 +38,9 @@ const STEPS: { title: string; text: string; target?: () => HTMLElement | null }[
     target: navButton('Jogo')
   },
   {
-    title: 'Mais',
+    title: 'Clube',
     text: 'Definições do clube, cópias de segurança, a tua carreira e assinatura, e esta visita outra vez.',
-    target: navButton('Mais')
+    target: navButton('Clube')
   }
 ];
 
