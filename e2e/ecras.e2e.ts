@@ -1443,6 +1443,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await page.locator('select').first().selectOption('p10');
   await page.getByRole('button', { name: 'Confirmar Golo' }).click();
   // ↩︎ Any action can be undone with one tap (here a corner tapped by mistake)
+  await page.getByRole('button', { name: 'Números', exact: true }).click();
   await page.getByTitle('Adicionar Canto').first().click();
   await page.getByRole('button', { name: '↩︎ Desfazer: Canto a favor' }).click();
   await expect(page.getByText('Desfeito: Canto a favor')).toBeVisible();
@@ -1451,6 +1452,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
 
   // Playing minutes: 25 + 10, Duarte left at 16', Henrique came on at 16'.
   // Ao vivo → Em campo: the minutes of each athlete are always listed
+  await page.getByRole('button', { name: 'Em campo', exact: true }).click();
   const minutes = (name: string) => page.locator('li').filter({ hasText: name }).locator('span').last().innerText();
   expect(await minutes('1 - Duarte Matos')).toBe("16'");
   expect(await minutes('8 - Henrique Alves')).toBe("19'");
@@ -1466,7 +1468,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await expect(page.getByRole('group', { name: 'Local do jogo' })).toBeVisible();
   await page.getByRole('button', { name: /Concluir e ver resumo/i }).click();
   await expect(page.getByText('RESUMO INTELIGENTE PÓS-JOGO')).toBeVisible();
-  await expect(page.getByText('Jornada 5')).toBeVisible();
+  await expect(page.getByText('Jornada 5').first()).toBeVisible();
   await expect(page.getByText('Golo (7 - Tomás Gonçalves)')).toBeVisible();
   await expect(page.getByText('Sai: 1 - Duarte Matos ➔ Entra: 8 - Henrique Alves')).toBeVisible();
   await expect(page.getByText('Cartão Amarelo (2 - Martim Costa)')).toBeVisible();

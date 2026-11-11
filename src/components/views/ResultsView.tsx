@@ -132,6 +132,27 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
+      {mvpMatch && (
+        <MvpModal
+          match={mvpMatch}
+          state={state}
+          onSave={(updated) => {
+            onUpdateState({ matches: state.matches.map((x) => (x.id === updated.id ? updated : x)) });
+            setMvpMatch(updated);
+          }}
+          onShowToast={(msg) => onShowToast?.(msg)}
+          onClose={() => setMvpMatch(null)}
+        />
+      )}
+      {showLeague && (
+        <LeagueTableModal
+          state={state}
+          onUpdateState={onUpdateState}
+          onShowToast={(msg) => onShowToast?.(msg)}
+          onClose={() => setShowLeague(false)}
+        />
+      )}
+
       {!pageMatch && (
         <>
           <div className="mb-3 grid grid-cols-3 gap-2">
@@ -158,27 +179,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               Análise dos jogos
             </button>
           </div>
-          {mvpMatch && (
-            <MvpModal
-              match={mvpMatch}
-              state={state}
-              onSave={(updated) => {
-                onUpdateState({ matches: state.matches.map((x) => (x.id === updated.id ? updated : x)) });
-                setMvpMatch(updated);
-              }}
-              onShowToast={(msg) => onShowToast?.(msg)}
-              onClose={() => setMvpMatch(null)}
-            />
-          )}
-          {showLeague && (
-            <LeagueTableModal
-              state={state}
-              onUpdateState={onUpdateState}
-              onShowToast={(msg) => onShowToast?.(msg)}
-              onClose={() => setShowLeague(false)}
-            />
-          )}
-
           <div className="field">
             <input
               type="text"

@@ -112,7 +112,7 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
                   </p>
                 )}
               </div>
-              {game.preMatchFinalized && <span className="ui-badge ui-badge-success shrink-0">Plano pronto</span>}
+              {game.preMatchFinalized && <span className="ui-badge ui-badge-success shrink-0">✓ Plano pronto</span>}
             </div>
             <button
               type="button"
