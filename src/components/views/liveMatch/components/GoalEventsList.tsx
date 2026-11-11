@@ -21,7 +21,7 @@ export const GoalEventsList: React.FC<GoalEventsListProps> = ({ goals, roster, o
 
   if (scoredGoals.length === 0) {
     return (
-      <div className="ui-card p-4 text-center text-sm text-slate-500">Nenhum golo marcado registado neste jogo.</div>
+      <div className="ui-card p-4 text-center text-sm text-ui-muted">Nenhum golo marcado registado neste jogo.</div>
     );
   }
 
@@ -35,26 +35,26 @@ export const GoalEventsList: React.FC<GoalEventsListProps> = ({ goals, roster, o
         return (
           <div key={g.id} className="ui-card flex items-center justify-between p-3 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center text-sm">
+              <div className="w-8 h-8 rounded-lg bg-ui-success/10 text-ui-success font-bold flex items-center justify-center text-sm">
                 ⚽
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-white text-sm">{scorerName}</span>
+                  <span className="font-bold text-ui-text text-sm">{scorerName}</span>
                   {g.minute && (
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono font-medium">
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-ui-surface-2 text-ui-text font-mono font-medium">
                       {String(g.minute).endsWith("'") ? g.minute : `${g.minute}'`}
                     </span>
                   )}
-                  {g.period && <span className="text-[11px] text-slate-400 font-medium">({g.period})</span>}
+                  {g.period && <span className="text-[11px] text-ui-muted font-medium">({g.period})</span>}
                 </div>
-                <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800/50 text-[10px]">
+                <div className="text-xs text-ui-muted flex items-center gap-2 mt-0.5">
+                  <span className="px-1.5 py-0.5 rounded bg-ui-success-soft text-ui-success border border-ui-success/50 text-[10px]">
                     {g.goalType || 'Bola jogada'}
                   </span>
                   {assistName && assistName !== 'Sem assistência' && (
                     <span>
-                      👟 Assistência: <strong className="text-slate-300">{assistName}</strong>
+                      👟 Assistência: <strong className="text-ui-text">{assistName}</strong>
                     </span>
                   )}
                 </div>
@@ -64,14 +64,14 @@ export const GoalEventsList: React.FC<GoalEventsListProps> = ({ goals, roster, o
             <div className="flex items-center gap-1">
               <button
                 onClick={() => onEditGoal(g)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-xs"
+                className="p-1.5 rounded-lg text-ui-muted hover:text-ui-text hover:bg-ui-surface-2 transition-colors text-xs"
                 title="Editar"
               >
                 ✏️
               </button>
               <button
                 onClick={() => onDeleteGoal(g.id)}
-                className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-950/50 transition-colors text-xs"
+                className="p-1.5 rounded-lg text-ui-danger hover:text-ui-danger hover:bg-ui-danger-soft transition-colors text-xs"
                 title="Remover"
               >
                 🗑️

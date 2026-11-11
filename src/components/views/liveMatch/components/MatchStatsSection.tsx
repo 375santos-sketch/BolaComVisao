@@ -76,20 +76,20 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
 
   return (
     <div className="ui-card p-5 sm:p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-ui-line pb-4">
         <div>
-          <h3 className="text-base font-bold text-white flex items-center gap-2 font-['Chakra_Petch'] uppercase tracking-wider">
+          <h3 className="text-base font-bold text-ui-text flex items-center gap-2 font-['Chakra_Petch'] uppercase tracking-wider">
             <span>📊</span>
             <span>Estatísticas de Jogo em Direto</span>
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-ui-muted mt-0.5">
             Registe remates dentro e fora da área, cantos e faltas da partida.
           </p>
         </div>
         <div className="flex items-center gap-3 self-start sm:self-center">
-          <div className="ui-inset text-xs px-3 py-1.5 font-mono text-slate-300">
-            Total Remates: <span className="font-bold text-cyan-400">{totalRematesFavor}</span> (Nós) vs{' '}
-            <span className="font-bold text-rose-400">{totalRematesContra}</span> (Adv)
+          <div className="ui-inset text-xs px-3 py-1.5 font-mono text-ui-text">
+            Total Remates: <span className="font-bold text-ui-brand">{totalRematesFavor}</span> (Nós) vs{' '}
+            <span className="font-bold text-ui-danger">{totalRematesContra}</span> (Adv)
           </div>
         </div>
       </div>
@@ -97,22 +97,22 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
       {/* 1. SEÇÃO DE REMATES (DENTRO E FORA DA ÁREA) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center gap-1.5 font-['Chakra_Petch']">
+          <h4 className="text-xs font-black text-ui-brand uppercase tracking-wider flex items-center gap-1.5 font-['Chakra_Petch']">
             <span>🎯</span>
             <span>Remates à Baliza (Dentro vs Fora da Área)</span>
           </h4>
-          <span className="text-[11px] text-slate-500 font-mono">Exportado no PDF e Excel</span>
+          <span className="text-[11px] text-ui-muted font-mono">Exportado no PDF e Excel</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Card: Remates a Favor (Nossa Equipa) */}
           <div className="ui-inset p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <div className="flex items-center justify-between border-b border-ui-line/80 pb-2">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-                <span className="text-xs font-bold text-cyan-300 uppercase tracking-wide">Remates a Favor (Nós)</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-ui-brand animate-pulse" />
+                <span className="text-xs font-bold text-ui-brand uppercase tracking-wide">Remates a Favor (Nós)</span>
               </div>
-              <span className="text-xs font-mono font-black text-white px-2.5 py-0.5 rounded-lg bg-cyan-950/80 border border-cyan-500/40">
+              <span className="text-xs font-mono font-black text-ui-text px-2.5 py-0.5 rounded-lg bg-ui-brand-soft border border-ui-brand/40">
                 Total: {totalRematesFavor}
               </span>
             </div>
@@ -121,8 +121,8 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
               {/* Remates a Favor - Dentro da Área */}
               <div className="ui-card flex items-center justify-between px-3 py-2.5">
                 <div>
-                  <span className="text-xs font-bold text-emerald-400 block">Dentro da Área</span>
-                  <span className="text-[10px] text-slate-400 font-mono">
+                  <span className="text-xs font-bold text-ui-success block">Dentro da Área</span>
+                  <span className="text-[10px] text-ui-muted font-mono">
                     Remates a favor no interior da grande área
                   </span>
                 </div>
@@ -134,7 +134,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
                   >
                     -
                   </button>
-                  <span className="w-8 text-center font-black text-white text-base font-mono tabular-nums">
+                  <span className="w-8 text-center font-black text-ui-text text-base font-mono tabular-nums">
                     {rematesDentroArea}
                   </span>
                   <button
@@ -150,8 +150,8 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
               {/* Remates a Favor - Fora da Área */}
               <div className="ui-card flex items-center justify-between px-3 py-2.5">
                 <div>
-                  <span className="text-xs font-bold text-teal-400 block">Fora da Área</span>
-                  <span className="text-[10px] text-slate-400 font-mono">Remates a favor de média/longa distância</span>
+                  <span className="text-xs font-bold text-ui-success block">Fora da Área</span>
+                  <span className="text-[10px] text-ui-muted font-mono">Remates a favor de média/longa distância</span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
@@ -161,7 +161,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
                   >
                     -
                   </button>
-                  <span className="w-8 text-center font-black text-white text-base font-mono tabular-nums">
+                  <span className="w-8 text-center font-black text-ui-text text-base font-mono tabular-nums">
                     {rematesForaArea}
                   </span>
                   <button
@@ -178,14 +178,14 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
 
           {/* Card: Remates Contra (Adversário) */}
           <div className="ui-inset p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <div className="flex items-center justify-between border-b border-ui-line/80 pb-2">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse" />
-                <span className="text-xs font-bold text-rose-300 uppercase tracking-wide">
+                <span className="w-2.5 h-2.5 rounded-full bg-ui-danger animate-pulse" />
+                <span className="text-xs font-bold text-ui-danger uppercase tracking-wide">
                   Remates Contra (Adversário)
                 </span>
               </div>
-              <span className="text-xs font-mono font-black text-white px-2.5 py-0.5 rounded-lg bg-rose-950/80 border border-rose-500/40">
+              <span className="text-xs font-mono font-black text-ui-text px-2.5 py-0.5 rounded-lg bg-ui-danger-soft border border-ui-danger/40">
                 Total: {totalRematesContra}
               </span>
             </div>
@@ -194,8 +194,8 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
               {/* Remates Contra - Dentro da Área */}
               <div className="ui-card flex items-center justify-between px-3 py-2.5">
                 <div>
-                  <span className="text-xs font-bold text-rose-400 block">Dentro da Área</span>
-                  <span className="text-[10px] text-slate-400 font-mono">
+                  <span className="text-xs font-bold text-ui-danger block">Dentro da Área</span>
+                  <span className="text-[10px] text-ui-muted font-mono">
                     Remates sofridos dentro da nossa grande área
                   </span>
                 </div>
@@ -207,7 +207,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
                   >
                     -
                   </button>
-                  <span className="w-8 text-center font-black text-white text-base font-mono tabular-nums">
+                  <span className="w-8 text-center font-black text-ui-text text-base font-mono tabular-nums">
                     {rematesDentroAreaAdv}
                   </span>
                   <button
@@ -223,10 +223,8 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
               {/* Remates Contra - Fora da Área */}
               <div className="ui-card flex items-center justify-between px-3 py-2.5">
                 <div>
-                  <span className="text-xs font-bold text-orange-400 block">Fora da Área</span>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    Remates sofridos de média/longa distância
-                  </span>
+                  <span className="text-xs font-bold text-ui-warning block">Fora da Área</span>
+                  <span className="text-[10px] text-ui-muted font-mono">Remates sofridos de média/longa distância</span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
@@ -236,7 +234,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
                   >
                     -
                   </button>
-                  <span className="w-8 text-center font-black text-white text-base font-mono tabular-nums">
+                  <span className="w-8 text-center font-black text-ui-text text-base font-mono tabular-nums">
                     {rematesForaAreaAdv}
                   </span>
                   <button
@@ -254,8 +252,8 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
       </div>
 
       {/* 2. SEÇÃO DE CANTOS E FALTAS */}
-      <div className="space-y-3 pt-2 border-t border-slate-800">
-        <h4 className="text-xs font-black text-slate-300 uppercase tracking-wider flex items-center gap-1.5 font-['Chakra_Petch']">
+      <div className="space-y-3 pt-2 border-t border-ui-line">
+        <h4 className="text-xs font-black text-ui-text uppercase tracking-wider flex items-center gap-1.5 font-['Chakra_Petch']">
           <span>🚩</span>
           <span>Bolas Paradas & Disciplina (Cantos e Faltas)</span>
         </h4>
@@ -263,15 +261,15 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Cantos */}
           <div className="ui-inset p-3.5">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <div className="text-xs font-semibold text-ui-muted uppercase tracking-wider mb-2 flex items-center justify-between">
               <span>🚩 Cantos</span>
-              <span className="text-white font-mono font-bold">
+              <span className="text-ui-text font-mono font-bold">
                 {cornersFor} - {cornersAgainst}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="ui-card flex items-center justify-between px-2.5 py-1.5">
-                <span className="text-xs text-emerald-400 font-medium">A favor</span>
+                <span className="text-xs text-ui-success font-medium">A favor</span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleStatChange('cornersFor', -1)}
@@ -279,7 +277,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
                   >
                     -
                   </button>
-                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">{cornersFor}</span>
+                  <span className="w-5 text-center font-bold text-ui-text text-sm tabular-nums">{cornersFor}</span>
                   <button
                     onClick={() => handleStatChange('cornersFor', 1)}
                     className="ui-btn ui-btn-success w-6 h-6 flex items-center justify-center text-xs"
@@ -290,7 +288,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
               </div>
 
               <div className="ui-card flex items-center justify-between px-2.5 py-1.5">
-                <span className="text-xs text-red-400 font-medium">Contra</span>
+                <span className="text-xs text-ui-danger font-medium">Contra</span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleStatChange('cornersAgainst', -1)}
@@ -298,7 +296,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
                   >
                     -
                   </button>
-                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">{cornersAgainst}</span>
+                  <span className="w-5 text-center font-bold text-ui-text text-sm tabular-nums">{cornersAgainst}</span>
                   <button
                     onClick={() => handleStatChange('cornersAgainst', 1)}
                     className="ui-btn ui-btn-danger w-6 h-6 flex items-center justify-center text-xs"
@@ -312,15 +310,15 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
 
           {/* Faltas */}
           <div className="ui-inset p-3.5">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <div className="text-xs font-semibold text-ui-muted uppercase tracking-wider mb-2 flex items-center justify-between">
               <span>⚠️ Faltas</span>
-              <span className="text-white font-mono font-bold">
+              <span className="text-ui-text font-mono font-bold">
                 {foulsCommitted} - {foulsSuffered}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="ui-card flex items-center justify-between px-2.5 py-1.5">
-                <span className="text-xs text-amber-400 font-medium">Cometidas</span>
+                <span className="text-xs text-ui-warning font-medium">Cometidas</span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleStatChange('foulsCommitted', -1)}
@@ -328,7 +326,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
                   >
                     -
                   </button>
-                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">{foulsCommitted}</span>
+                  <span className="w-5 text-center font-bold text-ui-text text-sm tabular-nums">{foulsCommitted}</span>
                   <button
                     onClick={() => handleStatChange('foulsCommitted', 1)}
                     className="ui-btn ui-btn-warning w-6 h-6 flex items-center justify-center text-xs"
@@ -339,7 +337,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
               </div>
 
               <div className="ui-card flex items-center justify-between px-2.5 py-1.5">
-                <span className="text-xs text-blue-400 font-medium">Sofridas</span>
+                <span className="text-xs text-ui-brand font-medium">Sofridas</span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleStatChange('foulsSuffered', -1)}
@@ -347,7 +345,7 @@ export const MatchStatsSection: React.FC<MatchStatsSectionProps> = ({ match, onU
                   >
                     -
                   </button>
-                  <span className="w-5 text-center font-bold text-white text-sm tabular-nums">{foulsSuffered}</span>
+                  <span className="w-5 text-center font-bold text-ui-text text-sm tabular-nums">{foulsSuffered}</span>
                   <button
                     onClick={() => handleStatChange('foulsSuffered', 1)}
                     className="ui-btn ui-btn-primary w-6 h-6 flex items-center justify-center text-xs"

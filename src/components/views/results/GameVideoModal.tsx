@@ -130,18 +130,18 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
       >
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <div>
-            <h3 className="text-base font-bold text-white">🎥 Vídeo do jogo</h3>
-            <p className="text-xs text-slate-400">
+            <h3 className="text-base font-bold text-ui-text">🎥 Vídeo do jogo</h3>
+            <p className="text-xs text-ui-muted">
               vs {match.opponent} · {match.date.slice(0, 10).split('-').reverse().join('/')}
             </p>
           </div>
-          <button type="button" onClick={onClose} aria-label="Fechar vídeo" className="text-slate-400 text-lg px-1">
+          <button type="button" onClick={onClose} aria-label="Fechar vídeo" className="text-ui-muted text-lg px-1">
             ✕
           </button>
         </div>
 
         {frameId && (
-          <div className="relative w-full bg-black" style={{ aspectRatio: '16 / 9' }}>
+          <div className="relative w-full bg-ui-bg" style={{ aspectRatio: '16 / 9' }}>
             <iframe
               key={frameId}
               ref={frameRef}
@@ -153,7 +153,7 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
               className="absolute inset-0 h-full w-full"
             />
             {currentEvent && (
-              <span className="absolute left-2 top-2 rounded-lg bg-black/70 px-2 py-1 text-[11px] font-bold text-white">
+              <span className="absolute left-2 top-2 rounded-lg bg-ui-bg/70 px-2 py-1 text-[11px] font-bold text-ui-text">
                 {KIND_ICON[currentEvent.kind]} {currentEvent.minute} · {currentEvent.title}
               </span>
             )}
@@ -162,10 +162,10 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
 
         {editing ? (
           <div className="space-y-3 p-4">
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-ui-text">
               <b>1.</b> Filme o jogo e ponha o vídeo no YouTube como <b>"não listado"</b> (só vê quem tem o link).
             </p>
-            <label className="block text-[11px] font-bold text-slate-400">
+            <label className="block text-[11px] font-bold text-ui-muted">
               LINK DO VÍDEO
               <input
                 className="ui-input mt-1 w-full text-sm"
@@ -175,9 +175,9 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
               />
             </label>
             {link.trim() && !youtubeId && (
-              <p className="text-[11px] text-amber-300">Este link não é de um vídeo do YouTube.</p>
+              <p className="text-[11px] text-ui-warning">Este link não é de um vídeo do YouTube.</p>
             )}
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-ui-text">
               <b>2.</b> No vídeo, pare no apito inicial de cada parte e toque em "Usar este momento" (ou escreva o
               tempo).
             </p>
@@ -188,7 +188,7 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
               ] as const
             ).map(([label, value, set, aria]) => (
               <div key={label}>
-                <div className="text-[11px] font-bold text-slate-400">{label}</div>
+                <div className="text-[11px] font-bold text-ui-muted">{label}</div>
                 <div className="mt-1 flex gap-2">
                   <input
                     className="ui-input w-28 text-base font-bold"
@@ -209,7 +209,7 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
                 </div>
               </div>
             ))}
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-ui-muted">
               Sem a 2.ª parte, a app conta que o vídeo foi parado ao intervalo. O vídeo fica no YouTube: a app só guarda
               o link e estes dois tempos.
             </p>
@@ -244,7 +244,7 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
                     aria-pressed={filter === id}
                     onClick={() => setFilter(id)}
                     className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${
-                      filter === id ? 'border-cyan-500 bg-cyan-600 text-white' : 'border-slate-700 text-slate-300'
+                      filter === id ? 'border-ui-brand bg-ui-brand text-ui-text' : 'border-ui-line-strong text-ui-text'
                     }`}
                   >
                     {label}
@@ -267,7 +267,7 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
               )}
             </div>
             {events.length === 0 && (
-              <p className="px-4 py-3 text-sm text-slate-400">
+              <p className="px-4 py-3 text-sm text-ui-muted">
                 Este jogo não tem golos, substituições nem cartões registados no Modo Jogo.
               </p>
             )}
@@ -275,16 +275,16 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
               {shown.map((e) => (
                 <li
                   key={e.id}
-                  className={`flex items-center gap-3 border-t border-slate-800 px-4 py-2.5 ${current === e.id ? 'bg-cyan-500/10' : ''}`}
+                  className={`flex items-center gap-3 border-t border-ui-line px-4 py-2.5 ${current === e.id ? 'bg-ui-brand/10' : ''}`}
                 >
-                  <span className="w-10 shrink-0 text-sm font-bold text-cyan-300 font-['Chakra_Petch']">
+                  <span className="w-10 shrink-0 text-sm font-bold text-ui-brand font-['Chakra_Petch']">
                     {e.minute}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <b className="block truncate text-sm text-white">
+                    <b className="block truncate text-sm text-ui-text">
                       {KIND_ICON[e.kind]} {e.title}
                     </b>
-                    <span className="block truncate text-[11px] text-slate-400">
+                    <span className="block truncate text-[11px] text-ui-muted">
                       {[e.detail, `${formatVideoTime(e.at)} no vídeo${e.estimated ? ' (aprox.)' : ''}`]
                         .filter(Boolean)
                         .join(' · ')}
@@ -294,18 +294,18 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
                         <button
                           type="button"
                           onClick={() => nudge(e, -5)}
-                          className="rounded-md border border-slate-700 px-2 py-0.5 text-[11px] text-slate-300"
+                          className="rounded-md border border-ui-line-strong px-2 py-0.5 text-[11px] text-ui-text"
                         >
                           −5 s
                         </button>
                         <button
                           type="button"
                           onClick={() => nudge(e, 5)}
-                          className="rounded-md border border-slate-700 px-2 py-0.5 text-[11px] text-slate-300"
+                          className="rounded-md border border-ui-line-strong px-2 py-0.5 text-[11px] text-ui-text"
                         >
                           +5 s
                         </button>
-                        <span className="text-[10px] text-slate-500 self-center">acertar este lance</span>
+                        <span className="text-[10px] text-ui-muted self-center">acertar este lance</span>
                       </span>
                     )}
                   </span>
@@ -313,8 +313,8 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
                     type="button"
                     onClick={() => play(e)}
                     aria-label={`Ver ${e.minute} ${e.title}`}
-                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-white ${
-                      current === e.id ? 'bg-emerald-600' : 'bg-cyan-600'
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-full text-ui-text ${
+                      current === e.id ? 'bg-ui-success' : 'bg-ui-brand'
                     }`}
                   >
                     ▶
@@ -346,11 +346,11 @@ const GameVideoModal: React.FC<GameVideoModalProps> = ({ match, state, onSave, o
               </button>
             </div>
             <div className="flex items-center justify-between px-4 pt-2">
-              <label className="flex items-center gap-2 text-[11px] text-slate-400">
+              <label className="flex items-center gap-2 text-[11px] text-ui-muted">
                 <input type="checkbox" checked={withNames} onChange={(e) => setWithNames(e.target.checked)} />
                 Nomes de quem marcou na mensagem
               </label>
-              <button type="button" onClick={() => setEditing(true)} className="text-[11px] text-cyan-300 underline">
+              <button type="button" onClick={() => setEditing(true)} className="text-[11px] text-ui-brand underline">
                 Mudar vídeo ou tempos
               </button>
             </div>

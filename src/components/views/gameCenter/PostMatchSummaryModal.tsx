@@ -13,6 +13,8 @@ interface PostMatchSummaryModalProps {
   state?: AppState;
   onGeneratePdf?: () => void;
   onGenerateExcel?: () => void;
+  /** Shown inside the game's page in Resultados (no window, no PDF/Excel/Histórico buttons: the page has them). */
+  inline?: boolean;
 }
 
 export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
@@ -22,7 +24,8 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
   myClubName = 'Nossa Equipa',
   state,
   onGeneratePdf,
-  onGenerateExcel
+  onGenerateExcel,
+  inline = false
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -50,10 +53,10 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
 
   const statusLabel = isWin ? 'Vitória' : isDraw ? 'Empate' : 'Derrota';
   const statusBadge = isWin
-    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+    ? 'bg-ui-success/20 text-ui-success border-ui-success/40'
     : isDraw
-      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-      : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+      ? 'bg-ui-warning/20 text-ui-warning border-ui-warning/40'
+      : 'bg-ui-danger/20 text-ui-danger border-ui-danger/40';
 
   // Analysis of what happened
   let openPlayGoals = 0;
@@ -131,12 +134,24 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
   };
 
   return (
-    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn overflow-y-auto">
-      <div className="bg-slate-900 border-2 border-cyan-500/50 rounded-3xl p-5 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 my-6 max-h-[92vh] overflow-y-auto">
+    <div
+      className={
+        inline
+          ? ''
+          : 'ui-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn overflow-y-auto'
+      }
+    >
+      <div
+        className={
+          inline
+            ? 'space-y-4'
+            : 'bg-ui-surface border-2 border-ui-brand/50 rounded-3xl p-5 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 my-6 max-h-[92vh] overflow-y-auto'
+        }
+      >
         {/* 1. Header do Modal */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between border-b border-ui-line pb-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-black uppercase text-cyan-400 bg-cyan-500/20 px-3 py-1 rounded-full border border-cyan-500/40">
+            <span className="text-xs font-mono font-black uppercase text-ui-brand bg-ui-brand/20 px-3 py-1 rounded-full border border-ui-brand/40">
               Resumo Inteligente Pós-Jogo
             </span>
           </div>
@@ -148,52 +163,52 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
         {/* 1.1 Detalhes da Competição & Agenda */}
         <div className="ui-inset px-3.5 py-2.5 flex items-center justify-between text-xs font-mono flex-wrap gap-2">
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-400 font-bold uppercase text-[10px]">Tipo:</span>
-            <span className="text-cyan-300 font-bold">{compDetails.typeLabel}</span>
+            <span className="text-ui-muted font-bold uppercase text-[10px]">Tipo:</span>
+            <span className="text-ui-brand font-bold">{compDetails.typeLabel}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-400 font-bold uppercase text-[10px]">Fase / Jornada:</span>
-            <span className="text-amber-300 font-bold">{compDetails.faseJornadaText}</span>
+            <span className="text-ui-muted font-bold uppercase text-[10px]">Fase / Jornada:</span>
+            <span className="text-ui-warning font-bold">{compDetails.faseJornadaText}</span>
           </div>
           {compDetails.source === 'agenda' ? (
-            <span className="text-[10px] text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30 font-medium">
+            <span className="text-[10px] text-ui-success bg-ui-success/20 px-2 py-0.5 rounded-full border border-ui-success/30 font-medium">
               📅 Agenda ✓
             </span>
           ) : (
-            <span className="text-[10px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700">
+            <span className="text-[10px] text-ui-muted bg-ui-surface-2/80 px-2 py-0.5 rounded-full border border-ui-line-strong">
               📋 Ficha
             </span>
           )}
         </div>
 
         {/* 2. Placar de Destaque */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-slate-800 flex items-center justify-between shadow-inner">
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-ui-inset via-ui-surface to-ui-inset border border-ui-line flex items-center justify-between shadow-inner">
           <div className="text-center flex-1">
-            <span className="text-xs text-slate-400 font-mono uppercase block truncate">{myClubName}</span>
-            <div className="text-4xl sm:text-5xl font-black font-mono text-cyan-400 mt-1">{scoredCount}</div>
+            <span className="text-xs text-ui-muted font-mono uppercase block truncate">{myClubName}</span>
+            <div className="text-4xl sm:text-5xl font-black font-mono text-ui-brand mt-1">{scoredCount}</div>
           </div>
 
-          <div className="px-3 text-2xl font-black text-slate-600 font-mono">—</div>
+          <div className="px-3 text-2xl font-black text-ui-muted font-mono">—</div>
 
           <div className="text-center flex-1">
-            <span className="text-xs text-slate-400 font-mono uppercase block truncate">
+            <span className="text-xs text-ui-muted font-mono uppercase block truncate">
               {match.opponent || 'Adversário'}
             </span>
-            <div className="text-4xl sm:text-5xl font-black font-mono text-rose-400 mt-1">{concededCount}</div>
+            <div className="text-4xl sm:text-5xl font-black font-mono text-ui-danger mt-1">{concededCount}</div>
           </div>
         </div>
 
         {/* 3. Marcadores da Partida (se houver) */}
         {scorersList.length > 0 && (
-          <div className="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-1.5">
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block font-['Chakra_Petch']">
+          <div className="p-3.5 rounded-2xl bg-ui-success-soft border border-ui-success/30 space-y-1.5">
+            <span className="text-xs font-bold text-ui-success uppercase tracking-wider block font-['Chakra_Petch']">
               ⚽ Marcadores ({myClubName}):
             </span>
             <div className="flex flex-wrap gap-2 pt-0.5">
               {scorersList.map((s, idx) => (
                 <span
                   key={idx}
-                  className="text-xs px-2.5 py-1 rounded-xl bg-emerald-900/40 text-emerald-200 border border-emerald-500/30 font-medium"
+                  className="text-xs px-2.5 py-1 rounded-xl bg-ui-success-soft text-ui-success border border-ui-success/30 font-medium"
                 >
                   {s}
                 </span>
@@ -208,21 +223,21 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
           <div className="ui-inset p-3 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-base">🎯</span>
-              <span className="text-xs font-bold text-cyan-300 uppercase font-mono">Remates à Baliza:</span>
+              <span className="text-xs font-bold text-ui-brand uppercase font-mono">Remates à Baliza:</span>
             </div>
             <div className="flex items-center gap-4 text-xs font-mono">
               <div>
-                <span className="text-slate-400">Nós: </span>
-                <span className="font-black text-cyan-400">{totalRematesFavor}</span>{' '}
-                <span className="text-[10px] text-slate-500">
+                <span className="text-ui-muted">Nós: </span>
+                <span className="font-black text-ui-brand">{totalRematesFavor}</span>{' '}
+                <span className="text-[10px] text-ui-muted">
                   ({rematesDentroArea} d.área, {rematesForaArea} f.área)
                 </span>
               </div>
-              <span className="text-slate-600 font-bold">vs</span>
+              <span className="text-ui-muted font-bold">vs</span>
               <div>
-                <span className="text-slate-400">Adv: </span>
-                <span className="font-black text-rose-400">{totalRematesContra}</span>{' '}
-                <span className="text-[10px] text-slate-500">
+                <span className="text-ui-muted">Adv: </span>
+                <span className="font-black text-ui-danger">{totalRematesContra}</span>{' '}
+                <span className="text-[10px] text-ui-muted">
                   ({rematesDentroAreaAdv} d.área, {rematesForaAreaAdv} f.área)
                 </span>
               </div>
@@ -231,36 +246,36 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
 
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="ui-inset p-3">
-              <span className="text-[10px] text-slate-400 uppercase font-mono block">🚩 Cantos</span>
-              <span className="text-base sm:text-lg font-bold font-mono text-amber-400 mt-0.5 block">
+              <span className="text-[10px] text-ui-muted uppercase font-mono block">🚩 Cantos</span>
+              <span className="text-base sm:text-lg font-bold font-mono text-ui-warning mt-0.5 block">
                 {match.cantos || 0} – {match.cantosAdv || 0}
               </span>
-              <span className="text-[9px] text-slate-500 font-mono">Nós vs Adv</span>
+              <span className="text-[9px] text-ui-muted font-mono">Nós vs Adv</span>
             </div>
             <div className="ui-inset p-3">
-              <span className="text-[10px] text-slate-400 uppercase font-mono block">🚨 Faltas</span>
-              <span className="text-base sm:text-lg font-bold font-mono text-rose-400 mt-0.5 block">
+              <span className="text-[10px] text-ui-muted uppercase font-mono block">🚨 Faltas</span>
+              <span className="text-base sm:text-lg font-bold font-mono text-ui-danger mt-0.5 block">
                 {match.faltas || 0} – {match.faltasAdv || 0}
               </span>
-              <span className="text-[9px] text-slate-500 font-mono">Nós vs Adv</span>
+              <span className="text-[9px] text-ui-muted font-mono">Nós vs Adv</span>
             </div>
             <div className="ui-inset p-3">
-              <span className="text-[10px] text-slate-400 uppercase font-mono block">🟨 Cartões</span>
-              <span className="text-base sm:text-lg font-bold font-mono text-white mt-0.5 block">
+              <span className="text-[10px] text-ui-muted uppercase font-mono block">🟨 Cartões</span>
+              <span className="text-base sm:text-lg font-bold font-mono text-ui-text mt-0.5 block">
                 {yellowCards}A • {redCards}V
               </span>
-              <span className="text-[9px] text-slate-500 font-mono">Disciplina</span>
+              <span className="text-[9px] text-ui-muted font-mono">Disciplina</span>
             </div>
           </div>
         </div>
 
         {/* 5. Resumo Narrativo Inteligente */}
-        <div className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 space-y-2">
-          <span className="text-xs font-bold text-cyan-300 uppercase tracking-wider block font-['Chakra_Petch'] flex items-center gap-1.5">
+        <div className="p-4 rounded-2xl bg-ui-brand-soft border border-ui-brand/30 space-y-2">
+          <span className="text-xs font-bold text-ui-brand uppercase tracking-wider block font-['Chakra_Petch'] flex items-center gap-1.5">
             <span>🧠</span>
             <span>Síntese do Treinador:</span>
           </span>
-          <p className="text-xs text-slate-200 leading-relaxed">
+          <p className="text-xs text-ui-text leading-relaxed">
             {isWin
               ? `Vitória consistente com ${scoredCount} golo${scoredCount > 1 ? 's' : ''} apontado${scoredCount > 1 ? 's' : ''}${firstGoalMin ? ` (inauguração do marcador aos ${firstGoalMin}')` : ''}. Eficácia ofensiva com ${openPlayGoals} golo${openPlayGoals > 1 ? 's' : ''} em jogada corrida${setPieceGoals > 0 ? ` e ${setPieceGoals} de bola parada` : ''}.`
               : isDraw
@@ -271,14 +286,14 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
 
         {/* 6. Linha do Tempo */}
         <div className="space-y-1.5">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cronologia de Jogo:</span>
+          <span className="text-xs font-bold text-ui-muted uppercase tracking-wider block">Cronologia de Jogo:</span>
           <div className="max-h-36 overflow-y-auto pr-1">
             <MatchTimeline match={match} players={state?.roster} />
           </div>
         </div>
 
         {/* 7. Ações e Partilha */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-ui-line">
           <div className="flex items-center gap-2">
             <button
               onClick={handleShareWhatsApp}
@@ -298,7 +313,7 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${inline ? 'hidden' : ''}`}>
             {onGeneratePdf && (
               <button
                 onClick={onGeneratePdf}

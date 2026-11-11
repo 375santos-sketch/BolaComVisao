@@ -4,10 +4,8 @@ import type { TabType } from './Navbar';
 
 const TABS: TabItem[] = [
   { id: 'prejogo', label: 'Pré-jogo' },
-  { id: 'jogo', label: 'Jogo' },
-  { id: 'jogos', label: 'Resultados' },
-  { id: 'stats', label: 'Estatísticas' },
-  { id: 'analise_jogos', label: 'Análise' }
+  { id: 'jogo', label: 'Ao vivo' },
+  { id: 'jogos', label: 'Resultados' }
 ];
 
 interface PerformanceSubNavProps {
@@ -27,7 +25,7 @@ export const PerformanceSubNav: React.FC<PerformanceSubNavProps> = ({ currentTab
   }, [currentTab]);
 
   return (
-    <nav ref={navRef} aria-label="Performance" className="mb-3">
+    <nav ref={navRef} aria-label="Performance" className="mb-3 lg:hidden">
       <SubNavTabs tabs={TABS} activeTab={currentTab} onChange={(id) => onNavigate(id as TabType)} />
     </nav>
   );

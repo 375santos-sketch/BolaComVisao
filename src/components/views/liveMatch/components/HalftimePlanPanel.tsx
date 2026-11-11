@@ -27,10 +27,10 @@ export const HalftimePlanPanel: React.FC<HalftimePlanPanelProps> = ({
 
   return (
     <section aria-label="Sugestão para a 2.ª parte" className="ui-card p-3 text-xs space-y-2">
-      <div className="font-bold text-emerald-300 font-['Chakra_Petch'] uppercase tracking-wide">
+      <div className="font-bold text-ui-success font-['Chakra_Petch'] uppercase tracking-wide">
         ⚖️ Minutos na época · sugestão para a 2.ª parte
       </div>
-      <p className="text-[11px] text-slate-400">
+      <p className="text-[11px] text-ui-muted">
         {below.length > 0
           ? `${below.length} ${below.length === 1 ? 'atleta fica' : 'atletas ficam'} abaixo de ${pct(plan.target)} dos minutos da época se não jogar${below.length === 1 ? '' : 'em'} a 2.ª parte.`
           : `Todos ficam acima de ${pct(plan.target)} dos minutos da época.`}{' '}
@@ -41,25 +41,25 @@ export const HalftimePlanPanel: React.FC<HalftimePlanPanelProps> = ({
           <li
             key={r.playerId}
             className={`flex items-center justify-between gap-2 px-2 py-1 rounded-lg border ${
-              r.suggested ? 'border-emerald-500/40 bg-emerald-950/30' : 'border-slate-800 bg-slate-950/60'
+              r.suggested ? 'border-ui-success/40 bg-ui-success-soft' : 'border-ui-line bg-ui-inset/60'
             }`}
           >
-            <span className="truncate text-slate-200">
+            <span className="truncate text-ui-text">
               {r.suggested ? '✓ ' : ''}
               {r.label}
               {r.goalkeeper ? ' (GR)' : ''}
             </span>
             <span className="shrink-0 text-right">
-              <span className="text-slate-400">{r.firstHalf}&apos; · </span>
-              <span className={r.shareIfBenched < plan.target ? 'text-amber-300 font-bold' : 'text-slate-300'}>
+              <span className="text-ui-muted">{r.firstHalf}&apos; · </span>
+              <span className={r.shareIfBenched < plan.target ? 'text-ui-warning font-bold' : 'text-ui-text'}>
                 {pct(r.shareIfBenched)}
               </span>
-              <span className="text-slate-500"> → {pct(r.shareIfPlays)}</span>
+              <span className="text-ui-muted"> → {pct(r.shareIfPlays)}</span>
             </span>
           </li>
         ))}
       </ul>
-      <p className="text-[10px] text-slate-500">
+      <p className="text-[10px] text-ui-muted">
         Minutos na 1.ª parte · % da época se ficar no banco → se jogar a 2.ª parte toda. ✓ = sugerido.
       </p>
       <button

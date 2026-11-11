@@ -40,6 +40,16 @@ const addToAgenda = async (page: Page, item: string) => {
   await page.getByRole('menuitem', { name: item, exact: true }).click();
 };
 
+/** Jogo → Resultados → Estatísticas or Análise dos jogos (Análise has no tab of its own yet on the phone). */
+const openFromResults = async (page: Page, name: 'Estatísticas' | 'Análise dos jogos') => {
+  await navTo(page, /jogo/i);
+  await page
+    .getByRole('navigation', { name: 'Performance' })
+    .getByRole('button', { name: 'Resultados', exact: true })
+    .click();
+  await page.getByRole('button', { name, exact: true }).click();
+};
+
 /** Planeamento → Agenda, in the list view (the Agenda opens on the week; these tests read the list of events). */
 const openAgendaList = async (page: Page) => {
   await navTo(page, /planeamento/i);
@@ -131,9 +141,10 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   await navTo(page, /jogo/i);
   await expect(page.getByRole('region', { name: 'Plano' })).toBeVisible();
 
-  // Performance tabs: Estatísticas (with playing time) is one tap away
+  // Jogo: Pré-jogo · Ao vivo · Resultados; Estatísticas (with playing time) opens from Resultados
   const performanceTabs = page.getByRole('navigation', { name: 'Performance' });
-  await performanceTabs.getByRole('button', { name: /Estatísticas/ }).click();
+  await performanceTabs.getByRole('button', { name: 'Resultados', exact: true }).click();
+  await page.getByRole('button', { name: 'Estatísticas', exact: true }).click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
   // Games without the 7 first-half starters are flagged (their minutes come out short) and can be fixed here
   const missing = page.getByTestId('missing-starters');
@@ -156,8 +167,6 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
     .getByRole('button', { name: /Ver estatísticas/ })
     .click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
-  await expect(performanceTabs.getByRole('button', { name: /Estatísticas/ })).toHaveAttribute('aria-current', 'page');
-  await expect(performanceTabs.getByRole('button', { name: /Estatísticas/ })).toBeInViewport();
 
   await openMore(page, /Análise dos Jogos/);
   await expect(page.getByText(/ANÁLISE/i).first()).toBeVisible();
@@ -366,11 +375,7 @@ test('calendário para os pais: link secreto com jogos e treinos que se atualiza
 
 test('análise: remates e eficácia de finalização', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /jogo/i);
-  await page
-    .getByRole('navigation', { name: 'Performance' })
-    .getByRole('button', { name: /Análise/ })
-    .click();
+  await openFromResults(page, 'Análise dos jogos');
   const shots = page.getByRole('region', { name: 'Remates' });
   await expect(shots).toBeVisible();
   await expect(shots).toContainText('1 jogo com remates registados');
@@ -1145,11 +1150,7 @@ test('comunicação e assistente: aviso de alteração para os pais e as ferrame
 
 test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /jogo/i);
-  await page
-    .getByRole('navigation', { name: 'Performance' })
-    .getByRole('button', { name: /Estatísticas/ })
-    .click();
+  await openFromResults(page, 'Estatísticas');
   await page.getByRole('button', { name: /Abrir painel/ }).click();
   const panel = page.getByRole('dialog', { name: 'Painel de estatísticas' });
   const team = panel.getByRole('region', { name: 'Números da equipa' });
@@ -1417,7 +1418,8 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await advance('10:00');
   await page.getByRole('button', { name: /GOLO SOFRIDO/i }).click();
   await page.getByRole('button', { name: 'Confirmar Golo Sofrido' }).click();
-  await page.getByRole('button', { name: /^⏸️ Intervalo$/ }).click();
+  await page.getByRole('button', { name: /Terminar 1.ª parte/ }).click();
+  await page.getByRole('button', { name: 'Confirmar', exact: true }).click();
   await advance('01:00'); // the clock stops during half time
   // Halftime: season minutes of the 10 called up and a suggested 2nd-half line-up (7, pre-filled in the picker)
   const plan = page.getByRole('region', { name: 'Sugestão para a 2.ª parte' });
@@ -1441,6 +1443,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await page.locator('select').first().selectOption('p10');
   await page.getByRole('button', { name: 'Confirmar Golo' }).click();
   // ↩︎ Any action can be undone with one tap (here a corner tapped by mistake)
+  await page.getByRole('button', { name: 'Números', exact: true }).click();
   await page.getByTitle('Adicionar Canto').first().click();
   await page.getByRole('button', { name: '↩︎ Desfazer: Canto a favor' }).click();
   await expect(page.getByText('Desfeito: Canto a favor')).toBeVisible();
@@ -1448,7 +1451,8 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await advance('05:00');
 
   // Playing minutes: 25 + 10, Duarte left at 16', Henrique came on at 16'.
-  await page.getByRole('button', { name: /MINUTOS EM JOGO/i }).click();
+  // Ao vivo → Em campo: the minutes of each athlete are always listed
+  await page.getByRole('button', { name: 'Em campo', exact: true }).click();
   const minutes = (name: string) => page.locator('li').filter({ hasText: name }).locator('span').last().innerText();
   expect(await minutes('1 - Duarte Matos')).toBe("16'");
   expect(await minutes('8 - Henrique Alves')).toBe("19'");
@@ -1464,7 +1468,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await expect(page.getByRole('group', { name: 'Local do jogo' })).toBeVisible();
   await page.getByRole('button', { name: /Concluir e ver resumo/i }).click();
   await expect(page.getByText('RESUMO INTELIGENTE PÓS-JOGO')).toBeVisible();
-  await expect(page.getByText('Jornada 5')).toBeVisible();
+  await expect(page.getByText('Jornada 5').first()).toBeVisible();
   await expect(page.getByText('Golo (7 - Tomás Gonçalves)')).toBeVisible();
   await expect(page.getByText('Sai: 1 - Duarte Matos ➔ Entra: 8 - Henrique Alves')).toBeVisible();
   await expect(page.getByText('Cartão Amarelo (2 - Martim Costa)')).toBeVisible();

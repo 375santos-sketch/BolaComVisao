@@ -6,8 +6,8 @@ import { getLineupSize } from '../../lib/constants';
 import { getMatchCallup, getNowTimeString } from '../../lib/matchPhaseUtils';
 import { Header } from '../Header';
 import { useLiveMatch } from './liveMatch/hooks/useLiveMatch';
+import { LiveScoreboard } from './liveMatch/components/LiveScoreboard';
 import { announceMatchChange } from '../../services/push';
-import { LiveMatchScore } from './liveMatch/components/LiveMatchScore';
 import { GoalEventsList } from './liveMatch/components/GoalEventsList';
 import { ConcededGoalEventsList } from './liveMatch/components/ConcededGoalEventsList';
 import { SubstitutionEventsList } from './liveMatch/components/SubstitutionEventsList';
@@ -22,12 +22,9 @@ import { QuickBenchMode } from './liveMatch/components/QuickBenchMode';
 import { LivePlayingTimePanel } from './liveMatch/components/LivePlayingTimePanel';
 import { HalftimePlanPanel } from './liveMatch/components/HalftimePlanPanel';
 import { LineupModal } from './liveMatch/components/LineupModal';
-import { MatchClock } from './liveMatch/components/MatchClock';
 import { MatchTimeline } from './gameCenter/MatchTimeline';
 import { GameChecklistModal } from './gameCenter/GameChecklistModal';
 import { withFinalDurations } from '../../lib/matchChecklist';
-import { PostMatchSummaryModal } from './gameCenter/PostMatchSummaryModal';
-import { generateMatchSheetPDF } from '../../lib/pdfUtils';
 
 interface LiveMatchViewProps {
   state: AppState;
@@ -47,13 +44,11 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   onOpenSettings,
   onOpenNotifications,
   onOpenSync,
+  onShowConfirm,
   onShowToast
 }) => {
-  const [matchMode, setMatchMode] = useState<'quick' | 'detailed' | 'timeline'>('quick');
-  const [activeTab, setActiveTab] = useState<'events' | 'subs' | 'cards' | 'stats'>('events');
+  const [liveTab, setLiveTab] = useState<'campo' | 'numeros' | 'cronologia'>('campo');
   const [showChecklistModal, setShowChecklistModal] = useState<boolean>(false);
-  const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
-  const [completedMatchSummary, setCompletedMatchSummary] = useState<Match | null>(null);
   const [showLineupFirstHalfModal, setShowLineupFirstHalfModal] = useState<boolean>(false);
   const [showLineupSecondHalfModal, setShowLineupSecondHalfModal] = useState<boolean>(false);
   // 2nd-half picker pre-filled from the halftime suggestion
@@ -158,27 +153,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
 
-  // 30-second summary: also rendered after the match is closed (no live match left on this screen).
-  const summaryModal = completedMatchSummary && (
-    <PostMatchSummaryModal
-      isOpen={showSummaryModal}
-      onClose={() => {
-        setShowSummaryModal(false);
-        onNavigate('jogos');
-      }}
-      match={completedMatchSummary}
-      myClubName={myClub}
-      state={state}
-      onGeneratePdf={() => {
-        generateMatchSheetPDF(completedMatchSummary, state);
-      }}
-      onGenerateExcel={async () => {
-        const { exportMatchSheetExcel } = await import('../../lib/exportUtils');
-        exportMatchSheetExcel(completedMatchSummary, state);
-      }}
-    />
-  );
-
   if (!match) {
     return (
       <div className="pb-28 animate-fadeIn">
@@ -197,8 +171,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         <div className="text-center mt-12 px-4">
           <div className="ui-card p-8 max-w-md mx-auto">
             <span className="text-4xl block mb-3">⏱️</span>
-            <h3 className="text-lg font-bold text-white mb-2">Nenhum jogo em direto a decorrer</h3>
-            <p className="text-sm text-slate-400 mb-6">
+            <h3 className="text-lg font-bold text-ui-text mb-2">Nenhum jogo em direto a decorrer</h3>
+            <p className="text-sm text-ui-muted mb-6">
               Inicie um jogo a partir do calendário ou crie uma nova partida para acompanhar os acontecimentos ao
               minuto.
             </p>
@@ -207,7 +181,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
             </button>
           </div>
         </div>
-        {summaryModal}
       </div>
     );
   }
@@ -241,8 +214,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     setIsFinishing(false);
     setShowFinishModal(false);
     setShowChecklistModal(false);
-    setCompletedMatchSummary(finishedMatch);
-    setShowSummaryModal(true);
+    // The end of the game opens the game's page in Resultados: summary, events and everything to share
+    onNavigate('jogos', finishedMatch.id);
 
     if (onShowToast) {
       onShowToast('🏁 Jogo terminado e gravado com sucesso no histórico!');
@@ -324,7 +297,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   const isLineup1stHalfReady = starting1stHalfCount === lineupSize;
 
   return (
-    <div className="modo-jogo pb-32 animate-fadeIn max-w-4xl mx-auto px-2 sm:px-4 space-y-4">
+    <div className="modo-jogo pb-36 animate-fadeIn max-w-4xl mx-auto px-2 sm:px-4 space-y-3">
       <Header
         title={t(state.lang, 'match_curr')}
         lang={state.lang}
@@ -339,210 +312,90 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         hasActiveMatch={true}
       />
 
-      {/* PAINEL DE FASE E BOTÃO ÚNICO DE ESTADO (Visível nos 3 modos: Rápido, Detalhado, Cronologia) */}
-      <div className="ui-card p-4 sm:p-5 space-y-3.5">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          {/* Badge do Estado Atual */}
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">Fase:</span>
-            {matchPhase === 'nao_iniciado' && (
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
-                <span>Pré-Jogo (Não Iniciado)</span>
-              </span>
-            )}
-            {matchPhase === 'parte1' && (
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 shadow-sm animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span>1.ª Parte a Decorrer</span>
-              </span>
-            )}
-            {matchPhase === 'intervalo' && (
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5 shadow-sm animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                <span>Intervalo</span>
-              </span>
-            )}
-            {matchPhase === 'parte2' && (
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40 flex items-center gap-1.5 shadow-sm animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-blue-400" />
-                <span>2.ª Parte a Decorrer</span>
-              </span>
-            )}
-          </div>
+      {/* The scoreboard stays on top: score, clock, part of the game, pause */}
+      <LiveScoreboard
+        match={match}
+        myClubName={myClub}
+        onTogglePause={matchPhase === 'parte1' || matchPhase === 'parte2' ? handleTogglePause : undefined}
+      />
 
-          {/* Botões dos Titulares */}
-          <div className="flex flex-wrap items-center gap-2 text-xs">
+      {/* Before kick-off and at half time: the line-up and the next step */}
+      {(matchPhase === 'nao_iniciado' || matchPhase === 'intervalo') && (
+        <section aria-label="Parte do jogo" className="ui-card space-y-3 p-4">
+          <div className="flex flex-wrap items-center gap-2">
             <button
+              type="button"
               onClick={() => setShowLineupFirstHalfModal(true)}
-              className="ui-btn ui-btn-secondary px-3 py-1.5 flex items-center gap-1.5"
+              className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
               title={`Gerir ${lineupSize} Titulares da 1.ª Parte`}
             >
-              <span>👥 Titulares 1.ª P:</span>
-              <strong className={`font-black ${isLineup1stHalfReady ? 'text-emerald-400' : 'text-amber-400'}`}>
+              Titulares 1.ª parte{' '}
+              <strong className={isLineup1stHalfReady ? 'text-ui-success' : 'text-ui-warning'}>
                 {starting1stHalfCount}/{lineupSize}
               </strong>
             </button>
-
-            {(match.lineupSecondHalf?.length || 0) > 0 && (
-              <button
-                onClick={() => setShowLineupSecondHalfModal(true)}
-                className="ui-btn ui-btn-secondary px-3 py-1.5 flex items-center gap-1.5"
-                title={`Ver ${lineupSize} Titulares da 2.ª Parte`}
-              >
-                <span>👥 Titulares 2.ª P:</span>
-                <strong className="text-emerald-400 font-black">
-                  {match.lineupSecondHalf?.length}/{lineupSize}
-                </strong>
-              </button>
-            )}
-
             {hasFewConvocados && (
-              <span className="text-[10px] text-amber-400 font-mono px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                ⚠️ Poucos convocados ({convocadosIds.length}/{lineupSize})
+              <span className="ui-badge ui-badge-warning">
+                Poucos convocados ({convocadosIds.length}/{lineupSize})
               </span>
             )}
           </div>
-        </div>
 
-        {/* Relógio do Jogo (MatchClock visível nos 3 modos) */}
-        <MatchClock
-          match={match}
-          onTogglePause={matchPhase === 'parte1' || matchPhase === 'parte2' ? handleTogglePause : undefined}
-        />
-
-        {/* Minutos de jogo por atleta e alertas de tempo de jogo */}
-        <LivePlayingTimePanel match={match} roster={state.roster || []} category={state.category} />
-
-        {/* Mensagem e bloqueio específico durante o intervalo */}
-        {matchPhase === 'intervalo' && (
-          <div className="p-3.5 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 flex items-center gap-3 text-xs text-cyan-200">
-            <span className="text-xl">⏸️</span>
-            <div className="flex-1">
-              <strong className="block font-bold text-cyan-300 font-['Chakra_Petch'] uppercase tracking-wide">
-                Intervalo de Jogo
-              </strong>
-              <span>
-                Apenas são permitidas substituições (minuto 'INT'). Golos, golos sofridos e cartões estão bloqueados
-                durante o intervalo.
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* BOTÃO ÚNICO DE FASE (Grande) */}
-        {matchPhase === 'nao_iniciado' && (
-          <div className="space-y-1.5">
-            <button
-              onClick={() => {
-                if (!isLineup1stHalfReady) {
-                  setShowLineupFirstHalfModal(true);
-                } else {
-                  handleStartFirstHalf();
-                }
-              }}
-              className={`w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider transition-all shadow-xl flex items-center justify-center gap-2.5 ${
-                isLineup1stHalfReady
-                  ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:opacity-95 text-slate-950 shadow-emerald-500/25 active:scale-98 animate-pulse'
-                  : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-amber-500/25 active:scale-98'
-              }`}
-            >
-              <span className="text-xl">▶️</span>
-              <span>
+          {matchPhase === 'nao_iniciado' && (
+            <>
+              <button
+                type="button"
+                onClick={() => (isLineup1stHalfReady ? handleStartFirstHalf() : setShowLineupFirstHalfModal(true))}
+                className={`ui-btn w-full py-4 text-ui-lead font-extrabold ${
+                  isLineup1stHalfReady ? 'ui-btn-success' : 'ui-btn-primary'
+                }`}
+              >
                 {isLineup1stHalfReady
                   ? 'Iniciar 1.ª parte'
                   : `Selecionar ${lineupSize} Titulares (${starting1stHalfCount}/${lineupSize}) para Iniciar`}
-              </span>
-            </button>
-            {!isLineup1stHalfReady && (
-              <p className="text-[11px] text-amber-400/90 text-center font-mono">
-                ⚠️ É obrigatório escolher os {lineupSize} titulares para poder iniciar a 1.ª parte.
+              </button>
+              {!isLineup1stHalfReady && (
+                <p className="text-center text-ui-caption text-ui-muted">
+                  Escolhe os {lineupSize} titulares para poder iniciar a 1.ª parte.
+                </p>
+              )}
+            </>
+          )}
+
+          {matchPhase === 'intervalo' && (
+            <>
+              <p className="text-ui-caption text-ui-muted">
+                No intervalo só se registam substituições. Golos e cartões ficam para a 2.ª parte.
               </p>
-            )}
-          </div>
-        )}
+              <HalftimePlanPanel
+                match={match}
+                matches={state.matches || []}
+                roster={state.roster || []}
+                category={state.category}
+                onUseSuggestion={(ids) => {
+                  setSecondHalfPreset(ids);
+                  setShowLineupSecondHalfModal(true);
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setSecondHalfPreset(null);
+                  setShowLineupSecondHalfModal(true);
+                }}
+                className="ui-btn ui-btn-success w-full py-4 text-ui-lead font-extrabold"
+              >
+                Iniciar 2.ª parte
+              </button>
+            </>
+          )}
+        </section>
+      )}
 
-        {matchPhase === 'parte1' && (
-          <button
-            onClick={handleGoToHalftime}
-            className="w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:opacity-95 text-slate-950 shadow-xl transition-all active:scale-98 flex items-center justify-center gap-2.5"
-          >
-            <span className="text-xl">⏸️</span>
-            <span>Intervalo</span>
-          </button>
-        )}
-
-        {matchPhase === 'intervalo' && (
-          <HalftimePlanPanel
-            match={match}
-            matches={state.matches || []}
-            roster={state.roster || []}
-            category={state.category}
-            onUseSuggestion={(ids) => {
-              setSecondHalfPreset(ids);
-              setShowLineupSecondHalfModal(true);
-            }}
-          />
-        )}
-
-        {matchPhase === 'intervalo' && (
-          <button
-            onClick={() => {
-              setSecondHalfPreset(null);
-              setShowLineupSecondHalfModal(true);
-            }}
-            className="w-full py-4 px-6 rounded-2xl font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:opacity-95 text-slate-950 shadow-xl transition-all active:scale-98 flex items-center justify-center gap-2.5 animate-pulse"
-          >
-            <span className="text-xl">▶️</span>
-            <span>Iniciar 2.ª parte</span>
-          </button>
-        )}
-
-        {/* Quando matchPhase === 'parte2', o botão de fase desaparece e o jogo termina via 'Terminar Jogo' no rodapé */}
-      </div>
-
-      {/* Mode Switcher: Modo Rápido (Banco) vs Modo Detalhado vs Cronologia */}
-      <div className="ui-card flex items-center justify-between p-1">
-        <button
-          onClick={() => setMatchMode('quick')}
-          className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold font-['Chakra_Petch'] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-            matchMode === 'quick'
-              ? 'bg-cyan-500 text-slate-950 shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-          }`}
-        >
-          <span>⚡</span>
-          <span>Modo Banco (Rápido)</span>
-        </button>
-
-        <button
-          onClick={() => setMatchMode('detailed')}
-          className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold font-['Chakra_Petch'] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-            matchMode === 'detailed'
-              ? 'bg-cyan-500 text-slate-950 shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-          }`}
-        >
-          <span>📝</span>
-          <span>Modo Detalhado</span>
-        </button>
-
-        <button
-          onClick={() => setMatchMode('timeline')}
-          className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold font-['Chakra_Petch'] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-            matchMode === 'timeline'
-              ? 'bg-cyan-500 text-slate-950 shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-          }`}
-        >
-          <span>⏱️</span>
-          <span>Cronologia</span>
-        </button>
-      </div>
-
-      {/* Render selected mode */}
-      {matchMode === 'quick' && (
+      {/* Goals, substitution and card: the four big buttons, and the one-tap goal */}
+      {matchPhase !== 'nao_iniciado' && (
         <QuickBenchMode
+          section="pad"
           match={match}
           myClubName={myClub}
           roster={state.roster || []}
@@ -554,215 +407,209 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           onQuickSub={openAddSubModal}
           onQuickCard={openAddCardModal}
           onAddCorner={handleQuickAddCorner}
-          onRemoveCorner={handleQuickRemoveCorner}
           onAddFoul={handleQuickAddFoul}
-          onRemoveFoul={handleQuickRemoveFoul}
           onAddOpponentCorner={handleQuickAddOpponentCorner}
-          onRemoveOpponentCorner={handleQuickRemoveOpponentCorner}
           onAddOpponentFoul={handleQuickAddOpponentFoul}
-          onRemoveOpponentFoul={handleQuickRemoveOpponentFoul}
           onAddShotInBoxFor={handleQuickAddShotInBoxFor}
-          onRemoveShotInBoxFor={handleQuickRemoveShotInBoxFor}
           onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
-          onRemoveShotOutBoxFor={handleQuickRemoveShotOutBoxFor}
           onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
-          onRemoveShotInBoxAgainst={handleQuickRemoveShotInBoxAgainst}
           onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
-          onRemoveShotOutBoxAgainst={handleQuickRemoveShotOutBoxAgainst}
         />
       )}
 
-      {matchMode === 'detailed' && (
-        <div className="space-y-4 animate-fadeIn">
-          {/* Main Scoreboard & Quick Action Triggers */}
-          <LiveMatchScore
+      {/* Em campo · Números · Cronologia */}
+      <div role="group" aria-label="Partes do jogo ao vivo" className="flex gap-1 border-b border-ui-line">
+        {(
+          [
+            ['campo', 'Em campo'],
+            ['numeros', 'Números'],
+            ['cronologia', 'Cronologia']
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={liveTab === id}
+            onClick={() => setLiveTab(id)}
+            className={`-mb-px flex-1 border-b-2 px-2 py-2.5 text-ui-body font-bold transition-colors ${
+              liveTab === id ? 'border-ui-brand text-ui-text' : 'border-transparent text-ui-muted hover:text-ui-text'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {liveTab === 'campo' && (
+        <div className="space-y-3">
+          <LivePlayingTimePanel match={match} roster={state.roster || []} category={state.category} defaultExpanded />
+          {matchPhase === 'nao_iniciado' && (
+            <p className="ui-inset p-3 text-ui-caption text-ui-muted">
+              Os minutos de cada atleta aparecem aqui quando o jogo começar.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {matchPhase !== 'nao_iniciado' && (
+              <button
+                type="button"
+                onClick={() => setShowLineupFirstHalfModal(true)}
+                className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
+              >
+                Titulares 1.ª parte {starting1stHalfCount}/{lineupSize}
+              </button>
+            )}
+            {(match.lineupSecondHalf?.length || 0) > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowLineupSecondHalfModal(true)}
+                className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
+                title={`Ver ${lineupSize} Titulares da 2.ª Parte`}
+              >
+                Titulares 2.ª parte {match.lineupSecondHalf?.length}/{lineupSize}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowCaptainModal(true)}
+              className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
+            >
+              Capitão: {captainName || 'escolher'}
+            </button>
+          </div>
+          <div className="ui-card space-y-2 p-3">
+            <div className="flex items-center justify-between">
+              <h3 className="ui-kicker">Substituições ({match.subs?.length || 0})</h3>
+              <button type="button" onClick={openAddSubModal} className="text-ui-caption font-bold text-ui-brand">
+                + Adicionar
+              </button>
+            </div>
+            <SubstitutionEventsList
+              subs={match.subs || []}
+              roster={state.roster || []}
+              onEditSub={openEditSubModal}
+              onDeleteSub={handleDeleteSub}
+            />
+          </div>
+          <div className="ui-card space-y-2 p-3">
+            <div className="flex items-center justify-between">
+              <h3 className="ui-kicker">Cartões ({match.cards?.length || 0})</h3>
+              <button type="button" onClick={openAddCardModal} className="text-ui-caption font-bold text-ui-brand">
+                + Adicionar
+              </button>
+            </div>
+            <CardEventsList
+              cards={match.cards || []}
+              roster={state.roster || []}
+              onEditCard={openEditCardModal}
+              onDeleteCard={handleDeleteCard}
+            />
+          </div>
+        </div>
+      )}
+
+      {liveTab === 'numeros' && (
+        <div className="space-y-3">
+          <QuickBenchMode
+            section="numbers"
             match={match}
             myClubName={myClub}
-            lang={state.lang}
-            onOpenAddGoal={openAddGoalModal}
-            onOpenAddConceded={openAddConcededModal}
-            onOpenAddSub={openAddSubModal}
-            onOpenAddCard={openAddCardModal}
-            onOpenCaptainModal={() => setShowCaptainModal(true)}
-            captainName={captainName}
+            roster={state.roster || []}
+            onQuickGoalScored={openAddGoalModal}
+            onQuickGoalConceded={openAddConcededModal}
+            onQuickSub={openAddSubModal}
+            onQuickCard={openAddCardModal}
+            onAddCorner={handleQuickAddCorner}
+            onRemoveCorner={handleQuickRemoveCorner}
+            onAddFoul={handleQuickAddFoul}
+            onRemoveFoul={handleQuickRemoveFoul}
+            onAddOpponentCorner={handleQuickAddOpponentCorner}
+            onRemoveOpponentCorner={handleQuickRemoveOpponentCorner}
+            onAddOpponentFoul={handleQuickAddOpponentFoul}
+            onRemoveOpponentFoul={handleQuickRemoveOpponentFoul}
+            onAddShotInBoxFor={handleQuickAddShotInBoxFor}
+            onRemoveShotInBoxFor={handleQuickRemoveShotInBoxFor}
+            onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
+            onRemoveShotOutBoxFor={handleQuickRemoveShotOutBoxFor}
+            onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
+            onRemoveShotInBoxAgainst={handleQuickRemoveShotInBoxAgainst}
+            onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
+            onRemoveShotOutBoxAgainst={handleQuickRemoveShotOutBoxAgainst}
           />
+          <MatchStatsSection match={match} onUpdateMatch={updateMatchInState} />
+        </div>
+      )}
 
-          {/* Interactive Tabs Navigation */}
-          <div className="ui-card flex items-center gap-1.5 p-1 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('events')}
-              className={`flex-1 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 ${
-                activeTab === 'events'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <span>⚽</span>
-              <span>Golos ({match.goals?.length || 0})</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('subs')}
-              className={`flex-1 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 ${
-                activeTab === 'subs'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <span>🔄</span>
-              <span>Substituições ({match.subs?.length || 0})</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('cards')}
-              className={`flex-1 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 ${
-                activeTab === 'cards'
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <span>🟨</span>
-              <span>Disciplina ({match.cards?.length || 0})</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('stats')}
-              className={`flex-1 py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-1.5 ${
-                activeTab === 'stats'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <span>📊</span>
-              <span>Estatísticas</span>
-            </button>
+      {liveTab === 'cronologia' && (
+        <div className="space-y-3">
+          <div className="ui-card p-4">
+            <MatchTimeline
+              match={match}
+              onEditGoal={(g) => (g.type === 'scored' ? openEditGoalModal(g) : openEditConcededModal(g))}
+              onEditCard={openEditCardModal}
+              onEditSub={openEditSubModal}
+              players={state.roster}
+            />
           </div>
-
-          {/* Tab Panels */}
-          <div className="space-y-4">
-            {activeTab === 'events' && (
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Golos Marcados</h4>
-                    <button
-                      onClick={openAddGoalModal}
-                      className="text-xs text-emerald-400 hover:underline font-semibold"
-                    >
-                      + Adicionar Golo
-                    </button>
-                  </div>
-                  <GoalEventsList
-                    goals={match.goals || []}
-                    roster={state.roster || []}
-                    onEditGoal={openEditGoalModal}
-                    onDeleteGoal={handleDeleteGoal}
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-bold text-red-400 uppercase tracking-wider">Golos Sofridos</h4>
-                    <button
-                      onClick={openAddConcededModal}
-                      className="text-xs text-red-400 hover:underline font-semibold"
-                    >
-                      + Adicionar Golo Sofrido
-                    </button>
-                  </div>
-                  <ConcededGoalEventsList
-                    goals={match.goals || []}
-                    opponentName={match.opponent}
-                    onEditGoal={openEditConcededModal}
-                    onDeleteGoal={handleDeleteConcededGoal}
-                  />
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'subs' && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider">Registo de Substituições</h4>
-                  <button onClick={openAddSubModal} className="text-xs text-blue-400 hover:underline font-semibold">
-                    + Adicionar Substituição
-                  </button>
-                </div>
-                <SubstitutionEventsList
-                  subs={match.subs || []}
-                  roster={state.roster || []}
-                  onEditSub={openEditSubModal}
-                  onDeleteSub={handleDeleteSub}
-                />
-              </div>
-            )}
-
-            {activeTab === 'cards' && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Sanções Disciplinares</h4>
-                  <button onClick={openAddCardModal} className="text-xs text-amber-400 hover:underline font-semibold">
-                    + Adicionar Cartão
-                  </button>
-                </div>
-                <CardEventsList
-                  cards={match.cards || []}
-                  roster={state.roster || []}
-                  onEditCard={openEditCardModal}
-                  onDeleteCard={handleDeleteCard}
-                />
-              </div>
-            )}
-
-            {activeTab === 'stats' && <MatchStatsSection match={match} onUpdateMatch={updateMatchInState} />}
+          <div className="ui-card space-y-2 p-3">
+            <h3 className="ui-kicker">Golos marcados</h3>
+            <GoalEventsList
+              goals={match.goals || []}
+              roster={state.roster || []}
+              onEditGoal={openEditGoalModal}
+              onDeleteGoal={handleDeleteGoal}
+            />
+            <h3 className="ui-kicker pt-2">Golos sofridos</h3>
+            <ConcededGoalEventsList
+              goals={match.goals || []}
+              opponentName={match.opponent}
+              onEditGoal={openEditConcededModal}
+              onDeleteGoal={handleDeleteConcededGoal}
+            />
           </div>
         </div>
       )}
 
-      {matchMode === 'timeline' && (
-        <div className="ui-card p-5 animate-fadeIn space-y-3">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider font-['Chakra_Petch']">
-            Cronologia Ao Minuto
-          </h3>
-          <MatchTimeline
-            match={match}
-            onEditGoal={(g) => (g.type === 'scored' ? openEditGoalModal(g) : openEditConcededModal(g))}
-            onEditCard={openEditCardModal}
-            onEditSub={openEditSubModal}
-            players={state.roster}
-          />
-        </div>
-      )}
-
-      {/* ↩︎ Desfazer: the last action, always at hand while the game is recorded */}
-      {lastAction && (
-        <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 mx-auto max-w-4xl px-3">
+      {/* End of a part: its own action, with a confirmation (no longer a big button next to Pausa) */}
+      <div className="space-y-2 pt-2">
+        {matchPhase === 'parte1' && (
           <button
             type="button"
-            onClick={() => {
-              const undone = undoLastAction();
-              if (undone) onShowToast(`Desfeito: ${undone}`);
-            }}
-            className="ui-btn ui-btn-warning w-full py-3 text-sm font-extrabold shadow-lg"
+            onClick={() => onShowConfirm('Terminar a 1.ª parte e começar o intervalo?', handleGoToHalftime)}
+            className="ui-btn ui-btn-secondary w-full py-3 text-ui-body font-bold"
           >
-            ↩︎ Desfazer: {lastAction.label}
+            Terminar 1.ª parte (intervalo)
           </button>
-        </div>
-      )}
-
-      {/* Finish Match Bottom CTA with Checklist Pre-Validation */}
-      <div className="mt-8 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="text-xs text-slate-400 text-center sm:text-left">
-          Validação de dados com checklist integrada e resumo em 30 segundos pós-jogo.
-        </div>
+        )}
         <button
+          type="button"
           onClick={() => setShowChecklistModal(true)}
-          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-ui-success hover:brightness-110 text-slate-950 font-black text-sm font-['Chakra_Petch'] uppercase tracking-wider shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+          className={`ui-btn w-full py-3 text-ui-body font-bold ${
+            matchPhase === 'parte2' ? 'ui-btn-primary' : 'ui-btn-ghost text-ui-muted'
+          }`}
         >
-          <span>📋</span>
-          <span>Validar e Terminar Jogo</span>
+          Validar e Terminar Jogo
         </button>
       </div>
+
+      {/* ↩︎ Desfazer: the last action, in a small bar above the menu */}
+      {lastAction && (
+        <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 mx-auto flex max-w-md justify-center px-3 lg:bottom-6 lg:pl-60">
+          <div className="ui-card flex items-center gap-3 px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
+            <span className="truncate text-ui-caption text-ui-muted">Último: {lastAction.label}</span>
+            <button
+              type="button"
+              aria-label={`↩︎ Desfazer: ${lastAction.label}`}
+              onClick={() => {
+                const undone = undoLastAction();
+                if (undone) onShowToast(`Desfeito: ${undone}`);
+              }}
+              className="ui-btn ui-btn-soft px-3 py-1 text-ui-caption font-bold"
+            >
+              Desfazer
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       <GoalModal
@@ -905,19 +752,14 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           if (fieldKey === 'lineup') {
             setShowLineupFirstHalfModal(true);
           } else if (fieldKey === 'subs') {
-            setMatchMode('detailed');
-            setActiveTab('subs');
+            setLiveTab('campo');
           } else if (fieldKey === 'goals') {
-            setMatchMode('detailed');
-            setActiveTab('events');
+            setLiveTab('cronologia');
           } else if (fieldKey === 'stats') {
-            setMatchMode('detailed');
-            setActiveTab('stats');
+            setLiveTab('numeros');
           }
         }}
       />
-
-      {summaryModal}
     </div>
   );
 };

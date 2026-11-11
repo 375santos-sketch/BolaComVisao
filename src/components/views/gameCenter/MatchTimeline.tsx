@@ -56,8 +56,8 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
         : g.goalType || 'Golo Sofrido',
       icon: isScored ? '⚽' : '🔴',
       badgeColor: isScored
-        ? 'border-cyan-500 bg-cyan-950/60 text-cyan-300'
-        : 'border-rose-500 bg-rose-950/60 text-rose-300',
+        ? 'border-ui-brand bg-ui-brand-soft text-ui-brand'
+        : 'border-ui-danger bg-ui-danger-soft text-ui-danger',
       rawGoal: g
     });
   });
@@ -74,8 +74,8 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
       subtitle: c.reason || 'Disciplina',
       icon: isRed ? '🟥' : '🟨',
       badgeColor: isRed
-        ? 'border-rose-600 bg-rose-950/60 text-rose-300'
-        : 'border-amber-500 bg-amber-950/60 text-amber-300',
+        ? 'border-ui-danger bg-ui-danger-soft text-ui-danger'
+        : 'border-ui-warning bg-ui-warning-soft text-ui-warning',
       rawCard: c
     });
   });
@@ -91,7 +91,7 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
       title: `Substituição`,
       subtitle: `Sai: ${pOut} ➔ Entra: ${pIn}`,
       icon: '🔄',
-      badgeColor: 'border-purple-500 bg-purple-950/60 text-purple-300',
+      badgeColor: 'border-ui-brand bg-ui-brand-soft text-ui-brand',
       rawSub: s
     });
   });
@@ -101,7 +101,7 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
 
   if (items.length === 0) {
     return (
-      <div className="ui-inset p-6 text-center text-xs font-mono text-slate-500">
+      <div className="ui-inset p-6 text-center text-xs font-mono text-ui-muted">
         Nenhum evento registado na cronologia do jogo.
       </div>
     );
@@ -109,13 +109,13 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-xs font-mono text-slate-400 border-b border-slate-800 pb-2">
+      <div className="flex items-center justify-between text-xs font-mono text-ui-muted border-b border-ui-line pb-2">
         <span>00' Apito Inicial</span>
-        <span className="text-cyan-400 font-bold">{items.length} Acontecimentos Registados</span>
+        <span className="text-ui-brand font-bold">{items.length} Acontecimentos Registados</span>
         <span>{durationMinutes}' Fim de Jogo</span>
       </div>
 
-      <div className="relative pl-6 space-y-3 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800">
+      <div className="relative pl-6 space-y-3 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-ui-surface-2">
         {items.map((item) => (
           <div
             key={item.id}
@@ -127,20 +127,20 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
             className={`relative p-3 rounded-2xl border ${item.badgeColor} ${canEdit ? 'hover:scale-[1.01] transition-transform cursor-pointer' : ''} flex items-center justify-between gap-3 shadow-lg`}
           >
             {/* Timeline dot */}
-            <div className="absolute -left-[21px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-[8px]" />
+            <div className="absolute -left-[21px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-ui-surface border-2 border-ui-brand flex items-center justify-center text-[8px]" />
 
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-base shrink-0">{item.icon}</span>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-mono font-black">{item.minute}'</span>
-                  <span className="text-xs font-bold text-white font-['Chakra_Petch'] truncate">{item.title}</span>
+                  <span className="text-xs font-bold text-ui-text font-['Chakra_Petch'] truncate">{item.title}</span>
                 </div>
-                {item.subtitle && <p className="text-[11px] text-slate-300 truncate mt-0.5">{item.subtitle}</p>}
+                {item.subtitle && <p className="text-[11px] text-ui-text truncate mt-0.5">{item.subtitle}</p>}
               </div>
             </div>
 
-            {canEdit && <span className="text-[10px] font-mono text-slate-400 shrink-0">Editar ➔</span>}
+            {canEdit && <span className="text-[10px] font-mono text-ui-muted shrink-0">Editar ➔</span>}
           </div>
         ))}
       </div>

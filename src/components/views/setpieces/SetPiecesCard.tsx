@@ -22,13 +22,13 @@ export const SetPiecesCard: React.FC<SetPiecesCardProps> = ({ state, callup, onU
   return (
     <section aria-label="Bolas paradas" className="card p-3.5 space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-xs font-black text-cyan-300 uppercase tracking-wider">🎯 Bolas paradas</h3>
-        <button type="button" onClick={() => setOpen(true)} className="text-[11px] text-cyan-300 font-bold underline">
+        <h3 className="text-xs font-black text-ui-brand uppercase tracking-wider">🎯 Bolas paradas</h3>
+        <button type="button" onClick={() => setOpen(true)} className="text-[11px] text-ui-brand font-bold underline">
           {setPieces.length ? 'Abrir caderno' : 'Criar caderno'}
         </button>
       </div>
       {assignments.length === 0 ? (
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] text-ui-muted">
           {setPieces.length
             ? 'Ainda não há atletas atribuídos às bolas paradas.'
             : 'Guarde os cantos, livres e lançamentos da equipa e quem os marca.'}
@@ -36,12 +36,12 @@ export const SetPiecesCard: React.FC<SetPiecesCardProps> = ({ state, callup, onU
       ) : (
         <ul className="space-y-1.5">
           {assignments.map((a) => (
-            <li key={a.setPiece.id} className="text-[11px] text-slate-200">
+            <li key={a.setPiece.id} className="text-[11px] text-ui-text">
               <b>
                 {setPieceType(a.setPiece.type).icon} {setPieceTitle(a.setPiece)}:
               </b>{' '}
               {a.lines.map((l, i) => (
-                <span key={i} className={l.missing ? 'text-amber-300' : ''}>
+                <span key={i} className={l.missing ? 'text-ui-warning' : ''}>
                   {i > 0 ? ' · ' : ''}
                   {l.role.label} {l.player!.name}
                   {l.missing ? ' ⚠️ não convocado' : ''}
@@ -52,7 +52,7 @@ export const SetPiecesCard: React.FC<SetPiecesCardProps> = ({ state, callup, onU
         </ul>
       )}
       {missing > 0 && (
-        <p className="text-[11px] text-amber-300">
+        <p className="text-[11px] text-ui-warning">
           ⚠️ {missing} função(ões) com atletas fora da convocatória: troque no caderno ou convoque-os.
         </p>
       )}

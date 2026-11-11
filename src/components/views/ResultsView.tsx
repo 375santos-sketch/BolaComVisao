@@ -1,3 +1,4 @@
+import { PostMatchSummaryModal } from './gameCenter/PostMatchSummaryModal';
 import React, { lazy, Suspense, useState } from 'react';
 import { AppState, Match, GoalEvent, CardEvent, SubEvent } from '../../types';
 import { t } from '../../i18n/dict';
@@ -24,6 +25,8 @@ interface ResultsViewProps {
   onOpenSync?: () => void;
   onShowConfirm: (msg: string, cb: () => void) => void;
   onShowToast?: (msg: string) => void;
+  /** A game to open straight away (just finished, or tapped in the Agenda). */
+  initialMatchId?: string;
 }
 
 export const ResultsView: React.FC<ResultsViewProps> = ({
@@ -34,7 +37,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   onOpenNotifications,
   onOpenSync,
   onShowConfirm,
-  onShowToast
+  onShowToast,
+  initialMatchId
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [seasonFilter, setSeasonFilter] = useState<string>('todas');
@@ -44,7 +48,9 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const videoMatch = videoMatchId ? state.matches.find((m) => m.id === videoMatchId) || null : null;
   const [reportMatch, setReportMatch] = useState<Match | null>(null);
   const [editMatch, setEditMatch] = useState<Match | null>(null);
-  const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
+  // The game's page: the summary of the game and everything to do with it (one page for the end of a game and for
+  // a game tapped in the list)
+  const [expandedMatchId, setExpandedMatchId] = useState<string | null>(initialMatchId || null);
   const [isGeneratingPdfId, setIsGeneratingPdfId] = useState<string | null>(null);
   const [showLeague, setShowLeague] = useState(false);
   const [mvpMatch, setMvpMatch] = useState<Match | null>(null);
@@ -82,6 +88,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
     const matchesQuery = !query || m.opponent.toLowerCase().includes(query);
     return matchesSeason && matchesQuery;
   });
+
+  const pageMatch = expandedMatchId ? state.matches.find((m) => m.id === expandedMatchId) || null : null;
 
   const getPlayerName = (id: string | null) => {
     if (!id || id === 'unknown' || id === 'none') return t(state.lang, 'match_nobody');
@@ -124,13 +132,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      <button
-        type="button"
-        onClick={() => setShowLeague(true)}
-        className="ui-btn ui-btn-soft w-full mb-3 py-2.5 text-xs flex items-center justify-center gap-2"
-      >
-        📊 Classificação do campeonato
-      </button>
       {mvpMatch && (
         <MvpModal
           match={mvpMatch}
@@ -152,28 +153,81 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         />
       )}
 
-      <div className="field">
-        <input
-          type="text"
-          placeholder={t(state.lang, 'res_search')}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
-      {seasonsList.length > 1 && (
-        <div className="seg mb-3.5">
-          <div
-            className={`seg-btn ${seasonFilter === 'todas' ? 'active' : ''}`}
-            onClick={() => setSeasonFilter('todas')}
-          >
-            {t(state.lang, 'res_all')}
+      {!pageMatch && (
+        <>
+          <div className="mb-3 grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowLeague(true)}
+              className="ui-btn ui-btn-soft py-2.5 text-ui-caption"
+            >
+              Classificação do campeonato
+            </button>
+            {/* Análise: until it has its own module, Estatísticas and Análise dos jogos open from here on the phone */}
+            <button
+              type="button"
+              onClick={() => onNavigate('stats')}
+              className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
+            >
+              Estatísticas
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('analise_jogos')}
+              className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
+            >
+              Análise dos jogos
+            </button>
           </div>
-          {seasonsList.map((s) => (
-            <div key={s} className={`seg-btn ${seasonFilter === s ? 'active' : ''}`} onClick={() => setSeasonFilter(s)}>
-              {s}
+          <div className="field">
+            <input
+              type="text"
+              placeholder={t(state.lang, 'res_search')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {seasonsList.length > 1 && (
+            <div className="seg mb-3.5">
+              <div
+                className={`seg-btn ${seasonFilter === 'todas' ? 'active' : ''}`}
+                onClick={() => setSeasonFilter('todas')}
+              >
+                {t(state.lang, 'res_all')}
+              </div>
+              {seasonsList.map((s) => (
+                <div
+                  key={s}
+                  className={`seg-btn ${seasonFilter === s ? 'active' : ''}`}
+                  onClick={() => setSeasonFilter(s)}
+                >
+                  {s}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+        </>
+      )}
+
+      {pageMatch && (
+        <div className="mb-3 space-y-3">
+          <button
+            type="button"
+            onClick={() => setExpandedMatchId(null)}
+            className="ui-btn ui-btn-ghost px-2 py-1 text-ui-body text-ui-muted"
+          >
+            ‹ Histórico
+          </button>
+          <PostMatchSummaryModal
+            inline
+            isOpen
+            onClose={() => setExpandedMatchId(null)}
+            match={pageMatch}
+            myClubName={state.myClubName || 'Nossa Equipa'}
+            state={state}
+          />
+          <h2 className="ui-kicker px-1 pt-2">Ficha, partilha e ações</h2>
         </div>
       )}
 
@@ -245,8 +299,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         }}
       />
 
-      {filteredMatches.length > 0 ? (
-        filteredMatches.map((m) => {
+      {(pageMatch ? [pageMatch] : filteredMatches).length > 0 ? (
+        (pageMatch ? [pageMatch] : filteredMatches).map((m) => {
           const sc = m.goals.filter((g) => g.type === 'scored').length;
           const co = m.goals.filter((g) => g.type === 'conceded').length;
           const open = expandedMatchId === m.id;
@@ -274,8 +328,9 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               className="ui-card p-2.5 mb-2 cursor-pointer"
               onClick={(e) => {
                 const target = e.target as HTMLElement;
-                if (!target.closest('button') && !target.closest('textarea')) {
-                  setExpandedMatchId(open ? null : m.id);
+                if (!pageMatch && !target.closest('button') && !target.closest('textarea')) {
+                  setExpandedMatchId(m.id);
+                  window.scrollTo({ top: 0 });
                 }
               }}
             >

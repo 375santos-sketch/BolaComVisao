@@ -89,26 +89,21 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
       <div
         role="dialog"
         aria-label="Jogador do jogo"
-        className="w-full max-w-md bg-slate-900 border border-amber-400/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-3 max-h-[94dvh] overflow-y-auto"
+        className="w-full max-w-md bg-ui-surface border border-ui-warning/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-3 max-h-[94dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-white font-['Chakra_Petch'] uppercase">⭐ Jogador do jogo</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fechar jogador do jogo"
-            className="text-slate-400 text-lg"
-          >
+          <h3 className="text-base font-black text-ui-text font-['Chakra_Petch'] uppercase">⭐ Jogador do jogo</h3>
+          <button type="button" onClick={onClose} aria-label="Fechar jogador do jogo" className="text-ui-muted text-lg">
             ✕
           </button>
         </div>
 
         {candidates.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center py-6">Ainda não há atletas no plantel.</p>
+          <p className="text-xs text-ui-muted text-center py-6">Ainda não há atletas no plantel.</p>
         ) : (
           <>
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               Destaque
               <select
                 className="ui-input w-full mt-1 text-sm"
@@ -137,7 +132,7 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
             </label>
 
             {hasPhoto && (
-              <label className="flex items-start gap-2 text-[11px] text-slate-300">
+              <label className="flex items-start gap-2 text-[11px] text-ui-text">
                 <input
                   type="checkbox"
                   checked={withPhoto}
@@ -154,7 +149,7 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
               height={MVP_CARD_SIZE.height}
               role="img"
               aria-label="Imagem do jogador do jogo"
-              className="w-full rounded-2xl border border-slate-800"
+              className="w-full rounded-2xl border border-ui-line"
             />
 
             <div className="grid grid-cols-2 gap-2">

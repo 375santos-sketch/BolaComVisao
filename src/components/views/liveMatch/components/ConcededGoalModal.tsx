@@ -48,25 +48,25 @@ const ConcededGoalModalInner: React.FC<ConcededGoalModalProps> = ({
   return (
     <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="ui-card max-w-md w-full p-6 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-ui-line">
           <div className="flex items-center gap-2">
             <span className="text-xl">🛡️</span>
-            <h3 className="text-lg font-bold text-white">
+            <h3 className="text-lg font-bold text-ui-text">
               {editingConcededGoal ? 'Editar Golo Sofrido' : 'Registar Golo Sofrido'}
             </h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl">
+          <button onClick={onClose} className="text-ui-muted hover:text-ui-text text-xl">
             ✕
           </button>
         </div>
 
-        <div className="bg-red-950/30 border border-red-800/40 rounded-xl p-3 text-xs text-red-200">
+        <div className="bg-ui-danger-soft border border-ui-danger/40 rounded-xl p-3 text-xs text-ui-danger">
           Golo marcado pelo adversário: <strong>{opponentName || 'Adversário'}</strong>
         </div>
 
         {/* Tipo de Golo Sofrido */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-ui-text uppercase tracking-wider mb-1.5">
             Origem / Tipo de Lance
           </label>
           <select
@@ -85,9 +85,9 @@ const ConcededGoalModalInner: React.FC<ConcededGoalModalProps> = ({
         {/* Minuto */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Minuto *</label>
+            <label className="block text-xs font-semibold text-ui-text uppercase tracking-wider">Minuto *</label>
             {showSuggestedLabel && (
-              <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+              <span className="text-[10px] text-ui-success font-mono flex items-center gap-1">
                 <span>🕒</span>
                 <span>sugerido pelo relógio</span>
               </span>
@@ -103,12 +103,12 @@ const ConcededGoalModalInner: React.FC<ConcededGoalModalProps> = ({
             }}
             className="ui-input w-full text-sm"
           />
-          {!concededMinute.trim() && <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>}
+          {!concededMinute.trim() && <p className="text-xs text-ui-danger mt-1">Indica o minuto</p>}
         </div>
 
         {/* Observações / Notas do Lance */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-ui-text uppercase tracking-wider mb-1.5">
             Análise Tática / Observações (Opcional)
           </label>
           <textarea
@@ -121,7 +121,7 @@ const ConcededGoalModalInner: React.FC<ConcededGoalModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-ui-line">
           <button onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2 text-sm">
             Cancelar
           </button>
