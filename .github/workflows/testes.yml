@@ -67,7 +67,7 @@ jobs:
       - name: Bibliotecas do navegador (se os servidores do Ubuntu responderem)
         run: |
           for i in 1 2 3; do
-            if sudo npx playwright install-deps chromium; then exit 0; fi
+            if npx playwright install-deps chromium; then exit 0; fi
             echo "::warning::apt não respondeu (tentativa $i de 3)"
             sleep 30
           done
