@@ -802,7 +802,9 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await page.getByRole('button', { name: /Treino 3/ }).click();
   await page.getByRole('button', { name: /Repetir/ }).click();
   await expect(page.getByText(/Treino repetido para/)).toBeVisible();
-  await expect(page.getByText('TREINO 4')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Treino 4.*Por fazer/ })).toBeVisible();
+  // …and it is the next training on top of Treinos
+  await expect(page.getByRole('region', { name: 'Próximo treino' })).toContainText('Treino 4');
 
   // Absences per athlete, with the reason.
   await page
