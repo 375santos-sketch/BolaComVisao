@@ -8,11 +8,7 @@ interface PlayerAnalysisProps {
   onOpenPlayer?: (playerId: string) => void;
 }
 
-export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
-  analysis,
-  players = [],
-  onOpenPlayer
-}) => {
+export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({ analysis, players = [], onOpenPlayer }) => {
   const { cardedPlayers } = analysis;
 
   const activePlayers = React.useMemo(() => (players || []).filter((p) => p && p.active !== false), [players]);

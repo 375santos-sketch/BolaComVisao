@@ -444,11 +444,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                 : undefined
             }
           />
-          <PlayerAnalysis
-            analysis={analysis}
-            players={state.roster}
-            onOpenPlayer={handleOpenPlayer}
-          />
+          <PlayerAnalysis analysis={analysis} players={state.roster} onOpenPlayer={handleOpenPlayer} />
         </div>
       )}
 
