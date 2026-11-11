@@ -531,7 +531,7 @@ export default function App() {
             try {
               new Notification('🔔 Novo Pedido de Acesso - Bola com Visão', {
                 body: `${newest.name} solicitou acesso como ${newest.role || 'Treinador'}. Total: ${pending.length} pedido(s) pendente(s).`,
-                icon: '/favicon.ico'
+                icon: '/icons/icon-192.png'
               });
             } catch (e) {
               console.warn('Aviso ao disparar notificação:', e);
