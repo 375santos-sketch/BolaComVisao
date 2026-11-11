@@ -1,10 +1,11 @@
 // BolaComVisão Service Worker - High-Performance Mobile & Offline PWA
-const CACHE_NAME = 'bolacomvisao-cache-v4';
+const CACHE_NAME = 'bolacomvisao-cache-v5';
 const PRE_CACHE_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo.jpg',
+  '/icons/icon-192.png',
+  '/icons/apple-touch-icon-180.png',
   '/favicon.ico',
   '/assets/images/bolacomvisao_logo_1786622535530.jpg'
 ];
@@ -132,7 +133,7 @@ self.addEventListener('fetch', (event) => {
         }
         // If image request and not found, fallback to logo
         if (request.destination === 'image') {
-          const logo = await caches.match('/logo.jpg');
+          const logo = await caches.match('/icons/icon-192.png');
           if (logo) return logo;
         }
         // Let normal browser network error bubble without poisoning script responses
@@ -156,8 +157,8 @@ self.addEventListener('push', (event) => {
       body: data.body || '',
       tag: data.tag || 'bolacomvisao',
       renotify: true,
-      icon: '/logo.jpg',
-      badge: '/logo.jpg',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/favicon-32.png',
       data: { url: data.url || '/?aoVivo=1' }
     })
   );
