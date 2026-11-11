@@ -81,10 +81,14 @@ export interface PlayerPlayingTime {
   name: string;
   number: number | null;
   minutes: number;
-  /** Minutes the player could have played (sum of the full length of the matches they were called up for). */
+  /** Minutes of all the season's games (the same for every athlete). */
   availableMinutes: number;
-  /** minutes / availableMinutes (0..1); 0 when never called up. */
+  /** minutes / availableMinutes (0..1): share of all the games' minutes. */
   share: number;
+  /** Minutes of the games the athlete was called up for (what they could have played). */
+  calledUpMinutes: number;
+  /** minutes / calledUpMinutes (0..1); 0 when never called up. Short of minutes is measured on this. */
+  callupShare: number;
   matchesCalledUp: number;
   matchesPlayed: number;
   starts: number;
@@ -106,9 +110,10 @@ export function gamesMissingStarters(matches: Match[], roster: Player[]): Match[
 }
 
 /**
- * Season summary of playing time, lowest share first so the players who need minutes stand out. The share is over
- * the minutes of all the games (2 games of 60' = 120' for everyone), called up or not, so it adds up to the team's
- * time on the pitch.
+ * Season summary of playing time, lowest share first so the players who need minutes stand out. `share` is over the
+ * minutes of all the games (2 games of 60' = 120' for everyone), called up or not, so it adds up to the team's time
+ * on the pitch. Being short of minutes (`belowTarget`) only counts the games each athlete was called up for
+ * (`callupShare`). Only the team's active athletes count (inactive ones and athletes of other teams are left out).
  */
 export function computeSeasonPlayingTime(
   matches: Match[],
@@ -127,6 +132,7 @@ export function computeSeasonPlayingTime(
     .filter((p) => p && p.active !== false)
     .map((p) => {
       let minutes = 0;
+      let calledUpMinutes = 0;
       let matchesCalledUp = 0;
       let matchesPlayed = 0;
       let starts = 0;
@@ -136,12 +142,14 @@ export function computeSeasonPlayingTime(
         const full = withPlayableDurations(m, category);
         const played = calcPlayerMinutes(full, p.id);
         matchesCalledUp++;
+        calledUpMinutes += getMatchTotalMinutes(m, category);
         minutes += played;
         if (played > 0) matchesPlayed++;
         if ((m.lineup || []).includes(p.id)) starts++;
       });
 
       const share = availableMinutes > 0 ? minutes / availableMinutes : 0;
+      const callupShare = calledUpMinutes > 0 ? minutes / calledUpMinutes : 0;
       return {
         playerId: p.id,
         name: p.name,
@@ -149,10 +157,13 @@ export function computeSeasonPlayingTime(
         minutes,
         availableMinutes,
         share,
+        calledUpMinutes,
+        callupShare,
         matchesCalledUp,
         matchesPlayed,
         starts,
-        belowTarget: availableMinutes > 0 && share < target
+        // Short of minutes only counts the games the athlete was called up for (never called up: not short)
+        belowTarget: calledUpMinutes > 0 && callupShare < target
       };
     })
     .sort((a, b) => a.share - b.share || a.minutes - b.minutes || a.name.localeCompare(b.name, 'pt-PT'));

@@ -475,14 +475,14 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                     <span key={r.playerId} className="px-2 py-0.5 rounded-full bg-amber-900/40">
                       {r.name}{' '}
                       <b>
-                        {r.availableMinutes > 0 ? `${Math.round(r.share * 100)}%` : 'sem jogos'}
+                        {Math.round(r.callupShare * 100)}%
                         {r.leftOutRecently >= 2 ? ` · fora ${r.leftOutRecently}/${RECENT_GAMES}` : ''}
                       </b>
                     </span>
                   ))}
                 </div>
                 <div className="text-amber-200/70">
-                  % = minutos jogados de todos os minutos dos jogos · fora = não convocado nos últimos jogos
+                  % = minutos jogados dos jogos em que foi convocado · fora = não convocado nos últimos jogos
                 </div>
               </div>
             )}
@@ -506,7 +506,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                   p.positions || '',
                   att.totalTrainings > 0 ? `${att.rate}% treinos` : '',
                   mins && mins.matchesCalledUp > 0
-                    ? `${mins.minutes}' · ${Math.round(mins.share * 100)}%${mins.leftOutRecently >= 2 ? ` · fora ${mins.leftOutRecently}/${RECENT_GAMES}` : ''}`
+                    ? `${mins.minutes}' · ${Math.round(mins.callupShare * 100)}% conv.${mins.leftOutRecently >= 2 ? ` · fora ${mins.leftOutRecently}/${RECENT_GAMES}` : ''}`
                     : mins
                       ? 'sem jogos esta época'
                       : ''

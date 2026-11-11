@@ -61,25 +61,47 @@ describe('Minutos de jogo — resumo da época', () => {
     expect(a.minutes).toBe(70); // 2 x 35' (Sub-13)
   });
 
-  it('ignores unfinished matches; the share is over all the games, called up or not', () => {
+  it('ignores unfinished matches; the share is over all the games, but never called up is not short of minutes', () => {
     const m = finishedMatch({ convocados: ['a', 'b'] });
     const live = finishedMatch({ id: 'm2', finished: false });
     const rows = computeSeasonPlayingTime([m, live], roster, 'Sub-11');
     const total = rows.find((p) => p.playerId === 'a')!.availableMinutes;
     expect(total).toBeGreaterThan(0);
     const d = rows.find((p) => p.playerId === 'd')!;
-    expect(d).toMatchObject({ matchesCalledUp: 0, minutes: 0, availableMinutes: total, share: 0, belowTarget: true });
+    expect(d).toMatchObject({
+      matchesCalledUp: 0,
+      minutes: 0,
+      availableMinutes: total,
+      share: 0,
+      calledUpMinutes: 0,
+      callupShare: 0,
+      belowTarget: false
+    });
   });
 
-  it('takes the share over the minutes of all the games (called up for 1 of 2 games: 30 of 120 = 25%)', () => {
+  it('share over all the games (30 of 120 = 25%), short of minutes over the games called up for (30 of 60 = 50%)', () => {
     const g1 = finishedMatch({
       convocados: ['a', 'b', 'c'],
       subs: [{ id: 's1', outId: 'b', inId: 'c', minute: "30'", minuteInHalf: 0, half: 2, isHalftime: false }]
     });
     const g2 = finishedMatch({ id: 'm2', convocados: ['a', 'b', 'd'] });
     const byId = Object.fromEntries(computeSeasonPlayingTime([g1, g2], roster, 'Sub-11').map((p) => [p.playerId, p]));
-    expect(byId.c).toMatchObject({ minutes: 30, availableMinutes: 120, share: 0.25, belowTarget: true });
-    expect(byId.d).toMatchObject({ minutes: 0, availableMinutes: 120, share: 0, matchesCalledUp: 1 });
+    expect(byId.c).toMatchObject({
+      minutes: 30,
+      availableMinutes: 120,
+      share: 0.25,
+      calledUpMinutes: 60,
+      callupShare: 0.5,
+      belowTarget: false
+    });
+    // Called up for one game and did not play: short of minutes
+    expect(byId.d).toMatchObject({
+      minutes: 0,
+      availableMinutes: 120,
+      share: 0,
+      matchesCalledUp: 1,
+      belowTarget: true
+    });
     expect(byId.a).toMatchObject({ minutes: 120, share: 1 });
     // The team's time on the pitch adds up: 2 players x 2 games x 60'
     expect(Object.values(byId).reduce((n, r) => n + r.minutes, 0)).toBe(240);
@@ -115,5 +137,13 @@ describe('Minutos de jogo — ao vivo', () => {
   it('is zero for everyone before kick-off', () => {
     const { played } = getLiveMatchMinutes(finishedMatch({ finished: false, phase: 'nao_iniciado', timer: undefined }));
     expect(Object.values(played)).toEqual([0, 0, 0, 0]);
+  });
+
+  it('leaves out inactive athletes and athletes of other teams called up for the game', () => {
+    const inactive = { ...roster[0], id: 'x', name: 'Inativo', active: false };
+    const g = finishedMatch({ convocados: ['a', 'b', 'x', 'outro-escalao'], lineup: ['a', 'b'] });
+    const rows = computeSeasonPlayingTime([g], [...roster, inactive], 'Sub-11');
+    expect(rows.map((r) => r.playerId)).not.toContain('x');
+    expect(rows.map((r) => r.playerId)).not.toContain('outro-escalao');
   });
 });

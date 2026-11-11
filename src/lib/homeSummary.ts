@@ -82,7 +82,7 @@ export function homeNotices(
     notices.push({
       id: 'minutos',
       icon: '⚖️',
-      text: `Precisam de minutos: ${names(shortOfMinutes.map((r) => `${r.name} (${Math.round(r.share * 100)}%)`))}`,
+      text: `Precisam de minutos: ${names(shortOfMinutes.map((r) => `${r.name} (${Math.round(r.callupShare * 100)}%)`))}`,
       tab: 'convocatoria'
     });
   }
@@ -217,12 +217,17 @@ export function recentForm(state: Pick<SummaryState, 'matches' | 'season'>, max 
     .map((m) => ({ id: m.id, date: m.date, opponent: m.opponent, ...calculateMatchScore(m) }));
 }
 
-/** Athletes below the minutes target this season (over all the season's games), and how many athletes count. */
+/** Athletes below the minutes target in the games they were called up for, and how many athletes were called up. */
 export function minutesBehind(state: Pick<SummaryState, 'matches' | 'season' | 'roster' | 'category'>) {
   const rows = computeSeasonPlayingTime(
     seasonMatches(state).filter((m) => m.finished),
     state.roster || [],
     state.category
   );
-  return { behind: rows.filter((r) => r.belowTarget), total: rows.length };
+  // Only athletes called up at least once count: short of minutes is measured on the games they were called up for
+  const counted = rows.filter((r) => r.matchesCalledUp > 0);
+  return {
+    behind: counted.filter((r) => r.belowTarget).sort((a, b) => a.callupShare - b.callupShare),
+    total: counted.length
+  };
 }
