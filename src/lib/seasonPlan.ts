@@ -158,11 +158,6 @@ export function themesByMonth(state: PlanState, today: string = localDateISO()):
   return [...months.values()].sort((a, b) => a.month.localeCompare(b.month));
 }
 
-/** The months of the season shown in Época (the months of its weeks), in order. */
-export function seasonMonths(weeks: SeasonWeek[]): string[] {
-  return [...new Set(weeks.map((w) => w.start.slice(0, 7)))];
-}
-
 /** Objectives typed one per line → a clean list (at most 5, each up to 120 characters). */
 export function objectivesFromText(text: string): string[] {
   return text

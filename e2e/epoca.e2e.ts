@@ -8,7 +8,7 @@ test('Época: semanas da época e objetivos do mês guardados', async ({ page })
   await enterPanel(page);
   await expect(page.getByText(/Bem-vindo/)).toBeHidden({ timeout: 15_000 });
   const openSeason = async () => {
-    await navTo(page, /Agenda/);
+    await navTo(page, /Planeamento/);
     await page
       .getByRole('button', { name: /^Treinos/ })
       .first()

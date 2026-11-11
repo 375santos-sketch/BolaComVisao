@@ -13,11 +13,11 @@ interface TodayFocusCardProps {
 
 // The kind of day shows in the coloured edge and the small title (no decorative gradients)
 const TONES = {
-  live: 'border-l-ui-danger text-rose-300',
-  match: 'border-l-ui-brand text-cyan-300',
-  training: 'border-l-ui-success text-emerald-300',
-  event: 'border-l-violet-400 text-violet-300',
-  none: 'border-l-ui-line-strong text-slate-400'
+  live: 'border-l-ui-danger text-ui-danger',
+  match: 'border-l-ui-brand text-ui-brand',
+  training: 'border-l-ui-success text-ui-success',
+  event: 'border-l-ui-warning text-ui-warning',
+  none: 'border-l-ui-line-strong text-ui-muted'
 };
 
 interface Action {
@@ -36,11 +36,13 @@ const Focus: React.FC<{
   details: string[];
   actions: Action[];
 }> = ({ id, tone, kicker, title, details, actions }) => (
-  <div id={id} className={`ui-card-raised border-l-4 p-4 ${TONES[tone]}`}>
-    <div className="text-[11px] font-extrabold uppercase tracking-[0.08em]">{kicker}</div>
-    <div className="mt-0.5 text-2xl font-bold text-white font-['Chakra_Petch'] leading-tight">{title}</div>
-    {details.length > 0 && <div className="mt-0.5 text-sm text-slate-400">{details.join(' · ')}</div>}
-    <div className="mt-3 flex flex-wrap gap-2">
+  <div id={id} className={`ui-card-raised h-full border-l-4 p-5 sm:p-6 ${TONES[tone]}`}>
+    <div className="text-ui-caption font-extrabold uppercase tracking-[0.12em]">{kicker}</div>
+    <div className="mt-1 font-['Chakra_Petch'] text-ui-headline font-bold leading-tight text-ui-text sm:text-ui-display">
+      {title}
+    </div>
+    {details.length > 0 && <div className="mt-1 text-ui-body text-ui-muted">{details.join(' · ')}</div>}
+    <div className="mt-4 flex flex-wrap gap-2">
       {actions.map((a) => (
         <button
           key={a.label}

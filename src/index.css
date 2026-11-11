@@ -45,7 +45,28 @@
   --color-gray-800: #1c2a44;
   --color-gray-700: #2c3f5f;
 
-  /* Shape and depth */
+  /* Soft fills of the meaning colours (badges, highlighted rows, the icon of a tile) */
+  --color-ui-brand-soft: rgb(34 195 238 / 0.12);
+  --color-ui-success-soft: rgb(34 197 94 / 0.12);
+  --color-ui-warning-soft: rgb(245 179 1 / 0.12);
+  --color-ui-danger-soft: rgb(239 68 68 / 0.12);
+
+  /* Type scale (M1): six sizes for the whole app, each with its line height.
+     caption 12 · body 14 · lead 16 · title 20 · headline 24 · display 32 */
+  --text-ui-caption: 0.75rem;
+  --text-ui-caption--line-height: 1rem;
+  --text-ui-body: 0.875rem;
+  --text-ui-body--line-height: 1.25rem;
+  --text-ui-lead: 1rem;
+  --text-ui-lead--line-height: 1.5rem;
+  --text-ui-title: 1.25rem;
+  --text-ui-title--line-height: 1.75rem;
+  --text-ui-headline: 1.5rem;
+  --text-ui-headline--line-height: 2rem;
+  --text-ui-display: 2rem;
+  --text-ui-display--line-height: 2.25rem;
+
+  /* Shape and depth: three corners (8 · 12 · 20) and two elevations */
   --radius-ui-sm: 0.5rem;
   --radius-ui: 0.75rem;
   --radius-ui-lg: 1.25rem;
@@ -1546,6 +1567,7 @@ html.sol {
   --color-ui-brand: #0284c7;
   --color-ui-brand-strong: #0369a1;
   --color-ui-brand-ink: #ffffff;
+  --color-ui-brand-soft: rgb(2 132 199 / 0.12);
   --color-slate-50: oklch(12.9% 0.042 264.695);
   --color-slate-100: oklch(20.8% 0.042 265.755);
   --color-slate-200: oklch(27.9% 0.041 260.031);

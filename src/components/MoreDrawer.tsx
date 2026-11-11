@@ -279,7 +279,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
               referrerPolicy="no-referrer"
             />
             <div>
-              <h3 className="text-base font-bold text-white">Mais</h3>
+              <h3 className="text-base font-bold text-white">Clube</h3>
               <p className="text-xs text-slate-400">
                 {state.myClubName || 'BolaComVisão'} · {state.category || 'Sub-19'}
               </p>

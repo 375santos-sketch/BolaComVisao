@@ -23,6 +23,8 @@ interface NavbarProps {
   lang: Language;
   onNavigate: (tab: TabType) => void;
   onOpenMore: () => void;
+  /** Definições (on the computer menu, under Clube). */
+  onOpenSettings?: () => void;
   hasActiveMatch: boolean;
   pendingCount?: number;
 }
@@ -31,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentTab,
   onNavigate,
   onOpenMore,
+  onOpenSettings,
   hasActiveMatch,
   pendingCount = 0
 }) => {
@@ -41,10 +44,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   const items: { key: MainCategory; label: string; icon: IconName; go: () => void }[] = [
     { key: 'home', label: 'Início', icon: 'home', go: () => onNavigate('home') },
     { key: 'equipa', label: 'Equipa', icon: 'users', go: () => onNavigate('plantel') },
-    { key: 'planeamento', label: 'Agenda', icon: 'calendar', go: () => onNavigate('calendario') },
+    { key: 'planeamento', label: 'Planeamento', icon: 'calendar', go: () => onNavigate('calendario') },
     // Pré-jogo, jogo ao vivo e estatísticas
     { key: 'performance', label: 'Jogo', icon: 'ball', go: () => onNavigate(hasActiveMatch ? 'jogo' : 'prejogo') },
-    { key: 'mais', label: 'Mais', icon: 'more', go: onOpenMore }
+    { key: 'mais', label: 'Clube', icon: 'more', go: onOpenMore }
   ];
 
   return (
@@ -53,6 +56,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         currentTab={currentTab}
         onNavigate={onNavigate}
         onOpenMore={onOpenMore}
+        onOpenSettings={onOpenSettings}
         hasActiveMatch={hasActiveMatch}
         pendingCount={pendingCount}
       />
@@ -100,82 +104,123 @@ export const Navbar: React.FC<NavbarProps> = ({
 };
 
 /**
- * On a computer (1024 px and wider) the areas are a menu fixed on the left, with the main screens one click away;
- * on the phone the bar at the bottom stays.
+ * On a computer (1024 px and wider) the areas are a menu fixed on the left, grouped like the product: Início, Equipa,
+ * Planeamento, Jogo and Análise, with Clube and Definições at the bottom. On the phone the bar at the bottom stays.
  */
 const SideMenu: React.FC<Omit<NavbarProps, 'lang'>> = ({
   currentTab,
   onNavigate,
   onOpenMore,
+  onOpenSettings,
   hasActiveMatch,
   pendingCount = 0
 }) => {
-  const items: { label: string; icon: IconName; tabs: TabType[]; go: () => void; live?: boolean }[] = [
-    { label: 'Início', icon: 'home', tabs: ['home'], go: () => onNavigate('home') },
-    { label: 'Equipa', icon: 'users', tabs: ['plantel'], go: () => onNavigate('plantel') },
-    { label: 'Convocatória', icon: 'clipboard', tabs: ['convocatoria'], go: () => onNavigate('convocatoria') },
-    { label: 'Agenda', icon: 'calendar', tabs: ['calendario'], go: () => onNavigate('calendario') },
-    { label: 'Treinos', icon: 'whistle', tabs: ['treinos'], go: () => onNavigate('treinos') },
-    { label: 'Resultados', icon: 'trophy', tabs: ['jogos'], go: () => onNavigate('jogos') },
+  type Item = { label: string; icon: IconName; tabs: TabType[]; go: () => void; live?: boolean };
+  const groups: { title?: string; items: Item[] }[] = [
+    { items: [{ label: 'Início', icon: 'home', tabs: ['home'], go: () => onNavigate('home') }] },
     {
-      label: hasActiveMatch ? 'Jogo ao vivo' : 'Jogo',
-      icon: 'ball',
-      tabs: ['jogo', 'prejogo'],
-      go: () => onNavigate(hasActiveMatch ? 'jogo' : 'prejogo'),
-      live: hasActiveMatch
+      title: 'Equipa',
+      items: [
+        { label: 'Plantel', icon: 'users', tabs: ['plantel'], go: () => onNavigate('plantel') },
+        { label: 'Convocatória', icon: 'clipboard', tabs: ['convocatoria'], go: () => onNavigate('convocatoria') }
+      ]
     },
-    { label: 'Estatísticas', icon: 'chart', tabs: ['stats', 'analise_jogos'], go: () => onNavigate('stats') }
+    {
+      title: 'Planeamento',
+      items: [
+        { label: 'Agenda', icon: 'calendar', tabs: ['calendario'], go: () => onNavigate('calendario') },
+        { label: 'Treinos', icon: 'whistle', tabs: ['treinos'], go: () => onNavigate('treinos') }
+      ]
+    },
+    {
+      title: 'Jogo',
+      items: [
+        {
+          label: hasActiveMatch ? 'Jogo ao vivo' : 'Pré-jogo e Modo Jogo',
+          icon: 'ball',
+          tabs: ['jogo', 'prejogo'],
+          go: () => onNavigate(hasActiveMatch ? 'jogo' : 'prejogo'),
+          live: hasActiveMatch
+        },
+        { label: 'Resultados', icon: 'trophy', tabs: ['jogos'], go: () => onNavigate('jogos') }
+      ]
+    },
+    {
+      title: 'Análise',
+      items: [
+        { label: 'Estatísticas', icon: 'chart', tabs: ['stats'], go: () => onNavigate('stats') },
+        { label: 'Análise dos jogos', icon: 'search', tabs: ['analise_jogos'], go: () => onNavigate('analise_jogos') }
+      ]
+    }
   ];
+  const row = (active: boolean) =>
+    `relative flex w-full items-center gap-3 rounded-ui px-3 py-2 text-left text-ui-body transition-colors ${
+      active ? 'bg-ui-brand-soft font-bold text-ui-brand' : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
+    }`;
   return (
     <aside
       aria-label="Menu"
       className="hidden lg:flex fixed inset-y-0 left-0 z-40 w-60 flex-col border-r border-ui-line bg-ui-surface pt-[max(1.25rem,env(safe-area-inset-top,0px))] pb-4"
     >
-      <div className="px-5 pb-5">
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-ui-brand">Futebol de formação</div>
-        <div className="text-xl font-extrabold text-ui-text">BolaComVisão</div>
+      <div className="flex items-center gap-2.5 px-5 pb-5">
+        <span className="flex h-9 w-9 items-center justify-center rounded-ui bg-ui-brand text-ui-brand-ink" aria-hidden>
+          <Icon name="ball" className="h-5 w-5" strokeWidth={2.4} />
+        </span>
+        <span>
+          <span className="block text-ui-lead font-extrabold leading-none text-ui-text">BolaComVisão</span>
+          <span className="whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.1em] text-ui-muted">
+            Futebol de formação
+          </span>
+        </span>
       </div>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3" aria-label="Navegação Principal (computador)">
-        {items.map((item) => {
-          const active = item.tabs.includes(currentTab);
-          return (
-            <button
-              key={item.label}
-              type="button"
-              onClick={item.go}
-              aria-current={active ? 'page' : undefined}
-              className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
-                active
-                  ? 'bg-ui-brand/15 font-bold text-ui-brand'
-                  : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
-              }`}
-            >
-              {active && (
-                <span aria-hidden className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-ui-brand" />
-              )}
-              <Icon name={item.icon} className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
-              <span className="flex-1">{item.label}</span>
-              {item.live && (
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" aria-label="a decorrer" />
-              )}
-            </button>
-          );
-        })}
+      <nav className="flex-1 space-y-4 overflow-y-auto px-3" aria-label="Navegação Principal (computador)">
+        {groups.map((g, gi) => (
+          <div key={g.title || gi} className="space-y-0.5">
+            {g.title && (
+              <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-ui-muted/80">
+                {g.title}
+              </div>
+            )}
+            {g.items.map((item) => {
+              const active = item.tabs.includes(currentTab);
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={item.go}
+                  aria-current={active ? 'page' : undefined}
+                  className={row(active)}
+                >
+                  {active && (
+                    <span aria-hidden className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-ui-brand" />
+                  )}
+                  <Icon name={item.icon} className="h-[18px] w-[18px]" strokeWidth={active ? 2.4 : 2} />
+                  <span className="flex-1">{item.label}</span>
+                  {item.live && (
+                    <span className="h-2 w-2 rounded-full bg-ui-success animate-pulse" aria-label="a decorrer" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </nav>
-      <div className="px-3 pt-3 border-t border-ui-line">
-        <button
-          type="button"
-          onClick={onOpenMore}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
-        >
-          <Icon name="more" className="h-5 w-5" />
-          <span className="flex-1">Mais</span>
+      <div className="space-y-0.5 border-t border-ui-line px-3 pt-3">
+        <button type="button" onClick={onOpenMore} className={row(false)}>
+          <Icon name="more" className="h-[18px] w-[18px]" />
+          <span className="flex-1">Clube</span>
           {pendingCount > 0 && (
-            <span className="min-w-[18px] h-[18px] px-1 bg-amber-500 text-slate-950 text-[10px] font-black rounded-full flex items-center justify-center">
+            <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ui-warning px-1 text-[10px] font-black text-ui-brand-ink">
               {pendingCount}
             </span>
           )}
         </button>
+        {onOpenSettings && (
+          <button type="button" onClick={onOpenSettings} className={row(false)}>
+            <Icon name="settings" className="h-[18px] w-[18px]" />
+            <span className="flex-1">Definições</span>
+          </button>
+        )}
       </div>
     </aside>
   );

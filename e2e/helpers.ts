@@ -40,7 +40,7 @@ export const navTo = (page: Page, name: RegExp) => page.locator('#navbar').getBy
 
 /** Opens an item of the "Mais" drawer. */
 export async function openMore(page: Page, item: RegExp) {
-  await navTo(page, /mais/i);
+  await navTo(page, /clube/i);
   await page.getByRole('button', { name: item }).first().click();
 }
 
