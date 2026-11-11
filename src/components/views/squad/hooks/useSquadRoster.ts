@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { compressImageFile, PHOTO_MAX_BYTES, PHOTO_MAX_SIDE } from '../../../../lib/imageCompress';
 import { AppState, Player, PlayerStatus, DominantFoot, StaffMember } from '../../../../types';
-import { SquadTab, SquadViewMode, SquadSortBy, SquadSortDirection, POSITION_OPTIONS } from '../types';
+import { SquadTab, SquadViewMode, SquadSortBy, SquadSortDirection, POSITION_OPTIONS, sectorOf } from '../types';
 import { getPositionRank, sortPlayerObjs, uid, calcPlayerMinutes } from '../../../../lib/utils';
 import { withPlayableDurations } from '../../../../lib/playingTime';
 import { t } from '../../../../i18n/dict';
@@ -35,6 +35,8 @@ export function useSquadRoster({
   // Filter & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('todos');
+  /** Sector of the pitch (POSITION_GROUPS id: gr, def, med, ata, outros) or 'todos'. */
+  const [sectorFilter, setSectorFilter] = useState<string>('todos');
 
   // Sorting
   const [sortBy, setSortBy] = useState<SquadSortBy>('posicao');
@@ -81,9 +83,10 @@ export function useSquadRoster({
         (p.positions || '').toLowerCase().includes(q);
       const pStatus = p.status || 'disponivel';
       const matchStatus = statusFilter === 'todos' || pStatus === statusFilter;
-      return matchName && matchStatus;
+      const matchSector = sectorFilter === 'todos' || sectorOf(p.positions) === sectorFilter;
+      return matchName && matchStatus && matchSector;
     });
-  }, [activeRoster, searchQuery, statusFilter]);
+  }, [activeRoster, searchQuery, statusFilter, sectorFilter]);
 
   // Sorted Roster
   const sortedRoster = useMemo(() => {
@@ -422,6 +425,8 @@ export function useSquadRoster({
     filteredRoster,
     sortedRoster,
     statusCounts,
+    sectorFilter,
+    setSectorFilter,
     allBirthdaysList,
     todayBirthdaysCount,
     handleOpenCreateModal,

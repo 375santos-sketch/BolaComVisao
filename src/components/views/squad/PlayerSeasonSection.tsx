@@ -15,18 +15,24 @@ const Tile: React.FC<{ value: React.ReactNode; label: string; tone?: string }> =
 );
 
 /** The athlete's season: games and minutes, goals, training attendance with absence reasons, latest games. */
-export const PlayerSeasonSection: React.FC<{ data: PlayerSeason }> = ({ data }) => {
+export const PlayerSeasonSection: React.FC<{
+  data: PlayerSeason;
+  /** The figures are already at the top of the athlete's sheet (Resumo): show only the charts and the lists. */
+  hideTiles?: boolean;
+}> = ({ data, hideTiles = false }) => {
   const { games, trainings } = data;
   const sharePct = Math.round(games.share * 100);
   const lowMinutes = games.availableMinutes > 0 && games.share < PLAYING_TIME_TARGET;
 
   return (
     <section aria-label="Época do atleta" className="space-y-3">
-      <h4 className="text-xs font-['Chakra_Petch'] font-bold text-cyan-400 uppercase tracking-wider">
-        📊 Época {data.season || ''}
-      </h4>
+      {!hideTiles && (
+        <h4 className="text-xs font-['Chakra_Petch'] font-bold text-cyan-400 uppercase tracking-wider">
+          📊 Época {data.season || ''}
+        </h4>
+      )}
 
-      <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+      <div className={`grid grid-cols-3 gap-2 text-center text-xs font-mono ${hideTiles ? 'hidden' : ''}`}>
         <Tile value={`${games.played}/${games.calledUp}`} label="Jogou / convoc." />
         <Tile value={games.starts} label="Titular" />
         <Tile

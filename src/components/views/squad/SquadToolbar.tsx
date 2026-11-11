@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { AppState } from '../../../types';
 import { SquadSortBy, SquadSortDirection, SquadViewMode } from './types';
-import { Icon } from '../../ui/Icon';
+import { Icon, IconName } from '../../ui/Icon';
+import { StatTile } from '../../ui/StatTile';
 import { CompactSelect } from '../../ui/CompactSelect';
 
 interface SquadToolbarProps {
@@ -11,6 +12,8 @@ interface SquadToolbarProps {
   setViewMode: (mode: SquadViewMode) => void;
   statusCounts: Record<string, number>;
   statusFilter: string;
+  sectorFilter?: string;
+  setSectorFilter?: (sector: string) => void;
   setStatusFilter: (status: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -25,12 +28,8 @@ interface SquadToolbarProps {
   onShowToast: (msg: string) => void;
 }
 
-const STATUSES: [string, string, string][] = [
-  ['disponivel', '🟢', 'disponíveis'],
-  ['lesionado', '🏥', 'lesionados'],
-  ['suspenso', '🟨', 'suspensos'],
-  ['inativo', '⏸️', 'inativos']
-];
+// Available, injured and suspended are the tiles at the top; inactive athletes (rare) keep a small filter here
+const STATUSES: [string, string, string][] = [['inativo', '⏸️', 'inativos']];
 
 /**
  * Equipa → Plantel, above the athletes: search, "+ Novo" and the less used actions under "⋯" (PDF, end of season,
@@ -44,6 +43,8 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
   statusCounts,
   statusFilter,
   setStatusFilter,
+  sectorFilter = 'todos',
+  setSectorFilter,
   searchQuery,
   setSearchQuery,
   sortBy,
@@ -123,8 +124,31 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
       : [])
   ];
 
+  const tile = (key: string, label: string, tone: 'brand' | 'success' | 'danger' | 'warning', icon: IconName) => {
+    const on = key === 'todos' ? statusFilter === 'todos' : statusFilter === key;
+    const value = key === 'todos' ? activeRosterCount : statusCounts[key] || 0;
+    return (
+      <StatTile
+        key={key}
+        label={label}
+        value={value}
+        icon={icon}
+        tone={value === 0 && key !== 'todos' ? 'neutral' : tone}
+        onClick={() => setStatusFilter(on || key === 'todos' ? 'todos' : key)}
+        className={on && key !== 'todos' ? '!border-ui-brand' : ''}
+      />
+    );
+  };
+
   return (
-    <div className="mb-3 space-y-2.5">
+    <div className="@container mb-3 space-y-2.5">
+      {/* The squad in four figures, which also filter the list */}
+      <div role="group" aria-label="Resumo do plantel" className="grid grid-cols-2 gap-2 @xl:grid-cols-4">
+        {tile('todos', 'Atletas', 'brand', 'users')}
+        {tile('disponivel', 'Disponíveis', 'success', 'ball')}
+        {tile('lesionado', 'Lesionados', 'danger', 'plus')}
+        {tile('suspenso', 'Suspensos', 'warning', 'clipboard')}
+      </div>
       <div className="flex items-center gap-2">
         <label className="relative flex-1 min-w-0">
           <span className="sr-only">Procurar atleta</span>
@@ -183,6 +207,35 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
         </button>
       </div>
 
+      {setSectorFilter && (
+        <div
+          role="group"
+          aria-label="Filtrar por setor"
+          className="flex gap-1.5 overflow-x-auto [scrollbar-width:none]"
+        >
+          {[
+            ['todos', 'Todos'],
+            ['gr', 'GR'],
+            ['def', 'Defesas'],
+            ['med', 'Médios'],
+            ['ata', 'Avançados']
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={sectorFilter === key}
+              onClick={() => setSectorFilter(key)}
+              className={`shrink-0 rounded-full border px-3 py-1 text-ui-caption font-bold transition-colors ${
+                sectorFilter === key
+                  ? 'border-ui-brand bg-ui-brand-soft text-ui-brand'
+                  : 'border-ui-line text-ui-muted hover:text-ui-text'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="flex items-center gap-1.5 text-xs">
         <div role="group" aria-label="Filtrar por estado" className="flex items-center gap-1 overflow-x-auto">
           {STATUSES.map(([key, mark, label]) => {
@@ -228,11 +281,12 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
           {sortDirection === 'asc' ? '↑' : '↓'}
         </button>
       </div>
-      {(statusFilter !== 'todos' || searchQuery.trim() !== '') && (
+      {(statusFilter !== 'todos' || sectorFilter !== 'todos' || searchQuery.trim() !== '') && (
         <button
           type="button"
           onClick={() => {
             setStatusFilter('todos');
+            setSectorFilter?.('todos');
             setSearchQuery('');
           }}
           className="text-xs font-semibold text-cyan-400"

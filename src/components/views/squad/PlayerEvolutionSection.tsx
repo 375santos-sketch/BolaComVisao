@@ -160,8 +160,12 @@ export const PlayerEvolutionSection: React.FC<{
   player: Player;
   onSavePlayer?: (player: Player) => void;
   onShowToast: (msg: string) => void;
-}> = ({ player, onSavePlayer, onShowToast }) => {
-  const [evaluating, setEvaluating] = useState(false);
+  /** Only the evaluations or only the goals (the athlete's sheet shows them in two sections); both by default. */
+  part?: 'avaliacoes' | 'objetivos';
+  /** Opens with the new evaluation form (the "Avaliar" button of the sheet). */
+  startEvaluating?: boolean;
+}> = ({ player, onSavePlayer, onShowToast, part, startEvaluating = false }) => {
+  const [evaluating, setEvaluating] = useState(startEvaluating && !!onSavePlayer);
   const [goalText, setGoalText] = useState('');
   const [goalArea, setGoalArea] = useState<EvaluationArea | ''>('');
   const evaluations = evaluationsOf(player);
@@ -175,180 +179,188 @@ export const PlayerEvolutionSection: React.FC<{
 
   return (
     <div className="space-y-3">
-      <section aria-label="Avaliações" className="ui-card space-y-2 p-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className="ui-kicker">Competências</span>
-          {!evaluating && onSavePlayer && (
-            <button
-              type="button"
-              onClick={() => setEvaluating(true)}
-              className="ui-btn ui-btn-primary px-3 py-1.5 text-xs"
-            >
-              + Nova avaliação
-            </button>
-          )}
-        </div>
-        {evaluating && (
-          <EvaluationForm
-            previous={last}
-            onCancel={() => setEvaluating(false)}
-            onSave={(scores, note) => {
-              save(withEvaluation(player, { id: uid(), date: localDateISO(), scores, note }), 'Avaliação guardada ✓');
-              setEvaluating(false);
-            }}
-          />
-        )}
-        {last ? (
-          <>
-            <Radar last={last} before={before} />
-            <ul aria-label="Lista de avaliações" className="divide-y divide-ui-line">
-              {evaluations.map((e, i) => {
-                const prev = evaluations[i + 1];
-                const diff = prev ? averageOf(e) - averageOf(prev) : null;
-                return (
-                  <li key={e.id} className="py-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <b className="text-sm text-ui-text">
-                        {ddmm(e.date)} · média {formatScore(averageOf(e))}
-                      </b>
-                      <span className="flex items-center gap-1.5">
-                        {diff === null ? (
-                          <span className="ui-badge">1.ª</span>
-                        ) : (
-                          <span
-                            className={`ui-badge ${diff > 0 ? 'ui-badge-success' : diff < 0 ? 'ui-badge-warning' : ''}`}
-                          >
-                            {diff > 0 ? '▲ +' : diff < 0 ? '▼ ' : '= '}
-                            {formatScore(Math.abs(diff))}
-                          </span>
-                        )}
-                        {onSavePlayer && (
-                          <button
-                            type="button"
-                            aria-label={`Apagar a avaliação de ${ddmm(e.date)}`}
-                            onClick={() => {
-                              if (window.confirm(`Apagar a avaliação de ${ddmm(e.date)}?`))
-                                save(withoutEvaluation(player, e.id), 'Avaliação apagada');
-                            }}
-                            className="px-1 text-xs text-ui-muted hover:text-rose-300"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-ui-muted">
-                      {EVALUATION_AREAS.map((a) => `${a.short} ${e.scores[a.key]}`).join(' · ')}
-                    </div>
-                    {e.note && <p className="mt-1 rounded-lg bg-ui-surface-2 p-2 text-xs text-ui-text">📝 {e.note}</p>}
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        ) : (
-          !evaluating && (
-            <p className="text-xs text-ui-muted">
-              Ainda sem avaliações. Uma a cada 4–6 semanas chega para ver a evolução no radar.
-            </p>
-          )
-        )}
-      </section>
-
-      <section aria-label="Objetivos individuais" className="ui-card space-y-2 p-3">
-        <span className="ui-kicker">Objetivos individuais</span>
-        {goals.length === 0 && <p className="text-xs text-ui-muted">Ainda sem objetivos para este atleta.</p>}
-        <ul className="divide-y divide-ui-line">
-          {goals.map((g) => {
-            const area = EVALUATION_AREAS.find((a) => a.key === g.area);
-            return (
-              <li key={g.id} className={`flex items-start gap-2 py-2 ${g.doneAt ? 'opacity-60' : ''}`}>
-                <input
-                  type="checkbox"
-                  className="mt-1"
-                  checked={Boolean(g.doneAt)}
-                  disabled={!onSavePlayer}
-                  aria-label={`Cumprido: ${g.text}`}
-                  onChange={() =>
-                    save(
-                      toggledGoal(player, g.id, localDateISO()),
-                      g.doneAt ? 'Objetivo reaberto' : 'Objetivo cumprido 🎯'
-                    )
-                  }
-                />
-                <span className="min-w-0 flex-1">
-                  <b className="block text-sm text-ui-text">{g.text}</b>
-                  <span className="text-[11px] text-ui-muted">
-                    {[area?.label, g.doneAt ? `cumprido a ${ddmm(g.doneAt)}` : `desde ${ddmm(g.createdAt)}`]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </span>
-                </span>
-                {onSavePlayer && (
-                  <button
-                    type="button"
-                    aria-label={`Apagar o objetivo ${g.text}`}
-                    onClick={() => save(withoutGoal(player, g.id), 'Objetivo apagado')}
-                    className="px-1 text-xs text-ui-muted hover:text-rose-300"
-                  >
-                    ✕
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-        {onSavePlayer && (
-          <form
-            className="flex flex-wrap gap-1.5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!goalText.trim()) return;
-              save(
-                withGoal(player, {
-                  id: uid(),
-                  text: goalText,
-                  createdAt: localDateISO(),
-                  ...(goalArea ? { area: goalArea } : {})
-                }),
-                'Objetivo adicionado 🎯'
-              );
-              setGoalText('');
-              setGoalArea('');
-            }}
-          >
-            <input
-              value={goalText}
-              onChange={(e) => setGoalText(e.target.value)}
-              maxLength={140}
-              aria-label="Novo objetivo"
-              placeholder="Novo objetivo (ex.: receber orientado para a frente)"
-              className="ui-input min-w-0 flex-1 text-xs"
+      {part !== 'objetivos' && (
+        <section aria-label="Avaliações" className="ui-card space-y-2 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="ui-kicker">Competências</span>
+            {!evaluating && onSavePlayer && (
+              <button
+                type="button"
+                onClick={() => setEvaluating(true)}
+                className="ui-btn ui-btn-primary px-3 py-1.5 text-xs"
+              >
+                + Nova avaliação
+              </button>
+            )}
+          </div>
+          {evaluating && (
+            <EvaluationForm
+              previous={last}
+              onCancel={() => setEvaluating(false)}
+              onSave={(scores, note) => {
+                save(withEvaluation(player, { id: uid(), date: localDateISO(), scores, note }), 'Avaliação guardada ✓');
+                setEvaluating(false);
+              }}
             />
-            <select
-              value={goalArea}
-              onChange={(e) => setGoalArea(e.target.value as EvaluationArea | '')}
-              aria-label="Área do objetivo"
-              className="ui-input w-auto text-xs"
-            >
-              <option value="">Área</option>
-              {EVALUATION_AREAS.map((a) => (
-                <option key={a.key} value={a.key}>
-                  {a.short}
-                </option>
-              ))}
-            </select>
-            <button type="submit" className="ui-btn ui-btn-secondary px-3 text-xs">
-              Adicionar
-            </button>
-          </form>
-        )}
-      </section>
+          )}
+          {last ? (
+            <>
+              <Radar last={last} before={before} />
+              <ul aria-label="Lista de avaliações" className="divide-y divide-ui-line">
+                {evaluations.map((e, i) => {
+                  const prev = evaluations[i + 1];
+                  const diff = prev ? averageOf(e) - averageOf(prev) : null;
+                  return (
+                    <li key={e.id} className="py-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <b className="text-sm text-ui-text">
+                          {ddmm(e.date)} · média {formatScore(averageOf(e))}
+                        </b>
+                        <span className="flex items-center gap-1.5">
+                          {diff === null ? (
+                            <span className="ui-badge">1.ª</span>
+                          ) : (
+                            <span
+                              className={`ui-badge ${diff > 0 ? 'ui-badge-success' : diff < 0 ? 'ui-badge-warning' : ''}`}
+                            >
+                              {diff > 0 ? '▲ +' : diff < 0 ? '▼ ' : '= '}
+                              {formatScore(Math.abs(diff))}
+                            </span>
+                          )}
+                          {onSavePlayer && (
+                            <button
+                              type="button"
+                              aria-label={`Apagar a avaliação de ${ddmm(e.date)}`}
+                              onClick={() => {
+                                if (window.confirm(`Apagar a avaliação de ${ddmm(e.date)}?`))
+                                  save(withoutEvaluation(player, e.id), 'Avaliação apagada');
+                              }}
+                              className="px-1 text-xs text-ui-muted hover:text-rose-300"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-ui-muted">
+                        {EVALUATION_AREAS.map((a) => `${a.short} ${e.scores[a.key]}`).join(' · ')}
+                      </div>
+                      {e.note && (
+                        <p className="mt-1 rounded-lg bg-ui-surface-2 p-2 text-xs text-ui-text">📝 {e.note}</p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          ) : (
+            !evaluating && (
+              <p className="text-xs text-ui-muted">
+                Ainda sem avaliações. Uma a cada 4–6 semanas chega para ver a evolução no radar.
+              </p>
+            )
+          )}
+        </section>
+      )}
 
-      <p className="text-[11px] text-ui-muted">
-        🔒 Avaliações e objetivos são só para os treinadores: nunca aparecem nos PDFs para os pais, nas partilhas nem em
-        comparações entre colegas.
-      </p>
+      {part !== 'avaliacoes' && (
+        <section aria-label="Objetivos individuais" className="ui-card space-y-2 p-3">
+          <span className="ui-kicker">Objetivos individuais</span>
+          {goals.length === 0 && <p className="text-xs text-ui-muted">Ainda sem objetivos para este atleta.</p>}
+          <ul className="divide-y divide-ui-line">
+            {goals.map((g) => {
+              const area = EVALUATION_AREAS.find((a) => a.key === g.area);
+              return (
+                <li key={g.id} className={`flex items-start gap-2 py-2 ${g.doneAt ? 'opacity-60' : ''}`}>
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={Boolean(g.doneAt)}
+                    disabled={!onSavePlayer}
+                    aria-label={`Cumprido: ${g.text}`}
+                    onChange={() =>
+                      save(
+                        toggledGoal(player, g.id, localDateISO()),
+                        g.doneAt ? 'Objetivo reaberto' : 'Objetivo cumprido 🎯'
+                      )
+                    }
+                  />
+                  <span className="min-w-0 flex-1">
+                    <b className="block text-sm text-ui-text">{g.text}</b>
+                    <span className="text-[11px] text-ui-muted">
+                      {[area?.label, g.doneAt ? `cumprido a ${ddmm(g.doneAt)}` : `desde ${ddmm(g.createdAt)}`]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </span>
+                  </span>
+                  {onSavePlayer && (
+                    <button
+                      type="button"
+                      aria-label={`Apagar o objetivo ${g.text}`}
+                      onClick={() => save(withoutGoal(player, g.id), 'Objetivo apagado')}
+                      className="px-1 text-xs text-ui-muted hover:text-rose-300"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          {onSavePlayer && (
+            <form
+              className="flex flex-wrap gap-1.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!goalText.trim()) return;
+                save(
+                  withGoal(player, {
+                    id: uid(),
+                    text: goalText,
+                    createdAt: localDateISO(),
+                    ...(goalArea ? { area: goalArea } : {})
+                  }),
+                  'Objetivo adicionado 🎯'
+                );
+                setGoalText('');
+                setGoalArea('');
+              }}
+            >
+              <input
+                value={goalText}
+                onChange={(e) => setGoalText(e.target.value)}
+                maxLength={140}
+                aria-label="Novo objetivo"
+                placeholder="Novo objetivo (ex.: receber orientado para a frente)"
+                className="ui-input min-w-0 flex-1 text-xs"
+              />
+              <select
+                value={goalArea}
+                onChange={(e) => setGoalArea(e.target.value as EvaluationArea | '')}
+                aria-label="Área do objetivo"
+                className="ui-input w-auto text-xs"
+              >
+                <option value="">Área</option>
+                {EVALUATION_AREAS.map((a) => (
+                  <option key={a.key} value={a.key}>
+                    {a.short}
+                  </option>
+                ))}
+              </select>
+              <button type="submit" className="ui-btn ui-btn-secondary px-3 text-xs">
+                Adicionar
+              </button>
+            </form>
+          )}
+        </section>
+      )}
+
+      {part !== 'avaliacoes' && (
+        <p className="text-[11px] text-ui-muted">
+          🔒 Avaliações e objetivos são só para os treinadores: nunca aparecem nos PDFs para os pais, nas partilhas nem
+          em comparações entre colegas.
+        </p>
+      )}
     </div>
   );
 };
