@@ -57,8 +57,21 @@ jobs:
       - name: Instalar dependências
         run: bun install
 
+      # The browser itself comes from Playwright's servers. Its system libraries come from Ubuntu's mirrors (apt),
+      # which have been failing ("Installation process exited with code: 100") and used to stop the whole job before
+      # any test ran. GitHub's Ubuntu image already has almost all of them: try apt a few times and carry on if the
+      # mirrors stay down; the tests themselves show whether the browser starts.
       - name: Instalar o navegador dos testes
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
+
+      - name: Bibliotecas do navegador (se os servidores do Ubuntu responderem)
+        run: |
+          for i in 1 2 3; do
+            if npx playwright install-deps chromium; then exit 0; fi
+            echo "::warning::apt não respondeu (tentativa $i de 3)"
+            sleep 30
+          done
+          echo "::warning::Sem as bibliotecas do apt: os testes seguem com as que a imagem do GitHub já tem."
 
       - name: Testes de integração (regras e sincronização)
         run: npm run test:emulator
