@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { SectionNav } from '../ui/SectionNav';
+import { datePT, dayLabel, timePT } from '../../lib/planningSummary';
 import { AppState, PreMatchPlan, ScheduledMatch } from '../../types';
 import { Header } from '../Header';
 import { LastTimeAgainstCard } from './results/LastTimeAgainstCard';
@@ -41,6 +43,7 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
   onShowToast,
   targetOpponentId
 }) => {
+  const [section, setSection] = useState('plano');
   const games = upcomingGames(state.schedule || []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const game =
@@ -63,7 +66,7 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
 
       {!game ? (
         <div className="card p-6 text-center space-y-3">
-          <p className="text-sm text-slate-300">Não há jogos marcados na Agenda.</p>
+          <p className="text-sm text-ui-text">Não há jogos marcados na Agenda.</p>
           <button type="button" className="btn btn-outline" onClick={() => onNavigate('calendario')}>
             📅 Ir para a Agenda
           </button>
@@ -71,7 +74,7 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
       ) : (
         <>
           {games.length > 1 && (
-            <label className={`${label} text-cyan-300`}>
+            <label className={`${label} text-ui-brand`}>
               Jogo a preparar
               <select value={game.id} onChange={(e) => setSelectedId(e.target.value)} className={`${field} mt-1`}>
                 {games.map((g) => (
@@ -84,51 +87,92 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
             </label>
           )}
 
-          <section aria-label="Jogo" className="card p-4 space-y-1">
+          <section
+            aria-label="Jogo"
+            className="ui-card relative overflow-hidden p-4 before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-ui-brand"
+          >
             <div className="flex items-start justify-between gap-2">
-              <h2 className="text-base font-black text-white">
-                {state.myClubName || 'A nossa equipa'} vs {game.opponent}
-              </h2>
-              {game.preMatchFinalized && (
-                <span className="text-[11px] font-bold px-2 py-1 rounded-lg bg-emerald-950 border border-emerald-500/50 text-emerald-300 shrink-0">
-                  ✓ Plano pronto
-                </span>
-              )}
+              <div className="min-w-0">
+                <p className="ui-kicker">{competitionLabel(game)}</p>
+                <h2 className="mt-0.5 text-ui-title font-extrabold text-ui-text">
+                  {game.location === 'fora' ? '@' : 'vs'} {game.opponent}
+                </h2>
+                <p className="text-ui-body text-ui-text">
+                  <strong>{dayLabel(game.date)}</strong> ({datePT(game.date)})
+                  {timePT(game.time) ? ` · ${timePT(game.time)}` : ''}
+                  <span className="text-ui-muted">
+                    {' '}
+                    · {game.location === 'fora' ? 'Fora' : 'Casa'}
+                    {game.venue ? ` · ${game.venue}` : ''}
+                  </span>
+                </p>
+                {(game.meetingTime || game.meetingPoint) && (
+                  <p className="text-ui-caption text-ui-muted">
+                    Concentração: {[timePT(game.meetingTime), game.meetingPoint].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+              </div>
+              {game.preMatchFinalized && <span className="ui-badge ui-badge-success shrink-0">Plano pronto</span>}
             </div>
-            <p className="text-xs text-slate-300">
-              📅 {dateLabel(game.date)}
-              {game.time ? ` às ${game.time}` : ''} · {game.location === 'fora' ? 'Fora' : 'Casa'}
-              {game.venue ? ` · ${game.venue}` : ''}
-            </p>
-            <p className="text-xs text-slate-400">🏆 {competitionLabel(game)}</p>
-            {(game.meetingTime || game.meetingPoint) && (
-              <p className="text-xs text-slate-400">
-                🕒 Concentração: {[game.meetingTime, game.meetingPoint].filter(Boolean).join(' · ')}
-              </p>
-            )}
             <button
               type="button"
               onClick={() => onNavigate('convocatoria', game.id)}
-              className="text-xs text-cyan-300 underline underline-offset-2"
+              className="ui-btn ui-btn-soft mt-3 px-3 py-1.5 text-ui-caption"
             >
-              📋 Convocatória ({(game.callup || []).length} atletas)
+              Convocatória ({(game.callup || []).length} atletas)
             </button>
           </section>
 
-          <LastTimeAgainstCard matches={state.matches || []} roster={state.roster || []} opponent={game.opponent} />
-          <OpponentFileCard
-            files={(state.teams || []).find((t) => t.id === state.activeTeamId)?.opponentFiles}
-            opponent={game.opponent}
-          />
+          <div className="sticky top-0 z-20 -mx-2.5 bg-ui-bg/95 px-2.5 py-1 backdrop-blur sm:mx-0 sm:px-0">
+            <SectionNav
+              label="Partes do pré-jogo"
+              fill
+              sections={[
+                { id: 'plano', label: 'Plano' },
+                { id: 'adversario', label: 'Adversário' },
+                { id: 'bolas', label: 'Bolas paradas', short: 'Bolas' }
+              ]}
+              active={section}
+              onJump={(id) => {
+                setSection(id);
+                document.getElementById(`prejogo-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            />
+          </div>
 
-          <PreMatchForm key={game.id} game={game} state={state} onSave={saveGame} onShowToast={onShowToast} />
+          <div id="prejogo-plano" className="scroll-mt-16">
+            <PreMatchForm key={game.id} game={game} state={state} onSave={saveGame} onShowToast={onShowToast} />
+          </div>
 
-          <SetPiecesCard
-            state={state}
-            callup={game.callup || []}
-            onUpdateState={onUpdateState}
-            onShowToast={onShowToast}
-          />
+          <section id="prejogo-adversario" aria-label="Adversário" className="scroll-mt-16 space-y-3">
+            <h2 className="ui-kicker px-1">Adversário</h2>
+            {!(state.matches || []).some(
+              (m) => m.finished && m.opponent.trim().toLowerCase() === game.opponent.trim().toLowerCase()
+            ) &&
+              !(state.teams || [])
+                .find((t) => t.id === state.activeTeamId)
+                ?.opponentFiles?.some((f) => f.name.trim().toLowerCase() === game.opponent.trim().toLowerCase()) && (
+                <p className="ui-inset p-3 text-ui-caption text-ui-muted">
+                  Ainda não há jogos contra {game.opponent} nem ficha deste adversário. Aparecem aqui depois do primeiro
+                  jogo.
+                </p>
+              )}
+            <LastTimeAgainstCard matches={state.matches || []} roster={state.roster || []} opponent={game.opponent} />
+            <OpponentFileCard
+              files={(state.teams || []).find((t) => t.id === state.activeTeamId)?.opponentFiles}
+              opponent={game.opponent}
+            />
+          </section>
+
+          <section id="prejogo-bolas" aria-label="Bolas paradas da equipa" className="scroll-mt-16 space-y-3">
+            <h2 className="ui-kicker px-1">Bolas paradas</h2>
+            <SetPiecesCard
+              state={state}
+              callup={game.callup || []}
+              onUpdateState={onUpdateState}
+              onShowToast={onShowToast}
+            />
+          </section>
         </>
       )}
     </div>
@@ -177,9 +221,9 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
   };
 
   return (
-    <section aria-label="Plano" className="card p-4 space-y-3">
-      <label className={`${label} text-slate-300`}>
-        🧩 Sistema tático
+    <section aria-label="Plano" className="ui-card space-y-3 p-4">
+      <label className={`${label} text-ui-text`}>
+        Sistema tático
         <input
           list="sistemas-fut7"
           value={system}
@@ -195,7 +239,7 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
       </label>
 
       <fieldset className="space-y-1.5">
-        <legend className={`${label} text-amber-300 mb-1`}>🎯 Objetivos (até {MAX_OBJECTIVES})</legend>
+        <legend className={`${label} text-ui-text mb-1`}>Objetivos (até {MAX_OBJECTIVES})</legend>
         {objectives.map((o, i) => (
           <input
             key={i}
@@ -209,8 +253,8 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
       </fieldset>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <label className={`${label} text-emerald-300`}>
-          ⚽ Com bola
+        <label className={`${label} text-ui-text`}>
+          Com bola
           <textarea
             value={withBall}
             onChange={(e) => setWithBall(e.target.value)}
@@ -219,8 +263,8 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
             className={`${field} mt-1`}
           />
         </label>
-        <label className={`${label} text-rose-300`}>
-          🛡️ Sem bola
+        <label className={`${label} text-ui-text`}>
+          Sem bola
           <textarea
             value={withoutBall}
             onChange={(e) => setWithoutBall(e.target.value)}
@@ -231,8 +275,8 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
         </label>
       </div>
 
-      <label className={`${label} text-orange-300`}>
-        🔥 Palavra de ordem
+      <label className={`${label} text-ui-text`}>
+        Palavra de ordem
         <input
           value={motto}
           onChange={(e) => setMotto(e.target.value)}
@@ -241,16 +285,17 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
         />
       </label>
 
-      <label className={`${label} text-slate-300`}>
-        📝 Notas
+      <label className={`${label} text-ui-text`}>
+        Notas
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={`${field} mt-1`} />
       </label>
 
-      <div className="grid grid-cols-2 gap-2 pt-1">
+      {/* Save is always at hand; sharing is one row below */}
+      <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-20 -mx-4 -mb-4 grid grid-cols-2 gap-2 border-t border-ui-line bg-ui-surface/95 p-3 backdrop-blur lg:bottom-0">
         <button
           type="button"
           onClick={() => onSave(withPlan(), 'Pré-jogo guardado ✓')}
-          className="ui-btn ui-btn-primary py-2.5 text-xs"
+          className="ui-btn ui-btn-primary py-2.5"
         >
           Guardar
         </button>
@@ -261,12 +306,12 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
               ? onSave(withPlan({ preMatchFinalized: false, preMatchFinalizedAt: undefined }), 'Plano reaberto')
               : onSave(withPlan({ preMatchFinalized: true, preMatchFinalizedAt: Date.now() }), 'Plano pronto ✓')
           }
-          className="ui-btn ui-btn-success py-2.5 text-xs"
+          className="ui-btn ui-btn-success py-2.5"
         >
           {game.preMatchFinalized ? 'Reabrir plano' : '✓ Plano pronto'}
         </button>
-        <button type="button" onClick={exportPdf} disabled={busy} className="ui-btn ui-btn-secondary py-2.5 text-xs">
-          {busy ? 'A gerar…' : '📄 PDF'}
+        <button type="button" onClick={exportPdf} disabled={busy} className="ui-btn ui-btn-ghost py-2 text-ui-caption">
+          {busy ? 'A gerar…' : 'PDF'}
         </button>
         <button
           type="button"
@@ -276,9 +321,9 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
               '_blank'
             )
           }
-          className="ui-btn ui-btn-success py-2.5 text-xs"
+          className="ui-btn ui-btn-ghost py-2 text-ui-caption"
         >
-          💬 WhatsApp
+          WhatsApp
         </button>
       </div>
     </section>

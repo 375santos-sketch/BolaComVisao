@@ -53,21 +53,21 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
   return (
     <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="ui-card max-w-md w-full p-6 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-ui-line">
           <div className="flex items-center gap-2">
             <span className="text-xl">⚽</span>
-            <h3 className="text-lg font-bold text-white">
+            <h3 className="text-lg font-bold text-ui-text">
               {editingGoal ? 'Editar Golo Marcado' : 'Registar Golo Marcado'}
             </h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl">
+          <button onClick={onClose} className="text-ui-muted hover:text-ui-text text-xl">
             ✕
           </button>
         </div>
 
         {/* Marcador do Golo */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-ui-text uppercase tracking-wider mb-1.5">
             Marcador do Golo *
           </label>
           <select
@@ -83,7 +83,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
         {/* Assistência */}
         {!isAutoGolo && (
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-ui-text uppercase tracking-wider mb-1.5">
               Assistência (Passe decisivo)
             </label>
             <select
@@ -99,7 +99,7 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
 
         {/* Tipo de Golo */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-ui-text uppercase tracking-wider mb-1.5">
             Origem / Tipo de Golo
           </label>
           <select
@@ -118,9 +118,9 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
         {/* Minuto */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Minuto *</label>
+            <label className="block text-xs font-semibold text-ui-text uppercase tracking-wider">Minuto *</label>
             {showSuggestedLabel && (
-              <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+              <span className="text-[10px] text-ui-success font-mono flex items-center gap-1">
                 <span>🕒</span>
                 <span>sugerido pelo relógio</span>
               </span>
@@ -134,17 +134,17 @@ const GoalModalInner: React.FC<GoalModalProps> = ({
               setGoalMinute(e.target.value);
               setIsModified(true);
             }}
-            className={`w-full bg-slate-950 border rounded-xl px-3 py-2 text-white text-sm focus:outline-none ${
+            className={`w-full bg-ui-inset border rounded-xl px-3 py-2 text-ui-text text-sm focus:outline-none ${
               !goalMinute.trim()
-                ? 'border-slate-700 focus:border-emerald-500'
-                : 'border-slate-700 focus:border-emerald-500'
+                ? 'border-ui-line-strong focus:border-ui-success'
+                : 'border-ui-line-strong focus:border-ui-success'
             }`}
           />
-          {!goalMinute.trim() && <p className="text-xs text-rose-400 mt-1">Indica o minuto</p>}
+          {!goalMinute.trim() && <p className="text-xs text-ui-danger mt-1">Indica o minuto</p>}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-ui-line">
           <button onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2 text-sm">
             Cancelar
           </button>

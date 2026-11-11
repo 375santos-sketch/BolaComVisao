@@ -35,26 +35,28 @@ export const MatchClock: React.FC<MatchClockProps> = ({ match, className = '', o
 
   return (
     <div
-      className={`rounded-2xl bg-slate-950/80 border shadow-inner ${paused ? 'border-amber-500/70' : 'border-slate-800'} ${className}`}
+      className={`rounded-2xl bg-ui-inset/80 border shadow-inner ${paused ? 'border-ui-warning/70' : 'border-ui-line'} ${className}`}
     >
       <div className="flex items-center justify-between gap-3 p-2.5 sm:p-3">
         {/* Relógio mm:ss e Estado */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="text-base sm:text-lg">⏱️</span>
-            <span className="text-xl sm:text-2xl font-black font-mono tracking-wider text-white">{timeFormatted}</span>
+            <span className="text-xl sm:text-2xl font-black font-mono tracking-wider text-ui-text">
+              {timeFormatted}
+            </span>
           </div>
 
           {/* Estado: a correr vs parado */}
           <div className="flex items-center gap-1.5">
             {isRunning ? (
-              <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono uppercase bg-ui-success/20 text-ui-success border border-ui-success/40 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-ui-success animate-ping" />
                 <span>a correr</span>
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono uppercase bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1">
-                <span className={`w-1.5 h-1.5 rounded-full ${paused ? 'bg-amber-400' : 'bg-slate-500'}`} />
+              <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono uppercase bg-ui-surface-2 text-ui-muted border border-ui-line-strong flex items-center gap-1">
+                <span className={`w-1.5 h-1.5 rounded-full ${paused ? 'bg-ui-warning' : 'bg-ui-line-strong'}`} />
                 <span>{paused ? 'em pausa' : 'parado'}</span>
               </span>
             )}
@@ -63,12 +65,12 @@ export const MatchClock: React.FC<MatchClockProps> = ({ match, className = '', o
 
         {/* Minuto contínuo de jogo sugerido pelo relógio */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-slate-400 uppercase font-mono font-bold">Minuto:</span>
+          <span className="text-[10px] text-ui-muted uppercase font-mono font-bold">Minuto:</span>
           <span
             className={`px-2.5 py-1 rounded-xl text-xs font-black font-mono border ${
               suggestedMin
-                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
-                : 'bg-slate-900 text-slate-500 border-slate-800'
+                ? 'bg-ui-brand/20 text-ui-brand border-ui-brand/40 shadow-sm'
+                : 'bg-ui-surface text-ui-muted border-ui-line'
             }`}
           >
             {suggestedMin ? `${suggestedMin}'` : '—'}
@@ -86,7 +88,7 @@ export const MatchClock: React.FC<MatchClockProps> = ({ match, className = '', o
             {paused ? '▶️ Retomar o jogo' : '⏸️ Pausa'}
           </button>
           {paused && (
-            <p role="status" className="mt-1.5 text-center text-xs font-semibold text-amber-300">
+            <p role="status" className="mt-1.5 text-center text-xs font-semibold text-ui-warning">
               Jogo em pausa: o tempo está parado. Toca em Retomar quando o jogo recomeçar.
             </p>
           )}

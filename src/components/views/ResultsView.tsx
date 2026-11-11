@@ -124,13 +124,26 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      <button
-        type="button"
-        onClick={() => setShowLeague(true)}
-        className="ui-btn ui-btn-soft w-full mb-3 py-2.5 text-xs flex items-center justify-center gap-2"
-      >
-        📊 Classificação do campeonato
-      </button>
+      <div className="mb-3 grid grid-cols-3 gap-2">
+        <button type="button" onClick={() => setShowLeague(true)} className="ui-btn ui-btn-soft py-2.5 text-ui-caption">
+          Classificação do campeonato
+        </button>
+        {/* Análise: until it has its own module, Estatísticas and Análise dos jogos open from here on the phone */}
+        <button
+          type="button"
+          onClick={() => onNavigate('stats')}
+          className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
+        >
+          Estatísticas
+        </button>
+        <button
+          type="button"
+          onClick={() => onNavigate('analise_jogos')}
+          className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
+        >
+          Análise dos jogos
+        </button>
+      </div>
       {mvpMatch && (
         <MvpModal
           match={mvpMatch}

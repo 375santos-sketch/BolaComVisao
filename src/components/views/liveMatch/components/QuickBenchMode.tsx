@@ -33,7 +33,62 @@ interface QuickBenchModeProps {
   onRemoveShotInBoxAgainst?: () => void;
   onAddShotOutBoxAgainst: () => void;
   onRemoveShotOutBoxAgainst?: () => void;
+  /** Which part to show: the action pad (goals, sub, card, one-tap goal) or the numbers (shots, corners, fouls). */
+  section?: 'pad' | 'numbers';
 }
+
+// One row of the numbers: our count and theirs, each with − and +1
+const Counter: React.FC<{
+  label: string;
+  ours: number;
+  theirs: number;
+  addOurs: () => void;
+  removeOurs?: () => void;
+  addTheirs: () => void;
+  removeTheirs?: () => void;
+  titles: [string, string, string, string];
+}> = ({ label, ours, theirs, addOurs, removeOurs, addTheirs, removeTheirs, titles }) => (
+  <li className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-2">
+    <span className="flex items-center justify-end gap-1.5">
+      {removeOurs && (
+        <button
+          type="button"
+          onClick={removeOurs}
+          title={titles[1]}
+          className="ui-btn ui-btn-ghost h-9 w-9 text-ui-muted"
+        >
+          −
+        </button>
+      )}
+      <span className="ui-figure w-8 text-center text-ui-title text-ui-brand">{ours}</span>
+      <button type="button" onClick={addOurs} title={titles[0]} className="ui-btn ui-btn-soft h-10 w-11 text-ui-body">
+        +1
+      </button>
+    </span>
+    <span className="w-24 text-center text-ui-caption font-bold text-ui-muted">{label}</span>
+    <span className="flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={addTheirs}
+        title={titles[2]}
+        className="ui-btn ui-btn-secondary h-10 w-11 text-ui-body"
+      >
+        +1
+      </button>
+      <span className="ui-figure w-8 text-center text-ui-title text-ui-text">{theirs}</span>
+      {removeTheirs && (
+        <button
+          type="button"
+          onClick={removeTheirs}
+          title={titles[3]}
+          className="ui-btn ui-btn-ghost h-9 w-9 text-ui-muted"
+        >
+          −
+        </button>
+      )}
+    </span>
+  </li>
+);
 
 export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
   match,
@@ -61,13 +116,9 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
   onAddShotInBoxAgainst,
   onRemoveShotInBoxAgainst,
   onAddShotOutBoxAgainst,
-  onRemoveShotOutBoxAgainst
+  onRemoveShotOutBoxAgainst,
+  section = 'pad'
 }) => {
-  const scoredGoals = (match.goals || []).filter((g) => g.type === 'scored');
-  const concededGoals = (match.goals || []).filter((g) => g.type === 'conceded');
-  const scoredCount = scoredGoals.length;
-  const concededCount = concededGoals.length;
-
   // Remates valores
   const shotsInBoxFor = match.rematesDentroArea ?? match.shotsInBoxFor ?? 0;
   const shotsOutBoxFor = match.rematesForaArea ?? match.shotsOutBoxFor ?? 0;
@@ -95,82 +146,147 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
   // Lista dos últimos acontecimentos (últimos 3 golos/cartões)
   const recentGoals = [...(match.goals || [])].reverse().slice(0, 3);
 
+  if (section === 'numbers') {
+    return (
+      <section aria-label="Números do jogo" className="ui-card p-3 sm:p-4">
+        <div className="grid grid-cols-[1fr_auto_1fr] gap-2 border-b border-ui-line pb-2 text-ui-caption font-bold">
+          <span className="truncate text-right text-ui-brand">{myClubName}</span>
+          <span className="w-24" />
+          <span className="truncate text-ui-text">{match.opponent || 'Adversário'}</span>
+        </div>
+        <ul className="divide-y divide-ui-line">
+          <Counter
+            label="Remates na área"
+            ours={shotsInBoxFor}
+            theirs={shotsInBoxAgainst}
+            addOurs={onAddShotInBoxFor}
+            removeOurs={onRemoveShotInBoxFor}
+            addTheirs={onAddShotInBoxAgainst}
+            removeTheirs={onRemoveShotInBoxAgainst}
+            titles={[
+              'Adicionar Remate Dentro da Área',
+              'Retirar Remate Dentro da Área',
+              'Adicionar Remate Dentro da Área Adv',
+              'Retirar Remate Dentro da Área Adv'
+            ]}
+          />
+          <Counter
+            label="Remates fora"
+            ours={shotsOutBoxFor}
+            theirs={shotsOutBoxAgainst}
+            addOurs={onAddShotOutBoxFor}
+            removeOurs={onRemoveShotOutBoxFor}
+            addTheirs={onAddShotOutBoxAgainst}
+            removeTheirs={onRemoveShotOutBoxAgainst}
+            titles={[
+              'Adicionar Remate Fora da Área',
+              'Retirar Remate Fora da Área',
+              'Adicionar Remate Fora da Área Adv',
+              'Retirar Remate Fora da Área Adv'
+            ]}
+          />
+          <Counter
+            label="Cantos"
+            ours={match.cantos || 0}
+            theirs={match.cantosAdv || 0}
+            addOurs={onAddCorner}
+            removeOurs={onRemoveCorner}
+            addTheirs={onAddOpponentCorner}
+            removeTheirs={onRemoveOpponentCorner}
+            titles={['Adicionar Canto', 'Decrementar Canto', 'Adicionar Canto Adv', 'Decrementar Canto Adv']}
+          />
+          <Counter
+            label="Faltas"
+            ours={match.faltas || 0}
+            theirs={match.faltasAdv || 0}
+            addOurs={onAddFoul}
+            removeOurs={onRemoveFoul}
+            addTheirs={onAddOpponentFoul}
+            removeTheirs={onRemoveOpponentFoul}
+            titles={['Adicionar Falta', 'Decrementar Falta', 'Adicionar Falta Adv', 'Decrementar Falta Adv']}
+          />
+        </ul>
+        <p className="mt-2 text-center text-ui-caption text-ui-muted">
+          Remates: {totalShotsFor} nós · {totalShotsAgainst} adversário
+        </p>
+      </section>
+    );
+  }
+
   return (
-    <div className="modo-jogo-rapido space-y-4 animate-fadeIn">
-      {/* 1. Placar Rápido Minimalista */}
-      <div className="ui-card p-4 sm:p-5 flex items-center justify-between">
-        <div className="flex-1 text-center">
-          <span className="text-[11px] text-slate-400 font-mono uppercase block truncate max-w-[130px] sm:max-w-none mx-auto">
-            {myClubName}
-          </span>
-          <div className="text-4xl sm:text-5xl font-black font-mono text-cyan-400 mt-0.5">{scoredCount}</div>
-        </div>
-
-        <div className="px-3 text-xl font-mono text-slate-600 font-bold">—</div>
-
-        <div className="flex-1 text-center">
-          <span className="text-[11px] text-slate-400 font-mono uppercase block truncate max-w-[130px] sm:max-w-none mx-auto">
-            {match.opponent || 'Adversário'}
-          </span>
-          <div className="text-4xl sm:text-5xl font-black font-mono text-rose-400 mt-0.5">{concededCount}</div>
-        </div>
-      </div>
-
-      {/* 2. Botões de Ação Principal em Toque Único (Golos) */}
-      <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-3">
+      {/* The four things that happen in a game, within reach of the thumb */}
+      <section aria-label="Ações do jogo" className="grid grid-cols-2 gap-2.5">
         <button
+          type="button"
           onClick={onQuickGoalScored}
-          className="p-4 rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
+          aria-label="+1 Golo marcado"
+          className="ui-btn ui-btn-success min-h-[76px] flex-col gap-0.5 text-ui-lead"
         >
-          <span className="text-2xl">⚽</span>
-          <span>+1 Golo Marcado</span>
+          <span className="font-extrabold">Golo nosso</span>
+          <span className="text-ui-caption font-semibold opacity-80">{myClubName}</span>
         </button>
-
         <button
+          type="button"
           onClick={onQuickGoalConceded}
-          className="p-4 rounded-3xl bg-gradient-to-br from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
+          aria-label="+1 Golo sofrido"
+          className="ui-btn ui-btn-danger min-h-[76px] flex-col gap-0.5 text-ui-lead"
         >
-          <span className="text-2xl">🔴</span>
-          <span>+1 Golo Sofrido</span>
+          <span className="font-extrabold">Golo sofrido</span>
+          <span className="text-ui-caption font-semibold opacity-80">{match.opponent || 'Adversário'}</span>
         </button>
-      </div>
+        <button
+          type="button"
+          onClick={onQuickSub}
+          className="ui-btn ui-btn-secondary min-h-[60px] text-ui-body font-bold"
+        >
+          Substituição
+        </button>
+        <button
+          type="button"
+          onClick={onQuickCard}
+          className="ui-btn ui-btn-soft-warning min-h-[60px] text-ui-body font-bold"
+        >
+          Cartão
+        </button>
+      </section>
 
-      {/* 2.1 Golo com um toque: tocar em quem marcou */}
+      {/* One-tap goal: tap who scored (minute from the clock) */}
       {onQuickGoalBy && playing && onPitch.length > 0 && (
-        <section aria-label="Golo com um toque" className="ui-card p-3 space-y-2">
-          <div className="text-[11px] font-bold text-emerald-300 uppercase tracking-wider font-['Chakra_Petch']">
-            ⚽ Golo com um toque · toque em quem marcou
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <section aria-label="Golo com um toque" className="ui-card space-y-2 p-3">
+          <p className="text-ui-caption font-bold text-ui-muted">Golo com um toque · quem marcou?</p>
+          <div className="flex flex-wrap gap-1.5">
             {onPitch.map((p) => (
               <button
                 key={p.id}
                 type="button"
+                aria-label={playerLabel(p)}
                 onClick={() => {
                   const goal = onQuickGoalBy(p.id);
                   if (goal) setLastQuick(goal);
                 }}
-                className="ui-btn ui-btn-soft-success px-2 py-2.5 text-xs truncate"
+                className="ui-btn ui-btn-soft-success px-3 py-2 text-ui-caption"
               >
-                {playerLabel(p)}
+                <span className="ui-figure mr-1">{p.number ?? ''}</span>
+                {p.name.split(' ')[0]}
               </button>
             ))}
           </div>
           {lastStillThere && (
             <div
               role="status"
-              className="flex items-center justify-between gap-2 p-2 rounded-xl bg-emerald-500/15 border border-emerald-400/40 text-[11px] text-emerald-100"
+              className="flex items-center justify-between gap-2 rounded-ui-sm bg-ui-success-soft p-2 text-ui-caption text-ui-text"
             >
               <span className="truncate">
-                ✓ Golo de {nameOf(lastStillThere.scorerId)}
+                Golo de {nameOf(lastStillThere.scorerId)}
                 {lastStillThere.minute ? ` aos ${lastStillThere.minute}` : ''}
               </span>
-              <span className="flex gap-1.5 shrink-0">
+              <span className="flex shrink-0 gap-1.5">
                 {onEditGoal && (
                   <button
                     type="button"
                     onClick={() => onEditGoal(lastStillThere)}
-                    className="ui-btn ui-btn-soft-success px-2 py-1"
+                    className="ui-btn ui-btn-ghost px-2 py-1"
                   >
                     Assistência/origem
                   </button>
@@ -193,305 +309,20 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
         </section>
       )}
 
-      {/* 3. Ações de Banco: Substituição e Cartão */}
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={onQuickSub}
-          className="ui-btn ui-btn-soft p-3.5 text-xs flex flex-col items-center justify-center gap-1"
-        >
-          <span className="text-xl">🔄</span>
-          <span>Substituição</span>
-        </button>
-
-        <button
-          onClick={onQuickCard}
-          className="ui-btn ui-btn-soft-warning p-3.5 text-xs flex flex-col items-center justify-center gap-1"
-        >
-          <span className="text-xl">🟨</span>
-          <span>Cartão</span>
-        </button>
-      </div>
-
-      {/* 4. CONTADORES DE REMATES: A FAVOR E CONTRA (DENTRO E FORA DA ÁREA) */}
-      <div className="ui-card p-4 space-y-3.5">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-base">🎯</span>
-            <span className="text-xs font-black text-cyan-300 uppercase tracking-wider font-['Chakra_Petch']">
-              Remates à Baliza
-            </span>
-          </div>
-          <div className="text-xs font-mono font-bold text-slate-300">
-            Nós: <span className="text-cyan-400 font-black">{totalShotsFor}</span> vs Adv:{' '}
-            <span className="text-rose-400 font-black">{totalShotsAgainst}</span>
-          </div>
-        </div>
-
-        {/* 4.1 Remates a Favor */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block font-mono">
-            Remates a Favor (Nossa Equipa): Total {totalShotsFor}
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {/* Remates a Favor - Dentro da Área */}
-            <div className="ui-inset p-2.5 flex items-center justify-between">
-              <div className="min-w-0 pr-1">
-                <span className="text-[10px] text-emerald-300 uppercase font-mono block truncate font-bold">
-                  🎯 Dentro da Área
-                </span>
-                <span className="text-lg font-black font-mono text-white">{shotsInBoxFor}</span>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {onRemoveShotInBoxFor && (
-                  <button
-                    onClick={onRemoveShotInBoxFor}
-                    title="Decrementar Remate a Favor (Dentro da Área)"
-                    className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
-                  >
-                    -
-                  </button>
-                )}
-                <button
-                  onClick={onAddShotInBoxFor}
-                  title="Adicionar Remate a Favor (Dentro da Área)"
-                  className="ui-btn ui-btn-success w-9 h-9 text-base flex items-center justify-center"
-                >
-                  +1
-                </button>
-              </div>
-            </div>
-
-            {/* Remates a Favor - Fora da Área */}
-            <div className="ui-inset p-2.5 flex items-center justify-between">
-              <div className="min-w-0 pr-1">
-                <span className="text-[10px] text-teal-300 uppercase font-mono block truncate font-bold">
-                  🎯 Fora da Área
-                </span>
-                <span className="text-lg font-black font-mono text-white">{shotsOutBoxFor}</span>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {onRemoveShotOutBoxFor && (
-                  <button
-                    onClick={onRemoveShotOutBoxFor}
-                    title="Decrementar Remate a Favor (Fora da Área)"
-                    className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
-                  >
-                    -
-                  </button>
-                )}
-                <button
-                  onClick={onAddShotOutBoxFor}
-                  title="Adicionar Remate a Favor (Fora da Área)"
-                  className="ui-btn ui-btn-success w-9 h-9 text-base flex items-center justify-center"
-                >
-                  +1
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 4.2 Remates Contra */}
-        <div className="space-y-1.5 pt-1">
-          <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider block font-mono">
-            Remates Contra (Adversário): Total {totalShotsAgainst}
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {/* Remates Contra - Dentro da Área */}
-            <div className="ui-inset p-2.5 flex items-center justify-between">
-              <div className="min-w-0 pr-1">
-                <span className="text-[10px] text-rose-300 uppercase font-mono block truncate font-bold">
-                  🛡️ Dentro da Área
-                </span>
-                <span className="text-lg font-black font-mono text-white">{shotsInBoxAgainst}</span>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {onRemoveShotInBoxAgainst && (
-                  <button
-                    onClick={onRemoveShotInBoxAgainst}
-                    title="Decrementar Remate Contra (Dentro da Área)"
-                    className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
-                  >
-                    -
-                  </button>
-                )}
-                <button
-                  onClick={onAddShotInBoxAgainst}
-                  title="Adicionar Remate Contra (Dentro da Área)"
-                  className="ui-btn ui-btn-danger w-9 h-9 text-base flex items-center justify-center"
-                >
-                  +1
-                </button>
-              </div>
-            </div>
-
-            {/* Remates Contra - Fora da Área */}
-            <div className="ui-inset p-2.5 flex items-center justify-between">
-              <div className="min-w-0 pr-1">
-                <span className="text-[10px] text-orange-300 uppercase font-mono block truncate font-bold">
-                  🛡️ Fora da Área
-                </span>
-                <span className="text-lg font-black font-mono text-white">{shotsOutBoxAgainst}</span>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {onRemoveShotOutBoxAgainst && (
-                  <button
-                    onClick={onRemoveShotOutBoxAgainst}
-                    title="Decrementar Remate Contra (Fora da Área)"
-                    className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
-                  >
-                    -
-                  </button>
-                )}
-                <button
-                  onClick={onAddShotOutBoxAgainst}
-                  title="Adicionar Remate Contra (Fora da Área)"
-                  className="ui-btn ui-btn-warning w-9 h-9 text-base flex items-center justify-center"
-                >
-                  +1
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 5. Contadores Rápidos com + e -: Cantos & Faltas */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        {/* Cantos Favor */}
-        <div className="ui-card p-3 flex items-center justify-between">
-          <div className="min-w-0 pr-1">
-            <span className="text-[10px] text-slate-400 uppercase font-mono block truncate">🚩 Cantos (Nós)</span>
-            <span className="text-xl font-black font-mono text-cyan-400">{match.cantos || 0}</span>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            {onRemoveCorner && (
-              <button
-                onClick={onRemoveCorner}
-                title="Decrementar Canto"
-                className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
-              >
-                -
-              </button>
-            )}
-            <button
-              onClick={onAddCorner}
-              title="Adicionar Canto"
-              className="ui-btn ui-btn-soft w-9 h-9 text-base flex items-center justify-center"
-            >
-              +1
-            </button>
-          </div>
-        </div>
-
-        {/* Cantos Adv */}
-        <div className="ui-card p-3 flex items-center justify-between">
-          <div className="min-w-0 pr-1">
-            <span className="text-[10px] text-slate-400 uppercase font-mono block truncate">🚩 Cantos (Adv)</span>
-            <span className="text-xl font-black font-mono text-rose-400">{match.cantosAdv || 0}</span>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            {onRemoveOpponentCorner && (
-              <button
-                onClick={onRemoveOpponentCorner}
-                title="Decrementar Canto Adv"
-                className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
-              >
-                -
-              </button>
-            )}
-            <button
-              onClick={onAddOpponentCorner}
-              title="Adicionar Canto Adv"
-              className="ui-btn ui-btn-soft-danger w-9 h-9 text-base flex items-center justify-center"
-            >
-              +1
-            </button>
-          </div>
-        </div>
-
-        {/* Faltas Favor */}
-        <div className="ui-card p-3 flex items-center justify-between">
-          <div className="min-w-0 pr-1">
-            <span className="text-[10px] text-slate-400 uppercase font-mono block truncate">🚨 Faltas (Nós)</span>
-            <span className="text-xl font-black font-mono text-amber-400">{match.faltas || 0}</span>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            {onRemoveFoul && (
-              <button
-                onClick={onRemoveFoul}
-                title="Decrementar Falta"
-                className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
-              >
-                -
-              </button>
-            )}
-            <button
-              onClick={onAddFoul}
-              title="Adicionar Falta"
-              className="ui-btn ui-btn-soft-warning w-9 h-9 text-base flex items-center justify-center"
-            >
-              +1
-            </button>
-          </div>
-        </div>
-
-        {/* Faltas Adv */}
-        <div className="ui-card p-3 flex items-center justify-between">
-          <div className="min-w-0 pr-1">
-            <span className="text-[10px] text-slate-400 uppercase font-mono block truncate">🚨 Faltas (Adv)</span>
-            <span className="text-xl font-black font-mono text-slate-300">{match.faltasAdv || 0}</span>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            {onRemoveOpponentFoul && (
-              <button
-                onClick={onRemoveOpponentFoul}
-                title="Decrementar Falta Adv"
-                className="ui-btn ui-btn-secondary w-8 h-8 text-sm flex items-center justify-center"
-              >
-                -
-              </button>
-            )}
-            <button
-              onClick={onAddOpponentFoul}
-              title="Adicionar Falta Adv"
-              className="ui-btn ui-btn-secondary w-9 h-9 text-base flex items-center justify-center"
-            >
-              +1
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 6. Mini Feed dos Últimos Golos do Jogo */}
       {recentGoals.length > 0 && (
-        <div className="ui-inset p-3 space-y-1.5">
-          <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider block">
-            Últimos Golos Registados:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {recentGoals.map((g, idx) => {
-              const scorerPlayer = g.scorerId ? roster.find((p) => p.id === g.scorerId) : null;
-              const scorerName = scorerPlayer
-                ? scorerPlayer.name
-                : g.scorer || (g.type === 'scored' ? 'Nossa Equipa' : match.opponent);
-              return (
-                <span
-                  key={idx}
-                  className={`text-xs px-2.5 py-1 rounded-xl font-mono flex items-center gap-1.5 border ${
-                    g.type === 'scored'
-                      ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30'
-                      : 'bg-rose-950/40 text-rose-300 border-rose-500/30'
-                  }`}
-                >
-                  <span>{g.type === 'scored' ? '⚽' : '🔴'}</span>
-                  <span>{g.minute ? (String(g.minute).endsWith("'") ? g.minute : `${g.minute}'`) : '-'}</span>
-                  <strong className="font-bold">{scorerName}</strong>
-                </span>
-              );
-            })}
-          </div>
-        </div>
+        <p className="flex flex-wrap gap-1.5 px-1 text-ui-caption text-ui-muted">
+          {recentGoals.map((g, idx) => {
+            const scorerPlayer = g.scorerId ? roster.find((p) => p.id === g.scorerId) : null;
+            const scorerName = scorerPlayer
+              ? scorerPlayer.name.split(' ')[0]
+              : g.scorer || (g.type === 'scored' ? 'Nossa equipa' : match.opponent);
+            return (
+              <span key={idx} className={`ui-badge ${g.type === 'scored' ? 'ui-badge-success' : 'ui-badge-danger'}`}>
+                {g.minute ? (String(g.minute).endsWith("'") ? g.minute : `${g.minute}'`) : '–'} {scorerName}
+              </span>
+            );
+          })}
+        </p>
       )}
     </div>
   );

@@ -22,17 +22,17 @@ export const CaptainModal: React.FC<CaptainModalProps> = ({
   return (
     <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="ui-card max-w-md w-full p-6 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-ui-line">
           <div className="flex items-center gap-2">
-            <span className="text-xl text-amber-400 font-bold">©</span>
-            <h3 className="text-lg font-bold text-white">Definir Capitão de Equipa</h3>
+            <span className="text-xl text-ui-warning font-bold">©</span>
+            <h3 className="text-lg font-bold text-ui-text">Definir Capitão de Equipa</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl">
+          <button onClick={onClose} className="text-ui-muted hover:text-ui-text text-xl">
             ✕
           </button>
         </div>
 
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-ui-muted">
           O capitão enverga a braçadeira durante o jogo e é destacado nos relatórios e folhas de jogo.
         </p>
 
@@ -45,8 +45,8 @@ export const CaptainModal: React.FC<CaptainModalProps> = ({
             }}
             className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
               !currentCaptainId
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
-                : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white'
+                ? 'bg-ui-warning/20 text-ui-warning border-ui-warning/50'
+                : 'bg-ui-inset text-ui-muted border-ui-line hover:bg-ui-surface-2 hover:text-ui-text'
             }`}
           >
             Nenhum capitão definido
@@ -64,20 +64,20 @@ export const CaptainModal: React.FC<CaptainModalProps> = ({
                 }}
                 className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-medium border transition-colors flex items-center justify-between ${
                   isSelected
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold'
-                    : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+                    ? 'bg-ui-warning/20 text-ui-warning border-ui-warning/50 font-bold'
+                    : 'bg-ui-inset text-ui-text border-ui-line hover:bg-ui-surface-2 hover:text-ui-text'
                 }`}
               >
                 <span>
                   {playerLabel(p, 'Sem nome')} {p.number ? `(#${p.number})` : ''}
                 </span>
-                {isSelected && <span className="text-amber-400 font-bold">© Atual</span>}
+                {isSelected && <span className="text-ui-warning font-bold">© Atual</span>}
               </button>
             );
           })}
         </div>
 
-        <div className="flex justify-end pt-3 border-t border-slate-800">
+        <div className="flex justify-end pt-3 border-t border-ui-line">
           <button onClick={onClose} className="ui-btn ui-btn-secondary px-4 py-2 text-sm">
             Fechar
           </button>

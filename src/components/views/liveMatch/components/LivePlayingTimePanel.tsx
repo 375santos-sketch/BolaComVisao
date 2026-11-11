@@ -8,15 +8,22 @@ interface LivePlayingTimePanelProps {
   match: Match;
   roster: Player[];
   category?: string;
+  /** Open with everyone listed (the "Em campo" tab of the live game). */
+  defaultExpanded?: boolean;
 }
 
 /**
  * Live minutes per called-up player, with a warning for bench players who must come on soon
  * to reach the playing-time target (half of the match by default).
  */
-export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({ match, roster, category }) => {
+export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({
+  match,
+  roster,
+  category,
+  defaultExpanded = false
+}) => {
   const [, setTick] = useState(0);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 15000);
@@ -61,17 +68,15 @@ export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({ matc
         className="w-full flex items-center justify-between gap-2 p-3 text-left"
         aria-expanded={expanded}
       >
-        <span className="font-bold text-slate-200 font-['Chakra_Petch'] uppercase tracking-wide">
-          ⏱️ Minutos em jogo
-        </span>
-        <span className="text-slate-400 font-mono">
+        <span className="font-bold text-ui-text">Minutos em jogo</span>
+        <span className="text-ui-muted font-mono">
           {notPlayedYet.length > 0 ? `${notPlayedYet.length} ainda sem jogar · ` : ''}
           {expanded ? 'Esconder' : 'Ver todos'}
         </span>
       </button>
 
       {urgent.length > 0 && (
-        <div className="mx-3 mb-3 p-2.5 rounded-xl bg-amber-950/60 border border-amber-500/40 text-amber-200 space-y-1">
+        <div className="mx-3 mb-3 p-2.5 rounded-xl bg-ui-warning-soft border border-ui-warning/40 text-ui-warning space-y-1">
           <div className="font-bold">Para jogarem pelo menos metade do jogo ({targetMinutes}&apos;):</div>
           {urgent.map((r) => (
             <div key={r.id}>
@@ -91,17 +96,17 @@ export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({ matc
             return (
               <li key={r.id} className="flex items-center gap-2">
                 <span
-                  className={`w-2 h-2 rounded-full shrink-0 ${r.isOnPitch ? 'bg-emerald-400' : 'bg-slate-600'}`}
+                  className={`w-2 h-2 rounded-full shrink-0 ${r.isOnPitch ? 'bg-ui-success' : 'bg-ui-surface-3'}`}
                   title={r.isOnPitch ? 'Em campo' : 'No banco'}
                 />
-                <span className="flex-1 truncate text-slate-200">{r.label}</span>
-                <span className="w-20 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                <span className="flex-1 truncate text-ui-text">{r.label}</span>
+                <span className="w-20 h-1.5 rounded-full bg-ui-surface-2 overflow-hidden">
                   <span
-                    className={`block h-full ${r.minutes >= targetMinutes ? 'bg-emerald-400' : 'bg-amber-400'}`}
+                    className={`block h-full ${r.minutes >= targetMinutes ? 'bg-ui-success' : 'bg-ui-warning'}`}
                     style={{ width: `${pct}%` }}
                   />
                 </span>
-                <span className="w-9 text-right font-mono text-slate-300">{r.minutes}&apos;</span>
+                <span className="w-9 text-right font-mono text-ui-text">{r.minutes}&apos;</span>
               </li>
             );
           })}
