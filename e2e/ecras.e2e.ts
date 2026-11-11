@@ -40,14 +40,15 @@ const addToAgenda = async (page: Page, item: string) => {
   await page.getByRole('menuitem', { name: item, exact: true }).click();
 };
 
-/** Jogo → Resultados → Estatísticas or Análise dos jogos (Análise has no tab of its own yet on the phone). */
+/** Jogo → Análise (Estatísticas are the Atletas part of the one Análise). */
 const openFromResults = async (page: Page, name: 'Estatísticas' | 'Análise dos jogos') => {
   await navTo(page, /jogo/i);
   await page
     .getByRole('navigation', { name: 'Performance' })
-    .getByRole('button', { name: 'Resultados', exact: true })
+    .getByRole('button', { name: 'Análise', exact: true })
     .click();
-  await page.getByRole('button', { name, exact: true }).click();
+  if (name === 'Estatísticas')
+    await page.getByRole('group', { name: 'Partes da análise' }).getByRole('button', { name: 'Atletas' }).click();
 };
 
 /** Planeamento → Agenda, in the list view (the Agenda opens on the week; these tests read the list of events). */
@@ -141,10 +142,10 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   await navTo(page, /jogo/i);
   await expect(page.getByRole('region', { name: 'Plano' })).toBeVisible();
 
-  // Jogo: Pré-jogo · Ao vivo · Resultados; Estatísticas (with playing time) opens from Resultados
+  // Jogo: Pré-jogo · Ao vivo · Resultados · Análise; the minutes of play are in Análise → Atletas
   const performanceTabs = page.getByRole('navigation', { name: 'Performance' });
-  await performanceTabs.getByRole('button', { name: 'Resultados', exact: true }).click();
-  await page.getByRole('button', { name: 'Estatísticas', exact: true }).click();
+  await performanceTabs.getByRole('button', { name: 'Análise', exact: true }).click();
+  await page.getByRole('group', { name: 'Partes da análise' }).getByRole('button', { name: 'Atletas' }).click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
   // Games without the 7 first-half starters are flagged (their minutes come out short) and can be fixed here
   const missing = page.getByTestId('missing-starters');

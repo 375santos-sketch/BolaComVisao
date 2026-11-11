@@ -32,6 +32,7 @@ import {
 import { withRosterIds } from '../../lib/eventPlayers';
 import { CoachDashboardView } from './coach/CoachDashboardView';
 import { RankingTable } from './gameAnalysis/RankingTable';
+import { ShotsSection } from './gameAnalysis/ShotsSection';
 import { PlayingTimeSection } from './stats/PlayingTimeSection';
 import { StatsPanel } from '../stats/StatsPanel';
 import { goalRanking } from '../../lib/goalRanking';
@@ -392,6 +393,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
           <InsightsSection insights={analysis.insights} />
           <GoalTimingChart analysis={analysis} onSelectPeriod={(p) => setSelectedPeriodModal(p)} />
           <GoalTypesChart analysis={analysis} onSelectGoalType={handleSelectGoalType} />
+          <ShotsSection matches={analysis.filteredMatches} />
           <CornersAnalysis analysis={analysis} />
           <FoulsAnalysis analysis={analysis} />
           <CardsAnalysis analysis={analysis} />
@@ -445,10 +447,6 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
           <PlayerAnalysis
             analysis={analysis}
             players={state.roster}
-            matches={state.matches}
-            clubName={state.myClubName}
-            category={state.category}
-            season={state.season}
             onOpenPlayer={handleOpenPlayer}
           />
         </div>

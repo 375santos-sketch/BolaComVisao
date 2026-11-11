@@ -1,4 +1,3 @@
-export * from './SimplifiedOverview';
 export * from './InsightsSection';
 export * from './AnalysisFilters';
 export * from './AnalysisSummaryCards';
@@ -8,6 +7,5 @@ export * from './SetPiecesAndDisciplineAnalysis';
 export * from './MatchComparison';
 export * from './PlayerAnalysis';
 export * from './EventDrilldown';
-export * from './AnalysisExport';
 export * from './CoachReportModal';
 export * from './AskDataSection';
