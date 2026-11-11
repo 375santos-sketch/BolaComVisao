@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Match, Player } from '../../../../types';
 import { getPlayersOnPitchAtEndOfHalf, playerLabel } from '../../../../lib/utils';
 import { getMatchPhase, getNominalHalfDuration } from '../../../../lib/matchPhaseUtils';
-import { getLiveMatchMinutes, PLAYING_TIME_TARGET } from '../../../../lib/playingTime';
+import { FEWEST_MINUTES_COUNT, getLiveMatchMinutes } from '../../../../lib/playingTime';
 
 interface LivePlayingTimePanelProps {
   match: Match;
@@ -33,31 +33,19 @@ export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({
   const phase = getMatchPhase(match);
   if (phase === 'nao_iniciado') return null;
 
-  const { played, elapsedMinutes } = getLiveMatchMinutes(match);
+  const { played } = getLiveMatchMinutes(match);
   const totalMinutes = 2 * getNominalHalfDuration(match, category);
-  const targetMinutes = Math.round(totalMinutes * PLAYING_TIME_TARGET);
   const onPitch = new Set(getPlayersOnPitchAtEndOfHalf(match, phase === 'parte1' ? 1 : 2));
 
   const rows = Object.entries(played)
     .map(([id, minutes]) => {
       const player = roster.find((p) => p.id === id);
-      const isOnPitch = onPitch.has(id);
-      const missing = Math.max(0, targetMinutes - minutes);
-      // Latest game minute a bench player can come on and still reach the target
-      const latestEntry = totalMinutes - missing;
-      return {
-        id,
-        label: player ? playerLabel(player) : 'Atleta',
-        minutes,
-        isOnPitch,
-        missing,
-        latestEntry,
-        urgent: !isOnPitch && missing > 0 && latestEntry - elapsedMinutes <= 10
-      };
+      return { id, label: player ? playerLabel(player) : 'Atleta', minutes, isOnPitch: onPitch.has(id) };
     })
     .sort((a, b) => a.minutes - b.minutes || a.label.localeCompare(b.label, 'pt-PT'));
 
-  const urgent = rows.filter((r) => r.urgent);
+  // A warning only: the bench players with the fewest minutes in this game, so the coach can decide
+  const fewest = rows.filter((r) => !r.isOnPitch).slice(0, FEWEST_MINUTES_COUNT);
   const notPlayedYet = rows.filter((r) => r.minutes === 0 && !r.isOnPitch);
 
   return (
@@ -75,18 +63,11 @@ export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({
         </span>
       </button>
 
-      {urgent.length > 0 && (
-        <div className="mx-3 mb-3 p-2.5 rounded-xl bg-ui-warning-soft border border-ui-warning/40 text-ui-warning space-y-1">
-          <div className="font-bold">Para jogarem pelo menos metade do jogo ({targetMinutes}&apos;):</div>
-          {urgent.map((r) => (
-            <div key={r.id}>
-              • <strong>{r.label}</strong>{' '}
-              {r.latestEntry > elapsedMinutes
-                ? `tem de entrar até ao minuto ${r.latestEntry}`
-                : `já não chega aos ${targetMinutes}' (pode jogar no máximo mais ${Math.max(0, totalMinutes - elapsedMinutes)}')`}
-            </div>
-          ))}
-        </div>
+      {fewest.length > 0 && (
+        <p className="mx-3 mb-3 rounded-ui-sm bg-ui-warning-soft p-2.5 text-ui-text">
+          <strong className="text-ui-warning">Com menos minutos no banco:</strong>{' '}
+          {fewest.map((r) => `${r.label} (${r.minutes}')`).join(' · ')}
+        </p>
       )}
 
       {expanded && (
@@ -102,7 +83,7 @@ export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({
                 <span className="flex-1 truncate text-ui-text">{r.label}</span>
                 <span className="w-20 h-1.5 rounded-full bg-ui-surface-2 overflow-hidden">
                   <span
-                    className={`block h-full ${r.minutes >= targetMinutes ? 'bg-ui-success' : 'bg-ui-warning'}`}
+                    className={`block h-full ${r.isOnPitch ? 'bg-ui-success' : 'bg-ui-line-strong'}`}
                     style={{ width: `${pct}%` }}
                   />
                 </span>

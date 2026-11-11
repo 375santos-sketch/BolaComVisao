@@ -2,7 +2,6 @@ import React from 'react';
 import { weeklyFocus } from '../../lib/teamTrends';
 import { FormGame, SeasonSummary } from '../../lib/homeSummary';
 import { GoalsLineChart } from '../trends/GoalsLineChart';
-import { PLAYING_TIME_TARGET } from '../../lib/playingTime';
 import { Match } from '../../types';
 import { StatTile } from '../ui/StatTile';
 import { SectionHeader } from '../ui/SectionHeader';
@@ -13,8 +12,6 @@ import { Icon } from '../ui/Icon';
  * Início, the blocks of the season (the Dashboard places them in its grid): the season in four figures, the last
  * games, the minutes and the focus of the week. Each opens where the detail lives.
  */
-
-const TARGET = Math.round(PLAYING_TIME_TARGET * 100);
 
 /** The season in four figures: goals for and against, wins-draws-losses, training attendance. */
 export const SeasonTiles: React.FC<{ season: string; summary: SeasonSummary; onOpenStats: () => void }> = ({
@@ -128,9 +125,7 @@ export const MinutesCard: React.FC<{
         <span className="text-ui-body font-bold text-ui-muted">de {minutes.total}</span>
       </span>
       <span className="text-ui-caption text-ui-muted">
-        {short
-          ? `atletas abaixo de ${TARGET}% dos minutos dos jogos em que foram convocados`
-          : `todos os convocados com pelo menos ${TARGET}% dos minutos dos seus jogos`}
+        {short ? `com menos minutos nos jogos em que foram convocados (só um alerta)` : `ainda sem jogos terminados`}
       </span>
       {short > 0 && (
         <span className="mt-3 flex flex-wrap gap-1.5">

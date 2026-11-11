@@ -1,7 +1,6 @@
 import React from 'react';
 import { PlayerSeason } from '../../../lib/playerSeason';
 import { absenceReasonLabel } from '../../../lib/trainingQuick';
-import { PLAYING_TIME_TARGET } from '../../../lib/playingTime';
 import { homeFirstScore } from '../../../lib/utils';
 import { PlayerEvolutionCharts } from './PlayerEvolutionCharts';
 
@@ -22,7 +21,6 @@ export const PlayerSeasonSection: React.FC<{
 }> = ({ data, hideTiles = false }) => {
   const { games, trainings } = data;
   const sharePct = Math.round(games.share * 100);
-  const lowMinutes = games.availableMinutes > 0 && games.share < PLAYING_TIME_TARGET;
 
   return (
     <section aria-label="Época do atleta" className="space-y-3">
@@ -35,11 +33,7 @@ export const PlayerSeasonSection: React.FC<{
       <div className={`grid grid-cols-3 gap-2 text-center text-xs font-mono ${hideTiles ? 'hidden' : ''}`}>
         <Tile value={`${games.played}/${games.calledUp}`} label="Jogou / convoc." />
         <Tile value={games.starts} label="Titular" />
-        <Tile
-          value={`${games.minutes}'`}
-          label={`${sharePct}% dos minutos`}
-          tone={lowMinutes ? 'text-ui-warning' : 'text-ui-text'}
-        />
+        <Tile value={`${games.minutes}'`} label={`${sharePct}% dos minutos`} tone="text-ui-text" />
         <Tile value={data.goals} label="Golos" tone="text-ui-brand" />
         <Tile value={data.assists} label="Assistências" tone="text-ui-brand" />
         <Tile

@@ -1,7 +1,7 @@
 import { Match, Player } from '../types';
 import { getLineupSize } from './constants';
 import { getNominalHalfDuration } from './matchPhaseUtils';
-import { computeSeasonPlayingTime, getCalledUpPlayers, getLiveMatchMinutes, PLAYING_TIME_TARGET } from './playingTime';
+import { computeSeasonPlayingTime, getCalledUpPlayers, getLiveMatchMinutes } from './playingTime';
 import { isSeasonMatching, playerLabel, seasonFromDate } from './utils';
 
 /**
@@ -29,7 +29,7 @@ export function halftimePlan(
   allMatches: Match[],
   roster: Player[],
   category?: string
-): { rows: HalftimeRow[]; suggested: string[]; target: number } {
+): { rows: HalftimeRow[]; suggested: string[] } {
   const season = match.season || seasonFromDate(match.date);
   const seasonGames = (allMatches || []).filter(
     (m) => m && m.finished && m.id !== match.id && isSeasonMatching(m.season || seasonFromDate(m.date), season)
@@ -72,5 +72,5 @@ export function halftimePlan(
   }
   const suggested = pick.map((r) => r.playerId);
   rows.forEach((r) => (r.suggested = suggested.includes(r.playerId)));
-  return { rows, suggested, target: PLAYING_TIME_TARGET };
+  return { rows, suggested };
 }
