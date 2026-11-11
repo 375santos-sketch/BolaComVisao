@@ -30,13 +30,13 @@ export const DeletedMatchesSection: React.FC<DeletedMatchesSectionProps> = ({ st
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="text-[11px] font-mono text-slate-400 hover:text-cyan-300"
+        className="text-[11px] font-mono text-ui-muted hover:text-ui-brand"
       >
         🗑️ Jogos apagados ({deleted.length}) {open ? '▲' : '▼'}
       </button>
 
       {open && (
-        <div className="ui-card mt-2 divide-y divide-slate-800">
+        <div className="ui-card mt-2 divide-y divide-ui-line">
           {deleted.map(({ data: m, deletedAt, deletedBy }) => {
             const scored = (m.goals || []).filter((g) => g.type === 'scored').length;
             const conceded = (m.goals || []).filter((g) => g.type === 'conceded').length;
@@ -44,13 +44,13 @@ export const DeletedMatchesSection: React.FC<DeletedMatchesSectionProps> = ({ st
             return (
               <div key={m.id} className="flex items-center gap-3 p-3 text-xs">
                 <div className="flex-1 min-w-0">
-                  <div className="text-slate-200 font-bold truncate">
+                  <div className="text-ui-text font-bold truncate">
                     {formatDate(m.date)} · vs {m.opponent}{' '}
-                    <span className="font-mono text-slate-400">
+                    <span className="font-mono text-ui-muted">
                       {homeFirstScore(scored, conceded, m.location !== 'fora')}
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-500 font-mono">
+                  <div className="text-[10px] text-ui-muted font-mono">
                     Apagado em {formatWhen(deletedAt)}
                     {by ? ` por ${by}` : ''}
                   </div>

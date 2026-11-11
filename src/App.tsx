@@ -148,6 +148,8 @@ export default function App() {
   const [targetOpponentId, setTargetOpponentId] = useState<string | undefined>(undefined);
   // Época → a week's training opens that training in Treinos.
   const [targetTrainingId, setTargetTrainingId] = useState<string | undefined>(undefined);
+  // A finished game to open in Resultados (end of the live game, or a game tapped in the Agenda)
+  const [targetMatchId, setTargetMatchId] = useState<string | undefined>(undefined);
   const [openTodayTraining, setOpenTodayTraining] = useState(false);
 
   // Modals & Overlay state
@@ -715,6 +717,7 @@ export default function App() {
     // "Treino de hoje" shortcut: Treinos opens with today's attendance.
     setOpenTodayTraining(tab === 'treinos' && targetId === 'hoje');
     setTargetTrainingId(tab === 'treinos' && targetId && targetId !== 'hoje' ? targetId : undefined);
+    setTargetMatchId(tab === 'jogos' ? targetId : undefined);
     setCurrentTab(tab as TabType);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1004,6 +1007,8 @@ export default function App() {
 
             {currentTab === 'jogos' && (
               <ResultsView
+                key={targetMatchId || 'lista'}
+                initialMatchId={targetMatchId}
                 state={state}
                 onUpdateState={updateState}
                 onNavigate={handleNavigate}

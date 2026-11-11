@@ -78,8 +78,8 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
 
   const stat = (label: string, value: React.ReactNode) => (
     <div className="ui-card p-2 text-center">
-      <div className="text-[10px] text-slate-400 uppercase font-bold">{label}</div>
-      <div className="text-sm font-black text-white">{value}</div>
+      <div className="text-[10px] text-ui-muted uppercase font-bold">{label}</div>
+      <div className="text-sm font-black text-ui-text">{value}</div>
     </div>
   );
 
@@ -95,14 +95,14 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
         aria-label="Relatório do adversário"
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-white text-sm">🛡️ Relatório do adversário: {match.opponent}</h2>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-white px-2" aria-label="Fechar">
+          <h2 className="font-bold text-ui-text text-sm">🛡️ Relatório do adversário: {match.opponent}</h2>
+          <button type="button" onClick={onClose} className="text-ui-muted hover:text-ui-text px-2" aria-label="Fechar">
             ✕
           </button>
         </div>
 
         <section aria-label="Números do jogo" className="space-y-2">
-          <div className="text-[11px] font-bold text-cyan-300 uppercase">
+          <div className="text-[11px] font-bold text-ui-brand uppercase">
             📊 No jogo ({match.date.split('-').reverse().join('/')})
           </div>
           <div className="grid grid-cols-4 gap-2">
@@ -111,7 +111,7 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
             {stat('Cantos', facts.cornersAgainst ?? '—')}
             {stat('Faltas', facts.opponentFouls ?? '—')}
           </div>
-          <div className="text-xs text-slate-300">
+          <div className="text-xs text-ui-text">
             {facts.conceded === 0
               ? 'Não marcaram.'
               : `Golos deles: ${facts.concededGoals
@@ -123,7 +123,7 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
           </div>
         </section>
 
-        <label className="block text-[11px] font-bold text-slate-300 uppercase">
+        <label className="block text-[11px] font-bold text-ui-text uppercase">
           🧩 Sistema tático
           <input
             value={system}
@@ -133,7 +133,7 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
           />
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <label className="block text-[11px] font-bold text-emerald-300 uppercase">
+          <label className="block text-[11px] font-bold text-ui-success uppercase">
             💪 Pontos fortes
             <textarea
               value={strengths}
@@ -143,7 +143,7 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
               className={`${field} mt-1`}
             />
           </label>
-          <label className="block text-[11px] font-bold text-rose-300 uppercase">
+          <label className="block text-[11px] font-bold text-ui-danger uppercase">
             🎯 Pontos fracos
             <textarea
               value={weaknesses}
@@ -154,7 +154,7 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
             />
           </label>
         </div>
-        <label className="block text-[11px] font-bold text-amber-300 uppercase">
+        <label className="block text-[11px] font-bold text-ui-warning uppercase">
           ⚠️ Jogadores perigosos
           <textarea
             value={players}
@@ -164,11 +164,11 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
             className={`${field} mt-1`}
           />
         </label>
-        <label className="block text-[11px] font-bold text-slate-300 uppercase">
+        <label className="block text-[11px] font-bold text-ui-text uppercase">
           📝 Notas
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={`${field} mt-1`} />
         </label>
-        <label className="block text-[11px] font-bold text-cyan-300 uppercase">
+        <label className="block text-[11px] font-bold text-ui-brand uppercase">
           🔁 Para o próximo jogo contra eles
           <textarea
             value={nextTime}
@@ -180,11 +180,11 @@ export const OpponentReportModal: React.FC<OpponentReportModalProps> = ({
         </label>
 
         {earlier.length > 0 && (
-          <section aria-label="Jogos anteriores" className="rounded-xl border border-slate-800 p-2.5 space-y-1.5">
-            <div className="text-[11px] font-bold text-slate-300 uppercase">📚 Jogos anteriores contra eles</div>
+          <section aria-label="Jogos anteriores" className="rounded-xl border border-ui-line p-2.5 space-y-1.5">
+            <div className="text-[11px] font-bold text-ui-text uppercase">📚 Jogos anteriores contra eles</div>
             {earlier.map((m) => (
-              <div key={m.id} className="text-xs text-slate-300">
-                <span className="text-slate-400">{m.date.split('-').reverse().join('/')}:</span>{' '}
+              <div key={m.id} className="text-xs text-ui-text">
+                <span className="text-ui-muted">{m.date.split('-').reverse().join('/')}:</span>{' '}
                 {m.opponentReport?.nextTime ||
                   m.opponentReport?.notes ||
                   (m.opponentReport?.weaknesses || []).join(', ')}

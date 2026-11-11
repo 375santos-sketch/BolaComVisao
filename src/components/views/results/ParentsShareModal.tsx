@@ -28,7 +28,7 @@ export const ParentsShareModal: React.FC<ParentsShareModalProps> = ({ match, sta
       onClose={onClose}
       onShowToast={onShowToast}
     >
-      <label className="flex items-center gap-2 text-xs text-slate-300">
+      <label className="flex items-center gap-2 text-xs text-ui-text">
         <input type="checkbox" checked={includeScorers} onChange={(e) => toggleScorers(e.target.checked)} />
         Incluir os nomes de quem marcou
       </label>

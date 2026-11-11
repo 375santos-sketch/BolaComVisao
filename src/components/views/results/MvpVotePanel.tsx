@@ -121,9 +121,9 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
   return (
     <section aria-label="Votação dos pais" className="ui-inset p-3 space-y-2">
       <div className="flex items-center justify-between">
-        <h4 className="text-xs font-black text-amber-200 uppercase tracking-wider">🗳️ Votação dos pais</h4>
+        <h4 className="text-xs font-black text-ui-warning uppercase tracking-wider">🗳️ Votação dos pais</h4>
         {vote && (
-          <span className={`text-[10px] font-bold ${isOpen ? 'text-emerald-300' : 'text-slate-400'}`}>
+          <span className={`text-[10px] font-bold ${isOpen ? 'text-ui-success' : 'text-ui-muted'}`}>
             {isOpen ? 'Aberta' : 'Fechada'}
           </span>
         )}
@@ -131,7 +131,7 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
 
       {!vote ? (
         <>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-ui-muted">
             Os pais votam por um link, de forma anónima (um voto por telemóvel). No link só aparece o primeiro nome, a
             inicial do apelido e o número. A votação fica aberta {VOTE_HOURS} horas.
           </p>
@@ -139,7 +139,7 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
             type="button"
             disabled={busy || voteCandidates.length === 0}
             onClick={open}
-            className={`${btn} w-full border-amber-400/60 text-amber-200`}
+            className={`${btn} w-full border-ui-warning/60 text-ui-warning`}
           >
             {busy ? 'A abrir…' : 'Abrir votação dos pais'}
           </button>
@@ -149,15 +149,15 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
           {best.length > 0 ? (
             <ol aria-label="Mais votados" className="space-y-1">
               {best.map((t, i) => (
-                <li key={t.candidate.id} className="flex items-center gap-2 text-sm text-white">
+                <li key={t.candidate.id} className="flex items-center gap-2 text-sm text-ui-text">
                   <span>{i === 0 ? '🥇' : '🥈'}</span>
                   <span className="flex-1 font-bold">{t.candidate.label}</span>
-                  <span className="text-xs text-slate-300">{t.votes} voto(s)</span>
+                  <span className="text-xs text-ui-text">{t.votes} voto(s)</span>
                   {i === 0 && (
                     <button
                       type="button"
                       onClick={() => onPick(t.candidate.id)}
-                      className="text-[10px] text-amber-200 underline"
+                      className="text-[10px] text-ui-warning underline"
                     >
                       Escolher
                     </button>
@@ -166,9 +166,9 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
               ))}
             </ol>
           ) : (
-            <p className="text-[11px] text-slate-400">Ainda sem votos.</p>
+            <p className="text-[11px] text-ui-muted">Ainda sem votos.</p>
           )}
-          <div className="text-[10px] text-slate-500">
+          <div className="text-[10px] text-ui-muted">
             {vote.total ?? 0} voto(s) no total
             {vote.countedAt
               ? ` · contados às ${new Date(vote.countedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`
@@ -181,13 +181,13 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
                 aria-label="Link da votação"
                 value={link}
                 onFocus={(e) => e.target.select()}
-                className="w-full bg-slate-900 rounded-lg px-2 py-1.5 text-cyan-200 text-[11px] font-mono outline-none"
+                className="w-full bg-ui-surface rounded-lg px-2 py-1.5 text-ui-brand text-[11px] font-mono outline-none"
               />
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(voteMessage(title, link, vote.closesAt))}`}
                 target="_blank"
                 rel="noreferrer"
-                className={`${btn} bg-emerald-600 border-emerald-500 text-white`}
+                className={`${btn} bg-ui-success border-ui-success text-ui-text`}
               >
                 🟢 Enviar link aos pais por WhatsApp
               </a>
@@ -198,7 +198,7 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
               type="button"
               disabled={busy}
               onClick={() => count()}
-              className={`${btn} border-slate-600 text-slate-200`}
+              className={`${btn} border-ui-line-strong text-ui-text`}
             >
               🔄 Ver votos
             </button>
@@ -207,12 +207,12 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
                 type="button"
                 disabled={busy}
                 onClick={close}
-                className={`${btn} border-rose-500/50 text-rose-300`}
+                className={`${btn} border-ui-danger/50 text-ui-danger`}
               >
                 Fechar votação
               </button>
             ) : (
-              <span className="text-[10px] text-slate-500 self-center text-center">Os pais já não podem votar.</span>
+              <span className="text-[10px] text-ui-muted self-center text-center">Os pais já não podem votar.</span>
             )}
           </div>
         </>

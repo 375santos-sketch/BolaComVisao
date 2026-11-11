@@ -13,6 +13,8 @@ interface PostMatchSummaryModalProps {
   state?: AppState;
   onGeneratePdf?: () => void;
   onGenerateExcel?: () => void;
+  /** Shown inside the game's page in Resultados (no window, no PDF/Excel/Histórico buttons: the page has them). */
+  inline?: boolean;
 }
 
 export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
@@ -22,7 +24,8 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
   myClubName = 'Nossa Equipa',
   state,
   onGeneratePdf,
-  onGenerateExcel
+  onGenerateExcel,
+  inline = false
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -131,8 +134,20 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
   };
 
   return (
-    <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn overflow-y-auto">
-      <div className="bg-ui-surface border-2 border-ui-brand/50 rounded-3xl p-5 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 my-6 max-h-[92vh] overflow-y-auto">
+    <div
+      className={
+        inline
+          ? ''
+          : 'ui-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn overflow-y-auto'
+      }
+    >
+      <div
+        className={
+          inline
+            ? 'space-y-4'
+            : 'bg-ui-surface border-2 border-ui-brand/50 rounded-3xl p-5 sm:p-7 max-w-xl w-full shadow-2xl space-y-5 my-6 max-h-[92vh] overflow-y-auto'
+        }
+      >
         {/* 1. Header do Modal */}
         <div className="flex items-center justify-between border-b border-ui-line pb-3">
           <div className="flex items-center gap-2">
@@ -298,7 +313,7 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${inline ? 'hidden' : ''}`}>
             {onGeneratePdf && (
               <button
                 onClick={onGeneratePdf}

@@ -66,7 +66,7 @@ const ChronicleModal: React.FC<ChronicleModalProps> = ({ match, state, onClose, 
       onShowToast={onShowToast}
       rows={12}
     >
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-ui-muted">
         {state.myClubName || 'Nós'} {scored}-{conceded} {match.opponent} ·{' '}
         {match.date.slice(0, 10).split('-').reverse().join('/')}
       </p>
@@ -93,7 +93,7 @@ const ChronicleModal: React.FC<ChronicleModalProps> = ({ match, state, onClose, 
         ))}
       </div>
       <div className="flex items-center justify-between gap-2">
-        <label className="flex items-center gap-2 text-xs text-slate-300">
+        <label className="flex items-center gap-2 text-xs text-ui-text">
           <input
             type="checkbox"
             checked={withScorers}
@@ -115,11 +115,11 @@ const ChronicleModal: React.FC<ChronicleModalProps> = ({ match, state, onClose, 
         </button>
       </div>
       {note && (
-        <p role="note" className="text-[11px] text-amber-300">
+        <p role="note" className="text-[11px] text-ui-warning">
           {note}
         </p>
       )}
-      <p className="text-[11px] text-slate-500">
+      <p className="text-[11px] text-ui-muted">
         Escrita a partir dos dados do jogo, sem notas individuais. Pode mudar o texto antes de enviar.
       </p>
     </ShareMessageModal>

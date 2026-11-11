@@ -74,12 +74,12 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
       <div
         role="dialog"
         aria-label="Caderno de bolas paradas"
-        className="w-full max-w-lg bg-slate-900 border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-3 max-h-[94dvh] overflow-y-auto"
+        className="w-full max-w-lg bg-ui-surface border border-ui-brand/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-3 max-h-[94dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-white font-['Chakra_Petch'] uppercase">🎯 Bolas paradas</h3>
-          <button type="button" onClick={onClose} aria-label="Fechar bolas paradas" className="text-slate-400 text-lg">
+          <h3 className="text-base font-black text-ui-text font-['Chakra_Petch'] uppercase">🎯 Bolas paradas</h3>
+          <button type="button" onClick={onClose} aria-label="Fechar bolas paradas" className="text-ui-muted text-lg">
             ✕
           </button>
         </div>
@@ -95,8 +95,8 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
                   onClick={() => changeType(t.id)}
                   className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold border ${
                     editing.type === t.id
-                      ? 'bg-cyan-500 text-slate-950 border-cyan-400'
-                      : 'border-slate-700 text-slate-300'
+                      ? 'bg-ui-brand text-ui-brand-ink border-ui-brand'
+                      : 'border-ui-line-strong text-ui-text'
                   }`}
                 >
                   {t.icon} {t.label}
@@ -104,7 +104,7 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <label className="text-[11px] text-slate-400">
+              <label className="text-[11px] text-ui-muted">
                 Nome (opcional)
                 <input
                   className={input}
@@ -113,7 +113,7 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
                   onChange={(e) => setEditing({ ...editing, name: e.target.value })}
                 />
               </label>
-              <label className="text-[11px] text-slate-400">
+              <label className="text-[11px] text-ui-muted">
                 Lado
                 <select
                   className={input}
@@ -129,7 +129,7 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
             </div>
 
             <div className="space-y-1.5">
-              <div className="text-[11px] text-slate-400">Quem faz o quê</div>
+              <div className="text-[11px] text-ui-muted">Quem faz o quê</div>
               {editing.roles.map((r, i) => (
                 <div key={i} className="grid grid-cols-[1fr_1.3fr_auto] gap-1.5 items-center">
                   <input
@@ -165,7 +165,7 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
                   <button
                     type="button"
                     aria-label={`Tirar função ${r.label || i + 1}`}
-                    className="text-rose-300 px-1"
+                    className="text-ui-danger px-1"
                     onClick={() => setEditing({ ...editing, roles: editing.roles.filter((_, k) => k !== i) })}
                   >
                     ✕
@@ -174,14 +174,14 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
               ))}
               <button
                 type="button"
-                className="text-[11px] text-cyan-300 font-bold"
+                className="text-[11px] text-ui-brand font-bold"
                 onClick={() => setEditing({ ...editing, roles: [...editing.roles, { label: '', playerId: null }] })}
               >
                 ➕ Função
               </button>
             </div>
 
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               Notas (sinal, movimentos)
               <textarea
                 rows={2}
@@ -198,18 +198,18 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
                   <img
                     src={editing.image}
                     alt={`Desenho: ${setPieceTitle(editing)}`}
-                    className="w-full max-h-60 object-contain rounded-xl bg-white"
+                    className="w-full max-h-60 object-contain rounded-xl bg-[#ffffff]"
                   />
                   <button
                     type="button"
                     onClick={() => setEditing({ ...editing, image: undefined })}
-                    className="text-[11px] text-rose-300 underline"
+                    className="text-[11px] text-ui-danger underline"
                   >
                     Remover desenho
                   </button>
                 </div>
               )}
-              <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-cyan-500/50 text-cyan-200 text-xs font-bold cursor-pointer">
+              <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-ui-brand/50 text-ui-brand text-xs font-bold cursor-pointer">
                 📷 {loadingImage ? 'A preparar…' : editing.image ? 'Trocar desenho' : 'Importar desenho ou foto'}
                 <input
                   type="file"
@@ -252,36 +252,40 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
               ➕ Nova bola parada
             </button>
             {setPieces.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-6">
+              <p className="text-xs text-ui-muted text-center py-6">
                 Ainda sem bolas paradas. Guarde os cantos, livres e lançamentos que treinam, com o desenho e quem faz
                 cada função. A Convocatória mostra depois quem marca em cada jogo.
               </p>
             ) : (
               <ul aria-label="Lista de bolas paradas" className="space-y-2">
                 {setPieces.map((sp) => (
-                  <li key={sp.id} className="p-2.5 rounded-2xl bg-slate-950/60 border border-slate-800 flex gap-3">
+                  <li key={sp.id} className="p-2.5 rounded-2xl bg-ui-inset/60 border border-ui-line flex gap-3">
                     {sp.image ? (
-                      <img src={sp.image} alt="" className="w-20 h-16 object-contain rounded-lg bg-white shrink-0" />
+                      <img
+                        src={sp.image}
+                        alt=""
+                        className="w-20 h-16 object-contain rounded-lg bg-[#ffffff] shrink-0"
+                      />
                     ) : (
-                      <div className="w-20 h-16 rounded-lg bg-slate-900 flex items-center justify-center text-2xl shrink-0">
+                      <div className="w-20 h-16 rounded-lg bg-ui-surface flex items-center justify-center text-2xl shrink-0">
                         {setPieceType(sp.type).icon}
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold text-white truncate">{setPieceTitle(sp)}</div>
-                      <div className="text-[10px] text-slate-400 line-clamp-2">
+                      <div className="text-xs font-bold text-ui-text truncate">{setPieceTitle(sp)}</div>
+                      <div className="text-[10px] text-ui-muted line-clamp-2">
                         {sp.roles
                           .filter((r) => r.playerId)
                           .map((r) => `${r.label}: ${players.find((p) => p.id === r.playerId)?.name || '—'}`)
                           .join(' · ') || 'Sem atletas atribuídos'}
                       </div>
                       <div className="flex gap-3 mt-1 text-[11px]">
-                        <button type="button" className="text-cyan-300 font-bold" onClick={() => setEditing(sp)}>
+                        <button type="button" className="text-ui-brand font-bold" onClick={() => setEditing(sp)}>
                           Editar
                         </button>
                         <button
                           type="button"
-                          className="text-rose-300"
+                          className="text-ui-danger"
                           onClick={() => {
                             save(setPieces.filter((x) => x.id !== sp.id));
                             onShowToast(`${setPieceTitle(sp)} apagado`);

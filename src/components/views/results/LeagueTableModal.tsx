@@ -242,7 +242,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
     <button
       type="button"
       onClick={() => setPanel(id)}
-      className={`py-1.5 rounded-lg text-[11px] font-bold ${panel === id ? 'bg-cyan-500 text-slate-950' : 'text-cyan-200/80'}`}
+      className={`py-1.5 rounded-lg text-[11px] font-bold ${panel === id ? 'bg-ui-brand text-ui-brand-ink' : 'text-ui-brand/80'}`}
     >
       {label}
     </button>
@@ -256,17 +256,17 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
       <div
         role="dialog"
         aria-label="Classificação do campeonato"
-        className="w-full max-w-2xl bg-slate-900 border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 space-y-3 max-h-[94dvh] overflow-y-auto"
+        className="w-full max-w-2xl bg-ui-surface border border-ui-brand/40 rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 space-y-3 max-h-[94dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="text-base font-black text-white font-['Chakra_Petch'] uppercase">📊 Classificação</h3>
-            <div className="text-[11px] text-slate-400 truncate">
+            <h3 className="text-base font-black text-ui-text font-['Chakra_Petch'] uppercase">📊 Classificação</h3>
+            <div className="text-[11px] text-ui-muted truncate">
               {allPhases.length > 1 ? phaseLabel(allPhases, league) : league.name || 'Campeonato'} · Época {season}
             </div>
           </div>
-          <button type="button" onClick={onClose} aria-label="Fechar classificação" className="text-slate-400 text-lg">
+          <button type="button" onClick={onClose} aria-label="Fechar classificação" className="text-ui-muted text-lg">
             ✕
           </button>
         </div>
@@ -280,7 +280,9 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 aria-pressed={l.id === league.id}
                 onClick={() => choosePhase(l)}
                 className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                  l.id === league.id ? 'bg-cyan-500 text-slate-950 border-cyan-400' : 'border-slate-700 text-slate-300'
+                  l.id === league.id
+                    ? 'bg-ui-brand text-ui-brand-ink border-ui-brand'
+                    : 'border-ui-line-strong text-ui-text'
                 }`}
               >
                 {phaseLabel(allPhases, l)}
@@ -297,12 +299,12 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
 
         {newPhase && (
           <section aria-label="Nova fase" className="ui-inset space-y-2 p-3">
-            <p className="text-[11px] text-slate-300">
+            <p className="text-[11px] text-ui-text">
               A fase atual fica guardada como está. A nova fase começa com a tabela a zeros, novas equipas e novas
               jornadas; os jogos de {ourName} a partir do dia indicado contam para ela.
             </p>
             <div className="grid grid-cols-2 gap-2">
-              <label className="text-[10px] text-slate-400">
+              <label className="text-[10px] text-ui-muted">
                 Nome da fase
                 <input
                   className={input}
@@ -311,7 +313,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                   onChange={(e) => setNewPhase({ ...newPhase, name: e.target.value })}
                 />
               </label>
-              <label className="text-[10px] text-slate-400">
+              <label className="text-[10px] text-ui-muted">
                 Começa em
                 <input
                   type="date"
@@ -330,12 +332,12 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
         {ours && ours.played > 0 && (
           <div
             aria-label="Posição da equipa"
-            className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-400/40 flex items-center gap-3"
+            className="p-3 rounded-2xl bg-ui-brand/10 border border-ui-brand/40 flex items-center gap-3"
           >
-            <div className="text-3xl font-black text-cyan-300 font-['Chakra_Petch']">{ours.position}.º</div>
-            <div className="text-xs text-slate-200">
+            <div className="text-3xl font-black text-ui-brand font-['Chakra_Petch']">{ours.position}.º</div>
+            <div className="text-xs text-ui-text">
               <b>{ourName}</b> em {ours.position}.º lugar de {table.length}
-              <div className="text-[11px] text-slate-400">
+              <div className="text-[11px] text-ui-muted">
                 {ours.points} pontos · {ours.played} jogos ({ours.won}V {ours.drawn}E {ours.lost}D) · golos{' '}
                 {ours.goalsFor}-{ours.goalsAgainst}
               </div>
@@ -353,14 +355,14 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
         {panel === 'tabela' && (
           <>
             {table.length <= 1 ? (
-              <p className="text-xs text-slate-400 text-center py-6">
+              <p className="text-xs text-ui-muted text-center py-6">
                 Ainda sem equipas. Indique as equipas da série em <b>Equipas</b> e registe os resultados dos outros
                 jogos em <b>Resultados</b> ou <b>Colar</b>. Os jogos de campeonato de {ourName} entram sozinhos.
               </p>
             ) : (
-              <table aria-label="Tabela classificativa" className="w-full text-[11px] text-slate-200">
+              <table aria-label="Tabela classificativa" className="w-full text-[11px] text-ui-text">
                 <thead>
-                  <tr className="text-slate-400 text-[10px] uppercase">
+                  <tr className="text-ui-muted text-[10px] uppercase">
                     <th className="text-left py-1 w-6">#</th>
                     <th className="text-left">Equipa</th>
                     <th title="Jogos">J</th>
@@ -378,7 +380,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                   {table.map((r) => (
                     <tr
                       key={r.team}
-                      className={`border-t border-slate-800 text-center ${r.ours ? 'bg-cyan-500/15 text-white font-bold' : ''}`}
+                      className={`border-t border-ui-line text-center ${r.ours ? 'bg-ui-brand/15 text-ui-text font-bold' : ''}`}
                     >
                       <td className="text-left py-1.5 font-mono">{r.position}</td>
                       <td className="text-left truncate max-w-[9rem] sm:max-w-none">{r.team}</td>
@@ -396,7 +398,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 </tbody>
               </table>
             )}
-            <p className="text-[10px] text-slate-500">
+            <p className="text-[10px] text-ui-muted">
               Vitória 3 pontos, empate 1. Em igualdade: jogos entre as equipas empatadas, depois diferença de golos e
               golos marcados.
             </p>
@@ -412,7 +414,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
             </datalist>
             <section aria-label="Novo resultado" className="ui-inset space-y-2 p-3">
               <div className="grid grid-cols-2 gap-2">
-                <label className="text-[10px] text-slate-400">
+                <label className="text-[10px] text-ui-muted">
                   Jornada
                   <input
                     type="number"
@@ -422,7 +424,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                     onChange={(e) => setForm({ ...form, round: e.target.value })}
                   />
                 </label>
-                <label className="text-[10px] text-slate-400">
+                <label className="text-[10px] text-ui-muted">
                   Data (opcional)
                   <input
                     type="date"
@@ -433,7 +435,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 </label>
               </div>
               <div className="grid grid-cols-[1fr_3rem_3rem_1fr] gap-1.5 items-end">
-                <label className="text-[10px] text-slate-400">
+                <label className="text-[10px] text-ui-muted">
                   Casa
                   <input
                     list="league-teams"
@@ -458,7 +460,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                   value={form.awayGoals}
                   onChange={(e) => setForm({ ...form, awayGoals: e.target.value })}
                 />
-                <label className="text-[10px] text-slate-400">
+                <label className="text-[10px] text-ui-muted">
                   Fora
                   <input
                     list="league-teams"
@@ -477,12 +479,12 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
               {[...games].reverse().map((g) => (
                 <li
                   key={g.id}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-950/50 border border-slate-800 text-[11px]"
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-ui-inset/50 border border-ui-line text-[11px]"
                 >
-                  <span className="w-12 shrink-0 text-slate-500 font-mono">
+                  <span className="w-12 shrink-0 text-ui-muted font-mono">
                     {g.round ? `J${g.round}` : ''} {ddmm(g.date)}
                   </span>
-                  <span className="flex-1 min-w-0 truncate text-slate-200">
+                  <span className="flex-1 min-w-0 truncate text-ui-text">
                     {g.home}{' '}
                     <b className="font-mono">
                       {g.homeGoals}-{g.awayGoals}
@@ -490,12 +492,12 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                     {g.away}
                   </span>
                   {g.fromApp ? (
-                    <span className="text-[10px] text-cyan-300/80 shrink-0">da app</span>
+                    <span className="text-[10px] text-ui-brand/80 shrink-0">da app</span>
                   ) : (
                     <button
                       type="button"
                       aria-label={`Apagar ${g.home} ${g.homeGoals}-${g.awayGoals} ${g.away}`}
-                      className="text-rose-300 shrink-0"
+                      className="text-ui-danger shrink-0"
                       onClick={() => save({ ...league, games: league.games.filter((x) => x.id !== g.id) })}
                     >
                       ✕
@@ -526,7 +528,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
               >
                 {reading ? 'A ler o print…' : '📷 Importar print da jornada'}
               </button>
-              <p className="text-[10px] text-slate-400">
+              <p className="text-[10px] text-ui-muted">
                 Faça um print da jornada (site da FPF ou da associação) e escolha-o aqui. A app lê as equipas e os
                 resultados; o jogo de {ourName} não é importado porque já vem da app.
               </p>
@@ -536,9 +538,9 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                     {printGames.games.map((g) => (
                       <li
                         key={g.id}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-200"
+                        className="px-2.5 py-1.5 rounded-xl bg-ui-surface border border-ui-line text-[11px] text-ui-text"
                       >
-                        <span className="text-slate-500 font-mono mr-1.5">{ddmm(g.date)}</span>
+                        <span className="text-ui-muted font-mono mr-1.5">{ddmm(g.date)}</span>
                         {g.home}{' '}
                         <b className="font-mono">
                           {g.homeGoals}-{g.awayGoals}
@@ -548,7 +550,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                     ))}
                   </ul>
                   {printGames.ours > 0 && (
-                    <p className="text-[10px] text-cyan-300/80">
+                    <p className="text-[10px] text-ui-brand/80">
                       O jogo de {ourName} foi deixado de fora (já vem da app).
                     </p>
                   )}
@@ -572,14 +574,14 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 </div>
               )}
             </section>
-            <p className="text-[11px] text-slate-300">
+            <p className="text-[11px] text-ui-text">
               <b>Do site da FPF:</b> abra a série em resultados.fpf.pt, separador <b>Jogos</b>, escolha a jornada,
               selecione tudo, copie e cole aqui (pode colar várias jornadas). A app reconhece a nossa equipa e os nomes
               dos adversários.
               <br />
               Também aceita resultados de uma mensagem ou do Excel, um jogo por linha, com a equipa da casa primeiro:
             </p>
-            <pre className="text-[10px] text-slate-400 bg-slate-950 rounded-xl p-2 whitespace-pre-wrap">
+            <pre className="text-[10px] text-ui-muted bg-ui-inset rounded-xl p-2 whitespace-pre-wrap">
               {'Jornada 3\nMação 2-2 Abrantes\n12/10 Torres Novas 0 x 4 Riachense'}
             </pre>
             <textarea
@@ -591,10 +593,10 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
               placeholder="Cole aqui os resultados…"
             />
             {pasted.trim() && (
-              <div className="text-[11px] text-slate-300">
+              <div className="text-[11px] text-ui-text">
                 {preview.games.length} jogo(s) reconhecido(s)
                 {preview.skipped.length > 0 && (
-                  <div className="text-amber-300">
+                  <div className="text-ui-warning">
                     Não percebi {preview.skipped.length} linha(s): {preview.skipped.slice(0, 3).join(' · ')}
                     {preview.skipped.length > 3 ? '…' : ''}
                   </div>
@@ -614,7 +616,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
 
         {panel === 'equipas' && (
           <div key={league.id} className="space-y-2">
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               {allPhases.length > 1 ? 'Nome da fase' : 'Nome da competição'}
               <input
                 className={input}
@@ -625,7 +627,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 }}
               />
             </label>
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               Nome da nossa equipa na tabela
               <input
                 className={input}
@@ -638,7 +640,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
               />
             </label>
             {league.startDate && (
-              <label className="block text-[11px] text-slate-400">
+              <label className="block text-[11px] text-ui-muted">
                 Começa em
                 <input
                   type="date"
@@ -664,7 +666,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 />
               </label>
             )}
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               Equipas da série (uma por linha)
               <textarea
                 aria-label="Equipas da série"
@@ -689,7 +691,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
             >
               Guardar equipas
             </button>
-            <p className="text-[10px] text-slate-500">
+            <p className="text-[10px] text-ui-muted">
               As equipas que aparecem nos resultados entram na tabela sozinhas. Os nomes comparam-se sem acentos nem
               maiúsculas (Mação = MACAO).
             </p>

@@ -73,7 +73,15 @@ export default tseslint.config(
       'src/components/views/ResultsView.tsx',
       'src/components/views/schedule/**/*.tsx',
       'src/components/views/trainings/!(PDFViewerModal).tsx',
-      'src/components/ui/DateTimePT.tsx'
+      'src/components/ui/DateTimePT.tsx',
+      // Módulo Jogo
+      'src/components/views/PreMatchView.tsx',
+      'src/components/views/LiveMatchView.tsx',
+      'src/components/views/liveMatch/**/*.tsx',
+      'src/components/views/gameCenter/**/*.tsx',
+      'src/components/views/results/**/*.tsx',
+      'src/components/views/setpieces/**/*.tsx',
+      'src/components/PerformanceSubNav.tsx'
     ],
     rules: {
       'no-restricted-syntax': [

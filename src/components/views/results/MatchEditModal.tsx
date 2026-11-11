@@ -86,19 +86,19 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
       <div
         role="dialog"
         aria-label="Editar jogo"
-        className="bg-slate-900 border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[92vh] overflow-y-auto p-4 space-y-4"
+        className="bg-ui-surface border border-ui-brand/40 rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[92vh] overflow-y-auto p-4 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-white font-['Chakra_Petch'] uppercase tracking-wider">
+          <h3 className="text-base font-black text-ui-text font-['Chakra_Petch'] uppercase tracking-wider">
             ✏️ Editar jogo
           </h3>
-          <button type="button" onClick={onClose} aria-label="Fechar" className="text-slate-400 text-lg">
+          <button type="button" onClick={onClose} aria-label="Fechar" className="text-ui-muted text-lg">
             ✕
           </button>
         </div>
 
-        <div className="text-center text-sm font-bold text-cyan-200 font-mono" aria-label="Resultado">
+        <div className="text-center text-sm font-bold text-ui-brand font-mono" aria-label="Resultado">
           {home
             ? `Nós ${scored} – ${conceded} ${draft.opponent || 'Adversário'}`
             : `${draft.opponent || 'Adversário'} ${conceded} – ${scored} Nós`}
@@ -106,17 +106,17 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
 
         {/* Dados do jogo */}
         <section aria-label="Dados do jogo" className="space-y-2">
-          <h4 className="text-[11px] font-bold text-cyan-400 uppercase">Dados do jogo</h4>
+          <h4 className="text-[11px] font-bold text-ui-brand uppercase">Dados do jogo</h4>
           <div className="grid grid-cols-2 gap-2">
-            <label className="text-[10px] text-slate-400">
+            <label className="text-[10px] text-ui-muted">
               Data
               <input type="date" className={input} value={draft.date} onChange={(e) => set({ date: e.target.value })} />
             </label>
-            <label className="text-[10px] text-slate-400">
+            <label className="text-[10px] text-ui-muted">
               Adversário
               <input className={input} value={draft.opponent} onChange={(e) => set({ opponent: e.target.value })} />
             </label>
-            <label className="text-[10px] text-slate-400">
+            <label className="text-[10px] text-ui-muted">
               Tipo
               <select className={input} value={draft.type} onChange={(e) => set({ type: e.target.value as MatchType })}>
                 <option value="campeonato">Campeonato</option>
@@ -124,20 +124,20 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
                 <option value="amigavel">Amigável</option>
               </select>
             </label>
-            <label className="text-[10px] text-slate-400">
+            <label className="text-[10px] text-ui-muted">
               Fase / jornada
               <input className={input} value={draft.phase} onChange={(e) => set({ phase: e.target.value })} />
             </label>
           </div>
           <div className="flex items-center gap-2 text-xs" role="group" aria-label="Local do jogo">
-            <span className="text-slate-400">Local:</span>
+            <span className="text-ui-muted">Local:</span>
             {(['casa', 'fora'] as const).map((loc) => (
               <button
                 key={loc}
                 type="button"
                 aria-pressed={draft.location === loc}
                 onClick={() => set({ location: loc })}
-                className={`${small} ${draft.location === loc ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200' : 'border-slate-600 text-slate-400'}`}
+                className={`${small} ${draft.location === loc ? 'bg-ui-brand/20 border-ui-brand text-ui-brand' : 'border-ui-line-strong text-ui-muted'}`}
               >
                 {loc === 'casa' ? 'Casa' : 'Fora'}
               </button>
@@ -147,12 +147,12 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
 
         {/* Golos */}
         <section aria-label="Golos" className="space-y-2">
-          <h4 className="text-[11px] font-bold text-cyan-400 uppercase">Golos</h4>
+          <h4 className="text-[11px] font-bold text-ui-brand uppercase">Golos</h4>
           {draft.goals.map((g, i) => (
             <div
               key={g.id}
               aria-label={`Golo ${i + 1}`}
-              className={`p-2 rounded-xl border space-y-1.5 ${g.type === 'scored' ? 'border-emerald-500/30 bg-emerald-950/20' : 'border-rose-500/30 bg-rose-950/20'}`}
+              className={`p-2 rounded-xl border space-y-1.5 ${g.type === 'scored' ? 'border-ui-success/30 bg-ui-success-soft' : 'border-ui-danger/30 bg-ui-danger-soft'}`}
             >
               <div className="flex items-center gap-1.5">
                 <select
@@ -178,7 +178,7 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
                   type="button"
                   aria-label="Apagar golo"
                   onClick={() => set({ goals: draft.goals.filter((x) => x.id !== g.id) })}
-                  className="ml-auto text-rose-400 text-sm px-1"
+                  className="ml-auto text-ui-danger text-sm px-1"
                 >
                   🗑
                 </button>
@@ -236,14 +236,14 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
             <button
               type="button"
               onClick={() => set({ goals: [...draft.goals, newGoalDraft('scored')] })}
-              className={`${small} border-emerald-500/50 text-emerald-300`}
+              className={`${small} border-ui-success/50 text-ui-success`}
             >
               + Golo nosso
             </button>
             <button
               type="button"
               onClick={() => set({ goals: [...draft.goals, newGoalDraft('conceded')] })}
-              className={`${small} border-rose-500/50 text-rose-300`}
+              className={`${small} border-ui-danger/50 text-ui-danger`}
             >
               + Golo sofrido
             </button>
@@ -253,9 +253,9 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
         {/* Titulares */}
         {(['lineup', 'lineupSecondHalf'] as const).map((key) => (
           <section key={key} aria-label={key === 'lineup' ? 'Titulares da 1.ª parte' : 'Titulares da 2.ª parte'}>
-            <h4 className="text-[11px] font-bold text-cyan-400 uppercase mb-1.5">
+            <h4 className="text-[11px] font-bold text-ui-brand uppercase mb-1.5">
               {key === 'lineup' ? 'Titulares da 1.ª parte' : 'Titulares da 2.ª parte (opcional)'} ·{' '}
-              <span className={draft[key].length === lineupSize ? 'text-emerald-300' : 'text-amber-300'}>
+              <span className={draft[key].length === lineupSize ? 'text-ui-success' : 'text-ui-warning'}>
                 {draft[key].length}/{lineupSize}
               </span>
             </h4>
@@ -268,7 +268,7 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
                     type="button"
                     aria-pressed={on}
                     onClick={() => toggle(key, p.id)}
-                    className={`${small} ${on ? 'bg-cyan-500/20 border-cyan-400 text-cyan-100' : 'border-slate-700 text-slate-400'}`}
+                    className={`${small} ${on ? 'bg-ui-brand/20 border-ui-brand text-ui-brand' : 'border-ui-line-strong text-ui-muted'}`}
                   >
                     {playerLabel(p)}
                   </button>
@@ -280,12 +280,12 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
 
         {/* Substituições */}
         <section aria-label="Substituições" className="space-y-2">
-          <h4 className="text-[11px] font-bold text-cyan-400 uppercase">Substituições</h4>
+          <h4 className="text-[11px] font-bold text-ui-brand uppercase">Substituições</h4>
           {draft.subs.map((s, i) => (
             <div
               key={s.id}
               aria-label={`Substituição ${i + 1}`}
-              className="p-2 rounded-xl border border-slate-700 space-y-1.5"
+              className="p-2 rounded-xl border border-ui-line-strong space-y-1.5"
             >
               <div className="flex items-center gap-1.5">
                 <select
@@ -307,7 +307,7 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
                   type="button"
                   aria-label="Apagar substituição"
                   onClick={() => set({ subs: draft.subs.filter((x) => x.id !== s.id) })}
-                  className="ml-auto text-rose-400 text-sm px-1"
+                  className="ml-auto text-ui-danger text-sm px-1"
                 >
                   🗑
                 </button>
@@ -336,7 +336,7 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
           <button
             type="button"
             onClick={() => set({ subs: [...draft.subs, newSubDraft()] })}
-            className={`${small} border-cyan-500/50 text-cyan-300`}
+            className={`${small} border-ui-brand/50 text-ui-brand`}
           >
             + Substituição
           </button>
@@ -346,7 +346,7 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
         {balance && (
           <p
             aria-label="Minutos de jogo"
-            className={`text-[11px] p-2 rounded-lg ${balance.ok ? 'bg-emerald-950/40 text-emerald-200' : 'bg-rose-950/40 text-rose-200'}`}
+            className={`text-[11px] p-2 rounded-lg ${balance.ok ? 'bg-ui-success-soft text-ui-success' : 'bg-ui-danger-soft text-ui-danger'}`}
           >
             {balance.ok
               ? `✓ Minutos de jogo: ${balance.total}' = ${balance.lineupSize} x ${balance.gameMinutes}'`
@@ -354,7 +354,7 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
           </p>
         )}
         {showErrors && errors.length > 0 && (
-          <ul role="alert" className="text-[11px] text-rose-200 bg-rose-950/40 rounded-lg p-2 list-disc pl-5">
+          <ul role="alert" className="text-[11px] text-ui-danger bg-ui-danger-soft rounded-lg p-2 list-disc pl-5">
             {errors.map((e) => (
               <li key={e}>{e}</li>
             ))}

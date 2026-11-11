@@ -25,8 +25,6 @@ import { LineupModal } from './liveMatch/components/LineupModal';
 import { MatchTimeline } from './gameCenter/MatchTimeline';
 import { GameChecklistModal } from './gameCenter/GameChecklistModal';
 import { withFinalDurations } from '../../lib/matchChecklist';
-import { PostMatchSummaryModal } from './gameCenter/PostMatchSummaryModal';
-import { generateMatchSheetPDF } from '../../lib/pdfUtils';
 
 interface LiveMatchViewProps {
   state: AppState;
@@ -51,8 +49,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 }) => {
   const [liveTab, setLiveTab] = useState<'campo' | 'numeros' | 'cronologia'>('campo');
   const [showChecklistModal, setShowChecklistModal] = useState<boolean>(false);
-  const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
-  const [completedMatchSummary, setCompletedMatchSummary] = useState<Match | null>(null);
   const [showLineupFirstHalfModal, setShowLineupFirstHalfModal] = useState<boolean>(false);
   const [showLineupSecondHalfModal, setShowLineupSecondHalfModal] = useState<boolean>(false);
   // 2nd-half picker pre-filled from the halftime suggestion
@@ -157,27 +153,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
 
-  // 30-second summary: also rendered after the match is closed (no live match left on this screen).
-  const summaryModal = completedMatchSummary && (
-    <PostMatchSummaryModal
-      isOpen={showSummaryModal}
-      onClose={() => {
-        setShowSummaryModal(false);
-        onNavigate('jogos');
-      }}
-      match={completedMatchSummary}
-      myClubName={myClub}
-      state={state}
-      onGeneratePdf={() => {
-        generateMatchSheetPDF(completedMatchSummary, state);
-      }}
-      onGenerateExcel={async () => {
-        const { exportMatchSheetExcel } = await import('../../lib/exportUtils');
-        exportMatchSheetExcel(completedMatchSummary, state);
-      }}
-    />
-  );
-
   if (!match) {
     return (
       <div className="pb-28 animate-fadeIn">
@@ -206,7 +181,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
             </button>
           </div>
         </div>
-        {summaryModal}
       </div>
     );
   }
@@ -240,8 +214,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     setIsFinishing(false);
     setShowFinishModal(false);
     setShowChecklistModal(false);
-    setCompletedMatchSummary(finishedMatch);
-    setShowSummaryModal(true);
+    // The end of the game opens the game's page in Resultados: summary, events and everything to share
+    onNavigate('jogos', finishedMatch.id);
 
     if (onShowToast) {
       onShowToast('🏁 Jogo terminado e gravado com sucesso no histórico!');
@@ -786,8 +760,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           }
         }}
       />
-
-      {summaryModal}
     </div>
   );
 };
