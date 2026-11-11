@@ -14,7 +14,7 @@ export const HomeOverview: React.FC<{
   summary: SeasonSummary;
   matches: Match[] | undefined;
   form: FormGame[];
-  minutes: { behind: { playerId: string; name: string; share: number }[]; total: number };
+  minutes: { behind: { playerId: string; name: string; callupShare: number }[]; total: number };
   onOpenStats: () => void;
   onOpenAnalysis: () => void;
 }> = ({ season, summary, matches, form, minutes, onOpenStats, onOpenAnalysis }) => {
@@ -90,14 +90,14 @@ export const HomeOverview: React.FC<{
             </span>
             <span className="block text-xs text-ui-muted">
               {minutes.behind.length
-                ? `atletas abaixo de ${Math.round(PLAYING_TIME_TARGET * 100)}% dos minutos da época`
-                : `todos os atletas com pelo menos ${Math.round(PLAYING_TIME_TARGET * 100)}% dos minutos`}
+                ? `atletas abaixo de ${Math.round(PLAYING_TIME_TARGET * 100)}% dos minutos dos jogos em que foram convocados`
+                : `todos os convocados com pelo menos ${Math.round(PLAYING_TIME_TARGET * 100)}% dos minutos dos seus jogos`}
             </span>
             {minutes.behind.length > 0 && (
               <span className="mt-1.5 block truncate text-xs text-ui-text">
                 {minutes.behind
                   .slice(0, 4)
-                  .map((r) => `${r.name.split(' ')[0]} ${Math.round(r.share * 100)}%`)
+                  .map((r) => `${r.name.split(' ')[0]} ${Math.round(r.callupShare * 100)}%`)
                   .join(' · ')}
                 {minutes.behind.length > 4 ? ' …' : ''}
               </span>

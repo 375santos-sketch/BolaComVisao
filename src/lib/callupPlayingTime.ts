@@ -32,9 +32,12 @@ export function callupPlayingTime(
   );
 }
 
-/** Players who need minutes: below the target share, or left out of most of the latest games. Fewest minutes first. */
+/**
+ * Players who need minutes: below the target share of the minutes of the games they were called up for (games they
+ * were not called up for do not count). Fewest minutes first.
+ */
 export function playersNeedingMinutes(rows: Map<string, CallupPlayingTime>): CallupPlayingTime[] {
   return [...rows.values()]
-    .filter((r) => r.belowTarget || r.leftOutRecently >= 2)
-    .sort((a, b) => a.share - b.share || a.minutes - b.minutes);
+    .filter((r) => r.belowTarget)
+    .sort((a, b) => a.callupShare - b.callupShare || a.minutes - b.minutes);
 }

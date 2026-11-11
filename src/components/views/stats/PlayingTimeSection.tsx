@@ -36,17 +36,20 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
         <div className="card-title" style={{ marginBottom: 0 }}>
           ⏱️ Minutos de jogo
         </div>
-        <span className="text-[10px] font-mono text-slate-400">Objetivo: {targetPct}% dos minutos dos jogos</span>
+        <span className="text-[10px] font-mono text-slate-400">
+          Objetivo: {targetPct}% dos minutos dos jogos em que é convocado
+        </span>
       </div>
 
       {below.length > 0 ? (
         <div className="mb-3 p-2.5 rounded-xl bg-amber-950/50 border border-amber-500/40 text-[11px] text-amber-200">
           <strong>{below.length}</strong> {below.length === 1 ? 'atleta está' : 'atletas estão'} abaixo de {targetPct}%
-          dos minutos dos jogos: {below.map((r) => r.name).join(', ')}.
+          dos minutos dos jogos em que {below.length === 1 ? 'foi convocado' : 'foram convocados'}:{' '}
+          {below.map((r) => r.name).join(', ')}.
         </div>
       ) : (
         <div className="mb-3 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-200">
-          Todos os atletas jogaram pelo menos {targetPct}% dos minutos dos jogos. 👏
+          Todos os convocados jogaram pelo menos {targetPct}% dos minutos dos jogos em que foram convocados. 👏
         </div>
       )}
 
@@ -86,8 +89,17 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
             <tr className="text-slate-400 font-mono text-left">
               <th className="py-1 pr-2 font-normal">Atleta</th>
               <th className="py-1 px-1 font-normal text-right">Min.</th>
-              <th className="py-1 px-1 font-normal text-right" title="Percentagem dos minutos em que podia ter jogado">
-                %
+              <th
+                className="py-1 px-1 font-normal text-right"
+                title="Percentagem dos minutos de todos os jogos da época"
+              >
+                % época
+              </th>
+              <th
+                className="py-1 px-1 font-normal text-right"
+                title="Percentagem dos minutos dos jogos em que foi convocado (conta para a falta de minutos)"
+              >
+                % conv.
               </th>
               <th className="py-1 px-1 font-normal text-right" title="Jogos em que jogou / jogos em que foi convocado">
                 Jogos
@@ -107,10 +119,13 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
                     {r.name}
                   </td>
                   <td className="py-1.5 px-1 text-right font-mono text-slate-300">{r.minutes}&apos;</td>
+                  <td className="py-1.5 px-1 text-right font-mono text-slate-300">{pct}%</td>
                   <td
-                    className={`py-1.5 px-1 text-right font-mono font-bold ${r.belowTarget ? 'text-amber-300' : 'text-emerald-300'}`}
+                    className={`py-1.5 px-1 text-right font-mono font-bold ${
+                      r.matchesCalledUp === 0 ? 'text-slate-500' : r.belowTarget ? 'text-amber-300' : 'text-emerald-300'
+                    }`}
                   >
-                    {pct}%
+                    {r.matchesCalledUp ? `${Math.round(r.callupShare * 100)}%` : '—'}
                   </td>
                   <td className="py-1.5 px-1 text-right font-mono text-slate-300">
                     {r.matchesPlayed}/{r.matchesCalledUp}
