@@ -585,7 +585,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
       </div>
 
       {/* Main action, always at hand above the bottom bar */}
-      <div className="fixed left-0 right-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 px-3 max-w-5xl mx-auto pointer-events-none">
+      <div className="fixed left-0 right-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 px-3 max-w-5xl mx-auto pointer-events-none lg:bottom-6 lg:left-60 lg:max-w-3xl">
         {isFinalized && !isEditing ? (
           <button
             type="button"

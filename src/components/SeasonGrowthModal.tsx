@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Portal } from './ui/Portal';
 import { AppState, TeamPhoto } from '../types';
 import { drawGrowthPicture, growthNumbers, seasonMonths, seasonPhotos } from '../lib/seasonGrowth';
 import { compressImageFile } from '../lib/imageCompress';
@@ -124,86 +125,97 @@ const SeasonGrowthModal: React.FC<SeasonGrowthModalProps> = ({ state, onUpdateSt
   );
 
   return (
-    <div
-      className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3"
-      onClick={onClose}
-    >
+    <Portal>
       <div
-        role="dialog"
-        aria-label="Antes e depois da época"
-        className="ui-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-4 space-y-3 max-h-[94dvh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-3"
+        onClick={onClose}
       >
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-base font-bold text-white">📸 Antes e depois</h3>
-            <p className="text-[11px] text-slate-400">
-              Época {season}
-              {state.category ? ` · ${state.category}` : ''}
-            </p>
+        <div
+          role="dialog"
+          aria-label="Antes e depois da época"
+          className="ui-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-4 space-y-3 max-h-[94dvh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-base font-bold text-white">📸 Antes e depois</h3>
+              <p className="text-[11px] text-slate-400">
+                Época {season}
+                {state.category ? ` · ${state.category}` : ''}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fechar antes e depois"
+              className="text-slate-400 text-lg"
+            >
+              ✕
+            </button>
           </div>
-          <button type="button" onClick={onClose} aria-label="Fechar antes e depois" className="text-slate-400 text-lg">
-            ✕
+
+          <section aria-label="Fotos da equipa" className="space-y-2">
+            <div className="text-[11px] font-bold text-cyan-300">AS DUAS FOTOS DA EQUIPA</div>
+            <div className="grid grid-cols-2 gap-2">
+              {slot('inicio', photos.start, months[0])}
+              {slot('fim', photos.end, months[1])}
+            </div>
+            <label className="flex items-start gap-2 text-xs text-slate-200">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={authorized}
+                onChange={(e) => setAuthorized(e.target.checked)}
+              />
+              <span>
+                Os pais autorizaram a foto da equipa nas imagens partilhadas.
+                <span className="block text-[10px] text-slate-500">
+                  Sem este visto, a imagem sai só com os números.
+                </span>
+              </span>
+            </label>
+            <p className="text-[10px] text-slate-500">
+              A foto do início fica guardada na nuvem desde já, para não se perder até ao fim da época.
+            </p>
+          </section>
+
+          <section aria-label="Números da época" className="space-y-1">
+            <div className="text-[11px] font-bold text-cyan-300">OS NÚMEROS DA ÉPOCA (escolhe quais entram)</div>
+            {numbers.length === 0 ? (
+              <p className="text-xs text-slate-400">Ainda não há treinos, jogos ou testes registados nesta época.</p>
+            ) : (
+              numbers.map((n) => (
+                <label
+                  key={n.id}
+                  className="flex items-center gap-2 border-t border-slate-800 py-1.5 text-xs first:border-0"
+                >
+                  <input
+                    type="checkbox"
+                    checked={n.on}
+                    onChange={(e) =>
+                      setNumbers(numbers.map((x) => (x.id === n.id ? { ...x, on: e.target.checked } : x)))
+                    }
+                  />
+                  <span className="flex-1 text-slate-300">{n.label.charAt(0) + n.label.slice(1).toLowerCase()}</span>
+                  <b className="text-white">{n.value}</b>
+                </label>
+              ))
+            )}
+            <p className="text-[10px] text-slate-500">Só números da equipa: nenhum atleta é comparado com outro.</p>
+          </section>
+
+          <canvas
+            ref={canvasRef}
+            role="img"
+            aria-label="Imagem antes e depois da época"
+            className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-slate-800"
+          />
+          <button type="button" onClick={share} className="ui-btn ui-btn-primary w-full py-3 text-sm">
+            📲 Partilhar imagem
           </button>
         </div>
-
-        <section aria-label="Fotos da equipa" className="space-y-2">
-          <div className="text-[11px] font-bold text-cyan-300">AS DUAS FOTOS DA EQUIPA</div>
-          <div className="grid grid-cols-2 gap-2">
-            {slot('inicio', photos.start, months[0])}
-            {slot('fim', photos.end, months[1])}
-          </div>
-          <label className="flex items-start gap-2 text-xs text-slate-200">
-            <input
-              type="checkbox"
-              className="mt-0.5"
-              checked={authorized}
-              onChange={(e) => setAuthorized(e.target.checked)}
-            />
-            <span>
-              Os pais autorizaram a foto da equipa nas imagens partilhadas.
-              <span className="block text-[10px] text-slate-500">Sem este visto, a imagem sai só com os números.</span>
-            </span>
-          </label>
-          <p className="text-[10px] text-slate-500">
-            A foto do início fica guardada na nuvem desde já, para não se perder até ao fim da época.
-          </p>
-        </section>
-
-        <section aria-label="Números da época" className="space-y-1">
-          <div className="text-[11px] font-bold text-cyan-300">OS NÚMEROS DA ÉPOCA (escolhe quais entram)</div>
-          {numbers.length === 0 ? (
-            <p className="text-xs text-slate-400">Ainda não há treinos, jogos ou testes registados nesta época.</p>
-          ) : (
-            numbers.map((n) => (
-              <label
-                key={n.id}
-                className="flex items-center gap-2 border-t border-slate-800 py-1.5 text-xs first:border-0"
-              >
-                <input
-                  type="checkbox"
-                  checked={n.on}
-                  onChange={(e) => setNumbers(numbers.map((x) => (x.id === n.id ? { ...x, on: e.target.checked } : x)))}
-                />
-                <span className="flex-1 text-slate-300">{n.label.charAt(0) + n.label.slice(1).toLowerCase()}</span>
-                <b className="text-white">{n.value}</b>
-              </label>
-            ))
-          )}
-          <p className="text-[10px] text-slate-500">Só números da equipa: nenhum atleta é comparado com outro.</p>
-        </section>
-
-        <canvas
-          ref={canvasRef}
-          role="img"
-          aria-label="Imagem antes e depois da época"
-          className="w-full rounded-2xl border border-slate-800"
-        />
-        <button type="button" onClick={share} className="ui-btn ui-btn-primary w-full py-3 text-sm">
-          📲 Partilhar imagem
-        </button>
       </div>
-    </div>
+    </Portal>
   );
 };
 

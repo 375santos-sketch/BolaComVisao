@@ -105,7 +105,7 @@ export const CallupImageModal: React.FC<CallupImageModalProps> = ({ game, state,
               height={CALLUP_CARD_SIZE.height}
               role="img"
               aria-label="Imagem da convocatória para os pais"
-              className="w-full rounded-2xl border border-slate-800"
+              className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-slate-800"
             />
             <p className="text-[11px] text-slate-400">Só leva os números e os nomes dos atletas (sem fotos).</p>
             <button type="button" onClick={share} className="ui-btn ui-btn-primary w-full py-3 text-sm">

@@ -149,7 +149,7 @@ export const MvpModal: React.FC<MvpModalProps> = ({ match, state, onSave, onShow
               height={MVP_CARD_SIZE.height}
               role="img"
               aria-label="Imagem do jogador do jogo"
-              className="w-full rounded-2xl border border-ui-line"
+              className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-ui-line"
             />
 
             <div className="grid grid-cols-2 gap-2">

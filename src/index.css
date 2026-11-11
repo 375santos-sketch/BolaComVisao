@@ -1828,3 +1828,13 @@ html.sol .modo-jogo {
     margin-bottom: 0.75rem;
   }
 }
+
+/*
+ * Windows that rise from the bottom on a phone (share an image, cromo, call-up…): their last buttons stay clear of the
+ * iPhone's home bar and are never cut off.
+ */
+@media (max-width: 639px) {
+  .ui-overlay.items-end > * {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
