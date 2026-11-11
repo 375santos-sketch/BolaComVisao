@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { AppState } from '../../../types';
 import {
   MonthThemes,
@@ -10,18 +10,13 @@ import {
   themesByMonth,
   withMonthObjectives
 } from '../../../lib/seasonPlan';
-
-/** One colour per theme, from the app's palette. */
-const THEME_COLORS: Record<ThemeKey, string> = {
-  aquecimento: '#f5b301',
-  tecnica: '#22c3ee',
-  tatica: '#4ea1ff',
-  fisico: '#ef4444',
-  jogo: '#22c55e',
-  bolas_paradas: '#a78bfa',
-  calma: '#8b9bb4',
-  outros: '#2f4466'
-};
+import { THEME_COLORS } from './themeColors';
+import { seasonTotals, weeklyLoad } from '../../../lib/planningSummary';
+import { localDateISO } from '../../../lib/trainingQuick';
+import { StatTile } from '../../ui/StatTile';
+import { SectionHeader } from '../../ui/SectionHeader';
+import { EmptyState } from '../../ui/EmptyState';
+import { MinutesRule, ThemeBar, WeeklyLoadChart } from './PlanningCards';
 
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
@@ -112,6 +107,67 @@ const MonthHeader: React.FC<{
   );
 };
 
+/**
+ * The month we are in: the staff's objectives next to what was really trained (minutes per theme of realized
+ * trainings) and what is still scheduled. No status per objective: only what is already saved.
+ */
+const CurrentMonth: React.FC<{
+  month: string;
+  objectives: string[];
+  summary: ReturnType<typeof seasonTotals>['month'];
+  onEditObjectives?: () => void;
+}> = ({ month, objectives, summary, onEditObjectives }) => (
+  <section aria-label="Mês atual" className="ui-card p-4">
+    <div className="flex items-baseline justify-between gap-2">
+      <h2 className="text-ui-lead font-extrabold text-ui-text">{longMonth(month)}</h2>
+      <span className="text-ui-caption text-ui-muted">
+        {summary.realized.count} realizados · {summary.scheduled.count} agendados
+        {summary.unclosed.count ? ` · ${summary.unclosed.count} por fechar` : ''}
+      </span>
+    </div>
+    <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="ui-inset p-3">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-ui-caption font-bold uppercase tracking-[0.08em] text-ui-muted">Objetivos do mês</p>
+          {onEditObjectives && (
+            <button type="button" onClick={onEditObjectives} className="text-ui-caption font-bold text-ui-brand">
+              {objectives.length ? 'Editar' : '+ Objetivos'}
+            </button>
+          )}
+        </div>
+        {objectives.length ? (
+          <ol className="mt-2 space-y-1.5">
+            {objectives.map((o, i) => (
+              <li key={o} className="flex gap-2 text-ui-body text-ui-text">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ui-brand-soft text-[11px] font-bold text-ui-brand">
+                  {i + 1}
+                </span>
+                {o}
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="mt-2 text-ui-caption text-ui-muted">Sem objetivos escritos para este mês.</p>
+        )}
+      </div>
+      <div className="ui-inset space-y-2 p-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="text-ui-caption font-bold uppercase tracking-[0.08em] text-ui-muted">Trabalhado no mês</p>
+          <span className="ui-figure text-ui-lead text-ui-success">{summary.realized.minutes} min</span>
+        </div>
+        <ThemeBar summary={summary} empty="Ainda sem minutos realizados este mês." />
+        <p className="border-t border-ui-line pt-2 text-ui-caption text-ui-muted">
+          Ainda agendado este mês:{' '}
+          <strong className="text-ui-text">
+            {summary.scheduled.count} {summary.scheduled.count === 1 ? 'treino' : 'treinos'} ·{' '}
+            {summary.scheduled.minutes} min
+          </strong>
+        </p>
+      </div>
+    </div>
+  </section>
+);
+
 /** Minutes of training per theme in each month: one bar per month, split by theme. */
 const ThemesChart: React.FC<{ months: MonthThemes[] }> = ({ months }) => {
   const used = (Object.keys(THEME_LABELS) as ThemeKey[]).filter((k) => months.some((m) => m.minutes[k]));
@@ -159,6 +215,7 @@ const Week: React.FC<{ week: SeasonWeek; index: number; onOpenTraining: (id: str
   index,
   onOpenTraining
 }) => {
+  const today = localDateISO();
   const empty = week.trainings.length === 0 && week.games.length === 0;
   return (
     <li
@@ -199,13 +256,22 @@ const Week: React.FC<{ week: SeasonWeek; index: number; onOpenTraining: (id: str
                     <span className="w-14 shrink-0 text-ui-muted">
                       {weekday(item.date)} {ddmm(item.date)}
                     </span>
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-ui-success" aria-hidden />
+                    <span
+                      className={`h-2 w-2 shrink-0 rounded-full ${
+                        item.t.done ? 'bg-ui-success' : item.date < today ? 'bg-ui-warning' : 'border border-ui-success'
+                      }`}
+                      aria-hidden
+                    />
                     <span className="min-w-0 flex-1 truncate text-ui-text">
                       {item.t.number ? `Treino ${item.t.number}` : 'Treino'}
                       {item.t.objective ? ` · ${item.t.objective}` : ''}
                     </span>
                     <span className="shrink-0 text-ui-muted">
-                      {item.t.done ? 'feito' : item.t.minutes ? `${item.t.minutes} min` : 'por fazer'}
+                      {item.t.done
+                        ? `feito${item.t.minutes ? ` · ${item.t.minutes} min` : ''}`
+                        : item.date < today
+                          ? 'por fechar'
+                          : `agendado${item.t.minutes ? ` · ${item.t.minutes} min` : ''}`}
                     </span>
                   </button>
                 </li>
@@ -256,20 +322,72 @@ export const SeasonPlanView: React.FC<{
   };
   const months = themesByMonth(state);
   const list = useRef<HTMLOListElement>(null);
-  useEffect(() => {
-    list.current?.querySelector('[data-current]')?.scrollIntoView({ block: 'nearest' });
-  }, []);
+  const today = localDateISO();
+  const totals = seasonTotals(state, today);
+  const load = weeklyLoad(state, today);
+  const thisMonth = today.slice(0, 7);
+  const monthObjectives = team?.monthObjectives?.[thisMonth] || [];
+  const jumpToMonth = () =>
+    list.current
+      ?.querySelector(`[aria-label="Mês de ${longMonth(thisMonth)}"]`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   if (weeks.length === 0) {
     return (
-      <p className="ui-inset p-3 text-sm text-ui-muted">
-        A época aparece aqui semana a semana quando houver treinos ou jogos marcados.
-      </p>
+      <EmptyState
+        icon="calendar"
+        title="A época ainda está vazia"
+        text="A época aparece aqui semana a semana quando houver treinos ou jogos marcados."
+      />
     );
   }
+  const s = totals.season;
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <StatTile
+          label="Treinos realizados"
+          value={s.realized.count}
+          hint={`${s.scheduled.count} agendados`}
+          icon="whistle"
+          tone="success"
+        />
+        <StatTile
+          label="Minutos realizados"
+          value={s.realized.minutes}
+          hint={`${s.scheduled.minutes} min ainda agendados`}
+          icon="zap"
+        />
+        <StatTile
+          label="Por fechar"
+          value={s.unclosed.count}
+          hint={s.unclosed.count ? 'não contam como feitos' : 'tudo fechado'}
+          icon="clipboard"
+          tone={s.unclosed.count ? 'warning' : 'neutral'}
+        />
+        <StatTile
+          label="Objetivos do mês"
+          value={monthObjectives.length}
+          hint={longMonth(thisMonth)}
+          icon="trophy"
+          tone="neutral"
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <CurrentMonth
+          month={thisMonth}
+          objectives={monthObjectives}
+          summary={totals.month}
+          onEditObjectives={team ? jumpToMonth : undefined}
+        />
+        <WeeklyLoadChart weeks={load} />
+      </div>
+      <MinutesRule />
       {months.length > 0 && <ThemesChart months={months} />}
+      <SectionHeader
+        title="Semana a semana"
+        subtitle="Treinos e jogos da época; os objetivos editam-se no início de cada mês."
+      />
       <div className="flex items-center gap-3 px-1 text-[11px] text-ui-muted">
         <span className="flex items-center gap-1">
           <span className="h-2 w-2 rounded-full bg-ui-success" /> Treino

@@ -146,6 +146,8 @@ export default function App() {
   };
   const [currentTab, setCurrentTab] = useState<TabType>('teams');
   const [targetOpponentId, setTargetOpponentId] = useState<string | undefined>(undefined);
+  // Época → a week's training opens that training in Treinos.
+  const [targetTrainingId, setTargetTrainingId] = useState<string | undefined>(undefined);
   const [openTodayTraining, setOpenTodayTraining] = useState(false);
 
   // Modals & Overlay state
@@ -712,6 +714,7 @@ export default function App() {
     }
     // "Treino de hoje" shortcut: Treinos opens with today's attendance.
     setOpenTodayTraining(tab === 'treinos' && targetId === 'hoje');
+    setTargetTrainingId(tab === 'treinos' && targetId && targetId !== 'hoje' ? targetId : undefined);
     setCurrentTab(tab as TabType);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -981,8 +984,11 @@ export default function App() {
               />
             )}
 
-            {currentTab === 'treinos' && (
+            {(currentTab === 'treinos' || currentTab === 'epoca') && (
               <TrainingsView
+                key={currentTab}
+                section={currentTab === 'epoca' ? 'epoca' : 'treinos'}
+                focusTrainingId={targetTrainingId}
                 state={state}
                 onUpdateState={updateState}
                 onNavigate={handleNavigate}

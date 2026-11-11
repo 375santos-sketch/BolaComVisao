@@ -59,10 +59,10 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const tag: [string, string] =
     date === today
-      ? ['Hoje', 'bg-emerald-500/15 text-emerald-300']
+      ? ['Hoje', 'bg-ui-success/15 text-ui-success']
       : isCompleted
-        ? ['Feito', 'bg-slate-500/15 text-slate-300']
-        : ['Por fazer', 'bg-amber-500/15 text-amber-300'];
+        ? ['Feito', 'bg-ui-line-strong/15 text-ui-text']
+        : ['Por fazer', 'bg-ui-warning/15 text-ui-warning'];
   const details = [
     tr.time,
     tr.location,
@@ -70,7 +70,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
   ].filter(Boolean);
 
   return (
-    <div className={`ui-card overflow-hidden ${isExpanded ? 'border-cyan-500/50' : ''}`}>
+    <div className={`ui-card overflow-hidden ${isExpanded ? 'border-ui-brand/50' : ''}`}>
       {/* The row: tap to open the actions, attendance and plan */}
       <button
         type="button"
@@ -79,17 +79,17 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
         onClick={onToggleExpand}
         className="w-full p-2.5 flex items-center gap-3 text-left"
       >
-        <span className={`w-1 self-stretch rounded-full ${isCompleted ? 'bg-slate-600' : 'bg-amber-400'}`} />
+        <span className={`w-1 self-stretch rounded-full ${isCompleted ? 'bg-ui-surface-3' : 'bg-ui-warning'}`} />
         <span className="ui-inset w-11 shrink-0 py-1 text-center rounded-xl">
-          <span className="block text-base font-bold leading-tight text-white">{date.slice(8, 10)}</span>
-          <span className="block text-[10px] font-semibold uppercase text-slate-400">{weekday}</span>
+          <span className="block text-base font-bold leading-tight text-ui-text">{date.slice(8, 10)}</span>
+          <span className="block text-[10px] font-semibold uppercase text-ui-muted">{weekday}</span>
         </span>
         <span className="flex-1 min-w-0">
-          <span className="block text-sm font-bold text-slate-100 truncate">
+          <span className="block text-sm font-bold text-ui-text truncate">
             {tr.trainingNumber ? `Treino ${tr.trainingNumber}` : 'Treino'}
             {tr.type ? ` · ${tr.type}` : ''}
           </span>
-          <span className="block text-xs text-slate-400 truncate">{details.join(' · ')}</span>
+          <span className="block text-xs text-ui-muted truncate">{details.join(' · ')}</span>
         </span>
         <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold ${tag[1]}`}>{tag[0]}</span>
       </button>
@@ -155,12 +155,12 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
         <div className="px-3 pb-3 space-y-3 text-xs">
           {/* Interactive Attendance Quick Selector */}
           <div className="ui-inset p-3">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-              <span className="text-cyan-300 font-bold text-xs flex items-center gap-1.5">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-ui-line">
+              <span className="text-ui-brand font-bold text-xs flex items-center gap-1.5">
                 <span>👥</span>
                 <span>Presenças (toca em quem faltou):</span>
               </span>
-              <span className="font-mono text-[11px] text-slate-400">
+              <span className="font-mono text-[11px] text-ui-muted">
                 {absNames.length === 0 ? '✓ 100% Presentes' : `${absNames.length} faltas registadas`}
               </span>
             </div>
@@ -188,20 +188,20 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
           {tr.sessionPlan &&
             (tr.sessionPlan.objective || (tr.sessionPlan.blocks && tr.sessionPlan.blocks.length > 0)) && (
               <div className="ui-inset p-3 space-y-2 font-mono">
-                <div className="flex items-center justify-between pb-1 border-b border-slate-800">
-                  <span className="text-cyan-300 font-bold text-xs flex items-center gap-1.5">
+                <div className="flex items-center justify-between pb-1 border-b border-ui-line">
+                  <span className="text-ui-brand font-bold text-xs flex items-center gap-1.5">
                     <span>📋</span>
                     <span>Plano da Sessão ({tr.sessionPlan.blocks?.length || 0} blocos):</span>
                   </span>
                   {tr.sessionPlan.blocks && (
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-ui-muted">
                       {tr.sessionPlan.blocks.reduce((sum, b) => sum + (b.durationMinutes || 0), 0)} min planeados
                     </span>
                   )}
                 </div>
 
                 {tr.sessionPlan.objective && (
-                  <div className="text-xs text-amber-200/90 italic pb-1">
+                  <div className="text-xs text-ui-warning/90 italic pb-1">
                     🎯 <b>Objetivo:</b> {tr.sessionPlan.objective}
                   </div>
                 )}
@@ -220,18 +220,18 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
                       >
                         <div className="space-y-0.5 min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="w-4 h-4 rounded bg-cyan-950 text-cyan-300 font-bold text-[10px] flex items-center justify-center">
+                            <span className="w-4 h-4 rounded bg-ui-brand-soft text-ui-brand font-bold text-[10px] flex items-center justify-center">
                               {bIdx + 1}
                             </span>
-                            <span className="font-bold text-white font-['Chakra_Petch']">{block.title}</span>
+                            <span className="font-bold text-ui-text font-['Chakra_Petch']">{block.title}</span>
                             {block.category && (
-                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-800 uppercase">
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-ui-inset text-ui-muted border border-ui-line uppercase">
                                 {block.category}
                               </span>
                             )}
                           </div>
                           {block.notes && (
-                            <p className="text-[11px] text-slate-400 pl-5.5 leading-snug whitespace-pre-line">
+                            <p className="text-[11px] text-ui-muted pl-5.5 leading-snug whitespace-pre-line">
                               {block.notes}
                             </p>
                           )}
@@ -252,11 +252,11 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
                                     className={`flex-1 rounded-lg border px-1 py-1.5 text-[11px] font-bold ${
                                       on
                                         ? lv === 'dificil'
-                                          ? 'border-rose-500 bg-rose-900/70 text-white'
+                                          ? 'border-ui-danger bg-ui-danger-soft text-ui-text'
                                           : lv === 'certo'
-                                            ? 'border-emerald-500 bg-emerald-900/70 text-white'
-                                            : 'border-sky-400 bg-sky-900/70 text-white'
-                                        : 'border-slate-700 bg-slate-900 text-slate-300'
+                                            ? 'border-ui-success bg-ui-success-soft text-ui-text'
+                                            : 'border-ui-brand bg-ui-brand-soft text-ui-text'
+                                        : 'border-ui-line-strong bg-ui-surface text-ui-text'
                                     }`}
                                   >
                                     {LEVELS[lv].emoji} {LEVELS[lv].label}
@@ -266,7 +266,7 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
                             </div>
                           )}
                         </div>
-                        <span className="text-cyan-400 font-bold shrink-0 text-[11px]">
+                        <span className="text-ui-brand font-bold shrink-0 text-[11px]">
                           ⏱️ {block.durationMinutes} min
                         </span>
                       </div>
@@ -277,13 +277,13 @@ export const TrainingCard: React.FC<TrainingCardProps> = ({
             )}
 
           {tr.notes ? (
-            <div className="ui-inset p-3 text-slate-300 leading-relaxed font-mono">
-              <span className="text-cyan-400 font-bold block mb-1">📝 Observações Gerais:</span>
+            <div className="ui-inset p-3 text-ui-text leading-relaxed font-mono">
+              <span className="text-ui-brand font-bold block mb-1">📝 Observações Gerais:</span>
               {tr.notes}
             </div>
           ) : (
             !tr.sessionPlan && (
-              <div className="text-slate-500 italic font-mono text-[11px]">
+              <div className="text-ui-muted italic font-mono text-[11px]">
                 Sem notas registadas. Clica em <b>"Editar"</b> acima para adicionar exercícios e objetivos da sessão.
               </div>
             )

@@ -20,7 +20,7 @@ export const AttendanceGrid: React.FC<AttendanceGridProps> = ({ players, absence
           <div
             key={p.id}
             title="Atleta inativo: conta sempre como falta até mudar o estado na ficha do atleta"
-            className="rounded-lg border border-slate-700 bg-slate-900/60 p-2 text-xs text-slate-400 flex items-center justify-between gap-1.5"
+            className="rounded-lg border border-ui-line-strong bg-ui-surface/60 p-2 text-xs text-ui-muted flex items-center justify-between gap-1.5"
           >
             <span className="truncate">
               {p.number !== null && p.number !== undefined ? `#${p.number} ` : ''}
@@ -35,8 +35,8 @@ export const AttendanceGrid: React.FC<AttendanceGridProps> = ({ players, absence
           key={p.id}
           className={`rounded-lg border transition-all ${
             isAbs
-              ? 'bg-red-950/80 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.3)]'
-              : 'bg-slate-900 border-slate-800'
+              ? 'bg-ui-danger-soft border-ui-danger shadow-[0_0_8px_rgba(239,68,68,0.3)]'
+              : 'bg-ui-surface border-ui-line'
           }`}
         >
           <button
@@ -45,7 +45,7 @@ export const AttendanceGrid: React.FC<AttendanceGridProps> = ({ players, absence
             aria-pressed={isAbs}
             aria-label={`${p.name}: ${isAbs ? 'faltou' : 'presente'}`}
             className={`w-full p-2 text-left flex items-center justify-between gap-1.5 text-xs ${
-              isAbs ? 'text-red-200 font-bold' : 'text-slate-300 hover:text-white'
+              isAbs ? 'text-ui-danger font-bold' : 'text-ui-text hover:text-ui-text'
             }`}
           >
             <span className="truncate">

@@ -28,12 +28,12 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
 
   return (
     <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
-      <div className="bg-slate-900 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-ui-surface border-t sm:border border-ui-brand/40 rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 pb-3 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-900/95">
+        <div className="p-4 sm:p-5 pb-3 border-b border-ui-line flex items-center justify-between shrink-0 bg-ui-surface/95">
           <div className="flex items-center gap-2">
             <span className="text-2xl">⚽</span>
-            <h3 className="text-base sm:text-lg font-['Chakra_Petch'] font-black uppercase text-white">
+            <h3 className="text-base sm:text-lg font-['Chakra_Petch'] font-black uppercase text-ui-text">
               {editingMatchId ? 'Editar Jogo Agendado' : 'Agendar Novo Jogo'}
             </h3>
           </div>
@@ -56,8 +56,8 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                 onClick={() => setMatchForm({ ...matchForm, isBatch: false })}
                 className={`py-2 px-3 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
                   !matchForm.isBatch
-                    ? 'bg-cyan-500 text-slate-950 shadow-md'
-                    : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-white'
+                    ? 'bg-ui-brand text-ui-brand-ink shadow-md'
+                    : 'bg-ui-inset border border-ui-line text-ui-muted hover:text-ui-text'
                 }`}
               >
                 Jogo Único
@@ -81,8 +81,8 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                 }}
                 className={`py-2 px-3 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
                   matchForm.isBatch
-                    ? 'bg-cyan-500 text-slate-950 shadow-md'
-                    : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-white'
+                    ? 'bg-ui-brand text-ui-brand-ink shadow-md'
+                    : 'bg-ui-inset border border-ui-line text-ui-muted hover:text-ui-text'
                 }`}
               >
                 Torneio (Múltiplos Jogos)
@@ -93,7 +93,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
           {matchForm.isBatch ? (
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-mono text-slate-300 block mb-1">Nome do Torneio *</label>
+                <label className="text-xs font-mono text-ui-text block mb-1">Nome do Torneio *</label>
                 <input
                   type="text"
                   placeholder="Ex: Torneio de Verão de Sintra"
@@ -104,12 +104,12 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
               </div>
 
               <div className="space-y-2 pt-2">
-                <span className="text-xs font-['Chakra_Petch'] font-bold text-cyan-300 uppercase block">
+                <span className="text-xs font-['Chakra_Petch'] font-bold text-ui-brand uppercase block">
                   Jogos do Torneio:
                 </span>
                 {matchForm.games.map((g, i) => (
                   <div key={g.id} className="ui-inset p-3 space-y-2">
-                    <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+                    <div className="flex items-center justify-between text-xs font-mono text-ui-muted">
                       <span>Jogo {i + 1}</span>
                       <button
                         type="button"
@@ -119,7 +119,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                             games: matchForm.games.filter((x) => x.id !== g.id)
                           })
                         }
-                        className="text-red-400 hover:text-red-300"
+                        className="text-ui-danger hover:text-ui-danger"
                       >
                         ✕ Remover
                       </button>
@@ -198,7 +198,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
           ) : (
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-mono text-slate-300 block mb-1">Adversário *</label>
+                <label className="text-xs font-mono text-ui-text block mb-1">Adversário *</label>
                 <input
                   type="text"
                   placeholder="Nome da equipa adversária"
@@ -210,7 +210,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1">Data *</label>
+                  <label className="text-xs font-mono text-ui-text block mb-1">Data *</label>
                   <input
                     type="date"
                     value={matchForm.date}
@@ -219,7 +219,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1">Hora *</label>
+                  <label className="text-xs font-mono text-ui-text block mb-1">Hora *</label>
                   <input
                     type="time"
                     value={matchForm.time}
@@ -232,15 +232,15 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
               {/* Location & Match Type */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1">Local</label>
+                  <label className="text-xs font-mono text-ui-text block mb-1">Local</label>
                   <div className="grid grid-cols-2 gap-1">
                     <button
                       type="button"
                       onClick={() => setMatchForm({ ...matchForm, loc: 'casa' })}
                       className={`p-2 rounded-xl text-xs font-mono ${
                         matchForm.loc === 'casa'
-                          ? 'bg-emerald-600 text-white font-bold'
-                          : 'bg-slate-950 text-slate-400 border border-slate-800'
+                          ? 'bg-ui-success text-ui-text font-bold'
+                          : 'bg-ui-inset text-ui-muted border border-ui-line'
                       }`}
                     >
                       Casa
@@ -250,8 +250,8 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                       onClick={() => setMatchForm({ ...matchForm, loc: 'fora' })}
                       className={`p-2 rounded-xl text-xs font-mono ${
                         matchForm.loc === 'fora'
-                          ? 'bg-indigo-600 text-white font-bold'
-                          : 'bg-slate-950 text-slate-400 border border-slate-800'
+                          ? 'bg-ui-brand text-ui-text font-bold'
+                          : 'bg-ui-inset text-ui-muted border border-ui-line'
                       }`}
                     >
                       Fora
@@ -260,7 +260,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1">Tipo</label>
+                  <label className="text-xs font-mono text-ui-text block mb-1">Tipo</label>
                   <select
                     value={matchForm.type}
                     onChange={(e) => setMatchForm({ ...matchForm, type: e.target.value as MatchType })}
@@ -275,7 +275,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
 
               {matchForm.type === 'torneio' && (
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1">Nome do Torneio</label>
+                  <label className="text-xs font-mono text-ui-text block mb-1">Nome do Torneio</label>
                   <input
                     type="text"
                     placeholder="Ex: Torneio de Páscoa"
@@ -288,7 +288,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
 
               {(matchForm.type === 'campeonato' || matchForm.type === 'torneio') && (
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1">Fase / Jornada</label>
+                  <label className="text-xs font-mono text-ui-text block mb-1">Fase / Jornada</label>
                   <input
                     type="text"
                     placeholder="Ex: Jornada 4 ou Quartos de Final"
@@ -301,7 +301,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1">Estádio / Campo</label>
+                  <label className="text-xs font-mono text-ui-text block mb-1">Estádio / Campo</label>
                   <input
                     type="text"
                     placeholder="Ex: Campo Municipal"
@@ -311,7 +311,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1">Hora de Concentração</label>
+                  <label className="text-xs font-mono text-ui-text block mb-1">Hora de Concentração</label>
                   <input
                     type="time"
                     value={matchForm.meetingTime}
@@ -325,7 +325,7 @@ export const ScheduleMatchModal: React.FC<ScheduleMatchModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3.5 sm:p-4 bg-slate-950/95 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-lg pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="p-3.5 sm:p-4 bg-ui-inset/95 border-t border-ui-line flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-lg pb-[max(1rem,env(safe-area-inset-bottom))]">
           {editingMatchId && handleDeleteMatch && onShowConfirm ? (
             <button
               type="button"

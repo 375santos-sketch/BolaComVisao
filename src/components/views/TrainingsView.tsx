@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { AppState, Training } from '../../types';
 import { t } from '../../i18n/dict';
 import { playerLabel, uid } from '../../lib/utils';
 import { Header } from '../Header';
-import { generateTrainingsStatsPDF } from '../../lib/pdfUtils';
+import { generateTrainingSessionPDF, generateTrainingsStatsPDF } from '../../lib/pdfUtils';
 import { exportSeasonStatsExcel } from '../../lib/exportUtils';
 import { getNextTrainingNumber } from '../../lib/trainingNumbering';
 import { TrainingFormData, TrainingsTab } from './trainings/types';
@@ -20,6 +20,12 @@ import { TrainingBatchModal } from './trainings/TrainingBatchModal';
 import { TodayTrainingModal } from './trainings/TodayTrainingModal';
 import { addDaysISO, localDateISO, trainingForToday, withAttendance } from '../../lib/trainingQuick';
 import { firstTrainingTime, teamSettings, trainingSlot } from '../../lib/teamSettings';
+import { nextTraining, weekSummary } from '../../lib/planningSummary';
+import { AgendaTabs } from './schedule/AgendaTabs';
+import { NextTrainingCard, WeekSummaryCard } from './trainings/PlanningCards';
+import { SectionHeader } from '../ui/SectionHeader';
+
+const PlanShareModal = lazy(() => import('./trainings/PlanShareModal').then((m) => ({ default: m.PlanShareModal })));
 
 interface TrainingsViewProps {
   state: AppState;
@@ -33,6 +39,10 @@ interface TrainingsViewProps {
   initialTab?: TrainingsTab;
   /** Opens "Treino de hoje" straight away (shortcut on the home screen). */
   openToday?: boolean;
+  /** Planeamento → Treinos (sessions, attendance, exercises) or Época (the season week by week). */
+  section?: 'treinos' | 'epoca';
+  /** A training to open in the list (from a week of the Época). */
+  focusTrainingId?: string;
 }
 
 export const TrainingsView: React.FC<TrainingsViewProps> = ({
@@ -45,8 +55,11 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   onShowConfirm,
   onShowToast,
   initialTab = 'list',
-  openToday = false
+  openToday = false,
+  section = 'treinos',
+  focusTrainingId
 }) => {
+  const [showPlanShare, setShowPlanShare] = useState(false);
   const [activeTab, setActiveTab] = useState<TrainingsTab>(initialTab);
   const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
 
@@ -57,7 +70,7 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
 
   const [trainingForm, setTrainingForm] = useState<TrainingFormData | null>(null);
   const [creationMode, setCreationMode] = useState<'single' | 'batch'>('single');
-  const [expandedTraining, setExpandedTraining] = useState<string | null>(null);
+  const [expandedTraining, setExpandedTraining] = useState<string | null>(focusTrainingId || null);
   const [showBatchModal, setShowBatchModal] = useState<boolean>(false);
   const [todayTraining, setTodayTraining] = useState<{ training: Training; isNew: boolean } | null>(() =>
     openToday
@@ -290,7 +303,7 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
   return (
     <div className="max-w-5xl mx-auto pb-28">
       <Header
-        title={t(state.lang, 'tr_title')}
+        title={section === 'epoca' ? 'Época' : t(state.lang, 'tr_title')}
         lang={state.lang}
         currentTab="treinos"
         onNavigate={onNavigate}
@@ -304,15 +317,25 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      {/* Main Tab Segmented Switcher */}
-      <TrainingHeader
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        totalTrainings={totalTrainings}
-        completedCount={completedCount}
-      />
+      <AgendaTabs current={section === 'epoca' ? 'epoca' : 'treinos'} onNavigate={onNavigate} className="mb-3" />
 
-      {activeTab === 'library' ? (
+      {section === 'treinos' && (
+        <TrainingHeader
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          totalTrainings={totalTrainings}
+          completedCount={completedCount}
+        />
+      )}
+
+      {section === 'epoca' ? (
+        <SeasonPlanView
+          state={state}
+          onUpdateState={onUpdateState}
+          onShowToast={onShowToast}
+          onOpenTraining={(id) => onNavigate('treinos', id)}
+        />
+      ) : activeTab === 'library' ? (
         <>
           <PdfSheetsSection
             exercises={state.exerciseLibrary || []}
@@ -327,16 +350,6 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
             onShowToast={onShowToast}
           />
         </>
-      ) : activeTab === 'season' ? (
-        <SeasonPlanView
-          state={state}
-          onUpdateState={onUpdateState}
-          onShowToast={onShowToast}
-          onOpenTraining={(id) => {
-            setActiveTab('list');
-            setExpandedTraining(id);
-          }}
-        />
       ) : activeTab === 'stats' ? (
         <TrainingAttendance
           state={state}
@@ -350,50 +363,78 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
           onGoToList={() => setActiveTab('list')}
         />
       ) : (
-        <TrainingList
-          state={state}
-          trainings={filteredTrainingsList}
-          eligiblePlayers={eligiblePlayers}
-          getPlayerName={getPlayerName}
-          listFilter={listFilter}
-          setListFilter={setListFilter}
-          listSearch={listSearch}
-          setListSearch={setListSearch}
-          scheduledCount={scheduledCount}
-          completedCount={completedCount}
-          totalTrainings={totalTrainings}
-          expandedTraining={expandedTraining}
-          setExpandedTraining={setExpandedTraining}
-          onOpenCreateForm={handleOpenCreateForm}
-          onOpenEditForm={handleOpenEditForm}
-          onSetStatus={handleSetStatus}
-          onToggleComplete={handleToggleComplete}
-          onQuickToggleAbsence={handleQuickToggleAbsence}
-          onSetAbsenceReason={handleSetAbsenceReason}
-          onRepeatTraining={handleRepeatTraining}
-          onDuplicateTraining={handleDuplicateTraining}
-          onOpenToday={() =>
-            setTodayTraining(
-              trainingForToday(
-                state.trainings || [],
-                state.lastTrainingNumber,
-                localDateISO(),
-                trainingSlot(teamSettings(state), localDateISO())
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <NextTrainingCard
+              training={nextTraining(state.trainings || [])}
+              onOpenPlan={handleOpenEditForm}
+              onAttendance={(training) => setTodayTraining({ training, isNew: false })}
+              onShare={() => setShowPlanShare(true)}
+              onPdf={(training) => {
+                generateTrainingSessionPDF(training, state);
+                onShowToast('A gerar PDF do Plano de Treino... 📄');
+              }}
+              onCreate={() => handleOpenCreateForm('single')}
+            />
+            <WeekSummaryCard week={weekSummary(state)} />
+          </div>
+          <SectionHeader title="Todas as sessões" subtitle="Histórico e treinos marcados, com procura e filtros." />
+          <TrainingList
+            state={state}
+            trainings={filteredTrainingsList}
+            eligiblePlayers={eligiblePlayers}
+            getPlayerName={getPlayerName}
+            listFilter={listFilter}
+            setListFilter={setListFilter}
+            listSearch={listSearch}
+            setListSearch={setListSearch}
+            scheduledCount={scheduledCount}
+            completedCount={completedCount}
+            totalTrainings={totalTrainings}
+            expandedTraining={expandedTraining}
+            setExpandedTraining={setExpandedTraining}
+            onOpenCreateForm={handleOpenCreateForm}
+            onOpenEditForm={handleOpenEditForm}
+            onSetStatus={handleSetStatus}
+            onToggleComplete={handleToggleComplete}
+            onQuickToggleAbsence={handleQuickToggleAbsence}
+            onSetAbsenceReason={handleSetAbsenceReason}
+            onRepeatTraining={handleRepeatTraining}
+            onDuplicateTraining={handleDuplicateTraining}
+            onOpenToday={() =>
+              setTodayTraining(
+                trainingForToday(
+                  state.trainings || [],
+                  state.lastTrainingNumber,
+                  localDateISO(),
+                  trainingSlot(teamSettings(state), localDateISO())
+                )
               )
-            )
-          }
-          onDeleteTraining={(id) => {
-            onShowConfirm('Tens a certeza que queres eliminar este treino?', () => handleDeleteTraining(id));
-          }}
-          onClearAllTrainings={() => {
-            onShowConfirm(`Tens a certeza que queres eliminar os ${totalTrainings} treinos desta equipa?`, () => {
-              onUpdateState({ trainings: [] });
-              onShowToast('Todos os treinos foram eliminados.');
-            });
-          }}
-          onShowToast={onShowToast}
-          onUpdateState={onUpdateState}
-        />
+            }
+            onDeleteTraining={(id) => {
+              onShowConfirm('Tens a certeza que queres eliminar este treino?', () => handleDeleteTraining(id));
+            }}
+            onClearAllTrainings={() => {
+              onShowConfirm(`Tens a certeza que queres eliminar os ${totalTrainings} treinos desta equipa?`, () => {
+                onUpdateState({ trainings: [] });
+                onShowToast('Todos os treinos foram eliminados.');
+              });
+            }}
+            onShowToast={onShowToast}
+            onUpdateState={onUpdateState}
+          />
+        </div>
+      )}
+
+      {showPlanShare && (
+        <Suspense fallback={null}>
+          <PlanShareModal
+            state={state}
+            onUpdateState={onUpdateState}
+            onShowToast={onShowToast}
+            onClose={() => setShowPlanShare(false)}
+          />
+        </Suspense>
       )}
 
       {todayTraining && (

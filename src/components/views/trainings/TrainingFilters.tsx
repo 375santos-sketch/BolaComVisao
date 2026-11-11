@@ -30,7 +30,7 @@ export const TrainingFilters: React.FC<TrainingFiltersProps> = ({
       aria-pressed={listFilter === key}
       onClick={() => setListFilter(key)}
       className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${
-        listFilter === key ? 'border-slate-600 bg-slate-800 text-white' : 'border-slate-800 text-slate-400'
+        listFilter === key ? 'border-ui-line-strong bg-ui-surface-2 text-ui-text' : 'border-ui-line text-ui-muted'
       }`}
     >
       {label} {count}
@@ -47,7 +47,7 @@ export const TrainingFilters: React.FC<TrainingFiltersProps> = ({
           <button
             type="button"
             onClick={onClearAllTrainings}
-            className="ml-auto text-xs font-semibold text-slate-500 hover:text-rose-300"
+            className="ml-auto text-xs font-semibold text-ui-muted hover:text-ui-danger"
             title="Eliminar todos os treinos desta equipa"
           >
             🗑️ Limpar

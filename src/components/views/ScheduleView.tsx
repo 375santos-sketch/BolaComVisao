@@ -21,6 +21,8 @@ import { CalendarShareModal } from './schedule/CalendarShareModal';
 import { AllTeamsAgenda } from './schedule/AllTeamsAgenda';
 import { AgendaTabs } from './schedule/AgendaTabs';
 import { teamSettings } from '../../lib/teamSettings';
+import { nextGame, nextTraining } from '../../lib/planningSummary';
+import { NextUpCard } from './schedule/NextUpCard';
 
 const FixturePrintModal = lazy(() =>
   import('./schedule/FixturePrintModal').then((m) => ({ default: m.FixturePrintModal }))
@@ -270,39 +272,15 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
 
       <AgendaTabs current="calendario" onNavigate={onNavigate} />
 
-      <AllTeamsAgenda state={state} />
+      <NextUpCard
+        training={nextTraining(state.trainings || [], todayStr)}
+        game={nextGame(state.schedule || [], todayStr)}
+        onOpenTraining={handleEditTraining}
+        onOpenGame={handleEditScheduledMatch}
+        onNewTraining={() => handleOpenScheduleTraining()}
+        onNewGame={() => handleOpenScheduleMatch()}
+      />
 
-      {/* Summary and the two less frequent actions */}
-      <div className="flex items-center gap-3 text-xs text-slate-400">
-        <span>
-          <strong className="text-slate-100">{stats.matchesCount}</strong> jogos
-        </span>
-        <span>
-          <strong className="text-slate-100">{stats.trainingsCount}</strong> treinos
-        </span>
-        <button
-          type="button"
-          onClick={() => setShowFixturePrint(true)}
-          className="ml-auto font-semibold text-cyan-400 hover:text-cyan-300"
-          aria-label="Importar jogos de um print do calendário"
-          title="Importar jogos de um print do calendário"
-        >
-          📷 Importar print
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowCalendarShare(true)}
-          className="font-semibold text-cyan-400 hover:text-cyan-300"
-          aria-label="Calendário para os pais"
-          title={
-            (state.teams || []).find((t) => t.id === state.activeTeamId)?.calendarToken
-              ? 'Calendário para os pais (link ativo)'
-              : 'Calendário para os pais (Google / iPhone)'
-          }
-        >
-          Pais
-        </button>
-      </div>
       {showFixturePrint && (
         <Suspense fallback={null}>
           <FixturePrintModal
@@ -322,6 +300,8 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         />
       )}
 
+      <AllTeamsAgenda state={state} />
+
       {/* View Switcher & Event Category Filter Pills */}
       <ScheduleFilters
         viewMode={viewMode}
@@ -329,6 +309,9 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         eventTypeFilter={eventTypeFilter}
         setEventTypeFilter={setEventTypeFilter}
         stats={stats}
+        onImportPrint={() => setShowFixturePrint(true)}
+        onShareCalendar={() => setShowCalendarShare(true)}
+        calendarLinkActive={Boolean((state.teams || []).find((t) => t.id === state.activeTeamId)?.calendarToken)}
       />
 
       {/* VIEW 1: DIA (Daily Timeline & Detailed Event Cards) */}
@@ -365,6 +348,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
           formattedSelectedDate={formattedSelectedDate}
           handlePrevWeek={handlePrevWeek}
           handleNextWeek={handleNextWeek}
+          onGoToday={handleToday}
           onOpenScheduleMatch={handleOpenScheduleMatch}
           onOpenScheduleTraining={handleOpenScheduleTraining}
           onOpenClubEventModal={handleOpenClubEventModal}

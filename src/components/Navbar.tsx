@@ -11,6 +11,7 @@ export type TabType =
   | 'convocatoria'
   | 'prejogo'
   | 'treinos'
+  | 'epoca'
   | 'jogos'
   | 'stats'
   | 'analise_jogos'
@@ -129,7 +130,8 @@ const SideMenu: React.FC<Omit<NavbarProps, 'lang'>> = ({
       title: 'Planeamento',
       items: [
         { label: 'Agenda', icon: 'calendar', tabs: ['calendario'], go: () => onNavigate('calendario') },
-        { label: 'Treinos', icon: 'whistle', tabs: ['treinos'], go: () => onNavigate('treinos') }
+        { label: 'Treinos', icon: 'whistle', tabs: ['treinos'], go: () => onNavigate('treinos') },
+        { label: 'Época', icon: 'chart', tabs: ['epoca'], go: () => onNavigate('epoca') }
       ]
     },
     {

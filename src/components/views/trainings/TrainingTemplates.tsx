@@ -64,7 +64,7 @@ export const TrainingTemplates: React.FC<TrainingTemplatesProps> = ({
 
   return (
     <section aria-label="Modelos de treino" className="ui-inset p-3 mb-4 space-y-2">
-      <div className="text-xs font-bold text-white">📋 Modelos de treino</div>
+      <div className="text-xs font-bold text-ui-text">📋 Modelos de treino</div>
       {templates.length > 0 ? (
         <div className="flex gap-2">
           <select
@@ -94,7 +94,7 @@ export const TrainingTemplates: React.FC<TrainingTemplatesProps> = ({
           </button>
         </div>
       ) : (
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] text-ui-muted">
           Ainda sem modelos. Prepare um treino e guarde-o como modelo para o reutilizar nas próximas semanas.
         </p>
       )}

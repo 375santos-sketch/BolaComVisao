@@ -34,14 +34,14 @@ export const VariantSuggestion: React.FC<VariantSuggestionProps> = ({
   return (
     <section
       aria-label={`Sugestão para ${block.title || exercise.name}`}
-      className={`rounded-xl border p-2.5 space-y-1.5 ${hard ? 'border-rose-500/60 bg-rose-950/30' : 'border-sky-500/60 bg-sky-950/30'}`}
+      className={`rounded-xl border p-2.5 space-y-1.5 ${hard ? 'border-ui-danger/60 bg-ui-danger-soft' : 'border-ui-brand/60 bg-ui-brand-soft'}`}
     >
-      <p className={`text-xs font-bold ${hard ? 'text-rose-200' : 'text-sky-200'}`}>
+      <p className={`text-xs font-bold ${hard ? 'text-ui-danger' : 'text-ui-brand'}`}>
         {LEVELS[last.level].emoji} Da última vez ({day(last.date)}) foi {LEVELS[last.level].label.toLowerCase()}.
       </p>
-      <p className="text-[11px] text-slate-400">{hard ? 'Para facilitar' : 'Para dificultar'}, escolhe uma ou mais:</p>
+      <p className="text-[11px] text-ui-muted">{hard ? 'Para facilitar' : 'Para dificultar'}, escolhe uma ou mais:</p>
       {variants.map((v) => (
-        <label key={v.id} className="flex items-start gap-2 text-xs text-slate-100">
+        <label key={v.id} className="flex items-start gap-2 text-xs text-ui-text">
           <input
             type="checkbox"
             className="mt-0.5"

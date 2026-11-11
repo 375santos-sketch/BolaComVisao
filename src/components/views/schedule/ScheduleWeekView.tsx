@@ -1,6 +1,7 @@
 import React from 'react';
 import { CalendarEvent } from './types';
 import { MONTH_NAMES_PT } from './constants';
+import { EmptyState } from '../../ui/EmptyState';
 
 interface WeekDayItem {
   dateStr: string;
@@ -19,6 +20,7 @@ interface ScheduleWeekViewProps {
   formattedSelectedDate: string;
   handlePrevWeek: () => void;
   handleNextWeek: () => void;
+  onGoToday?: () => void;
   onOpenScheduleMatch: (date?: string) => void;
   onOpenScheduleTraining: (date?: string) => void;
   onOpenClubEventModal: (date?: string) => void;
@@ -27,17 +29,31 @@ interface ScheduleWeekViewProps {
   onOpenEvent?: (ev: CalendarEvent) => void;
 }
 
+/** One colour per kind of event, the same in the dots, the chips and the legend. */
+const KIND: Record<CalendarEvent['category'], { label: string; dot: string; chip: string }> = {
+  training: { label: 'Treino', dot: 'bg-ui-success', chip: 'border-l-ui-success' },
+  match: { label: 'Jogo', dot: 'bg-ui-brand', chip: 'border-l-ui-brand' },
+  club_event: { label: 'Reunião', dot: 'bg-ui-warning', chip: 'border-l-ui-warning' },
+  staff_unavailability: { label: 'Indisponível', dot: 'bg-ui-danger', chip: 'border-l-ui-danger' }
+};
+
+const shortMonth = (iso: string) => MONTH_NAMES_PT[new Date(`${iso}T12:00:00`).getMonth()].slice(0, 3).toLowerCase();
+
+/**
+ * Agenda → Semana: the seven days in a row (dots on the phone, the events themselves on wider screens) and, under
+ * them, everything of the day chosen.
+ */
 export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
   weekDays,
   selectedDate,
   setSelectedDate,
   todayStr,
-  activeYear,
   eventsByDate,
   selectedDateEvents,
   formattedSelectedDate,
   handlePrevWeek,
   handleNextWeek,
+  onGoToday,
   onOpenScheduleMatch,
   onOpenScheduleTraining,
   onOpenClubEventModal,
@@ -45,212 +61,162 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
   renderEventCard,
   onOpenEvent
 }) => {
+  const first = weekDays[0].dateStr;
+  const last = weekDays[6].dateStr;
+  const inThisWeek = todayStr >= first && todayStr <= last;
   return (
-    <div className="space-y-4">
-      {/* Week Header Navigator */}
-      <div className="ui-card p-3.5 flex items-center justify-between gap-2">
-        <button type="button" onClick={handlePrevWeek} className="ui-btn ui-btn-secondary p-2 px-3 text-xs">
-          ◀ Semana Anterior
-        </button>
-
-        <div className="text-center">
-          <div className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-white">
-            {weekDays[0].dayNum} de {MONTH_NAMES_PT[new Date(weekDays[0].dateStr + 'T12:00:00').getMonth()]} —{' '}
-            {weekDays[6].dayNum} de {MONTH_NAMES_PT[new Date(weekDays[6].dateStr + 'T12:00:00').getMonth()]}{' '}
-            {activeYear}
-          </div>
-          <div className="text-[11px] font-mono text-cyan-400">Semana da Época Desportiva</div>
+    <div className="space-y-3">
+      <section aria-label="Semana" className="ui-card p-2.5 sm:p-3">
+        <div className="mb-2.5 flex items-center gap-2 px-1">
+          <button
+            type="button"
+            onClick={handlePrevWeek}
+            aria-label="Semana anterior"
+            className="flex h-8 w-8 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+          >
+            ‹
+          </button>
+          <h2 className="flex-1 text-center text-ui-body font-extrabold text-ui-text">
+            {weekDays[0].dayNum} {shortMonth(first)} – {weekDays[6].dayNum} {shortMonth(last)}
+          </h2>
+          <button
+            type="button"
+            onClick={handleNextWeek}
+            aria-label="Semana seguinte"
+            className="flex h-8 w-8 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+          >
+            ›
+          </button>
+          {onGoToday && !inThisWeek && (
+            <button type="button" onClick={onGoToday} className="ui-btn ui-btn-soft px-2.5 py-1 text-ui-caption">
+              Hoje
+            </button>
+          )}
         </div>
 
-        <button type="button" onClick={handleNextWeek} className="ui-btn ui-btn-secondary p-2 px-3 text-xs">
-          Próxima Semana ▶
-        </button>
-      </div>
-
-      {/* 7 Columns for the week */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-2.5">
-        {weekDays.map((wd) => {
-          const dayEvs = eventsByDate.get(wd.dateStr) || [];
-          const isToday = wd.dateStr === todayStr;
-          const isSelected = wd.dateStr === selectedDate;
-
-          return (
-            <div
-              key={wd.dateStr}
-              onClick={() => setSelectedDate(wd.dateStr)}
-              className={`p-3 rounded-2xl border transition-all cursor-pointer flex flex-col ${
-                isToday
-                  ? 'bg-slate-900/95 border-cyan-400 shadow-[0_0_15px_rgba(0,210,255,0.2)]'
-                  : isSelected
-                    ? 'bg-slate-900 border-amber-400/80 shadow-md'
-                    : 'bg-slate-900/70 border-slate-800/90 hover:border-slate-700'
-              }`}
-            >
-              {/* Day Column Header */}
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800/80">
-                <div>
-                  <span className="text-xs font-bold font-['Chakra_Petch'] text-white block uppercase">
-                    {wd.dayName}
+        <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+          {weekDays.map((wd) => {
+            const events = eventsByDate.get(wd.dateStr) || [];
+            const isToday = wd.dateStr === todayStr;
+            const isSelected = wd.dateStr === selectedDate;
+            return (
+              <div
+                key={wd.dateStr}
+                className={`flex min-w-0 flex-col rounded-ui-sm border transition-colors md:min-h-[150px] ${
+                  isSelected
+                    ? 'border-ui-brand bg-ui-brand-soft'
+                    : isToday
+                      ? 'border-ui-line-strong bg-ui-surface-2'
+                      : 'border-ui-line hover:border-ui-line-strong'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(wd.dateStr)}
+                  aria-pressed={isSelected}
+                  aria-label={`${wd.dayName} ${wd.dayNum}: ${events.length ? `${events.length} ${events.length === 1 ? 'evento' : 'eventos'}` : 'livre'}`}
+                  className="flex flex-col items-center gap-0.5 px-0.5 py-2 md:items-start md:px-2"
+                >
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wide ${isSelected ? 'text-ui-brand' : 'text-ui-muted'}`}
+                  >
+                    {wd.dayName.slice(0, 3)}
                   </span>
-                  <span className={`text-base font-black font-mono ${isToday ? 'text-cyan-300' : 'text-slate-300'}`}>
+                  <span
+                    className={`ui-figure text-ui-lead ${
+                      isToday ? 'text-ui-brand' : isSelected ? 'text-ui-text' : 'text-ui-text'
+                    }`}
+                  >
                     {wd.dayNum}
                   </span>
-                </div>
-
-                {isToday && (
-                  <span className="px-1.5 py-0.5 rounded bg-cyan-500 text-slate-950 text-[9px] font-mono font-bold uppercase">
-                    Hoje
+                  {/* Phone: one dot per event */}
+                  <span className="flex h-2 items-center gap-0.5 md:hidden" aria-hidden>
+                    {events.slice(0, 4).map((ev) => (
+                      <span key={ev.id} className={`h-1.5 w-1.5 rounded-full ${KIND[ev.category].dot}`} />
+                    ))}
                   </span>
-                )}
+                </button>
+                {/* Wider screens: the events themselves */}
+                <ul className="hidden flex-1 space-y-1 px-1.5 pb-1.5 md:block">
+                  {events.slice(0, 3).map((ev) => (
+                    <li key={ev.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedDate(ev.date);
+                          onOpenEvent?.(ev);
+                        }}
+                        title={ev.title}
+                        className={`w-full rounded-[6px] border-l-[3px] bg-ui-surface-2 px-1.5 py-1 text-left hover:bg-ui-surface-3 ${KIND[ev.category].chip}`}
+                      >
+                        <span className="block text-[10px] font-bold text-ui-muted">{ev.time || '—'}</span>
+                        <span className="block truncate text-[11px] font-bold text-ui-text">{ev.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                  {events.length > 3 && (
+                    <li className="px-1 text-[10px] font-bold text-ui-muted">+{events.length - 3}</li>
+                  )}
+                </ul>
               </div>
-
-              {/* Day Events */}
-              <div className="space-y-1.5 flex-1 min-h-[90px]">
-                {dayEvs.map((ev) => {
-                  const isMatch = ev.category === 'match';
-                  const isStaff = ev.category === 'staff_unavailability';
-                  const isClub = ev.category === 'club_event';
-                  return (
-                    <div
-                      key={ev.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedDate(ev.date);
-                        if (onOpenEvent) onOpenEvent(ev);
-                      }}
-                      className={`p-2 rounded-xl border text-xs transition-all cursor-pointer hover:scale-102 hover:shadow-lg ${
-                        isMatch
-                          ? 'bg-cyan-950/80 border-cyan-500/50 text-cyan-200 hover:border-cyan-300'
-                          : isStaff
-                            ? 'bg-orange-950/80 border-orange-500/50 text-orange-200 hover:border-orange-300'
-                            : isClub
-                              ? 'bg-purple-950/80 border-purple-500/50 text-purple-200 hover:border-purple-300'
-                              : ev.isCompleted
-                                ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-200 hover:border-emerald-300'
-                                : 'bg-amber-950/80 border-amber-500/50 text-amber-200 hover:border-amber-300'
-                      }`}
-                      title={`Clica para abrir / editar: ${ev.title}`}
-                    >
-                      <div className="flex items-center justify-between text-[10px] font-mono opacity-80 mb-0.5">
-                        <span>{ev.time}h</span>
-                        <span>
-                          {isMatch ? '⚽ JOGO' : isStaff ? '🚫 INDISPONÍVEL' : isClub ? '👥 EVENTO' : '⚡ TREINO'}
-                        </span>
-                      </div>
-                      <div className="font-bold line-clamp-1 text-[11px] flex items-center justify-between gap-1">
-                        <span>{ev.title}</span>
-                        <span className="text-[10px] opacity-60">↗</span>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {dayEvs.length === 0 && (
-                  <div className="h-full flex items-center justify-center text-[11px] font-mono text-slate-600 italic py-4">
-                    Livre
-                  </div>
-                )}
-              </div>
-
-              {/* Quick Add on Column Bottom */}
-              <div className="pt-2 mt-2 border-t border-slate-800/60 grid grid-cols-4 gap-1">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenScheduleMatch(wd.dateStr);
-                  }}
-                  className="ui-btn ui-btn-secondary p-1 text-[10px] text-center"
-                  title="Adicionar Jogo"
-                >
-                  + ⚽
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenScheduleTraining(wd.dateStr);
-                  }}
-                  className="ui-btn ui-btn-secondary p-1 text-[10px] text-center"
-                  title="Adicionar Treino"
-                >
-                  + ⚡
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenClubEventModal(wd.dateStr);
-                  }}
-                  className="ui-btn ui-btn-secondary p-1 text-[10px] text-center"
-                  title="Adicionar Reunião / Formação"
-                >
-                  + 👥
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenScheduleStaff(wd.dateStr);
-                  }}
-                  className="ui-btn ui-btn-secondary p-1 text-[10px] text-center"
-                  title="Adicionar Indisponibilidade"
-                >
-                  + 🚫
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Selected Day Event Drawer below week */}
-      {selectedDateEvents.length > 0 && (
-        <div className="ui-card mt-4 p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 mb-3 border-b border-slate-800">
-            <div className="text-sm font-['Chakra_Petch'] font-bold uppercase text-white flex items-center gap-2">
-              <span>📅</span>
-              <span>Detalhes de {formattedSelectedDate}:</span>
-              <span className="text-xs font-mono text-cyan-400">({selectedDateEvents.length} eventos)</span>
-            </div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <button
-                type="button"
-                onClick={() => onOpenScheduleMatch(selectedDate)}
-                className="ui-btn ui-btn-primary px-2.5 py-1 text-xs flex items-center gap-1"
-              >
-                <span>⚽</span>
-                <span>＋ Jogo</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenScheduleTraining(selectedDate)}
-                className="ui-btn ui-btn-warning px-2.5 py-1 text-xs flex items-center gap-1"
-              >
-                <span>⚡</span>
-                <span>＋ Treino</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenClubEventModal(selectedDate)}
-                className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
-              >
-                <span>👥</span>
-                <span>＋ Reunião / Formação</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenScheduleStaff(selectedDate)}
-                className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-400 hover:to-rose-500 text-white font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
-              >
-                <span>🚫</span>
-                <span>＋ Indisponível</span>
-              </button>
-            </div>
-          </div>
-          <div className="space-y-3">{selectedDateEvents.map((ev) => renderEventCard(ev))}</div>
+            );
+          })}
         </div>
-      )}
+
+        <ul
+          className="mt-2.5 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-ui-muted"
+          aria-label="Legenda"
+        >
+          {Object.values(KIND).map((k) => (
+            <li key={k.label} className="flex items-center gap-1">
+              <span className={`h-2 w-2 rounded-full ${k.dot}`} aria-hidden /> {k.label}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-label="Dia escolhido" className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+          <h3 className="text-ui-body font-extrabold text-ui-text first-letter:uppercase">{formattedSelectedDate}</h3>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => onOpenScheduleTraining(selectedDate)}
+              className="ui-btn ui-btn-soft px-2.5 py-1 text-ui-caption"
+            >
+              + Treino
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenScheduleMatch(selectedDate)}
+              className="ui-btn ui-btn-secondary px-2.5 py-1 text-ui-caption"
+            >
+              + Jogo
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenClubEventModal(selectedDate)}
+              className="ui-btn ui-btn-secondary px-2.5 py-1 text-ui-caption"
+              title="Adicionar Reunião / Formação"
+            >
+              + Reunião
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenScheduleStaff(selectedDate)}
+              className="ui-btn ui-btn-secondary hidden px-2.5 py-1 text-ui-caption sm:inline-flex"
+              title="Adicionar Indisponibilidade"
+            >
+              + Indisponível
+            </button>
+          </div>
+        </div>
+        {selectedDateEvents.length ? (
+          <div className="space-y-2">{selectedDateEvents.map(renderEventCard)}</div>
+        ) : (
+          <EmptyState compact icon="calendar" title="Dia livre" text="Sem treinos, jogos ou reuniões neste dia." />
+        )}
+      </section>
     </div>
   );
 };

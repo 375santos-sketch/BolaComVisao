@@ -1,6 +1,5 @@
 import React, { lazy, Suspense, useState } from 'react';
 import { AppState, Match, GoalEvent, CardEvent, SubEvent } from '../../types';
-import { AgendaTabs } from './schedule/AgendaTabs';
 import { t } from '../../i18n/dict';
 import { playerLabel, formatMinute, parseMinuteOrder, isSeasonMatching } from '../../lib/utils';
 import { Header } from '../Header';
@@ -68,8 +67,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
         />
 
-        <AgendaTabs current="jogos" onNavigate={onNavigate} className="mb-4" />
-
         <div className="empty mt-10">{t(state.lang, 'res_none')}</div>
       </div>
     );
@@ -126,8 +123,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         syncInfo={state.syncInfo}
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
-
-      <AgendaTabs current="jogos" onNavigate={onNavigate} className="mb-4" />
 
       <button
         type="button"

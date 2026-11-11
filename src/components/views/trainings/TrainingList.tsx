@@ -101,7 +101,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
       <button
         type="button"
         onClick={() => setShowPlanShare(true)}
-        className="text-xs font-semibold text-cyan-400 hover:text-cyan-300"
+        className="text-xs font-semibold text-ui-brand hover:text-ui-brand"
       >
         🔗 Plano para o adjunto (link)
       </button>
@@ -153,7 +153,7 @@ export const TrainingList: React.FC<TrainingListProps> = ({
           ].map(([label, group]) =>
             (group as typeof trainings).length === 0 ? null : (
               <section key={label as string} aria-label={label as string}>
-                <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">{label as string}</h3>
+                <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-ui-muted">{label as string}</h3>
                 <div className="space-y-2">
                   {(group as typeof trainings).map((tr) => (
                     <TrainingCard
@@ -204,12 +204,12 @@ export const TrainingList: React.FC<TrainingListProps> = ({
       ) : (
         <div className="ui-card py-12 text-center p-6">
           <div className="text-3xl mb-2">📋</div>
-          <p className="text-sm text-slate-200 font-bold">
+          <p className="text-sm text-ui-text font-bold">
             {(state.trainings || []).length === 0
               ? t(state.lang, 'tr_none')
               : 'Nenhum treino encontrado com os filtros selecionados.'}
           </p>
-          <p className="text-xs font-mono text-slate-500 mt-1 mb-4">
+          <p className="text-xs font-mono text-ui-muted mt-1 mb-4">
             Podes inserir cada treino individualmente ou usar o gerador de época para agendar todos os treinos de uma
             vez.
           </p>

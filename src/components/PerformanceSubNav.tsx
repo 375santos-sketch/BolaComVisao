@@ -5,6 +5,7 @@ import type { TabType } from './Navbar';
 const TABS: TabItem[] = [
   { id: 'prejogo', label: 'Pré-jogo' },
   { id: 'jogo', label: 'Jogo' },
+  { id: 'jogos', label: 'Resultados' },
   { id: 'stats', label: 'Estatísticas' },
   { id: 'analise_jogos', label: 'Análise' }
 ];
@@ -14,7 +15,7 @@ interface PerformanceSubNavProps {
   onNavigate: (tab: TabType) => void;
 }
 
-/** Tabs shared by every Performance screen, so Estatísticas (with playing time) is one tap away. */
+/** Tabs shared by every Performance screen, so Resultados and Estatísticas (with playing time) are one tap away. */
 export const PerformanceSubNav: React.FC<PerformanceSubNavProps> = ({ currentTab, onNavigate }) => {
   const navRef = useRef<HTMLElement>(null);
 
