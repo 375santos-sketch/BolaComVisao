@@ -20,13 +20,11 @@ export const TrainingHeader: React.FC<TrainingHeaderProps> = ({
     ['library', 'Exercícios', null]
   ];
   return (
-    <div role="tablist" aria-label="Treinos" className="mb-4 flex gap-1 border-b border-ui-line">
+    <div role="group" aria-label="Partes dos treinos" className="mb-4 flex gap-1 border-b border-ui-line">
       {tabs.map(([tab, label, count]) => (
         <button
           key={tab}
           type="button"
-          role="tab"
-          aria-selected={activeTab === tab}
           aria-current={activeTab === tab ? 'page' : undefined}
           className={`-mb-px flex min-h-[40px] flex-1 items-center justify-center gap-1.5 border-b-2 px-2 py-2 text-ui-body font-bold transition-colors sm:flex-none sm:px-4 ${
             activeTab === tab ? 'border-ui-brand text-ui-text' : 'border-transparent text-ui-muted hover:text-ui-text'
