@@ -139,6 +139,21 @@ describe('PDF da ficha do atleta', () => {
     expect(raw).not.toContain('912345678');
     expect(raw).not.toContain('Nota privada');
     expect(raw).toContain('MINUTOS JOGO A JOGO');
+
+    // Only when the coach turns them on: the evaluations and the coach's notes
+    const evaluated = {
+      ...player,
+      evaluations: [
+        { id: 'e1', date: '2026-10-20', scores: { tecnica: 4, tatica: 3, fisica: 3, psicologica: 5, jogo: 4 } }
+      ]
+    } as Player;
+    const off = (await buildPlayerProfilePDF(evaluated, state)).output() as string;
+    expect(off).not.toContain('AVALIA');
+    const on = (
+      await buildPlayerProfilePDF(evaluated, state, { includeEvaluations: true, includeCoachNotes: true })
+    ).output() as string;
+    expect(on).toContain('20/10/2026');
+    expect(on).toContain('Nota privada do treinador');
   });
 });
 

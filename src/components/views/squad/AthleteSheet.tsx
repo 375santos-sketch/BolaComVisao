@@ -17,6 +17,8 @@ import { SectionHeader } from '../../ui/SectionHeader';
 import { StatTile } from '../../ui/StatTile';
 import { EmptyState } from '../../ui/EmptyState';
 import { Icon } from '../../ui/Icon';
+import { Sheet } from '../../ui/Sheet';
+import { Portal } from '../../ui/Portal';
 
 const PlayerCardModal = lazy(() => import('./PlayerCardModal'));
 
@@ -67,6 +69,10 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
   const [coachNotes, setCoachNotes] = useState<string>(player.coachNotes || player.notes || '');
   const [showPanel, setShowPanel] = useState(false);
   const [showCard, setShowCard] = useState(false);
+  // PDF of the athlete: the coach's evaluations and notes are private, only in when turned on (off by default)
+  const [pdfOptions, setPdfOptions] = useState<{ includeEvaluations: boolean; includeCoachNotes: boolean } | null>(
+    null
+  );
   const [evaluateNow, setEvaluateNow] = useState(0);
   const [active, setActive] = useState('resumo');
   const [seasonMessage, setSeasonMessage] = useState<string>(
@@ -140,9 +146,9 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
     onShowToast('Mensagem de fim de época guardada ✓');
     return msg;
   };
-  const exportPdf = async () => {
+  const exportPdf = async (options: { includeEvaluations: boolean; includeCoachNotes: boolean }) => {
     const { generatePlayerProfilePDF } = await import('../../../lib/pdfUtils');
-    generatePlayerProfilePDF(player, state);
+    generatePlayerProfilePDF(player, state, options);
     onShowToast(`Ficha PDF de ${player.name} gerada com sucesso! 📄`);
   };
 
@@ -224,7 +230,12 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
           <button type="button" onClick={() => setShowCard(true)} className={action}>
             <Icon name="trophy" className="h-4 w-4" /> Cromo
           </button>
-          <button type="button" onClick={exportPdf} aria-label="PDF Ficha do Atleta" className={action}>
+          <button
+            type="button"
+            onClick={() => setPdfOptions({ includeEvaluations: false, includeCoachNotes: false })}
+            aria-label="PDF Ficha do Atleta"
+            className={action}
+          >
             <Icon name="clipboard" className="h-4 w-4" /> PDF
           </button>
         </div>
@@ -520,6 +531,48 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
         </section>
       </div>
 
+      {pdfOptions && (
+        <Portal>
+          <Sheet
+            title={`PDF de ${player.name}`}
+            size="sm"
+            onClose={() => setPdfOptions(null)}
+            footer={
+              <button
+                type="button"
+                onClick={() => {
+                  exportPdf(pdfOptions);
+                  setPdfOptions(null);
+                }}
+                className="ui-btn ui-btn-primary w-full py-2.5"
+              >
+                Gerar PDF
+              </button>
+            }
+          >
+            <p className="text-ui-caption text-ui-muted">
+              A ficha leva a época do atleta (jogos, minutos e treinos), sem contactos. O que é só do treinador fica de
+              fora, a não ser que o ligues aqui.
+            </p>
+            {(
+              [
+                ['includeEvaluations', 'Incluir as avaliações do treinador'],
+                ['includeCoachNotes', 'Incluir as notas do treinador']
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key} className="ui-inset mt-2 flex items-center gap-3 p-3 text-ui-body text-ui-text">
+                <input
+                  type="checkbox"
+                  checked={pdfOptions[key]}
+                  onChange={(e) => setPdfOptions({ ...pdfOptions, [key]: e.target.checked })}
+                  className="h-5 w-5"
+                />
+                {label}
+              </label>
+            ))}
+          </Sheet>
+        </Portal>
+      )}
       {showCard && (
         <Suspense fallback={null}>
           <PlayerCardModal player={player} state={state} onShowToast={onShowToast} onClose={() => setShowCard(false)} />
