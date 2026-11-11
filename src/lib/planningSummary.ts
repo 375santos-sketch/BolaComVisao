@@ -147,3 +147,33 @@ export function weeklyLoad(state: DatedState, today: string = localDateISO(), co
   }
   return weeks;
 }
+
+const WEEKDAYS_LONG = [
+  'domingo',
+  'segunda-feira',
+  'terça-feira',
+  'quarta-feira',
+  'quinta-feira',
+  'sexta-feira',
+  'sábado'
+];
+
+/**
+ * Dates and times as written in Portugal, whatever the language of the phone: "12/11/2026" and "18:30" (24 h).
+ * They read the saved values (YYYY-MM-DD and HH:MM), which never change with the device's language.
+ */
+export function datePT(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
+}
+
+export function timePT(hhmm: string | undefined): string {
+  const m = /^(\d{1,2}):(\d{2})/.exec(hhmm || '');
+  return m ? `${m[1].padStart(2, '0')}:${m[2]}` : '';
+}
+
+/** "quinta-feira, 12/11/2026" */
+export function longDatePT(iso: string): string {
+  const d = datePT(iso);
+  return d ? `${WEEKDAYS_LONG[new Date(`${iso.slice(0, 10)}T12:00:00`).getDay()]}, ${d}` : '';
+}

@@ -13,8 +13,9 @@ import { TrainingTemplates } from './TrainingTemplates';
 import { exerciseUsage, usageLabel } from '../../../lib/trainingTemplates';
 import { TrainingFormData, TRAINING_TYPES } from './types';
 import { teamSettings } from '../../../lib/teamSettings';
-import { dayLabel } from '../../../lib/planningSummary';
+import { datePT, dayLabel, longDatePT, timePT } from '../../../lib/planningSummary';
 import { SectionNav } from '../../ui/SectionNav';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { KitBagCard } from './KitBagCard';
 import { HeatBreaksCard } from './HeatBreaksCard';
 
@@ -23,8 +24,8 @@ const FieldSetupModal = lazy(() => import('./FieldSetupModal').then((m) => ({ de
 /** The editor in four parts, with a bar on top that jumps to each. */
 const SECTIONS = [
   { id: 'dados', label: 'Dados' },
-  { id: 'plano', label: 'Fases e exercícios' },
-  { id: 'campo', label: 'Campo e material' },
+  { id: 'plano', label: 'Fases e exercícios', short: 'Fases' },
+  { id: 'campo', label: 'Campo e material', short: 'Campo' },
   { id: 'presencas', label: 'Presenças' }
 ];
 
@@ -246,7 +247,14 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
             )}
           </div>
           {single && (
-            <SectionNav label="Partes do treino" sections={SECTIONS} active={section} onJump={jump} className="-mx-1" />
+            <SectionNav
+              label="Partes do treino"
+              sections={SECTIONS}
+              active={section}
+              onJump={jump}
+              fill
+              className="-mx-1"
+            />
           )}
         </div>
 
@@ -297,8 +305,8 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
             <section aria-label="Resumo da sessão" className="ui-card mb-3.5 space-y-3 p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <p className="text-ui-body font-extrabold text-ui-text">
-                  {trainingForm.date ? dayLabel(trainingForm.date) : 'Sem data'}
-                  {trainingForm.time ? ` · ${trainingForm.time}` : ''}
+                  {trainingForm.date ? `${dayLabel(trainingForm.date)} (${datePT(trainingForm.date)})` : 'Sem data'}
+                  {timePT(trainingForm.time) ? ` · ${timePT(trainingForm.time)}` : ''}
                   <span className="font-normal text-ui-muted"> · {trainingForm.location || 'Local por definir'}</span>
                 </p>
                 <span
@@ -359,22 +367,26 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="field">
                     <label>{t(state.lang, 'sch_date')} *</label>
-                    <input
+                    <DateTimePT
                       type="date"
+                      label="Data do treino"
                       value={trainingForm.date}
-                      onChange={(e) => setTrainingForm({ ...trainingForm, date: e.target.value })}
-                      className="w-full"
+                      onChange={(date) => setTrainingForm({ ...trainingForm, date })}
                     />
+                    <p className="mt-1 text-ui-caption text-ui-muted">
+                      {longDatePT(trainingForm.date).split(',')[0] || 'dd/mm/aaaa'}
+                    </p>
                   </div>
 
                   <div className="field">
                     <label>Hora de Início</label>
-                    <input
+                    <DateTimePT
                       type="time"
+                      label="Hora de início"
                       value={trainingForm.time}
-                      onChange={(e) => setTrainingForm({ ...trainingForm, time: e.target.value })}
-                      className="w-full"
+                      onChange={(time) => setTrainingForm({ ...trainingForm, time })}
                     />
+                    <p className="mt-1 text-ui-caption text-ui-muted">24 horas</p>
                   </div>
 
                   <div className="field">

@@ -355,7 +355,7 @@ export const SeasonPlanView: React.FC<{
         <StatTile
           label="Minutos realizados"
           value={s.realized.minutes}
-          hint={`${s.scheduled.minutes} min ainda agendados`}
+          hint={`+${s.scheduled.minutes} min agendados`}
           icon="zap"
         />
         <StatTile

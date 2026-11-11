@@ -1,7 +1,6 @@
 import React from 'react';
 import { CalendarEvent } from './types';
 import { MONTH_NAMES_PT } from './constants';
-import { EmptyState } from '../../ui/EmptyState';
 
 interface WeekDayItem {
   dateStr: string;
@@ -214,7 +213,10 @@ export const ScheduleWeekView: React.FC<ScheduleWeekViewProps> = ({
         {selectedDateEvents.length ? (
           <div className="space-y-2">{selectedDateEvents.map(renderEventCard)}</div>
         ) : (
-          <EmptyState compact icon="calendar" title="Dia livre" text="Sem treinos, jogos ou reuniões neste dia." />
+          // Left-aligned and short, so the "+" button in the corner never covers it on a phone
+          <p className="ui-inset p-3 pr-24 text-ui-caption text-ui-muted sm:pr-3">
+            <strong className="text-ui-text">Dia livre</strong> · sem treinos, jogos ou reuniões.
+          </p>
         )}
       </section>
     </div>

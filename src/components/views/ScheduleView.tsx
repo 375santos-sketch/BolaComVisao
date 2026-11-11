@@ -253,7 +253,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
   );
 
   return (
-    <div className="space-y-3 sm:space-y-4 pb-24 animate-fadeIn">
+    <div className="space-y-3 sm:space-y-4 pb-36 lg:pb-24 animate-fadeIn">
       {/* Top Main Navigation Header */}
       <Header
         title="Agenda"

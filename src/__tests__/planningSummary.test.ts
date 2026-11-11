@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Training } from '../types';
 import {
+  datePT,
   dayLabel,
+  longDatePT,
+  timePT,
   nextGame,
   nextTraining,
   periodSummary,
@@ -88,5 +91,72 @@ describe('planningSummary', () => {
     expect(dayLabel('2026-11-11', TODAY)).toBe('Hoje');
     expect(dayLabel('2026-11-12', TODAY)).toBe('Amanhã');
     expect(dayLabel('2026-11-14', TODAY)).toBe('sábado, 14 nov');
+  });
+
+  it('counts a training marked done today, and never one with a future date', () => {
+    expect(trainingStatus(tr({ id: 'today', date: TODAY, completed: true }), TODAY)).toBe('realizado');
+    expect(trainingStatus(tr({ id: 'past', date: '2026-10-01', completed: true }), TODAY)).toBe('realizado');
+    expect(trainingStatus(tr({ id: 'future', date: '2026-11-20', completed: true }), TODAY)).toBe('agendado');
+    const s = periodSummary(
+      [
+        tr({ id: 'today', date: TODAY, completed: true, durationMinutes: 60 }),
+        tr({ id: 'future', date: '2026-11-13', completed: true, durationMinutes: 90 })
+      ],
+      '2026-11-09',
+      '2026-11-15',
+      TODAY
+    );
+    expect(s.realized).toEqual({ count: 1, minutes: 60 });
+    expect(s.scheduled).toEqual({ count: 1, minutes: 90 });
+  });
+
+  it('keeps the total duration apart from the minutes per theme (trainings without a plan)', () => {
+    const s = periodSummary(
+      [
+        tr({ id: 'noplan', date: '2026-11-10', completed: true, durationMinutes: 90 }),
+        tr({
+          id: 'plan',
+          date: '2026-11-09',
+          completed: true,
+          durationMinutes: 75,
+          sessionPlan: {
+            totalDurationMinutes: 75,
+            blocks: [
+              { id: '1', title: 'A', durationMinutes: 20, category: 'tecnica' },
+              { id: '2', title: 'B', durationMinutes: 25, category: 'tecnica' },
+              { id: '3', title: 'C', durationMinutes: 10 },
+              { id: '4', title: 'D', durationMinutes: 0, category: 'jogo' }
+            ]
+          }
+        })
+      ],
+      '2026-11-09',
+      '2026-11-15',
+      TODAY
+    );
+    expect(s.realized).toEqual({ count: 2, minutes: 165 });
+    expect(s.themes).toEqual({ tecnica: 45, outros: 10 });
+    expect(s.themedMinutes).toBe(55);
+  });
+
+  it('keeps trainings left open on past days out of the realized minutes', () => {
+    const s = periodSummary(
+      [tr({ id: 'open', date: '2026-11-05', completed: false, durationMinutes: 75 })],
+      '2026-11-01',
+      '2026-11-30',
+      TODAY
+    );
+    expect(s.realized.minutes).toBe(0);
+    expect(s.unclosed).toEqual({ count: 1, minutes: 75 });
+  });
+
+  it('writes dates and times the Portuguese way, from the saved values', () => {
+    expect(datePT('2026-11-12')).toBe('12/11/2026');
+    expect(datePT('2026-03-04T10:00:00Z')).toBe('04/03/2026');
+    expect(datePT('')).toBe('');
+    expect(timePT('18:30')).toBe('18:30');
+    expect(timePT('9:05')).toBe('09:05');
+    expect(timePT(undefined)).toBe('');
+    expect(longDatePT('2026-11-12')).toBe('quinta-feira, 12/11/2026');
   });
 });

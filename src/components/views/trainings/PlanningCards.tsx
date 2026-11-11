@@ -260,20 +260,22 @@ export const MinutesRule: React.FC = () => (
     <summary className="cursor-pointer font-bold text-ui-text">Como contamos os minutos</summary>
     <ul className="mt-2 list-disc space-y-1 pl-4">
       <li>
-        <strong className="text-ui-text">Realizado</strong>: treino marcado como concluído, num dia até hoje. Só estes
-        contam como trabalho feito.
+        <strong className="text-ui-text">Realizado</strong>: treino marcado como concluído, num dia até hoje (hoje
+        incluído). Só estes contam como trabalho feito.
       </li>
       <li>
-        <strong className="text-ui-text">Agendado</strong>: treino marcado para hoje ou mais tarde. É planeado, não
-        feito.
+        <strong className="text-ui-text">Agendado</strong>: treino de hoje ou de mais tarde ainda por concluir. Um
+        treino com data futura nunca conta como feito, mesmo que tenha sido marcado como concluído.
       </li>
       <li>
-        <strong className="text-ui-text">Por fechar</strong>: treino que ficou como agendado num dia que já passou. Pode
-        ter sido feito ou cancelado, por isso não conta até o fechares.
+        <strong className="text-ui-text">Por fechar</strong>: treino que ficou como agendado num dia que já passou. Não
+        conta como feito. A app não tem um estado “cancelado”, por isso não consegue distinguir um treino cancelado de
+        um que só não foi fechado: os dois ficam aqui. Não apagues treinos cancelados; deixa-os por fechar.
       </li>
       <li>
-        Os minutos de um treino são a sua duração. Os minutos por tema são os dos exercícios do plano, só dos treinos
-        realizados.
+        Minutos realizados = a duração de cada treino. Minutos por tema = os minutos dos exercícios do plano, só dos
+        treinos realizados. Por isso os dois podem ser diferentes: um treino sem plano soma à duração e aparece como
+        “sem plano” nos temas.
       </li>
     </ul>
   </details>

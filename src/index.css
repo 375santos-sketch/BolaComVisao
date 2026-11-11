@@ -1568,6 +1568,13 @@ html.sol {
   --color-ui-brand-strong: #0369a1;
   --color-ui-brand-ink: #ffffff;
   --color-ui-brand-soft: rgb(2 132 199 / 0.12);
+  /* Status colours dark enough to read on white in the sun (text 4.5:1 or more) */
+  --color-ui-success: #15803d;
+  --color-ui-warning: #b45309;
+  --color-ui-danger: #b91c1c;
+  --color-ui-success-soft: rgb(21 128 61 / 0.12);
+  --color-ui-warning-soft: rgb(180 83 9 / 0.12);
+  --color-ui-danger-soft: rgb(185 28 28 / 0.1);
   --color-slate-50: oklch(12.9% 0.042 264.695);
   --color-slate-100: oklch(20.8% 0.042 265.755);
   --color-slate-200: oklch(27.9% 0.041 260.031);
