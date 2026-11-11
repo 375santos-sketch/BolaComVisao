@@ -43,11 +43,12 @@ describe('Minutos de jogo — resumo da época', () => {
       availableMinutes: 60,
       matchesPlayed: 1,
       starts: 1,
-      belowTarget: false
+      fewestMinutes: false
     });
-    expect(byId.b).toMatchObject({ minutes: 40, starts: 1, belowTarget: false });
-    expect(byId.c).toMatchObject({ minutes: 20, matchesPlayed: 1, starts: 0, belowTarget: true });
-    expect(byId.d).toMatchObject({ minutes: 0, matchesCalledUp: 1, matchesPlayed: 0, belowTarget: true });
+    // The 3 with the fewest minutes are pointed out (a warning, not a rule): d, c and b
+    expect(byId.b).toMatchObject({ minutes: 40, starts: 1, fewestMinutes: true });
+    expect(byId.c).toMatchObject({ minutes: 20, matchesPlayed: 1, starts: 0, fewestMinutes: true });
+    expect(byId.d).toMatchObject({ minutes: 0, matchesCalledUp: 1, matchesPlayed: 0, fewestMinutes: true });
   });
 
   it('lists the players who need minutes first', () => {
@@ -75,11 +76,11 @@ describe('Minutos de jogo — resumo da época', () => {
       share: 0,
       calledUpMinutes: 0,
       callupShare: 0,
-      belowTarget: false
+      fewestMinutes: false
     });
   });
 
-  it('share over all the games (30 of 120 = 25%), short of minutes over the games called up for (30 of 60 = 50%)', () => {
+  it('share over all the games (30 of 120 = 25%), fewest minutes over the games called up for (30 of 60 = 50%)', () => {
     const g1 = finishedMatch({
       convocados: ['a', 'b', 'c'],
       subs: [{ id: 's1', outId: 'b', inId: 'c', minute: "30'", minuteInHalf: 0, half: 2, isHalftime: false }]
@@ -92,15 +93,15 @@ describe('Minutos de jogo — resumo da época', () => {
       share: 0.25,
       calledUpMinutes: 60,
       callupShare: 0.5,
-      belowTarget: false
+      fewestMinutes: true // among the 3 with the fewest minutes (d, c, b)
     });
-    // Called up for one game and did not play: short of minutes
+    // Called up for one game and did not play: the fewest minutes
     expect(byId.d).toMatchObject({
       minutes: 0,
       availableMinutes: 120,
       share: 0,
       matchesCalledUp: 1,
-      belowTarget: true
+      fewestMinutes: true
     });
     expect(byId.a).toMatchObject({ minutes: 120, share: 1 });
     // The team's time on the pitch adds up: 2 players x 2 games x 60'

@@ -8,8 +8,11 @@ import { withRosterIds } from './eventPlayers';
  * Playing time per player (youth football: every called-up player should get meaningful minutes).
  */
 
-/** Share of the available minutes below which a player is flagged (50% of the time they could have played). */
-export const PLAYING_TIME_TARGET = 0.5;
+/**
+ * No minimum is imposed (every age group and coach is different): the app only points out the athletes with the
+ * fewest minutes, so the coach can decide. How many are pointed out:
+ */
+export const FEWEST_MINUTES_COUNT = 3;
 
 const participants = (m: Match): string[] =>
   Array.from(
@@ -92,7 +95,10 @@ export interface PlayerPlayingTime {
   matchesCalledUp: number;
   matchesPlayed: number;
   starts: number;
-  belowTarget: boolean;
+  /** One of the FEWEST_MINUTES_COUNT athletes with the lowest share of the minutes of the games they were called up
+   * for (`callupShare`). Never called up, or played every minute: never flagged. A warning only, never an
+   * obligation. */
+  fewestMinutes: boolean;
 }
 
 /**
@@ -112,14 +118,14 @@ export function gamesMissingStarters(matches: Match[], roster: Player[]): Match[
 /**
  * Season summary of playing time, lowest share first so the players who need minutes stand out. `share` is over the
  * minutes of all the games (2 games of 60' = 120' for everyone), called up or not, so it adds up to the team's time
- * on the pitch. Being short of minutes (`belowTarget`) only counts the games each athlete was called up for
- * (`callupShare`). Only the team's active athletes count (inactive ones and athletes of other teams are left out).
+ * on the pitch. The athletes with the fewest minutes (`fewestMinutes`) are measured on the games each athlete was
+ * called up for (`callupShare`). Only the team's active athletes count (inactive ones and athletes of other teams are left out).
  */
 export function computeSeasonPlayingTime(
   matches: Match[],
   roster: Player[],
   category?: string,
-  target = PLAYING_TIME_TARGET
+  count = FEWEST_MINUTES_COUNT
 ): PlayerPlayingTime[] {
   const finished = withRosterIds(
     matches.filter((m) => m && m.finished),
@@ -128,7 +134,7 @@ export function computeSeasonPlayingTime(
 
   const availableMinutes = finished.reduce((n, m) => n + getMatchTotalMinutes(m, category), 0);
 
-  return roster
+  const rows = roster
     .filter((p) => p && p.active !== false)
     .map((p) => {
       let minutes = 0;
@@ -162,9 +168,22 @@ export function computeSeasonPlayingTime(
         matchesCalledUp,
         matchesPlayed,
         starts,
-        // Short of minutes only counts the games the athlete was called up for (never called up: not short)
-        belowTarget: calledUpMinutes > 0 && callupShare < target
+        fewestMinutes: false
       };
     })
     .sort((a, b) => a.share - b.share || a.minutes - b.minutes || a.name.localeCompare(b.name, 'pt-PT'));
+  return markFewest(rows, count);
+}
+
+/** Marks the `count` athletes with the lowest share of the minutes of the games they were called up for. */
+function markFewest(rows: PlayerPlayingTime[], count: number): PlayerPlayingTime[] {
+  const fewest = new Set(
+    rows
+      // Called up at least once and not already playing every minute they could
+      .filter((r) => r.calledUpMinutes > 0 && r.callupShare < 1)
+      .sort((a, b) => a.callupShare - b.callupShare || a.minutes - b.minutes || a.name.localeCompare(b.name, 'pt-PT'))
+      .slice(0, count)
+      .map((r) => r.playerId)
+  );
+  return rows.map((r) => ({ ...r, fewestMinutes: fewest.has(r.playerId) }));
 }

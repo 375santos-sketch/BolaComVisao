@@ -1,11 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Match, Player } from '../../../types';
-import {
-  computeSeasonPlayingTime,
-  gamesMissingStarters,
-  getCalledUpPlayers,
-  PLAYING_TIME_TARGET
-} from '../../../lib/playingTime';
+import { computeSeasonPlayingTime, gamesMissingStarters, getCalledUpPlayers } from '../../../lib/playingTime';
 import { getLineupSize } from '../../../lib/constants';
 import { LineupModal } from '../liveMatch/components/LineupModal';
 
@@ -27,8 +22,7 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
     .sort((a, b) => b.minutes - a.minutes || a.name.localeCompare(b.name, 'pt-PT'));
   if (withGames.length === 0) return null;
 
-  const below = withGames.filter((r) => r.belowTarget);
-  const targetPct = Math.round(PLAYING_TIME_TARGET * 100);
+  const below = withGames.filter((r) => r.fewestMinutes);
 
   return (
     <div className="card mb-3">
@@ -37,19 +31,14 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
           ⏱️ Minutos de jogo
         </div>
         <span className="text-[10px] font-mono text-slate-400">
-          Objetivo: {targetPct}% dos minutos dos jogos em que é convocado
+          % conv. = minutos ÷ minutos dos jogos em que foi convocado
         </span>
       </div>
 
-      {below.length > 0 ? (
+      {below.length > 0 && (
         <div className="mb-3 p-2.5 rounded-xl bg-amber-950/50 border border-amber-500/40 text-[11px] text-amber-200">
-          <strong>{below.length}</strong> {below.length === 1 ? 'atleta está' : 'atletas estão'} abaixo de {targetPct}%
-          dos minutos dos jogos em que {below.length === 1 ? 'foi convocado' : 'foram convocados'}:{' '}
-          {below.map((r) => r.name).join(', ')}.
-        </div>
-      ) : (
-        <div className="mb-3 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-200">
-          Todos os convocados jogaram pelo menos {targetPct}% dos minutos dos jogos em que foram convocados. 👏
+          Com menos minutos nos jogos em que foram convocados: {below.map((r) => r.name).join(', ')}. É só um alerta:
+          quem joga decide o treinador.
         </div>
       )}
 
@@ -122,7 +111,11 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
                   <td className="py-1.5 px-1 text-right font-mono text-slate-300">{pct}%</td>
                   <td
                     className={`py-1.5 px-1 text-right font-mono font-bold ${
-                      r.matchesCalledUp === 0 ? 'text-slate-500' : r.belowTarget ? 'text-amber-300' : 'text-emerald-300'
+                      r.matchesCalledUp === 0
+                        ? 'text-slate-500'
+                        : r.fewestMinutes
+                          ? 'text-amber-300'
+                          : 'text-emerald-300'
                     }`}
                   >
                     {r.matchesCalledUp ? `${Math.round(r.callupShare * 100)}%` : '—'}

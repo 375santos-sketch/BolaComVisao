@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Match, Player } from '../../../../types';
+import { FEWEST_MINUTES_COUNT } from '../../../../lib/playingTime';
 import { halftimePlan } from '../../../../lib/halftimePlan';
 
 interface HalftimePlanPanelProps {
@@ -23,7 +24,8 @@ export const HalftimePlanPanel: React.FC<HalftimePlanPanelProps> = ({
 }) => {
   const plan = useMemo(() => halftimePlan(match, matches, roster, category), [match, matches, roster, category]);
   if (plan.rows.length === 0) return null;
-  const below = plan.rows.filter((r) => r.shareIfBenched < plan.target);
+  // The rows come with the fewest minutes first: point out the first ones (a warning, never an obligation)
+  const fewest = new Set(plan.rows.slice(0, FEWEST_MINUTES_COUNT).map((r) => r.playerId));
 
   return (
     <section aria-label="Sugestão para a 2.ª parte" className="ui-card p-3 text-xs space-y-2">
@@ -31,10 +33,12 @@ export const HalftimePlanPanel: React.FC<HalftimePlanPanelProps> = ({
         ⚖️ Minutos na época · sugestão para a 2.ª parte
       </div>
       <p className="text-[11px] text-ui-muted">
-        {below.length > 0
-          ? `${below.length} ${below.length === 1 ? 'atleta fica' : 'atletas ficam'} abaixo de ${pct(plan.target)} dos minutos da época se não jogar${below.length === 1 ? '' : 'em'} a 2.ª parte.`
-          : `Todos ficam acima de ${pct(plan.target)} dos minutos da época.`}{' '}
-        A sugestão dá a 2.ª parte a quem está mais atrás (com um guarda-redes).
+        Com menos minutos na época:{' '}
+        {plan.rows
+          .slice(0, FEWEST_MINUTES_COUNT)
+          .map((r) => r.label)
+          .join(', ')}
+        . A sugestão dá a 2.ª parte a quem está mais atrás (com um guarda-redes); quem joga decide o treinador.
       </p>
       <ul className="space-y-1 font-mono text-[11px]" aria-label="Minutos na época por atleta">
         {plan.rows.map((r) => (
@@ -51,7 +55,7 @@ export const HalftimePlanPanel: React.FC<HalftimePlanPanelProps> = ({
             </span>
             <span className="shrink-0 text-right">
               <span className="text-ui-muted">{r.firstHalf}&apos; · </span>
-              <span className={r.shareIfBenched < plan.target ? 'text-ui-warning font-bold' : 'text-ui-text'}>
+              <span className={fewest.has(r.playerId) ? 'text-ui-warning font-bold' : 'text-ui-text'}>
                 {pct(r.shareIfBenched)}
               </span>
               <span className="text-ui-muted"> → {pct(r.shareIfPlays)}</span>

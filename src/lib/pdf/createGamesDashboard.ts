@@ -1,6 +1,5 @@
 import { AppState } from '../../types';
 import { buildGamesDashboard, GamesDashboard, RankRow } from '../gamesDashboard';
-import { PLAYING_TIME_TARGET } from '../playingTime';
 import { getJsPDF, drawDocumentHeader, addBolaComVisaoPageFooters, drawSectionTitle, pdfBrand } from './pdfLayout';
 import { DashboardSelection, selectDashboardGames } from './createSeasonReport';
 import { APP } from './pdfTheme';
@@ -136,11 +135,7 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
 
   // Minutes per athlete
   const rowH = 6.2;
-  section(
-    'Minutos jogados',
-    `Minutos e percentagem dos minutos dos jogos. A linha tracejada marca ${pct(PLAYING_TIME_TARGET)}.`,
-    d.squad.length * rowH + 12
-  );
+  section('Minutos jogados', 'Minutos e percentagem dos minutos dos jogos.', d.squad.length * rowH + 12);
   legend(doc, L, y, [
     ['Titular em pelo menos 1 jogo', BLUE],
     ['Só suplente', GREY]
@@ -149,7 +144,6 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
   const labelW = 40;
   const barX = L + labelW + 2;
   const barW = 105;
-  const chartTop = y;
   d.squad.forEach((s) => {
     ensure(rowH);
     const label = `${s.number !== null && s.number !== '' ? `${s.number} · ` : ''}${s.name}`;
@@ -162,16 +156,6 @@ export async function buildGamesDashboardPDF(state: AppState, selection?: Dashbo
     text(`${s.minutes}' · ${pct(s.share)}`, barX + w + 2, y + 3.6, 8, MUTED);
     y += rowH;
   });
-  if (y > chartTop) {
-    const x50 = barX + PLAYING_TIME_TARGET * barW;
-    doc.setDrawColor(...MUTED);
-    doc.setLineWidth(0.25);
-    doc.setLineDashPattern([1, 1], 0);
-    doc.line(x50, chartTop - 1, x50, y);
-    doc.setLineDashPattern([], 0);
-    text(pct(PLAYING_TIME_TARGET), x50, y + 3, 7.5, MUTED, false, 'center');
-    y += 6;
-  }
 
   // How we score
   section('Como marcamos', 'Golos marcados por origem do lance.', d.origins.length * rowH + 4);

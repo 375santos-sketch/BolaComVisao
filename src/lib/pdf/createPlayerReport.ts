@@ -12,7 +12,6 @@ import {
 } from './pdfLayout';
 import { buildPlayerSeason } from '../playerSeason';
 import { absenceReasonLabel } from '../trainingQuick';
-import { PLAYING_TIME_TARGET } from '../playingTime';
 import { APP } from './pdfTheme';
 import { kpiRow, ring } from './pdfDash';
 
@@ -361,7 +360,7 @@ const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', '
 
 type Writer = ReturnType<typeof createTextReportWriter>;
 
-/** Minutes game by game: bar = minutes played over the game's minutes (track), dashed 50% line, G/A above. */
+/** Minutes game by game: bar = minutes played over the game's minutes (track), G/A above. */
 export function drawMinutesByGame(doc: any, w: Writer, s: ReturnType<typeof buildPlayerSeason>, h = 38) {
   const games = s.evolution.games;
   if (games.length === 0) return;
@@ -384,12 +383,6 @@ export function drawMinutesByGame(doc: any, w: Writer, s: ReturnType<typeof buil
     doc.line(left, y(v), right, y(v));
     doc.text(`${v}'`, left - 1.5, y(v) + 1, { align: 'right' });
   });
-  const target = y(max * PLAYING_TIME_TARGET);
-  doc.setLineDashPattern([1.2, 0.8], 0);
-  doc.setDrawColor(...PDF_MUTED);
-  doc.line(left, target, right, target);
-  doc.setLineDashPattern([], 0);
-  doc.text(`${Math.round(PLAYING_TIME_TARGET * 100)}%`, right + 1.5, target + 1);
 
   const labelEvery = Math.ceil(games.length / 12);
   games.forEach((g, i) => {

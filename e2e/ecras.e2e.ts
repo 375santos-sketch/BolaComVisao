@@ -81,7 +81,7 @@ test('entrar: escolha da equipa e painel inicial', async ({ page }) => {
   const notices = page.getByRole('region', { name: 'Avisos' });
   await expect(notices).toContainText('Convocatória por fechar: vs Abrantes');
   // Short of minutes only over the games each athlete was called up for: never called up does not count
-  await expect(notices).toContainText('Precisam de minutos: Martim Costa (0%), Duarte Matos (20%)');
+  await expect(notices).toContainText('Com menos minutos: Martim Costa (0%), Duarte Matos (20%)');
   await expect(notices).not.toContainText('Gabriel Sousa');
   const season = page.getByRole('region', { name: 'Resumo da época' });
   await expect(season.getByRole('button', { name: /Marcados/ })).toContainText('2em 2 jogos');
@@ -256,7 +256,7 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
   await expect(page.getByRole('region', { name: 'Jogo da convocatória' })).toContainText('vs Constância');
 
   // Minutes of the season help choose: who played little is flagged.
-  const need = page.getByRole('note', { name: 'Precisam de minutos' });
+  const need = page.getByRole('note', { name: 'Com menos minutos' });
   await expect(need).toContainText('Martim Costa 0%');
   await expect(need).toContainText('Duarte Matos 20%'); // 10' of the 50' of the one game he was called up for
   await expect(need).not.toContainText('Gabriel Sousa'); // never called up: not short of minutes

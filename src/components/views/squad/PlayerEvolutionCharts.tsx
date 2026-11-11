@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { PLAYING_TIME_TARGET } from '../../../lib/playingTime';
 import { PlayerSeason } from '../../../lib/playerSeason';
 import { homeFirstScore } from '../../../lib/utils';
 
@@ -24,7 +23,7 @@ const describe = (g: Game) =>
       }`);
 
 /**
- * The athlete's season game by game: minutes played (bar) over the minutes of the game (track), the 50% target as a
+ * The athlete's season game by game: minutes played (bar) over the minutes of the game (track), no target line (the app only points out who has the fewest minutes), as a
  * dashed line, goals/assists above the bar; then training attendance per month. Tap a bar for the details.
  */
 export const PlayerEvolutionCharts: React.FC<{ data: PlayerSeason }> = ({ data }) => {
@@ -63,24 +62,6 @@ export const PlayerEvolutionCharts: React.FC<{ data: PlayerSeason }> = ({ data }
                 </text>
               </g>
             ))}
-            <line
-              x1={left}
-              x2={W}
-              y1={y(maxMinutes * PLAYING_TIME_TARGET)}
-              y2={y(maxMinutes * PLAYING_TIME_TARGET)}
-              stroke={MUTED}
-              strokeWidth={0.75}
-              strokeDasharray="3 2"
-            />
-            <text
-              x={left - 3}
-              y={y(maxMinutes * PLAYING_TIME_TARGET) + 2.5}
-              fontSize={6.5}
-              fill={MUTED}
-              textAnchor="end"
-            >
-              {Math.round(PLAYING_TIME_TARGET * 100)}%
-            </text>
             {games.map((g, i) => {
               const x = left + i * slot + (slot - barW) / 2;
               const extras = [

@@ -77,12 +77,12 @@ export function homeNotices(
 
   const shortOfMinutes = playersNeedingMinutes(
     callupPlayingTime(state.matches || [], roster, state.season, state.category)
-  ).filter((r) => r.belowTarget);
+  ).filter((r) => r.fewestMinutes);
   if (shortOfMinutes.length > 0) {
     notices.push({
       id: 'minutos',
       icon: '⚖️',
-      text: `Precisam de minutos: ${names(shortOfMinutes.map((r) => `${r.name} (${Math.round(r.callupShare * 100)}%)`))}`,
+      text: `Com menos minutos: ${names(shortOfMinutes.map((r) => `${r.name} (${Math.round(r.callupShare * 100)}%)`))}`,
       tab: 'convocatoria'
     });
   }
@@ -217,7 +217,7 @@ export function recentForm(state: Pick<SummaryState, 'matches' | 'season'>, max 
     .map((m) => ({ id: m.id, date: m.date, opponent: m.opponent, ...calculateMatchScore(m) }));
 }
 
-/** Athletes below the minutes target in the games they were called up for, and how many athletes were called up. */
+/** The athletes with the fewest minutes in the games they were called up for, and how many athletes were called up. */
 export function minutesBehind(state: Pick<SummaryState, 'matches' | 'season' | 'roster' | 'category'>) {
   const rows = computeSeasonPlayingTime(
     seasonMatches(state).filter((m) => m.finished),
@@ -227,7 +227,7 @@ export function minutesBehind(state: Pick<SummaryState, 'matches' | 'season' | '
   // Only athletes called up at least once count: short of minutes is measured on the games they were called up for
   const counted = rows.filter((r) => r.matchesCalledUp > 0);
   return {
-    behind: counted.filter((r) => r.belowTarget).sort((a, b) => a.callupShare - b.callupShare),
+    behind: counted.filter((r) => r.fewestMinutes).sort((a, b) => a.callupShare - b.callupShare),
     total: counted.length
   };
 }

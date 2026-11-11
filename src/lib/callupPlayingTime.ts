@@ -33,11 +33,11 @@ export function callupPlayingTime(
 }
 
 /**
- * Players who need minutes: below the target share of the minutes of the games they were called up for (games they
- * were not called up for do not count). Fewest minutes first.
+ * The athletes with the fewest minutes (FEWEST_MINUTES_COUNT of them), measured on the games they were called up for
+ * (games they were not called up for do not count). Fewest first. A warning only: the coach decides who plays.
  */
 export function playersNeedingMinutes(rows: Map<string, CallupPlayingTime>): CallupPlayingTime[] {
   return [...rows.values()]
-    .filter((r) => r.belowTarget)
+    .filter((r) => r.fewestMinutes)
     .sort((a, b) => a.callupShare - b.callupShare || a.minutes - b.minutes);
 }

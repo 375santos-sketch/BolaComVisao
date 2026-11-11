@@ -466,10 +466,10 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             {needMinutes.length > 0 && (
               <div
                 role="note"
-                aria-label="Precisam de minutos"
+                aria-label="Com menos minutos"
                 className="mb-2 p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-[11px] text-amber-100 space-y-1"
               >
-                <div className="font-bold text-amber-300">Precisam de minutos</div>
+                <div className="font-bold text-amber-300">Com menos minutos (só um alerta)</div>
                 <div className="flex flex-wrap gap-1">
                   {needMinutes.map((r) => (
                     <span key={r.playerId} className="px-2 py-0.5 rounded-full bg-amber-900/40">
@@ -558,7 +558,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                         </div>
                       ) : (
                         <div
-                          className={`text-[11px] truncate ${mins?.belowTarget ? 'text-amber-300' : 'text-slate-400'}`}
+                          className={`text-[11px] truncate ${mins?.fewestMinutes ? 'text-amber-300' : 'text-slate-400'}`}
                         >
                           {facts.join(' · ')}
                           {att.consecutiveAbsences >= 2 ? ` · ⚠️ ${att.consecutiveAbsences} faltas` : ''}

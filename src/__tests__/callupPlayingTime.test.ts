@@ -40,8 +40,8 @@ describe('Minutos na convocatória', () => {
 
   it('counts only the season and how often each player was left out of the last 3 games', () => {
     const rows = callupPlayingTime(matches, roster, '2026/2027', 'Sub-11');
-    expect(rows.get('a')).toMatchObject({ minutes: 180, leftOutRecently: 0, belowTarget: false });
-    expect(rows.get('c')).toMatchObject({ minutes: 0, matchesCalledUp: 2, leftOutRecently: 1, belowTarget: true });
+    expect(rows.get('a')).toMatchObject({ minutes: 180, leftOutRecently: 0, fewestMinutes: false });
+    expect(rows.get('c')).toMatchObject({ minutes: 0, matchesCalledUp: 2, leftOutRecently: 1, fewestMinutes: true });
     expect(rows.get('d')).toMatchObject({ minutes: 0, matchesCalledUp: 1, leftOutRecently: 2 });
   });
 
