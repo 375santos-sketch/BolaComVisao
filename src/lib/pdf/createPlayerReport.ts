@@ -14,6 +14,7 @@ import { buildPlayerSeason } from '../playerSeason';
 import { absenceReasonLabel } from '../trainingQuick';
 import { APP } from './pdfTheme';
 import { kpiRow, ring } from './pdfDash';
+import { EVALUATION_AREAS, averageOf, evaluationsOf, formatScore } from '../playerEvolution';
 
 /**
  * 2. Dossier Oficial do Plantel em PDF
@@ -167,9 +168,15 @@ export async function generateSquadPDF(state: AppState) {
 /**
  * Builds the athlete's season sheet on a single page (for meetings with the coordinator, or to show the parents):
  * summary tiles, minutes game by game, latest games, training attendance month by month and absences by reason.
- * No contacts, no coach notes, no emojis.
+ * No contacts and no emojis. The coach's evaluations and notes are private: they only go in when the coach turns
+ * them on for this PDF (both off by default).
  */
-export async function buildPlayerProfilePDF(player: Player, state: AppState) {
+interface PlayerProfileOptions {
+  includeEvaluations?: boolean;
+  includeCoachNotes?: boolean;
+}
+
+export async function buildPlayerProfilePDF(player: Player, state: AppState, options: PlayerProfileOptions = {}) {
   const jsPDF = await getJsPDF();
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const s = buildPlayerSeason(state, player.id, state.season);
@@ -346,6 +353,58 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState) {
     }
   }
 
+  if (options.includeEvaluations) {
+    const evals = evaluationsOf(player);
+    heading('Avaliações do treinador');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    if (evals.length === 0) {
+      doc.setTextColor(...PDF_MUTED);
+      doc.text('Ainda sem avaliações.', 16, w.y);
+      w.skip(6);
+    } else {
+      const last = evals[0];
+      const dmy = (iso: string) => iso.split('-').reverse().join('/');
+      doc.setTextColor(...PDF_INK);
+      doc.text(`Última avaliação: ${dmy(last.date)} · média ${formatScore(averageOf(last))} (de 1 a 5)`, 16, w.y);
+      w.skip(5);
+      EVALUATION_AREAS.forEach((a) => {
+        w.ensure(5);
+        doc.setTextColor(...PDF_INK);
+        doc.text(a.label, 16, w.y);
+        doc.setFillColor(...PDF_TRACK);
+        doc.roundedRect(80, w.y - 2.6, 60, 3, 1.5, 1.5, 'F');
+        doc.setFillColor(...PDF_BAR);
+        doc.roundedRect(80, w.y - 2.6, (60 * last.scores[a.key]) / 5, 3, 1.5, 1.5, 'F');
+        doc.text(`${last.scores[a.key]}`, 144, w.y);
+        w.skip(5);
+      });
+      if (evals.length > 1) {
+        const before = evals
+          .slice(1, 4)
+          .map((e) => `${dmy(e.date)}: ${formatScore(averageOf(e))}`)
+          .join('  ·  ');
+        doc.setTextColor(...PDF_MUTED);
+        doc.text(`Anteriores: ${before}`, 16, w.y);
+        w.skip(5);
+      }
+    }
+    w.skip(2);
+  }
+
+  if (options.includeCoachNotes) {
+    const notes = (player.coachNotes || '').trim();
+    heading('Notas do treinador');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...(notes ? PDF_INK : PDF_MUTED));
+    (doc.splitTextToSize(notes || 'Sem notas.', 178) as string[]).forEach((line) => {
+      w.ensure(5);
+      doc.text(line, 16, w.y);
+      w.skip(4.5);
+    });
+  }
+
   addBolaComVisaoPageFooters(doc);
   return doc;
 }
@@ -447,8 +506,8 @@ export function drawTrainingMonths(doc: any, w: Writer, s: ReturnType<typeof bui
   w.skip(4);
 }
 
-export async function generatePlayerProfilePDF(player: Player, state: AppState) {
-  const doc = await buildPlayerProfilePDF(player, state);
+export async function generatePlayerProfilePDF(player: Player, state: AppState, options: PlayerProfileOptions = {}) {
+  const doc = await buildPlayerProfilePDF(player, state, options);
   const sanitize = (v: string) => v.replace(/[^a-zA-Z0-9]/g, '_');
   doc.save(`Ficha_Atleta_${sanitize(player.name)}.pdf`);
 }

@@ -938,6 +938,11 @@ test('ficha do atleta: época, últimos jogos, faltas com motivo e PDF', async (
   await season.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/ficha.png` : undefined });
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: /PDF Ficha do Atleta/ }).click();
+  // The coach's evaluations and notes stay out unless turned on
+  const pdf = page.getByRole('dialog', { name: 'PDF de Rui Silva' });
+  await expect(pdf.getByLabel('Incluir as avaliações do treinador')).not.toBeChecked();
+  await expect(pdf.getByLabel('Incluir as notas do treinador')).not.toBeChecked();
+  await pdf.getByRole('button', { name: 'Gerar PDF' }).click();
   expect((await download).suggestedFilename()).toBe('Ficha_Atleta_Rui_Silva.pdf');
 });
 
