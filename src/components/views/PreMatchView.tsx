@@ -290,8 +290,8 @@ const PreMatchForm: React.FC<PreMatchFormProps> = ({ game, state, onSave, onShow
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={`${field} mt-1`} />
       </label>
 
-      {/* Save is always at hand; sharing is one row below */}
-      <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-20 -mx-4 -mb-4 grid grid-cols-2 gap-2 border-t border-ui-line bg-ui-surface/95 p-3 backdrop-blur lg:bottom-0">
+      {/* Save and share at the end of the plan (nothing fixed on the screen) */}
+      <div className="grid grid-cols-2 gap-2 border-t border-ui-line pt-3">
         <button
           type="button"
           onClick={() => onSave(withPlan(), 'Pré-jogo guardado ✓')}

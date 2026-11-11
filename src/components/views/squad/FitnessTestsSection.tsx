@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Portal } from '../../ui/Portal';
 import { AppState, Player } from '../../../types';
 import {
   FITNESS_TESTS,
@@ -63,96 +64,106 @@ const TestTool: React.FC<{
   };
 
   return (
-    <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center" onClick={onClose}>
+    <Portal>
       <div
-        role="dialog"
-        aria-label="Cronómetro do teste"
-        className="ui-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 text-center space-y-3"
-        onClick={(e) => e.stopPropagation()}
+        className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center"
+        onClick={onClose}
       >
-        <div className="flex items-center justify-between text-left">
-          <div>
-            <h3 className="text-base font-bold text-ui-text">
-              {test.emoji} {test.name}
-            </h3>
-            <p className="text-xs text-ui-muted">{player.name}</p>
+        <div
+          role="dialog"
+          aria-label="Cronómetro do teste"
+          className="ui-card w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 text-center space-y-3"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between text-left">
+            <div>
+              <h3 className="text-base font-bold text-ui-text">
+                {test.emoji} {test.name}
+              </h3>
+              <p className="text-xs text-ui-muted">{player.name}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fechar cronómetro"
+              className="text-ui-muted text-lg px-1"
+            >
+              ✕
+            </button>
           </div>
-          <button type="button" onClick={onClose} aria-label="Fechar cronómetro" className="text-ui-muted text-lg px-1">
-            ✕
-          </button>
-        </div>
 
-        {counting ? (
-          <>
-            <div className="text-[11px] font-bold tracking-wide text-ui-muted">
-              {startedAt === null ? 'PRONTO?' : 'FALTAM'}
-            </div>
-            <div className="text-6xl font-bold text-ui-text font-['Chakra_Petch']" aria-live="polite">
-              0:{String(Math.ceil(startedAt === null ? COUNT_SECONDS : left)).padStart(2, '0')}
-            </div>
-            {startedAt === null ? (
-              <button type="button" onClick={start} className="ui-btn ui-btn-primary w-full py-4 text-base">
-                ▶ Começar 30 segundos
-              </button>
-            ) : (
-              <button
-                type="button"
-                disabled={timeUp}
-                onClick={() => setCount((c) => c + 1)}
-                aria-label="Mais um"
-                className="mx-auto grid h-40 w-40 place-items-center rounded-full bg-ui-success text-5xl font-bold text-ui-text font-['Chakra_Petch'] shadow-[0_0_0_10px_rgba(22,163,74,0.2)] active:scale-95 disabled:opacity-50"
-              >
-                +1
-              </button>
-            )}
-            <div className="text-2xl font-bold text-ui-text font-['Chakra_Petch']" aria-label="Contagem">
-              {count} {test.id === 'toques30' ? 'toques' : 'passes'}
-            </div>
-            <p className="text-[11px] text-ui-muted">
-              {timeUp ? '✓ Guardado.' : 'Toque no botão verde a cada um. Aos 30 s para e grava sozinho.'}
-            </p>
-          </>
-        ) : (
-          <>
-            <div className="text-6xl font-bold text-ui-text font-['Chakra_Petch']" aria-label="Tempo">
-              {elapsed.toFixed(2).replace('.', ',')} s
-            </div>
-            {startedAt === null || result !== null ? (
-              <div className="grid grid-cols-2 gap-2">
-                <button type="button" onClick={start} className="ui-btn ui-btn-secondary py-4 text-base">
-                  {result !== null ? '↺ Repetir' : '▶ Partida'}
+          {counting ? (
+            <>
+              <div className="text-[11px] font-bold tracking-wide text-ui-muted">
+                {startedAt === null ? 'PRONTO?' : 'FALTAM'}
+              </div>
+              <div className="text-6xl font-bold text-ui-text font-['Chakra_Petch']" aria-live="polite">
+                0:{String(Math.ceil(startedAt === null ? COUNT_SECONDS : left)).padStart(2, '0')}
+              </div>
+              {startedAt === null ? (
+                <button type="button" onClick={start} className="ui-btn ui-btn-primary w-full py-4 text-base">
+                  ▶ Começar 30 segundos
                 </button>
+              ) : (
                 <button
                   type="button"
-                  disabled={result === null || result < test.min}
-                  onClick={() => result !== null && onSave(Math.round(result * 100) / 100)}
-                  className="ui-btn ui-btn-primary py-4 text-base"
+                  disabled={timeUp}
+                  onClick={() => setCount((c) => c + 1)}
+                  aria-label="Mais um"
+                  className="mx-auto grid h-40 w-40 place-items-center rounded-full bg-ui-success text-5xl font-bold text-ui-text font-['Chakra_Petch'] shadow-[0_0_0_10px_rgba(22,163,74,0.2)] active:scale-95 disabled:opacity-50"
                 >
-                  ✓ Guardar
+                  +1
                 </button>
+              )}
+              <div className="text-2xl font-bold text-ui-text font-['Chakra_Petch']" aria-label="Contagem">
+                {count} {test.id === 'toques30' ? 'toques' : 'passes'}
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setResult((Date.now() - startedAt) / 1000)}
-                className="ui-btn ui-btn-danger w-full py-6 text-xl"
-              >
-                ■ Chegou
-              </button>
-            )}
-            {result !== null && result < test.min ? (
-              <p role="alert" className="text-[11px] text-ui-warning">
-                Tempo demasiado curto para este teste: repita.
-              </p>
-            ) : (
               <p className="text-[11px] text-ui-muted">
-                Toque em "Partida" ao "Já!" e em "Chegou" quando passa a linha.
+                {timeUp ? '✓ Guardado.' : 'Toque no botão verde a cada um. Aos 30 s para e grava sozinho.'}
               </p>
-            )}
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              <div className="text-6xl font-bold text-ui-text font-['Chakra_Petch']" aria-label="Tempo">
+                {elapsed.toFixed(2).replace('.', ',')} s
+              </div>
+              {startedAt === null || result !== null ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={start} className="ui-btn ui-btn-secondary py-4 text-base">
+                    {result !== null ? '↺ Repetir' : '▶ Partida'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={result === null || result < test.min}
+                    onClick={() => result !== null && onSave(Math.round(result * 100) / 100)}
+                    className="ui-btn ui-btn-primary py-4 text-base"
+                  >
+                    ✓ Guardar
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setResult((Date.now() - startedAt) / 1000)}
+                  className="ui-btn ui-btn-danger w-full py-6 text-xl"
+                >
+                  ■ Chegou
+                </button>
+              )}
+              {result !== null && result < test.min ? (
+                <p role="alert" className="text-[11px] text-ui-warning">
+                  Tempo demasiado curto para este teste: repita.
+                </p>
+              ) : (
+                <p className="text-[11px] text-ui-muted">
+                  Toque em "Partida" ao "Já!" e em "Chegou" quando passa a linha.
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </Portal>
   );
 };
 

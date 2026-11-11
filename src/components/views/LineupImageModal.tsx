@@ -292,7 +292,7 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
               height={LINEUP_CARD_SIZE.height}
               role="img"
               aria-label="Imagem da equipa inicial"
-              className="w-full rounded-2xl border border-slate-800"
+              className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-slate-800"
             />
 
             <div className="grid grid-cols-2 gap-2">

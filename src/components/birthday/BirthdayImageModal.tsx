@@ -94,7 +94,7 @@ export const BirthdayImageModal: React.FC<BirthdayImageModalProps> = ({ person, 
           height={BIRTHDAY_CARD_SIZE.height}
           role="img"
           aria-label={`Imagem de parabéns para ${person.name}`}
-          className="w-full rounded-2xl border border-slate-800"
+          className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-slate-800"
         />
         <button
           type="button"
