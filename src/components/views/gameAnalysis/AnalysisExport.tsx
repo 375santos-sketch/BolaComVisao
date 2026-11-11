@@ -18,11 +18,11 @@ export const AnalysisExport: React.FC<AnalysisExportProps> = ({
     <div className="ui-card p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
+          <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
             <span>📥</span>
             <span>Relatório & Exportação de Estatísticas</span>
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-ui-muted mt-0.5">
             Exporte o relatório completo de rendimento da equipa ({analysis.filteredMatches.length} jogos filtrados)
           </p>
         </div>

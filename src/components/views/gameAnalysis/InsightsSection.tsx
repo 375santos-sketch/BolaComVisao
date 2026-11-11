@@ -15,52 +15,52 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insights, comp
         <div className="flex items-center gap-2">
           <span className="text-base sm:text-lg">🧠</span>
           <div>
-            <h2 className="text-sm font-black uppercase tracking-wider text-white font-['Chakra_Petch'] flex items-center gap-2">
+            <h2 className="text-sm font-black uppercase tracking-wider text-ui-text font-['Chakra_Petch'] flex items-center gap-2">
               O que os dados nos dizem
-              <span className="text-[10px] font-bold font-mono text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-full lowercase tracking-normal">
+              <span className="text-[10px] font-bold font-mono text-ui-brand bg-ui-brand/10 border border-ui-brand/20 px-2 py-0.5 rounded-full lowercase tracking-normal">
                 insights automáticos
               </span>
             </h2>
           </div>
         </div>
-        <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">Apoio à Decisão Técnica</span>
+        <span className="text-[11px] text-ui-muted font-mono hidden sm:inline">Apoio à Decisão Técnica</span>
       </div>
 
       <div className={`grid grid-cols-1 ${compact ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-2'} gap-3`}>
         {insights.map((insight) => {
           // Determine color themes based on insight type
-          let borderClass = 'border-slate-800 bg-slate-900/90';
-          let badgeBg = 'bg-slate-800 text-slate-300 border-slate-700';
-          let statColor = 'text-slate-200';
+          let borderClass = 'border-ui-line bg-ui-surface/90';
+          let badgeBg = 'bg-ui-surface-2 text-ui-text border-ui-line-strong';
+          let statColor = 'text-ui-text';
 
           if (insight.type === 'strength') {
-            borderClass = 'border-emerald-500/30 bg-ui-surface border-l-4';
-            badgeBg = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
-            statColor = 'text-emerald-400';
+            borderClass = 'border-ui-success/30 bg-ui-surface border-l-4';
+            badgeBg = 'bg-ui-success/15 text-ui-success border-ui-success/30';
+            statColor = 'text-ui-success';
           } else if (insight.type === 'warning') {
-            borderClass = 'border-rose-500/35 bg-ui-surface border-l-4';
-            badgeBg = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
-            statColor = 'text-rose-400';
+            borderClass = 'border-ui-danger/35 bg-ui-surface border-l-4';
+            badgeBg = 'bg-ui-danger/15 text-ui-danger border-ui-danger/30';
+            statColor = 'text-ui-danger';
           } else if (insight.type === 'trend') {
-            borderClass = 'border-cyan-500/30 bg-ui-surface border-l-4';
-            badgeBg = 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
-            statColor = 'text-cyan-300';
+            borderClass = 'border-ui-brand/30 bg-ui-surface border-l-4';
+            badgeBg = 'bg-ui-brand/15 text-ui-brand border-ui-brand/30';
+            statColor = 'text-ui-brand';
           } else if (insight.type === 'efficiency') {
-            borderClass = 'border-teal-500/30 bg-ui-surface border-l-4';
-            badgeBg = 'bg-teal-500/15 text-teal-300 border-teal-500/30';
-            statColor = 'text-teal-300';
+            borderClass = 'border-ui-success/30 bg-ui-surface border-l-4';
+            badgeBg = 'bg-ui-success/15 text-ui-success border-ui-success/30';
+            statColor = 'text-ui-success';
           } else if (insight.type === 'set_piece') {
-            borderClass = 'border-amber-500/30 bg-ui-surface border-l-4';
-            badgeBg = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
-            statColor = 'text-amber-300';
+            borderClass = 'border-ui-warning/30 bg-ui-surface border-l-4';
+            badgeBg = 'bg-ui-warning/15 text-ui-warning border-ui-warning/30';
+            statColor = 'text-ui-warning';
           } else if (insight.type === 'milestone') {
-            borderClass = 'border-blue-500/30 bg-ui-surface border-l-4';
-            badgeBg = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
-            statColor = 'text-blue-300';
+            borderClass = 'border-ui-brand/30 bg-ui-surface border-l-4';
+            badgeBg = 'bg-ui-brand/15 text-ui-brand border-ui-brand/30';
+            statColor = 'text-ui-brand';
           } else if (insight.type === 'opportunity') {
-            borderClass = 'border-purple-500/30 bg-ui-surface border-l-4';
-            badgeBg = 'bg-purple-500/15 text-purple-300 border-purple-500/30';
-            statColor = 'text-purple-300';
+            borderClass = 'border-ui-brand/30 bg-ui-surface border-l-4';
+            badgeBg = 'bg-ui-brand/15 text-ui-brand border-ui-brand/30';
+            statColor = 'text-ui-brand';
           }
 
           return (
@@ -77,22 +77,18 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insights, comp
                     >
                       {insight.badgeText}
                     </span>
-                    <span className="text-xs font-bold text-slate-300 hidden sm:inline font-['Chakra_Petch']">
+                    <span className="text-xs font-bold text-ui-text hidden sm:inline font-['Chakra_Petch']">
                       • {insight.title}
                     </span>
                   </div>
                   {insight.stat && (
-                    <span
-                      className={`text-xs font-black font-mono px-2 py-0.5 rounded-md bg-slate-950/60 ${statColor}`}
-                    >
+                    <span className={`text-xs font-black font-mono px-2 py-0.5 rounded-md bg-ui-inset/60 ${statColor}`}>
                       {insight.stat}
                     </span>
                   )}
                 </div>
 
-                <p className="text-xs sm:text-[13px] text-slate-200 leading-relaxed font-medium">
-                  {insight.description}
-                </p>
+                <p className="text-xs sm:text-[13px] text-ui-text leading-relaxed font-medium">{insight.description}</p>
               </div>
             </div>
           );

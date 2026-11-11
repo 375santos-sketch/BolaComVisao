@@ -102,25 +102,25 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
 
   return (
     <div
-      className="flex flex-col gap-4 sm:gap-5 max-w-5xl mx-auto pb-8 font-sans text-slate-100"
+      className="flex flex-col gap-4 sm:gap-5 max-w-5xl mx-auto pb-8 font-sans text-ui-text"
       id="coach-dashboard-view"
     >
       {/* 1. FILTER BAR (TOP CONTROLS) */}
       <div className="ui-card p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-xl shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-ui-brand/10 border border-ui-brand/30 flex items-center justify-center text-xl shrink-0">
             🧠
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-bold text-white uppercase tracking-wide">
+              <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-bold text-ui-text uppercase tracking-wide">
                 Visão do Treinador
               </h2>
-              <span className="text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded-full font-mono font-bold">
+              <span className="text-[10px] bg-ui-brand/20 text-ui-brand border border-ui-brand/40 px-2 py-0.5 rounded-full font-mono font-bold">
                 10s Pulse
               </span>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ui-muted">
               {clubName} • {category}
             </p>
           </div>
@@ -213,7 +213,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                 </optgroup>
               )}
             </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-cyan-400 text-xs font-bold">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ui-brand text-xs font-bold">
               ▼
             </div>
           </div>
@@ -234,27 +234,27 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
       </div>
 
       {/* 1️⃣ RESULTADO GERAL DA EQUIPA */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-900/90 to-cyan-950/40 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-ui-surface via-ui-surface/90 to-ui-brand/40 border border-ui-line rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 font-['Chakra_Petch']">
+            <span className="text-xs font-bold uppercase tracking-wider text-ui-brand font-['Chakra_Petch']">
               {coachData.filterLabel}
             </span>
-            <span className="text-slate-600">•</span>
-            <span className="text-xs text-slate-400 font-mono">
+            <span className="text-ui-muted">•</span>
+            <span className="text-xs text-ui-muted font-mono">
               {coachData.finishedMatchesCount}{' '}
               {coachData.finishedMatchesCount === 1 ? 'jogo realizado' : 'jogos realizados'}
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black font-['Chakra_Petch'] text-white tracking-tight mt-1 flex items-center gap-3">
+          <div className="text-2xl sm:text-3xl font-black font-['Chakra_Petch'] text-ui-text tracking-tight mt-1 flex items-center gap-3">
             <span>{coachData.recordText}</span>
             <span
               className={`text-xs px-2.5 py-1 rounded-xl font-mono font-bold ${
                 coachData.goalDifference > 0
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  ? 'bg-ui-success/20 text-ui-success border border-ui-success/30'
                   : coachData.goalDifference < 0
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : 'bg-slate-800 text-slate-300 border border-slate-700'
+                    ? 'bg-ui-danger/20 text-ui-danger border border-ui-danger/30'
+                    : 'bg-ui-surface-2 text-ui-text border border-ui-line-strong'
               }`}
             >
               Saldo: {coachData.goalDifference > 0 ? `+${coachData.goalDifference}` : coachData.goalDifference}
@@ -262,20 +262,20 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           </div>
         </div>
 
-        <div className="ui-inset flex items-center gap-4 text-xs font-mono text-slate-300 p-2.5 sm:self-center">
+        <div className="ui-inset flex items-center gap-4 text-xs font-mono text-ui-text p-2.5 sm:self-center">
           <div>
-            <span className="text-slate-500 block text-[10px] uppercase">Marcados</span>
-            <span className="text-emerald-400 font-bold text-sm">{coachData.goalsScoredTotal}</span>
+            <span className="text-ui-muted block text-[10px] uppercase">Marcados</span>
+            <span className="text-ui-success font-bold text-sm">{coachData.goalsScoredTotal}</span>
           </div>
-          <div className="w-px h-7 bg-slate-800" />
+          <div className="w-px h-7 bg-ui-surface-2" />
           <div>
-            <span className="text-slate-500 block text-[10px] uppercase">Sofridos</span>
-            <span className="text-rose-400 font-bold text-sm">{coachData.goalsConcededTotal}</span>
+            <span className="text-ui-muted block text-[10px] uppercase">Sofridos</span>
+            <span className="text-ui-danger font-bold text-sm">{coachData.goalsConcededTotal}</span>
           </div>
-          <div className="w-px h-7 bg-slate-800" />
+          <div className="w-px h-7 bg-ui-surface-2" />
           <div>
-            <span className="text-slate-500 block text-[10px] uppercase">Aprov.</span>
-            <span className="text-cyan-400 font-bold text-sm">{coachData.indicators.winRate.value}</span>
+            <span className="text-ui-muted block text-[10px] uppercase">Aprov.</span>
+            <span className="text-ui-brand font-bold text-sm">{coachData.indicators.winRate.value}</span>
           </div>
         </div>
       </div>
@@ -283,10 +283,10 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
       {/* 2️⃣ OS 5 INDICADORES PRINCIPAIS */}
       <div>
         <div className="flex items-center justify-between mb-2.5 px-1">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-['Chakra_Petch']">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-ui-muted font-['Chakra_Petch']">
             Indicadores Fundamentais
           </h3>
-          <span className="text-[11px] text-cyan-400/80 font-mono">Toque num cartão para ver detalhe</span>
+          <span className="text-[11px] text-ui-brand/80 font-mono">Toque num cartão para ver detalhe</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -297,30 +297,30 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             id="coach-indicator-goals-scored"
           >
             <div>
-              <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
+              <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
                   <span>⚽</span>
                   <span className="uppercase text-[11px] tracking-wide">Golos por Jogo</span>
                 </span>
-                <span className="text-emerald-400 text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <span className="text-ui-success text-xs group-hover:translate-x-1 transition-transform">➔</span>
               </div>
-              <div className="text-3xl font-black font-['Chakra_Petch'] text-white mt-2">
+              <div className="text-3xl font-black font-['Chakra_Petch'] text-ui-text mt-2">
                 {coachData.indicators.goalsScored.value}
               </div>
             </div>
-            <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+            <div className="mt-3 pt-2.5 border-t border-ui-line/80">
               <div
                 className={`text-xs font-bold flex items-center gap-1 ${
                   coachData.indicators.goalsScored.deltaStatus === 'positive'
-                    ? 'text-emerald-400'
+                    ? 'text-ui-success'
                     : coachData.indicators.goalsScored.deltaStatus === 'negative'
-                      ? 'text-amber-400'
-                      : 'text-slate-400'
+                      ? 'text-ui-warning'
+                      : 'text-ui-muted'
                 }`}
               >
                 {coachData.indicators.goalsScored.deltaText}
               </div>
-              <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+              <div className="text-[10px] text-ui-muted mt-0.5 truncate">
                 {coachData.indicators.goalsScored.subtext}
               </div>
             </div>
@@ -333,30 +333,30 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             id="coach-indicator-goals-conceded"
           >
             <div>
-              <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
+              <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
                   <span>🛡️</span>
                   <span className="uppercase text-[11px] tracking-wide">Golos Sofridos</span>
                 </span>
-                <span className="text-rose-400 text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <span className="text-ui-danger text-xs group-hover:translate-x-1 transition-transform">➔</span>
               </div>
-              <div className="text-3xl font-black font-['Chakra_Petch'] text-white mt-2">
+              <div className="text-3xl font-black font-['Chakra_Petch'] text-ui-text mt-2">
                 {coachData.indicators.goalsConceded.value}
               </div>
             </div>
-            <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+            <div className="mt-3 pt-2.5 border-t border-ui-line/80">
               <div
                 className={`text-xs font-bold flex items-center gap-1 ${
                   coachData.indicators.goalsConceded.deltaStatus === 'positive'
-                    ? 'text-emerald-400'
+                    ? 'text-ui-success'
                     : coachData.indicators.goalsConceded.deltaStatus === 'negative'
-                      ? 'text-rose-400'
-                      : 'text-slate-400'
+                      ? 'text-ui-danger'
+                      : 'text-ui-muted'
                 }`}
               >
                 {coachData.indicators.goalsConceded.deltaText}
               </div>
-              <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+              <div className="text-[10px] text-ui-muted mt-0.5 truncate">
                 {coachData.indicators.goalsConceded.subtext}
               </div>
             </div>
@@ -369,30 +369,30 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             id="coach-indicator-win-rate"
           >
             <div>
-              <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
+              <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
                   <span>🏆</span>
                   <span className="uppercase text-[11px] tracking-wide">Taxa de Vitória</span>
                 </span>
-                <span className="text-cyan-400 text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <span className="text-ui-brand text-xs group-hover:translate-x-1 transition-transform">➔</span>
               </div>
-              <div className="text-3xl font-black font-['Chakra_Petch'] text-white mt-2">
+              <div className="text-3xl font-black font-['Chakra_Petch'] text-ui-text mt-2">
                 {coachData.indicators.winRate.value}
               </div>
             </div>
-            <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+            <div className="mt-3 pt-2.5 border-t border-ui-line/80">
               <div
                 className={`text-xs font-bold flex items-center gap-1 ${
                   coachData.indicators.winRate.deltaStatus === 'positive'
-                    ? 'text-emerald-400'
+                    ? 'text-ui-success'
                     : coachData.indicators.winRate.deltaStatus === 'negative'
-                      ? 'text-amber-400'
-                      : 'text-slate-400'
+                      ? 'text-ui-warning'
+                      : 'text-ui-muted'
                 }`}
               >
                 {coachData.indicators.winRate.deltaText}
               </div>
-              <div className="text-[10px] text-slate-400 mt-0.5 truncate">{coachData.indicators.winRate.subtext}</div>
+              <div className="text-[10px] text-ui-muted mt-0.5 truncate">{coachData.indicators.winRate.subtext}</div>
             </div>
           </div>
 
@@ -403,30 +403,30 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             id="coach-indicator-corners"
           >
             <div>
-              <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
+              <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
                   <span>🚩</span>
                   <span className="uppercase text-[11px] tracking-wide">Cantos / Jogo</span>
                 </span>
-                <span className="text-amber-400 text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <span className="text-ui-warning text-xs group-hover:translate-x-1 transition-transform">➔</span>
               </div>
-              <div className="text-3xl font-black font-['Chakra_Petch'] text-white mt-2">
+              <div className="text-3xl font-black font-['Chakra_Petch'] text-ui-text mt-2">
                 {coachData.indicators.corners.value}
               </div>
             </div>
-            <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+            <div className="mt-3 pt-2.5 border-t border-ui-line/80">
               <div
                 className={`text-xs font-bold flex items-center gap-1 ${
                   coachData.indicators.corners.deltaStatus === 'positive'
-                    ? 'text-emerald-400'
+                    ? 'text-ui-success'
                     : coachData.indicators.corners.deltaStatus === 'negative'
-                      ? 'text-amber-400'
-                      : 'text-slate-400'
+                      ? 'text-ui-warning'
+                      : 'text-ui-muted'
                 }`}
               >
                 {coachData.indicators.corners.deltaText}
               </div>
-              <div className="text-[10px] text-slate-400 mt-0.5 truncate">{coachData.indicators.corners.subtext}</div>
+              <div className="text-[10px] text-ui-muted mt-0.5 truncate">{coachData.indicators.corners.subtext}</div>
             </div>
           </div>
 
@@ -437,20 +437,20 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             id="coach-indicator-first-goal"
           >
             <div>
-              <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
+              <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
                   <span>⏱️</span>
                   <span className="uppercase text-[11px] tracking-wide">Min. 1.º Golo</span>
                 </span>
-                <span className="text-purple-400 text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <span className="text-ui-brand text-xs group-hover:translate-x-1 transition-transform">➔</span>
               </div>
-              <div className="text-3xl font-black font-['Chakra_Petch'] text-white mt-2">
+              <div className="text-3xl font-black font-['Chakra_Petch'] text-ui-text mt-2">
                 {coachData.indicators.firstGoalMinute.value}
               </div>
             </div>
-            <div className="mt-3 pt-2.5 border-t border-slate-800/80">
-              <div className="text-xs font-bold text-slate-300">{coachData.indicators.firstGoalMinute.deltaText}</div>
-              <div className="text-[10px] text-cyan-300/90 mt-0.5 truncate font-medium">
+            <div className="mt-3 pt-2.5 border-t border-ui-line/80">
+              <div className="text-xs font-bold text-ui-text">{coachData.indicators.firstGoalMinute.deltaText}</div>
+              <div className="text-[10px] text-ui-brand/90 mt-0.5 truncate font-medium">
                 {coachData.indicators.firstGoalMinute.subtext}
               </div>
             </div>
@@ -474,17 +474,17 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-xl group-hover/hdr:scale-110 transition-transform">⚽</span>
                 <div>
-                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 font-['Chakra_Petch'] group-hover/hdr:text-emerald-300 transition-colors">
+                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-ui-success font-['Chakra_Petch'] group-hover/hdr:text-ui-success transition-colors">
                     Melhores Marcadores
                   </h3>
-                  <p className="text-[10px] text-slate-400">Os 3 melhores marcadores ({coachData.filterLabel})</p>
+                  <p className="text-[10px] text-ui-muted">Os 3 melhores marcadores ({coachData.filterLabel})</p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-bold">
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-ui-success/10 text-ui-success border border-ui-success/30 font-bold">
                   {coachData.goalsScoredTotal} {coachData.goalsScoredTotal === 1 ? 'golo total' : 'golos totais'}
                 </span>
-                <span className="text-slate-500 group-hover/hdr:text-emerald-400 text-xs transition-colors">➔</span>
+                <span className="text-ui-muted group-hover/hdr:text-ui-success text-xs transition-colors">➔</span>
               </div>
             </div>
 
@@ -494,26 +494,26 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                 const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
                 const rankBg =
                   idx === 0
-                    ? 'border-amber-500/40 bg-amber-950/20'
+                    ? 'border-ui-warning/40 bg-ui-warning-soft'
                     : idx === 1
-                      ? 'border-slate-400/30 bg-slate-800/30'
-                      : 'border-amber-700/30 bg-amber-950/10';
+                      ? 'border-ui-line-strong/30 bg-ui-surface-2/30'
+                      : 'border-ui-warning/30 bg-ui-warning-soft';
 
                 if (!scorer) {
                   return (
                     <div
                       key={`empty-scorer-${idx}`}
-                      className="ui-inset p-2.5 sm:p-3 flex items-center justify-between gap-3 text-slate-500 font-mono"
+                      className="ui-inset p-2.5 sm:p-3 flex items-center justify-between gap-3 text-ui-muted font-mono"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-base select-none shrink-0 opacity-50">{medal}</span>
                         <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-semibold text-slate-500 truncate">—</div>
-                          <div className="text-[10px] text-slate-600 font-mono">{idx + 1}.º Marcador (sem registo)</div>
+                          <div className="text-xs sm:text-sm font-semibold text-ui-muted truncate">—</div>
+                          <div className="text-[10px] text-ui-muted font-mono">{idx + 1}.º Marcador (sem registo)</div>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-xs sm:text-sm font-bold font-mono text-slate-600">0 golos</span>
+                        <span className="text-xs sm:text-sm font-bold font-mono text-ui-muted">0 golos</span>
                       </div>
                     </div>
                   );
@@ -526,34 +526,34 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                       setGoalsAssistsModalTab('marcadores');
                       setShowGoalsAssistsModal(true);
                     }}
-                    className={`p-2.5 sm:p-3 rounded-2xl border ${rankBg} flex items-center justify-between gap-3 transition-all hover:bg-slate-800/50 hover:scale-[1.01] cursor-pointer group`}
+                    className={`p-2.5 sm:p-3 rounded-2xl border ${rankBg} flex items-center justify-between gap-3 transition-all hover:bg-ui-surface-2/50 hover:scale-[1.01] cursor-pointer group`}
                     title={`Ver atleta na lista completa de marcadores`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="text-base select-none shrink-0">{medal}</span>
                       {scorer.playerNumber != null && (
-                        <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center justify-center font-mono font-bold text-xs shrink-0">
+                        <span className="w-6 h-6 rounded-lg bg-ui-success/20 text-ui-success border border-ui-success/30 flex items-center justify-center font-mono font-bold text-xs shrink-0">
                           #{scorer.playerNumber}
                         </span>
                       )}
                       <div className="min-w-0">
-                        <div className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-emerald-300 transition-colors">
+                        <div className="text-xs sm:text-sm font-bold text-ui-text truncate group-hover:text-ui-success transition-colors">
                           {scorer.playerName}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono truncate">{scorer.position}</div>
+                        <div className="text-[10px] text-ui-muted font-mono truncate">{scorer.position}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="text-right">
-                        <span className="text-base sm:text-lg font-black font-mono text-emerald-400">
+                        <span className="text-base sm:text-lg font-black font-mono text-ui-success">
                           {scorer.count}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono ml-1">
+                        <span className="text-[10px] text-ui-muted font-mono ml-1">
                           {scorer.count === 1 ? 'golo' : 'golos'}
                         </span>
                       </div>
-                      <span className="text-slate-600 group-hover:text-emerald-400 text-xs font-bold transition-colors">
+                      <span className="text-ui-muted group-hover:text-ui-success text-xs font-bold transition-colors">
                         ➔
                       </span>
                     </div>
@@ -591,22 +591,22 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-xl group-hover/hdr:scale-110 transition-transform">🎯</span>
                 <div>
-                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-cyan-400 font-['Chakra_Petch'] group-hover/hdr:text-cyan-300 transition-colors">
+                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-ui-brand font-['Chakra_Petch'] group-hover/hdr:text-ui-brand transition-colors">
                     Melhores Assistentes
                   </h3>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-ui-muted">
                     Os 3 melhores assistentes e a quantidade de assistência ({coachData.filterLabel})
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-bold">
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-ui-brand/10 text-ui-brand border border-ui-brand/30 font-bold">
                   {coachData.topAssisters.reduce((acc, curr) => acc + curr.count, 0)}{' '}
                   {coachData.topAssisters.reduce((acc, curr) => acc + curr.count, 0) === 1
                     ? 'assistência total'
                     : 'assistências totais'}
                 </span>
-                <span className="text-slate-500 group-hover/hdr:text-cyan-400 text-xs transition-colors">➔</span>
+                <span className="text-ui-muted group-hover/hdr:text-ui-brand text-xs transition-colors">➔</span>
               </div>
             </div>
 
@@ -616,28 +616,28 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                 const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
                 const rankBg =
                   idx === 0
-                    ? 'border-amber-500/40 bg-amber-950/20'
+                    ? 'border-ui-warning/40 bg-ui-warning-soft'
                     : idx === 1
-                      ? 'border-slate-400/30 bg-slate-800/30'
-                      : 'border-amber-700/30 bg-amber-950/10';
+                      ? 'border-ui-line-strong/30 bg-ui-surface-2/30'
+                      : 'border-ui-warning/30 bg-ui-warning-soft';
 
                 if (!assister) {
                   return (
                     <div
                       key={`empty-assister-${idx}`}
-                      className="ui-inset p-2.5 sm:p-3 flex items-center justify-between gap-3 text-slate-500 font-mono"
+                      className="ui-inset p-2.5 sm:p-3 flex items-center justify-between gap-3 text-ui-muted font-mono"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="text-base select-none shrink-0 opacity-50">{medal}</span>
                         <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-semibold text-slate-500 truncate">—</div>
-                          <div className="text-[10px] text-slate-600 font-mono">
+                          <div className="text-xs sm:text-sm font-semibold text-ui-muted truncate">—</div>
+                          <div className="text-[10px] text-ui-muted font-mono">
                             {idx + 1}.º Assistente (sem registo)
                           </div>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="text-xs sm:text-sm font-bold font-mono text-slate-600">0 assistências</span>
+                        <span className="text-xs sm:text-sm font-bold font-mono text-ui-muted">0 assistências</span>
                       </div>
                     </div>
                   );
@@ -650,34 +650,34 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                       setGoalsAssistsModalTab('assistentes');
                       setShowGoalsAssistsModal(true);
                     }}
-                    className={`p-2.5 sm:p-3 rounded-2xl border ${rankBg} flex items-center justify-between gap-3 transition-all hover:bg-slate-800/50 hover:scale-[1.01] cursor-pointer group`}
+                    className={`p-2.5 sm:p-3 rounded-2xl border ${rankBg} flex items-center justify-between gap-3 transition-all hover:bg-ui-surface-2/50 hover:scale-[1.01] cursor-pointer group`}
                     title={`Ver atleta na lista completa de assistências`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="text-base select-none shrink-0">{medal}</span>
                       {assister.playerNumber != null && (
-                        <span className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center justify-center font-mono font-bold text-xs shrink-0">
+                        <span className="w-6 h-6 rounded-lg bg-ui-brand/20 text-ui-brand border border-ui-brand/30 flex items-center justify-center font-mono font-bold text-xs shrink-0">
                           #{assister.playerNumber}
                         </span>
                       )}
                       <div className="min-w-0">
-                        <div className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-cyan-300 transition-colors">
+                        <div className="text-xs sm:text-sm font-bold text-ui-text truncate group-hover:text-ui-brand transition-colors">
                           {assister.playerName}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono truncate">{assister.position}</div>
+                        <div className="text-[10px] text-ui-muted font-mono truncate">{assister.position}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="text-right">
-                        <span className="text-base sm:text-lg font-black font-mono text-cyan-400">
+                        <span className="text-base sm:text-lg font-black font-mono text-ui-brand">
                           {assister.count}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono ml-1">
+                        <span className="text-[10px] text-ui-muted font-mono ml-1">
                           {assister.count === 1 ? 'assistência' : 'assistências'}
                         </span>
                       </div>
-                      <span className="text-slate-600 group-hover:text-cyan-400 text-xs font-bold transition-colors">
+                      <span className="text-ui-muted group-hover:text-ui-brand text-xs font-bold transition-colors">
                         ➔
                       </span>
                     </div>
@@ -710,14 +710,14 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-base">📅</span>
-                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white font-['Chakra_Petch']">
+                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-ui-text font-['Chakra_Petch']">
                   Últimos 5 Jogos
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => onNavigate('jogos')}
-                className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold cursor-pointer"
+                className="text-xs font-mono text-ui-brand hover:text-ui-brand font-bold cursor-pointer"
               >
                 Ver Todos →
               </button>
@@ -735,27 +735,27 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                       <span
                         className={`px-2 py-1 rounded-xl text-xs font-mono font-bold shrink-0 ${
                           m.badgeVariant === 'emerald'
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            ? 'bg-ui-success/20 text-ui-success border border-ui-success/30'
                             : m.badgeVariant === 'rose'
-                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                              ? 'bg-ui-danger/20 text-ui-danger border border-ui-danger/30'
+                              : 'bg-ui-warning/20 text-ui-warning border border-ui-warning/30'
                         }`}
                       >
                         {m.resultLabel}
                       </span>
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-white truncate group-hover:text-cyan-300 transition-colors">
+                        <div className="text-xs font-bold text-ui-text truncate group-hover:text-ui-brand transition-colors">
                           vs {m.opponent}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono">{m.formattedDate}</div>
+                        <div className="text-[10px] text-ui-muted font-mono">{m.formattedDate}</div>
                       </div>
                     </div>
-                    <span className="text-slate-500 group-hover:text-cyan-400 font-bold text-xs shrink-0">➔</span>
+                    <span className="text-ui-muted group-hover:text-ui-brand font-bold text-xs shrink-0">➔</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="py-8 text-center text-xs text-slate-500 font-mono">
+              <div className="py-8 text-center text-xs text-ui-muted font-mono">
                 Nenhum jogo concluído no filtro selecionado.
               </div>
             )}
@@ -768,34 +768,34 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-base">📈</span>
-                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white font-['Chakra_Petch']">
+                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-ui-text font-['Chakra_Petch']">
                   Tendência da Equipa
                 </h3>
               </div>
               <span
                 className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
                   coachData.trend.status === 'improving'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    ? 'bg-ui-success/20 text-ui-success border border-ui-success/30'
                     : coachData.trend.status === 'declining'
-                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                      : 'bg-slate-800 text-slate-400 border border-slate-700'
+                      ? 'bg-ui-danger/20 text-ui-danger border border-ui-danger/30'
+                      : 'bg-ui-surface-2 text-ui-muted border border-ui-line-strong'
                 }`}
               >
                 {coachData.trend.statusLabel}
               </span>
             </div>
 
-            <p className="text-xs text-slate-300 mb-4">{coachData.trend.statusDescription}</p>
+            <p className="text-xs text-ui-text mb-4">{coachData.trend.statusDescription}</p>
 
             {/* Sparkline / Bar visualization */}
             {coachData.trend.matches.length > 0 ? (
               <div className="ui-inset p-3">
-                <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-2">
+                <div className="flex items-center justify-between text-[10px] text-ui-muted font-mono mb-2">
                   <span>Golos Marcados (🟢) vs Sofridos (🔴)</span>
                   <span>Últimos Jogos</span>
                 </div>
 
-                <div className="grid grid-cols-5 gap-2 items-end h-20 pt-2 pb-1 border-b border-slate-800">
+                <div className="grid grid-cols-5 gap-2 items-end h-20 pt-2 pb-1 border-b border-ui-line">
                   {coachData.trend.matches.map((m, idx) => {
                     const maxGoal = Math.max(1, ...coachData.trend.scoredBars, ...coachData.trend.concededBars);
                     const scHeight = Math.max(12, Math.round((m.scored / maxGoal) * 60));
@@ -807,7 +807,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                           {/* Scored Bar */}
                           <div
                             style={{ height: `${scHeight}px` }}
-                            className="w-3 sm:w-4 bg-emerald-500 rounded-t-md flex items-center justify-center text-[9px] font-mono font-bold text-slate-950"
+                            className="w-3 sm:w-4 bg-ui-success rounded-t-md flex items-center justify-center text-[9px] font-mono font-bold text-ui-brand-ink"
                             title={`Marcados: ${m.scored}`}
                           >
                             {m.scored}
@@ -815,13 +815,13 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                           {/* Conceded Bar */}
                           <div
                             style={{ height: `${coHeight}px` }}
-                            className="w-3 sm:w-4 bg-rose-500 rounded-t-md flex items-center justify-center text-[9px] font-mono font-bold text-white"
+                            className="w-3 sm:w-4 bg-ui-danger rounded-t-md flex items-center justify-center text-[9px] font-mono font-bold text-ui-text"
                             title={`Sofridos: ${m.conceded}`}
                           >
                             {m.conceded}
                           </div>
                         </div>
-                        <span className="text-[9px] font-mono text-slate-400 truncate w-full text-center">
+                        <span className="text-[9px] font-mono text-ui-muted truncate w-full text-center">
                           vs {m.opponent.slice(0, 5)}
                         </span>
                       </div>
@@ -830,7 +830,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="py-6 text-center text-xs text-slate-500">Sem dados suficientes para gráficos.</div>
+              <div className="py-6 text-center text-xs text-ui-muted">Sem dados suficientes para gráficos.</div>
             )}
           </div>
         </div>
@@ -842,7 +842,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-base">🟢</span>
-            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400 font-['Chakra_Petch']">
+            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-ui-success font-['Chakra_Petch']">
               Pontos Fortes da Equipa
             </h3>
           </div>
@@ -856,12 +856,12 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               >
                 <span className="text-lg shrink-0 mt-0.5">{str.icon}</span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">
+                  <div className="text-xs font-bold text-ui-text group-hover:text-ui-success transition-colors">
                     {str.title}
                   </div>
-                  <div className="text-xs text-slate-300 mt-0.5">{str.text}</div>
+                  <div className="text-xs text-ui-text mt-0.5">{str.text}</div>
                 </div>
-                <span className="text-slate-600 group-hover:text-emerald-400 text-xs font-bold shrink-0 mt-1">➔</span>
+                <span className="text-ui-muted group-hover:text-ui-success text-xs font-bold shrink-0 mt-1">➔</span>
               </div>
             ))}
           </div>
@@ -871,7 +871,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-base">⚠️</span>
-            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400 font-['Chakra_Petch']">
+            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-ui-warning font-['Chakra_Petch']">
               Pontos de Atenção & Treino
             </h3>
           </div>
@@ -885,12 +885,12 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               >
                 <span className="text-lg shrink-0 mt-0.5">{att.icon}</span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                  <div className="text-xs font-bold text-ui-text group-hover:text-ui-warning transition-colors">
                     {att.title}
                   </div>
-                  <div className="text-xs text-slate-300 mt-0.5">{att.text}</div>
+                  <div className="text-xs text-ui-text mt-0.5">{att.text}</div>
                 </div>
-                <span className="text-slate-600 group-hover:text-amber-400 text-xs font-bold shrink-0 mt-1">➔</span>
+                <span className="text-ui-muted group-hover:text-ui-warning text-xs font-bold shrink-0 mt-1">➔</span>
               </div>
             ))}
           </div>
@@ -906,33 +906,33 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           id="coach-first-goal-card"
         >
           <div>
-            <div className="flex items-center justify-between text-xs text-slate-400 font-bold mb-2">
+            <div className="flex items-center justify-between text-xs text-ui-muted font-bold mb-2">
               <span className="flex items-center gap-1.5">
                 <span>🎯</span>
                 <span className="uppercase text-[11px] tracking-wide">Marcámos Primeiro</span>
               </span>
-              <span className="text-cyan-400 group-hover:translate-x-1 transition-transform">➔</span>
+              <span className="text-ui-brand group-hover:translate-x-1 transition-transform">➔</span>
             </div>
-            <div className="text-2xl sm:text-3xl font-black font-['Chakra_Petch'] text-white">
+            <div className="text-2xl sm:text-3xl font-black font-['Chakra_Petch'] text-ui-text">
               {coachData.firstGoalStats.scoredFirstRate}%
             </div>
-            <div className="text-xs text-slate-400 mt-1">
+            <div className="text-xs text-ui-muted mt-1">
               Em {coachData.firstGoalStats.scoredFirstCount} de {coachData.firstGoalStats.totalFinishedMatches} jogos
             </div>
           </div>
 
-          <div className="mt-3 pt-2.5 border-t border-slate-800 grid grid-cols-3 gap-1 text-center font-mono">
-            <div className="bg-slate-950/60 p-1.5 rounded-xl">
-              <span className="text-[9px] text-slate-500 uppercase block">Vitórias</span>
-              <span className="text-xs font-bold text-emerald-400">{coachData.firstGoalStats.scoredFirstWins}</span>
+          <div className="mt-3 pt-2.5 border-t border-ui-line grid grid-cols-3 gap-1 text-center font-mono">
+            <div className="bg-ui-inset/60 p-1.5 rounded-xl">
+              <span className="text-[9px] text-ui-muted uppercase block">Vitórias</span>
+              <span className="text-xs font-bold text-ui-success">{coachData.firstGoalStats.scoredFirstWins}</span>
             </div>
-            <div className="bg-slate-950/60 p-1.5 rounded-xl">
-              <span className="text-[9px] text-slate-500 uppercase block">Empates</span>
-              <span className="text-xs font-bold text-amber-400">{coachData.firstGoalStats.scoredFirstDraws}</span>
+            <div className="bg-ui-inset/60 p-1.5 rounded-xl">
+              <span className="text-[9px] text-ui-muted uppercase block">Empates</span>
+              <span className="text-xs font-bold text-ui-warning">{coachData.firstGoalStats.scoredFirstDraws}</span>
             </div>
-            <div className="bg-slate-950/60 p-1.5 rounded-xl">
-              <span className="text-[9px] text-slate-500 uppercase block">Derrotas</span>
-              <span className="text-xs font-bold text-rose-400">{coachData.firstGoalStats.scoredFirstLosses}</span>
+            <div className="bg-ui-inset/60 p-1.5 rounded-xl">
+              <span className="text-[9px] text-ui-muted uppercase block">Derrotas</span>
+              <span className="text-xs font-bold text-ui-danger">{coachData.firstGoalStats.scoredFirstLosses}</span>
             </div>
           </div>
         </div>
@@ -944,39 +944,39 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           id="coach-set-pieces-card"
         >
           <div>
-            <div className="flex items-center justify-between text-xs text-slate-400 font-bold mb-2">
+            <div className="flex items-center justify-between text-xs text-ui-muted font-bold mb-2">
               <span className="flex items-center gap-1.5">
                 <span>🚩</span>
                 <span className="uppercase text-[11px] tracking-wide">Bola Parada</span>
               </span>
-              <span className="text-amber-400 group-hover:translate-x-1 transition-transform">➔</span>
+              <span className="text-ui-warning group-hover:translate-x-1 transition-transform">➔</span>
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-xs text-slate-400 block">Marcados</span>
-                <span className="text-2xl font-black font-['Chakra_Petch'] text-emerald-400">
+                <span className="text-xs text-ui-muted block">Marcados</span>
+                <span className="text-2xl font-black font-['Chakra_Petch'] text-ui-success">
                   {coachData.setPieces.scoredCount}{' '}
-                  <span className="text-xs font-normal text-slate-400">({coachData.setPieces.scoredRate}%)</span>
+                  <span className="text-xs font-normal text-ui-muted">({coachData.setPieces.scoredRate}%)</span>
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-xs text-slate-400 block">Sofridos</span>
-                <span className="text-2xl font-black font-['Chakra_Petch'] text-rose-400">
+                <span className="text-xs text-ui-muted block">Sofridos</span>
+                <span className="text-2xl font-black font-['Chakra_Petch'] text-ui-danger">
                   {coachData.setPieces.concededCount}{' '}
-                  <span className="text-xs font-normal text-slate-400">({coachData.setPieces.concededRate}%)</span>
+                  <span className="text-xs font-normal text-ui-muted">({coachData.setPieces.concededRate}%)</span>
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="mt-3 pt-2.5 border-t border-slate-800 text-center">
+          <div className="mt-3 pt-2.5 border-t border-ui-line text-center">
             <span
               className={`text-[11px] px-3 py-1 rounded-xl font-bold inline-block ${
                 coachData.setPieces.status === 'strength'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  ? 'bg-ui-success/20 text-ui-success border border-ui-success/30'
                   : coachData.setPieces.status === 'warning'
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : 'bg-slate-800 text-slate-300 border border-slate-700'
+                    ? 'bg-ui-danger/20 text-ui-danger border border-ui-danger/30'
+                    : 'bg-ui-surface-2 text-ui-text border border-ui-line-strong'
               }`}
             >
               {coachData.setPieces.statusLabel}
@@ -991,42 +991,42 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           id="coach-game-moment-card"
         >
           <div>
-            <div className="flex items-center justify-between text-xs text-slate-400 font-bold mb-2">
+            <div className="flex items-center justify-between text-xs text-ui-muted font-bold mb-2">
               <span className="flex items-center gap-1.5">
                 <span>⏱️</span>
                 <span className="uppercase text-[11px] tracking-wide">Momento do Jogo</span>
               </span>
-              <span className="text-purple-400 group-hover:translate-x-1 transition-transform">➔</span>
+              <span className="text-ui-brand group-hover:translate-x-1 transition-transform">➔</span>
             </div>
 
             <div className="space-y-2">
               <div className="ui-inset p-2 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-emerald-400 font-bold uppercase block">Mais Produtivo</span>
-                  <span className="text-xs font-bold text-white">
+                  <span className="text-[10px] text-ui-success font-bold uppercase block">Mais Produtivo</span>
+                  <span className="text-xs font-bold text-ui-text">
                     {coachData.timing.mostScoredPeriod?.label || '—'}
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold text-emerald-400">
+                <span className="text-xs font-mono font-bold text-ui-success">
                   {coachData.timing.mostScoredPeriod ? `${coachData.timing.mostScoredPeriod.count} golos` : '—'}
                 </span>
               </div>
 
               <div className="ui-inset p-2 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-rose-400 font-bold uppercase block">Mais Vulnerável</span>
-                  <span className="text-xs font-bold text-white">
+                  <span className="text-[10px] text-ui-danger font-bold uppercase block">Mais Vulnerável</span>
+                  <span className="text-xs font-bold text-ui-text">
                     {coachData.timing.mostConcededPeriod?.label || '—'}
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold text-rose-400">
+                <span className="text-xs font-mono font-bold text-ui-danger">
                   {coachData.timing.mostConcededPeriod ? `${coachData.timing.mostConcededPeriod.count} golos` : '—'}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="mt-3 pt-2 text-[10px] text-center text-purple-300/80 font-mono">
+          <div className="mt-3 pt-2 text-[10px] text-center text-ui-brand/80 font-mono">
             Toque para explorar períodos minuto a minuto
           </div>
         </div>
@@ -1037,7 +1037,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => handleOpenDetailed()}
-          className="w-full py-4 px-6 rounded-3xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider shadow-xl transition-all flex items-center justify-center gap-3 cursor-pointer group active:scale-[0.99]"
+          className="w-full py-4 px-6 rounded-3xl bg-gradient-to-r from-ui-brand via-ui-brand to-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-brand-ink font-black text-sm sm:text-base font-['Chakra_Petch'] uppercase tracking-wider shadow-xl transition-all flex items-center justify-center gap-3 cursor-pointer group active:scale-[0.99]"
           id="btn-ver-analise-completa"
         >
           <span>📊</span>

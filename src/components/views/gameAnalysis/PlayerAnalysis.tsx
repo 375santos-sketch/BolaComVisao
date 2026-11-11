@@ -57,26 +57,26 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                 setModalTab('marcadores');
                 setShowModal(true);
               }}
-              className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800 cursor-pointer group/hdr hover:opacity-95 transition-opacity"
+              className="flex items-center justify-between pb-4 mb-4 border-b border-ui-line cursor-pointer group/hdr hover:opacity-95 transition-opacity"
               title="Clique para ver a lista completa de golos e assistências"
             >
               <div>
-                <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2 group-hover/hdr:text-emerald-300 transition-colors">
+                <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2 group-hover/hdr:text-ui-success transition-colors">
                   <span className="group-hover/hdr:scale-110 transition-transform">⚽</span>
                   <span>Melhores Marcadores</span>
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">Ranking de golos e distribuição por jogador</p>
+                <p className="text-xs text-ui-muted mt-0.5">Ranking de golos e distribuição por jogador</p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/20">
+                <span className="text-xs font-bold text-ui-success bg-ui-success/10 px-3 py-1 rounded-xl border border-ui-success/20">
                   {squadTopScorers.length} marcadores
                 </span>
-                <span className="text-slate-500 group-hover/hdr:text-emerald-400 text-sm transition-colors">➔</span>
+                <span className="text-ui-muted group-hover/hdr:text-ui-success text-sm transition-colors">➔</span>
               </div>
             </div>
 
             {squadTopScorers.length === 0 ? (
-              <div className="text-center py-6 text-xs text-slate-500">
+              <div className="text-center py-6 text-xs text-ui-muted">
                 Nenhum golo registado nos jogos selecionados.
               </div>
             ) : (
@@ -100,37 +100,37 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                         <span
                           className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black font-mono ${
                             idx === 0
-                              ? 'bg-amber-400 text-slate-950 shadow-sm'
+                              ? 'bg-ui-warning text-ui-brand-ink shadow-sm'
                               : idx === 1
-                                ? 'bg-slate-300 text-slate-950'
+                                ? 'bg-ui-line-strong text-ui-brand-ink'
                                 : idx === 2
-                                  ? 'bg-amber-700 text-white'
-                                  : 'bg-slate-800 text-slate-400'
+                                  ? 'bg-ui-warning text-ui-text'
+                                  : 'bg-ui-surface-2 text-ui-muted'
                           }`}
                         >
                           {idx + 1}
                         </span>
                         <div>
-                          <div className="text-xs font-bold text-white flex items-center gap-1.5 group-hover:text-emerald-300 transition-colors">
+                          <div className="text-xs font-bold text-ui-text flex items-center gap-1.5 group-hover:text-ui-success transition-colors">
                             {name}
-                            {num && <span className="text-[10px] font-mono text-slate-400">#{num}</span>}
+                            {num && <span className="text-[10px] font-mono text-ui-muted">#{num}</span>}
                           </div>
-                          <div className="text-[10px] text-slate-400 flex items-center gap-1.5 font-mono">
-                            <span className="text-emerald-400 font-bold">{sc.count} ⚽</span>
+                          <div className="text-[10px] text-ui-muted flex items-center gap-1.5 font-mono">
+                            <span className="text-ui-success font-bold">{sc.count} ⚽</span>
                             <span>•</span>
-                            <span className="text-cyan-400 font-bold">{sc.assistsCount || 0} 🎯</span>
+                            <span className="text-ui-brand font-bold">{sc.assistsCount || 0} 🎯</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <span className="text-base font-['Chakra_Petch'] font-black text-emerald-400 font-mono">
+                          <span className="text-base font-['Chakra_Petch'] font-black text-ui-success font-mono">
                             {sc.count} ⚽
                           </span>
-                          <div className="text-[10px] text-cyan-300 font-mono">{sc.assistsCount || 0} assist.</div>
+                          <div className="text-[10px] text-ui-brand font-mono">{sc.assistsCount || 0} assist.</div>
                         </div>
-                        <span className="text-slate-500 text-xs group-hover:text-emerald-400">›</span>
+                        <span className="text-ui-muted text-xs group-hover:text-ui-success">›</span>
                       </div>
                     </div>
                   );
@@ -160,26 +160,26 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                 setModalTab('assistentes');
                 setShowModal(true);
               }}
-              className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800 cursor-pointer group/hdr hover:opacity-95 transition-opacity"
+              className="flex items-center justify-between pb-4 mb-4 border-b border-ui-line cursor-pointer group/hdr hover:opacity-95 transition-opacity"
               title="Clique para ver a lista completa de assistências e golos"
             >
               <div>
-                <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2 group-hover/hdr:text-cyan-300 transition-colors">
+                <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2 group-hover/hdr:text-ui-brand transition-colors">
                   <span className="group-hover/hdr:scale-110 transition-transform">👟</span>
                   <span>Líderes de Assistências</span>
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">Ranking de passes para golo</p>
+                <p className="text-xs text-ui-muted mt-0.5">Ranking de passes para golo</p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-xl border border-cyan-500/20">
+                <span className="text-xs font-bold text-ui-brand bg-ui-brand/10 px-3 py-1 rounded-xl border border-ui-brand/20">
                   {squadTopAssisters.length} assistentes
                 </span>
-                <span className="text-slate-500 group-hover/hdr:text-cyan-400 text-sm transition-colors">➔</span>
+                <span className="text-ui-muted group-hover/hdr:text-ui-brand text-sm transition-colors">➔</span>
               </div>
             </div>
 
             {squadTopAssisters.length === 0 ? (
-              <div className="text-center py-6 text-xs text-slate-500">
+              <div className="text-center py-6 text-xs text-ui-muted">
                 Nenhuma assistência registada nos jogos selecionados.
               </div>
             ) : (
@@ -205,39 +205,39 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                         <span
                           className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black font-mono ${
                             idx === 0
-                              ? 'bg-cyan-400 text-slate-950 shadow-sm'
+                              ? 'bg-ui-brand text-ui-brand-ink shadow-sm'
                               : idx === 1
-                                ? 'bg-slate-300 text-slate-950'
+                                ? 'bg-ui-line-strong text-ui-brand-ink'
                                 : idx === 2
-                                  ? 'bg-amber-700 text-white'
-                                  : 'bg-slate-800 text-slate-400'
+                                  ? 'bg-ui-warning text-ui-text'
+                                  : 'bg-ui-surface-2 text-ui-muted'
                           }`}
                         >
                           {idx + 1}
                         </span>
                         <div>
-                          <div className="text-xs font-bold text-white flex items-center gap-1.5 group-hover:text-cyan-300 transition-colors">
+                          <div className="text-xs font-bold text-ui-text flex items-center gap-1.5 group-hover:text-ui-brand transition-colors">
                             {name}
-                            {num && <span className="text-[10px] font-mono text-slate-400">#{num}</span>}
+                            {num && <span className="text-[10px] font-mono text-ui-muted">#{num}</span>}
                           </div>
-                          <div className="text-[10px] text-slate-400 flex items-center gap-1.5 font-mono">
-                            <span className="text-cyan-400 font-bold">{as.count} 🎯</span>
+                          <div className="text-[10px] text-ui-muted flex items-center gap-1.5 font-mono">
+                            <span className="text-ui-brand font-bold">{as.count} 🎯</span>
                             <span>•</span>
-                            <span className="text-emerald-400 font-bold">{playerGoals} ⚽</span>
+                            <span className="text-ui-success font-bold">{playerGoals} ⚽</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <span className="text-base font-['Chakra_Petch'] font-black text-cyan-400 font-mono">
+                          <span className="text-base font-['Chakra_Petch'] font-black text-ui-brand font-mono">
                             {as.count} 👟
                           </span>
-                          <div className="text-[10px] text-emerald-300 font-mono">
+                          <div className="text-[10px] text-ui-success font-mono">
                             {playerGoals} {playerGoals === 1 ? 'golo' : 'golos'}
                           </div>
                         </div>
-                        <span className="text-slate-500 text-xs group-hover:text-cyan-400">›</span>
+                        <span className="text-ui-muted text-xs group-hover:text-ui-brand">›</span>
                       </div>
                     </div>
                   );
@@ -263,13 +263,13 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
       {/* 3. Registo Disciplinar por Atleta */}
       {squadCardedPlayers.length > 0 && (
         <div className="ui-card p-5">
-          <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+          <div className="flex items-center justify-between pb-4 mb-4 border-b border-ui-line">
             <div>
-              <h3 className="text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2">
+              <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
                 <span>🟨🟥</span>
                 <span>Registo Disciplinar por Atleta</span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">Jogadores advertidos com cartões amarelos e vermelhos</p>
+              <p className="text-xs text-ui-muted mt-0.5">Jogadores advertidos com cartões amarelos e vermelhos</p>
             </div>
           </div>
 
@@ -286,21 +286,23 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({
                   className="ui-inset p-3 flex items-center justify-between transition-all cursor-pointer"
                 >
                   <div>
-                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <div className="text-xs font-bold text-ui-text flex items-center gap-1.5">
                       {name}
-                      {num && <span className="text-[10px] font-mono text-slate-400">#{num}</span>}
+                      {num && <span className="text-[10px] font-mono text-ui-muted">#{num}</span>}
                     </div>
-                    <div className="text-[10px] text-slate-400">Registo disciplinar</div>
+                    <div className="text-[10px] text-ui-muted">Registo disciplinar</div>
                   </div>
 
                   <div className="flex items-center gap-2 font-mono text-xs">
                     {cp.yellow > 0 && (
-                      <span className="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-md font-bold">
+                      <span className="bg-ui-warning/20 text-ui-warning px-2 py-0.5 rounded-md font-bold">
                         🟨 {cp.yellow}
                       </span>
                     )}
                     {cp.red > 0 && (
-                      <span className="bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-md font-bold">🟥 {cp.red}</span>
+                      <span className="bg-ui-danger/20 text-ui-danger px-2 py-0.5 rounded-md font-bold">
+                        🟥 {cp.red}
+                      </span>
                     )}
                   </div>
                 </div>

@@ -51,7 +51,6 @@ const ScheduleView = lazyWithRetry(() => import('./components/views/ScheduleView
 const ConvocatoriaView = lazyWithRetry(() => import('./components/views/ConvocatoriaView'), 'ConvocatoriaView');
 const TrainingsView = lazyWithRetry(() => import('./components/views/TrainingsView'), 'TrainingsView');
 const ResultsView = lazyWithRetry(() => import('./components/views/ResultsView'), 'ResultsView');
-const StatsView = lazyWithRetry(() => import('./components/views/StatsView'), 'StatsView');
 // Loaded when opened: it bundles the Excel library used by the team spreadsheets.
 const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 'DatabaseModal');
 const MonthlyReportModal = lazyWithRetry(() => import('./components/MonthlyReportModal'));
@@ -1020,8 +1019,10 @@ export default function App() {
               />
             )}
 
-            {currentTab === 'stats' && (
-              <StatsView
+            {(currentTab === 'stats' || currentTab === 'analise_jogos') && (
+              <GameAnalysisDashboard
+                key={currentTab}
+                initialSection={currentTab === 'stats' ? 'atletas' : 'equipa'}
                 state={state}
                 onNavigate={handleNavigate}
                 onOpenSettings={() => setShowSettings(true)}
@@ -1029,17 +1030,6 @@ export default function App() {
                 onOpenSync={() => showSyncStatus()}
                 onShowToast={showToast}
                 onUpdateState={updateState}
-              />
-            )}
-
-            {currentTab === 'analise_jogos' && (
-              <GameAnalysisDashboard
-                state={state}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onShowToast={showToast}
               />
             )}
 

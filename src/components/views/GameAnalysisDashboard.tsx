@@ -15,7 +15,6 @@ import {
   CATEGORY_DEFAULT_HALF_DURATION
 } from '../../lib/gameAnalysis';
 import {
-  SimplifiedOverview,
   InsightsSection,
   AnalysisFilters,
   AnalysisSummaryCards,
@@ -27,12 +26,15 @@ import {
   MatchComparison,
   PlayerAnalysis,
   EventDrilldown,
-  AnalysisExport,
   CoachReportModal,
   AskDataSection
 } from './gameAnalysis';
 import { withRosterIds } from '../../lib/eventPlayers';
 import { CoachDashboardView } from './coach/CoachDashboardView';
+import { RankingTable } from './gameAnalysis/RankingTable';
+import { PlayingTimeSection } from './stats/PlayingTimeSection';
+import { StatsPanel } from '../stats/StatsPanel';
+import { goalRanking } from '../../lib/goalRanking';
 
 interface GameAnalysisDashboardProps {
   state: AppState;
@@ -41,6 +43,10 @@ interface GameAnalysisDashboardProps {
   onOpenNotifications?: () => void;
   onOpenSync?: () => void;
   onShowToast: (msg: string) => void;
+  /** Saves the 1st-half starters of an old game (minutes table), as in Estatísticas. */
+  onUpdateState?: (updates: Partial<AppState>) => void;
+  /** Which part opens first: Equipa, Atletas (from "Estatísticas") or Jogos. */
+  initialSection?: 'equipa' | 'atletas' | 'jogos';
 }
 
 export type AnalysisTab =
@@ -52,12 +58,15 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
   onOpenSettings,
   onOpenNotifications,
   onOpenSync,
-  onShowToast
+  onShowToast,
+  onUpdateState,
+  initialSection = 'equipa'
 }) => {
-  // Mode: 'simplified' (iPhone / Quick overview as requested), 'coach' (Executive Coach 10s view), or 'detailed' (exploratory deep-dive)
-  const [viewMode, setViewMode] = useState<'simplified' | 'coach' | 'detailed'>('simplified');
-  // Navigation tab for detailed mode
-  const [activeTab, setActiveTab] = useState<AnalysisTab>('periodos');
+  // One Análise: Equipa · Atletas · Jogos, with the same filters for all
+  const [section, setSection] = useState<'equipa' | 'atletas' | 'jogos'>(initialSection);
+  const [showAsk, setShowAsk] = useState(false);
+  const [showPanel, setShowPanel] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState<boolean>(false);
   const [exporting, setExporting] = useState<boolean>(false);
   const [showCoachReportModal, setShowCoachReportModal] = useState<boolean>(false);
@@ -150,6 +159,11 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
   const { topScorers: coachTopScorers, topAssisters: coachTopAssisters } = useMemo(() => {
     return computeTopScorersAndAssisters(state.matches || [], state.roster || []);
   }, [state.matches, state.roster]);
+
+  const ranking = useMemo(
+    () => goalRanking(analysis.filteredMatches, state.roster || []),
+    [analysis.filteredMatches, state.roster]
+  );
 
   // Active filter count
   const activeFiltersCount = useMemo(() => {
@@ -247,16 +261,14 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
     else if (type === 'Ressalto') handleFilterChange({ eventType: 'golos_ressalto' });
     else handleFilterChange({ eventType: 'golos' });
 
-    setViewMode('detailed');
-    setActiveTab('acontecimentos');
+    setSection('jogos');
     onShowToast(`A filtrar por golos de: ${type} ⚽`);
   };
 
   return (
     <div className="pb-28 animate-fadeIn max-w-6xl mx-auto px-2 sm:px-4" id="game-analysis-dashboard">
       <Header
-        title="Análise dos Jogos"
-        subtitle="Indicadores estatísticos, eficácia temporal e métricas competitivas"
+        title="Análise"
         lang={state.lang}
         onGoHome={() => onNavigate('home')}
         onOpenSettings={onOpenSettings}
@@ -268,254 +280,188 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      {/* TOP VIEW MODE TOGGLE & QUICK ACTIONS */}
-      <div className="ui-card flex flex-wrap items-center justify-between gap-2.5 mb-4 p-2">
-        <div className="flex flex-wrap items-center gap-1.5">
+      {/* Actions on top: ask the data (AI), the coach's report, the panel and the exports */}
+      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <button
+          type="button"
+          aria-pressed={showAsk}
+          onClick={() => setShowAsk((v) => !v)}
+          className={`ui-btn py-2.5 text-ui-caption ${showAsk ? 'ui-btn-primary' : 'ui-btn-soft'}`}
+        >
+          Perguntar aos dados
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowCoachReportModal(true)}
+          className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
+        >
+          Relatório do treinador
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowPanel(true)}
+          aria-label="Abrir painel (jogo, confronto, fase, época, período)"
+          className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
+        >
+          Abrir painel
+        </button>
+        <div className="relative">
           <button
             type="button"
-            onClick={() => setViewMode('simplified')}
-            className={`px-3.5 sm:px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-              viewMode === 'simplified'
-                ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
+            aria-expanded={showExport}
+            onClick={() => setShowExport((v) => !v)}
+            className="ui-btn ui-btn-secondary w-full py-2.5 text-ui-caption"
           >
-            <span>📱 Análise</span>
+            Exportar
           </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode('coach')}
-            className={`px-3.5 sm:px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-              viewMode === 'coach'
-                ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            <span>🧠 Visão do Treinador</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode('detailed')}
-            className={`px-3.5 sm:px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-              viewMode === 'detailed'
-                ? 'bg-ui-brand text-ui-brand-ink font-extrabold shadow-sm'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            <span>📊 Análise Detalhada</span>
-          </button>
-
-          {/* BOTÃO RELATÓRIO DO TREINADOR NA BARRA DE TOPO */}
-          <button
-            type="button"
-            onClick={() => setShowCoachReportModal(true)}
-            className="px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 bg-ui-brand/10 hover:bg-ui-brand/20 border border-cyan-500/40 text-cyan-300 hover:text-white cursor-pointer"
-          >
-            <span>📄 Relatório PDF/MD</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2 ml-auto">
-          <button
-            type="button"
-            onClick={handleExportPDF}
-            disabled={exporting}
-            className="ui-btn ui-btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
-            title="Exportar Relatório PDF"
-          >
-            <span>📄</span>
-            <span className="hidden sm:inline">PDF</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleExportExcel}
-            disabled={exporting}
-            className="ui-btn ui-btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
-            title="Exportar Excel"
-          >
-            <span>📊</span>
-            <span className="hidden sm:inline">Excel</span>
-          </button>
+          {showExport && (
+            <div className="ui-card absolute right-0 top-11 z-30 w-56 space-y-1 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
+              <button
+                type="button"
+                disabled={exporting}
+                onClick={() => {
+                  setShowExport(false);
+                  handleExportPDF();
+                }}
+                className="w-full rounded-ui-sm px-3 py-2 text-left text-ui-body text-ui-text hover:bg-ui-surface-2"
+              >
+                Exportar PDF ({analysis.filteredMatches.length} jogos)
+              </button>
+              <button
+                type="button"
+                disabled={exporting}
+                onClick={() => {
+                  setShowExport(false);
+                  handleExportExcel();
+                }}
+                className="w-full rounded-ui-sm px-3 py-2 text-left text-ui-body text-ui-text hover:bg-ui-surface-2"
+              >
+                Exportar Excel
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* FILTER BAR COMPONENT (Only shown in detailed mode) */}
-      {viewMode === 'detailed' && (
-        <AnalysisFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onResetFilters={handleResetFilters}
-          availableSeasons={availableSeasons}
-          availableMonths={availableMonths}
-          availableOpponents={availableOpponents}
-          activeFiltersCount={activeFiltersCount}
-          showPanel={showFilterPanel}
-          onTogglePanel={() => setShowFilterPanel(!showFilterPanel)}
-          categoryDefaultHalfDuration={categoryDefaultHalfDuration}
-        />
+      {showAsk && (
+        <div className="mb-3">
+          <AskDataSection state={state} />
+        </div>
       )}
 
-      {/* 0. VISÃO DO TREINADOR (DASHBOARD EXECUTIVO 10S COM FILTROS E CONCLUSÕES REAIS) */}
-      {viewMode === 'coach' && (
-        <CoachDashboardView
-          state={state}
-          onNavigate={onNavigate}
-          onOpenDetailedAnalysis={(subTab) => {
-            setViewMode('detailed');
-            if (subTab) {
-              setActiveTab(subTab as AnalysisTab);
-            }
-          }}
-          onShowToast={onShowToast}
-        />
-      )}
+      <div role="group" aria-label="Partes da análise" className="mb-4 flex gap-1 border-b border-ui-line">
+        {(
+          [
+            ['equipa', 'Equipa'],
+            ['atletas', 'Atletas'],
+            ['jogos', 'Jogos']
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={section === id}
+            onClick={() => setSection(id)}
+            className={`-mb-px flex-1 border-b-2 px-2 py-2.5 text-ui-body font-bold transition-colors sm:flex-none sm:px-6 ${
+              section === id ? 'border-ui-brand text-ui-text' : 'border-transparent text-ui-muted hover:text-ui-text'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-      {/* 1. VISÃO SIMPLIFICADA (ESTRUTURA COMPACTA & IPHONE: 4 CARDS, COMO MARCAMOS/SOFREMOS, QUANDO, INSIGHTS E VER DETALHADA) */}
-      {/* 📈 What changed in the last games and what to do about it (the season being shown) */}
-      {viewMode === 'simplified' && (
-        <TrendsSection matches={seasonMatches(state)} onPlan={() => onNavigate('treinos')} />
-      )}
+      {/* The same filters for Equipa, Atletas and Jogos */}
+      <AnalysisFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onResetFilters={handleResetFilters}
+        availableSeasons={availableSeasons}
+        availableMonths={availableMonths}
+        availableOpponents={availableOpponents}
+        activeFiltersCount={activeFiltersCount}
+        showPanel={showFilterPanel}
+        onTogglePanel={() => setShowFilterPanel(!showFilterPanel)}
+        categoryDefaultHalfDuration={categoryDefaultHalfDuration}
+      />
 
-      {viewMode === 'simplified' && (
-        <SimplifiedOverview
-          analysis={analysis}
-          players={state.roster}
-          myClub={myClub}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          availableSeasons={availableSeasons}
-          onOpenPlayer={handleOpenPlayer}
-          onSelectGoalType={handleSelectGoalType}
-          onOpenDetailedAnalysis={() => setViewMode('detailed')}
-          onOpenCoachReport={() => setShowCoachReportModal(true)}
-        />
-      )}
-
-      {/* 2. ANÁLISE DETALHADA (MODO EXPLORADOR COMPLETO) */}
-      {viewMode === 'detailed' && (
-        <div className="space-y-6">
-          {/* NAVIGATION TABS */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
-            {[
-              { id: 'perguntas', label: '💬 Perguntar aos Dados', count: 'Novo' },
-              { id: 'periodos', label: '⏱️ Períodos Minuto a Minuto', count: null },
-              {
-                id: 'origem',
-                label: '⚽ Origem dos Golos',
-                count: `${analysis.goalsScored} / ${analysis.goalsConceded}`
-              },
-              { id: 'bolas_paradas', label: '🚩 Bolas Paradas & Faltas', count: null },
-              {
-                id: 'confronto',
-                label: '⚔️ Adversários & Confronto Direto',
-                count: `${analysis.opponentStats.length}`
-              },
-              { id: 'acontecimentos', label: '📋 Registo Integral de Lances', count: `${analysis.allEvents.length}` },
-              { id: 'individual', label: '👤 Estatísticas Individuais', count: null },
-              { id: 'dashboard', label: '📈 Indicadores de Performance', count: null }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as AnalysisTab)}
-                className={`px-3.5 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === tab.id
-                    ? 'bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-500/20'
-                    : 'bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                <span>{tab.label}</span>
-                {tab.count !== null && (
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-black ${
-                      activeTab === tab.id ? 'bg-slate-950 text-cyan-300' : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* TAB 0: PERGUNTAR AOS DADOS (AI / STATISTICAL NATURAL LANGUAGE ENGINE) */}
-          {activeTab === 'perguntas' && (
-            <div className="space-y-6">
-              <AskDataSection state={state} />
-            </div>
-          )}
-
-          {/* TAB 1: PERÍODOS DE JOGO */}
-          {activeTab === 'periodos' && (
-            <div className="space-y-6">
-              <GoalTimingChart analysis={analysis} onSelectPeriod={(p) => setSelectedPeriodModal(p)} />
-            </div>
-          )}
-
-          {/* TAB 2: ORIGEM DOS GOLOS */}
-          {activeTab === 'origem' && (
-            <div className="space-y-6">
-              <GoalTypesChart analysis={analysis} onSelectGoalType={handleSelectGoalType} />
-            </div>
-          )}
-
-          {/* TAB 3: BOLAS PARADAS & DISCIPLINA */}
-          {activeTab === 'bolas_paradas' && (
-            <div className="space-y-6">
-              <CornersAnalysis analysis={analysis} />
-              <FoulsAnalysis analysis={analysis} />
-              <CardsAnalysis analysis={analysis} />
-            </div>
-          )}
-
-          {/* TAB 4: CONFRONTO DIRETO & GUIA DE FORMA */}
-          {activeTab === 'confronto' && (
-            <div className="space-y-6">
-              <MatchComparison analysis={analysis} onOpenMatch={handleOpenMatch} />
-            </div>
-          )}
-
-          {/* TAB 5: REGISTO CRONOLÓGICO DE ACONTECIMENTOS */}
-          {activeTab === 'acontecimentos' && (
-            <div className="space-y-6">
-              <EventDrilldown analysis={analysis} players={state.roster} onOpenMatch={handleOpenMatch} />
-            </div>
-          )}
-
-          {/* TAB 6: ESTATÍSTICAS INDIVIDUAIS */}
-          {activeTab === 'individual' && (
-            <div className="space-y-6">
-              <PlayerAnalysis
-                analysis={analysis}
-                players={state.roster}
-                matches={state.matches}
-                clubName={state.myClubName}
-                category={state.category}
-                season={state.season}
-                onOpenPlayer={handleOpenPlayer}
+      {section === 'equipa' && (
+        <div className="space-y-5">
+          <AnalysisSummaryCards analysis={analysis} myClub={myClub} />
+          <TrendsSection matches={seasonMatches(state)} onPlan={() => onNavigate('treinos')} />
+          <InsightsSection insights={analysis.insights} />
+          <GoalTimingChart analysis={analysis} onSelectPeriod={(p) => setSelectedPeriodModal(p)} />
+          <GoalTypesChart analysis={analysis} onSelectGoalType={handleSelectGoalType} />
+          <CornersAnalysis analysis={analysis} />
+          <FoulsAnalysis analysis={analysis} />
+          <CardsAnalysis analysis={analysis} />
+          <details className="ui-card p-4">
+            <summary className="cursor-pointer text-ui-body font-bold text-ui-text">
+              Visão do treinador (resumo de 10 segundos)
+            </summary>
+            <div className="mt-3">
+              <CoachDashboardView
+                state={state}
+                onNavigate={onNavigate}
+                onOpenDetailedAnalysis={(subTab) =>
+                  setSection(subTab === 'individual' ? 'atletas' : subTab === 'confronto' ? 'jogos' : 'equipa')
+                }
+                onShowToast={onShowToast}
               />
             </div>
-          )}
+          </details>
+        </div>
+      )}
 
-          {/* TAB 7: INDICADORES GERAIS */}
-          {activeTab === 'dashboard' && (
-            <div className="space-y-6">
-              <InsightsSection insights={analysis.insights} />
-              <AnalysisSummaryCards analysis={analysis} myClub={myClub} />
-            </div>
-          )}
-
-          {/* EXPORT PANEL AT BOTTOM OF DETAILED VIEW */}
-          <AnalysisExport
+      {section === 'atletas' && (
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <RankingTable
+              title="Melhores marcadores"
+              unit="golos"
+              rows={ranking.scorers}
+              onOpenPlayer={handleOpenPlayer}
+            />
+            <RankingTable
+              title="Assistências"
+              unit="assistências"
+              rows={ranking.assists}
+              onOpenPlayer={handleOpenPlayer}
+            />
+          </div>
+          <PlayingTimeSection
+            matches={analysis.filteredMatches}
+            roster={state.roster || []}
+            category={state.category}
+            onSetStarters={
+              onUpdateState
+                ? (matchId, lineup) => {
+                    onUpdateState({ matches: state.matches.map((m) => (m.id === matchId ? { ...m, lineup } : m)) });
+                    onShowToast('Titulares da 1.ª parte guardados: minutos recalculados ✓');
+                  }
+                : undefined
+            }
+          />
+          <PlayerAnalysis
             analysis={analysis}
-            onExportPDF={handleExportPDF}
-            onExportExcel={handleExportExcel}
-            exporting={exporting}
+            players={state.roster}
+            matches={state.matches}
+            clubName={state.myClubName}
+            category={state.category}
+            season={state.season}
+            onOpenPlayer={handleOpenPlayer}
           />
         </div>
       )}
+
+      {section === 'jogos' && (
+        <div className="space-y-5">
+          <MatchComparison analysis={analysis} onOpenMatch={handleOpenMatch} />
+          <EventDrilldown analysis={analysis} players={state.roster} onOpenMatch={handleOpenMatch} />
+        </div>
+      )}
+
+      {showPanel && <StatsPanel state={state} onClose={() => setShowPanel(false)} onShowToast={onShowToast} />}
 
       {/* MODAL: RELATÓRIO DO TREINADOR */}
       {showCoachReportModal && (
@@ -534,44 +480,44 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
       {selectedPeriodModal && (
         <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="ui-card p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto animate-scaleUp">
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div className="flex items-center justify-between pb-3 mb-4 border-b border-ui-line">
               <div>
-                <h4 className="text-base font-['Chakra_Petch'] font-bold text-white flex items-center gap-2">
+                <h4 className="text-base font-['Chakra_Petch'] font-bold text-ui-text flex items-center gap-2">
                   <span>⏱️</span>
                   <span>Período: {selectedPeriodModal.label}</span>
                 </h4>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Marcados: <strong className="text-emerald-400">{selectedPeriodModal.scored}</strong> • Sofridos:{' '}
-                  <strong className="text-rose-400">{selectedPeriodModal.conceded}</strong>
+                <p className="text-xs text-ui-muted mt-0.5">
+                  Marcados: <strong className="text-ui-success">{selectedPeriodModal.scored}</strong> • Sofridos:{' '}
+                  <strong className="text-ui-danger">{selectedPeriodModal.conceded}</strong>
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedPeriodModal(null)}
-                className="text-slate-400 hover:text-white text-lg font-bold cursor-pointer"
+                className="text-ui-muted hover:text-ui-text text-lg font-bold cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             {selectedPeriodModal.scoredEvents.length === 0 && selectedPeriodModal.concededEvents.length === 0 ? (
-              <div className="text-center py-6 text-xs text-slate-500">Nenhum golo registado neste período.</div>
+              <div className="text-center py-6 text-xs text-ui-muted">Nenhum golo registado neste período.</div>
             ) : (
               <div className="space-y-2">
                 {selectedPeriodModal.scoredEvents.map((ev, i) => (
                   <div key={`sc-${i}`} className="ui-inset p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/50 border border-emerald-500/30 px-2 py-1 rounded-lg">
+                      <span className="text-xs font-mono font-bold text-ui-success bg-ui-success-soft border border-ui-success/30 px-2 py-1 rounded-lg">
                         {ev.goal.minute ? `${ev.goal.minute}'` : '—'}
                       </span>
                       <div>
-                        <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <div className="text-xs font-bold text-ui-text flex items-center gap-1.5">
                           <span>⚽ Golo Marcado</span>
                           {ev.goal.goalType && (
-                            <span className="text-[10px] text-emerald-300 font-normal">({ev.goal.goalType})</span>
+                            <span className="text-[10px] text-ui-success font-normal">({ev.goal.goalType})</span>
                           )}
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[10px] text-ui-muted">
                           vs {ev.match.opponent} ({ev.match.date})
                         </div>
                       </div>
@@ -581,17 +527,17 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                 {selectedPeriodModal.concededEvents.map((ev, i) => (
                   <div key={`co-${i}`} className="ui-inset p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-xs font-mono font-bold text-rose-400 bg-rose-950/50 border border-rose-500/30 px-2 py-1 rounded-lg">
+                      <span className="text-xs font-mono font-bold text-ui-danger bg-ui-danger-soft border border-ui-danger/30 px-2 py-1 rounded-lg">
                         {ev.goal.minute ? `${ev.goal.minute}'` : '—'}
                       </span>
                       <div>
-                        <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <div className="text-xs font-bold text-ui-text flex items-center gap-1.5">
                           <span>🥅 Golo Sofrido</span>
                           {ev.goal.goalType && (
-                            <span className="text-[10px] text-rose-300 font-normal">({ev.goal.goalType})</span>
+                            <span className="text-[10px] text-ui-danger font-normal">({ev.goal.goalType})</span>
                           )}
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[10px] text-ui-muted">
                           vs {ev.match.opponent} ({ev.match.date})
                         </div>
                       </div>

@@ -36,19 +36,19 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
 
   return (
     <div className="ui-card p-5 sm:p-6 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-ui-line">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-xl shadow-inner">
+          <div className="w-10 h-10 rounded-2xl bg-ui-brand/20 border border-ui-brand/40 flex items-center justify-center text-xl shadow-inner">
             🧠
           </div>
           <div>
-            <h3 className="text-base font-bold text-white font-['Chakra_Petch'] uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-base font-bold text-ui-text font-['Chakra_Petch'] uppercase tracking-wider flex items-center gap-2">
               <span>Perguntar aos Dados</span>
-              <span className="text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded-full font-mono">
+              <span className="text-[10px] bg-ui-brand/20 text-ui-brand border border-ui-brand/40 px-2 py-0.5 rounded-full font-mono">
                 Coach Intelligence
               </span>
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ui-muted">
               Respostas e análises táticas calculadas exclusivamente com base nos dados reais registados.
             </p>
           </div>
@@ -57,7 +57,7 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
 
       {/* Quick Suggestion Pills */}
       <div className="space-y-1.5">
-        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Perguntas Rápidas:</span>
+        <span className="text-[11px] font-semibold text-ui-muted uppercase tracking-wider">Perguntas Rápidas:</span>
         <div className="flex flex-wrap gap-2">
           {quickQuestions.map((q, idx) => (
             <button
@@ -89,12 +89,12 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
       {/* Response Card */}
       {currentResponse && (
         <div className="ui-inset p-4 sm:p-5 space-y-4 animate-fadeIn">
-          <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
-            <span className="text-xs font-mono text-cyan-400 font-bold">🔍 "{currentResponse.query}"</span>
-            <span className="text-[10px] text-slate-400 font-mono">Dados Verificados ✓</span>
+          <div className="flex items-center justify-between gap-2 border-b border-ui-line/80 pb-2.5">
+            <span className="text-xs font-mono text-ui-brand font-bold">🔍 "{currentResponse.query}"</span>
+            <span className="text-[10px] text-ui-muted font-mono">Dados Verificados ✓</span>
           </div>
 
-          <p className="text-sm sm:text-base font-semibold text-white leading-relaxed">{currentResponse.summary}</p>
+          <p className="text-sm sm:text-base font-semibold text-ui-text leading-relaxed">{currentResponse.summary}</p>
 
           {/* Metrics Grid */}
           {currentResponse.metrics && currentResponse.metrics.length > 0 && (
@@ -102,15 +102,15 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
               {currentResponse.metrics.map((m, idx) => {
                 const colorClass =
                   m.variant === 'emerald'
-                    ? 'text-emerald-400 border-emerald-500/30 bg-emerald-950/30'
+                    ? 'text-ui-success border-ui-success/30 bg-ui-success-soft'
                     : m.variant === 'rose'
-                      ? 'text-rose-400 border-rose-500/30 bg-rose-950/30'
+                      ? 'text-ui-danger border-ui-danger/30 bg-ui-danger-soft'
                       : m.variant === 'amber'
-                        ? 'text-amber-400 border-amber-500/30 bg-amber-950/30'
-                        : 'text-cyan-400 border-cyan-500/30 bg-cyan-950/30';
+                        ? 'text-ui-warning border-ui-warning/30 bg-ui-warning-soft'
+                        : 'text-ui-brand border-ui-brand/30 bg-ui-brand-soft';
                 return (
                   <div key={idx} className={`p-3 rounded-xl border ${colorClass}`}>
-                    <div className="text-[11px] text-slate-400 uppercase tracking-wider">{m.label}</div>
+                    <div className="text-[11px] text-ui-muted uppercase tracking-wider">{m.label}</div>
                     <div className="text-lg font-black font-mono mt-0.5">{m.value}</div>
                   </div>
                 );
@@ -120,11 +120,11 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
 
           {/* Key Bullet Points */}
           <div className="space-y-1.5 pt-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pontos-Chave:</span>
-            <ul className="space-y-1 text-xs text-slate-300">
+            <span className="text-[11px] font-bold text-ui-muted uppercase tracking-wider">Pontos-Chave:</span>
+            <ul className="space-y-1 text-xs text-ui-text">
               {currentResponse.keyPoints.map((point, idx) => (
                 <li key={idx} className="flex items-start gap-2">
-                  <span className="text-cyan-400 shrink-0 mt-0.5">•</span>
+                  <span className="text-ui-brand shrink-0 mt-0.5">•</span>
                   <span>{point}</span>
                 </li>
               ))}
@@ -133,13 +133,13 @@ export const AskDataSection: React.FC<AskDataSectionProps> = ({ state }) => {
 
           {/* Practical Recommendation */}
           {currentResponse.recommendation && (
-            <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/40 flex items-start gap-2.5">
+            <div className="p-3 rounded-xl bg-ui-brand-soft border border-ui-brand/40 flex items-start gap-2.5">
               <span className="text-base shrink-0">💡</span>
               <div>
-                <span className="text-xs font-bold text-cyan-300 uppercase tracking-wide block">
+                <span className="text-xs font-bold text-ui-brand uppercase tracking-wide block">
                   Recomendação Técnica:
                 </span>
-                <span className="text-xs text-cyan-100/90 leading-snug">{currentResponse.recommendation}</span>
+                <span className="text-xs text-ui-brand/90 leading-snug">{currentResponse.recommendation}</span>
               </div>
             </div>
           )}

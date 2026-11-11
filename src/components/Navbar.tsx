@@ -150,8 +150,7 @@ const SideMenu: React.FC<Omit<NavbarProps, 'lang'>> = ({
     {
       title: 'Análise',
       items: [
-        { label: 'Estatísticas', icon: 'chart', tabs: ['stats'], go: () => onNavigate('stats') },
-        { label: 'Análise dos jogos', icon: 'search', tabs: ['analise_jogos'], go: () => onNavigate('analise_jogos') }
+        { label: 'Análise', icon: 'chart', tabs: ['analise_jogos', 'stats'], go: () => onNavigate('analise_jogos') }
       ]
     }
   ];

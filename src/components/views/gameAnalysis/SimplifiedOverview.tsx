@@ -92,16 +92,16 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-              <h1 className="text-lg sm:text-xl font-black font-['Chakra_Petch'] text-white uppercase tracking-wider">
+              <span className="w-2.5 h-2.5 rounded-full bg-ui-brand animate-pulse" />
+              <h1 className="text-lg sm:text-xl font-black font-['Chakra_Petch'] text-ui-text uppercase tracking-wider">
                 ANÁLISE
               </h1>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-ui-muted mt-0.5">
               {filteredMatches.length} {filteredMatches.length === 1 ? 'jogo registado' : 'jogos registados'} •{' '}
-              <span className="text-emerald-400 font-bold">{wins}V</span> -{' '}
-              <span className="text-amber-400 font-bold">{draws}E</span> -{' '}
-              <span className="text-rose-400 font-bold">{losses}D</span>
+              <span className="text-ui-success font-bold">{wins}V</span> -{' '}
+              <span className="text-ui-warning font-bold">{draws}E</span> -{' '}
+              <span className="text-ui-danger font-bold">{losses}D</span>
             </p>
           </div>
 
@@ -127,7 +127,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                 <option value="last10">⚡ Últimos 10 Jogos</option>
                 <option value="all">🌐 Todas as Épocas</option>
               </select>
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-cyan-400 text-[10px] pointer-events-none">
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ui-brand text-[10px] pointer-events-none">
                 ▼
               </span>
             </div>
@@ -147,7 +147,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                     </option>
                   ))}
                 </select>
-                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-cyan-400 text-[10px] pointer-events-none">
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ui-brand text-[10px] pointer-events-none">
                   ▼
                 </span>
               </div>
@@ -170,26 +170,26 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       <div className="grid grid-cols-2 gap-3 sm:gap-4" id="iphone-primary-metric-cards">
         {/* Card 1: ⚽ Marcados */}
         <div className="ui-card p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-20 h-20 bg-ui-success/10 rounded-full blur-2xl pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
-              <span className="flex items-center gap-1 text-emerald-400 font-black">
+            <div className="flex items-center justify-between text-xs font-bold text-ui-muted mb-1">
+              <span className="flex items-center gap-1 text-ui-success font-black">
                 <span className="text-base">⚽</span>
               </span>
-              <span className="text-[11px] font-mono text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[11px] font-mono text-ui-success bg-ui-success/10 px-2 py-0.5 rounded-full font-bold">
                 {avgGoalsScored}/j
               </span>
             </div>
-            <div className="text-3xl sm:text-4xl font-['Chakra_Petch'] font-black text-white leading-none my-1">
+            <div className="text-3xl sm:text-4xl font-['Chakra_Petch'] font-black text-ui-text leading-none my-1">
               {goalsScored}
             </div>
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-300 font-['Chakra_Petch']">
+            <div className="text-xs font-bold uppercase tracking-wider text-ui-text font-['Chakra_Petch']">
               Marcados
             </div>
           </div>
-          <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className="mt-2.5 pt-2 border-t border-ui-line/80 text-[11px] text-ui-muted flex items-center justify-between">
             <span>Saldo:</span>
-            <span className={`font-bold font-mono ${goalDifference >= 0 ? 'text-emerald-300' : 'text-rose-400'}`}>
+            <span className={`font-bold font-mono ${goalDifference >= 0 ? 'text-ui-success' : 'text-ui-danger'}`}>
               {goalDifference > 0 ? `+${goalDifference}` : goalDifference}
             </span>
           </div>
@@ -197,26 +197,26 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
 
         {/* Card 2: 🔴 Sofridos */}
         <div className="ui-card p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-rose-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-20 h-20 bg-ui-danger/10 rounded-full blur-2xl pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
-              <span className="flex items-center gap-1 text-rose-400 font-black">
+            <div className="flex items-center justify-between text-xs font-bold text-ui-muted mb-1">
+              <span className="flex items-center gap-1 text-ui-danger font-black">
                 <span className="text-base">🔴</span>
               </span>
-              <span className="text-[11px] font-mono text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[11px] font-mono text-ui-danger bg-ui-danger/10 px-2 py-0.5 rounded-full font-bold">
                 {avgGoalsConceded}/j
               </span>
             </div>
-            <div className="text-3xl sm:text-4xl font-['Chakra_Petch'] font-black text-white leading-none my-1">
+            <div className="text-3xl sm:text-4xl font-['Chakra_Petch'] font-black text-ui-text leading-none my-1">
               {goalsConceded}
             </div>
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-300 font-['Chakra_Petch']">
+            <div className="text-xs font-bold uppercase tracking-wider text-ui-text font-['Chakra_Petch']">
               Sofridos
             </div>
           </div>
-          <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className="mt-2.5 pt-2 border-t border-ui-line/80 text-[11px] text-ui-muted flex items-center justify-between">
             <span>Jogos a zeros:</span>
-            <span className="font-bold font-mono text-cyan-300">
+            <span className="font-bold font-mono text-ui-brand">
               {cleanSheets} ({finishedMatchesCount > 0 ? Math.round((cleanSheets / finishedMatchesCount) * 100) : 0}%)
             </span>
           </div>
@@ -224,26 +224,24 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
 
         {/* Card 3: 🚩 Cantos */}
         <div className="ui-card p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-20 h-20 bg-ui-brand/10 rounded-full blur-2xl pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
-              <span className="flex items-center gap-1 text-cyan-400 font-black">
+            <div className="flex items-center justify-between text-xs font-bold text-ui-muted mb-1">
+              <span className="flex items-center gap-1 text-ui-brand font-black">
                 <span className="text-base">🚩</span>
               </span>
-              <span className="text-[11px] font-mono text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[11px] font-mono text-ui-brand bg-ui-brand/10 px-2 py-0.5 rounded-full font-bold">
                 {cornersForAvg !== null ? `${cornersForAvg}/j` : '—'}
               </span>
             </div>
-            <div className="text-3xl sm:text-4xl font-['Chakra_Petch'] font-black text-white leading-none my-1">
+            <div className="text-3xl sm:text-4xl font-['Chakra_Petch'] font-black text-ui-text leading-none my-1">
               {cornersForTotal}
             </div>
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-300 font-['Chakra_Petch']">
-              Cantos
-            </div>
+            <div className="text-xs font-bold uppercase tracking-wider text-ui-text font-['Chakra_Petch']">Cantos</div>
           </div>
-          <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className="mt-2.5 pt-2 border-t border-ui-line/80 text-[11px] text-ui-muted flex items-center justify-between">
             <span>Contra:</span>
-            <span className="font-bold font-mono text-amber-300">
+            <span className="font-bold font-mono text-ui-warning">
               {cornersAgainstTotal} ({cornersAgainstAvg !== null ? `${cornersAgainstAvg}/j` : '—'})
             </span>
           </div>
@@ -251,28 +249,26 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
 
         {/* Card 4: 🟨 Cartões */}
         <div className="ui-card p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-20 h-20 bg-ui-warning/10 rounded-full blur-2xl pointer-events-none" />
           <div>
-            <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
-              <span className="flex items-center gap-1 text-amber-400 font-black">
+            <div className="flex items-center justify-between text-xs font-bold text-ui-muted mb-1">
+              <span className="flex items-center gap-1 text-ui-warning font-black">
                 <span className="text-base">🟨</span>
               </span>
-              <span className="text-[11px] font-mono text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[11px] font-mono text-ui-warning bg-ui-warning/10 px-2 py-0.5 rounded-full font-bold">
                 {cardsPerMatchAvg}/j
               </span>
             </div>
-            <div className="text-3xl sm:text-4xl font-['Chakra_Petch'] font-black text-white leading-none my-1">
+            <div className="text-3xl sm:text-4xl font-['Chakra_Petch'] font-black text-ui-text leading-none my-1">
               {totalCards}
             </div>
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-300 font-['Chakra_Petch']">
-              Cartões
-            </div>
+            <div className="text-xs font-bold uppercase tracking-wider text-ui-text font-['Chakra_Petch']">Cartões</div>
           </div>
-          <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className="mt-2.5 pt-2 border-t border-ui-line/80 text-[11px] text-ui-muted flex items-center justify-between">
             <span>Amarelos/Verm:</span>
-            <span className="font-bold font-mono text-slate-300">
-              {yellowCardsTotal} <span className="text-amber-400">🟨</span> • {redCardsTotal}{' '}
-              <span className="text-rose-400">🟥</span>
+            <span className="font-bold font-mono text-ui-text">
+              {yellowCardsTotal} <span className="text-ui-warning">🟨</span> • {redCardsTotal}{' '}
+              <span className="text-ui-danger">🟥</span>
             </span>
           </div>
         </div>
@@ -282,11 +278,11 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       {/* 3. ⚽ COMO MARCAMOS [gráfico] */}
       {/* ──────────────────────────────────────────────────────────── */}
       <section className="ui-card p-5">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3.5">
-          <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2 uppercase tracking-wide">
-            <span className="text-emerald-400">⚽</span> Como Marcamos
+        <div className="flex items-center justify-between pb-3 border-b border-ui-line mb-3.5">
+          <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2 uppercase tracking-wide">
+            <span className="text-ui-success">⚽</span> Como Marcamos
           </h2>
-          <span className="text-xs font-bold font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full">
+          <span className="text-xs font-bold font-mono text-ui-success bg-ui-success/10 px-2.5 py-0.5 rounded-full">
             {goalsScored} {goalsScored === 1 ? 'golo' : 'golos'}
           </span>
         </div>
@@ -294,21 +290,21 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         {/* Proporção: Bola Corrida vs Bola Parada */}
         <div className="space-y-1.5 mb-4">
           <div className="flex justify-between text-xs font-bold">
-            <span className="text-cyan-300">
+            <span className="text-ui-brand">
               Bola Corrida: {scoredOriginBreakdown.openPlayPercentage}% ({scoredOriginBreakdown.openPlayCount})
             </span>
-            <span className="text-amber-300">
+            <span className="text-ui-warning">
               Bola Parada: {scoredOriginBreakdown.setPiecePercentage}% ({scoredOriginBreakdown.setPieceCount})
             </span>
           </div>
-          <div className="h-2.5 bg-slate-950 rounded-full overflow-hidden flex shadow-inner">
+          <div className="h-2.5 bg-ui-inset rounded-full overflow-hidden flex shadow-inner">
             <div
-              className="bg-cyan-400 h-full transition-all duration-500"
+              className="bg-ui-brand h-full transition-all duration-500"
               style={{ width: `${scoredOriginBreakdown.openPlayPercentage}%` }}
               title={`Bola Corrida: ${scoredOriginBreakdown.openPlayCount}`}
             />
             <div
-              className="bg-amber-400 h-full transition-all duration-500"
+              className="bg-ui-warning h-full transition-all duration-500"
               style={{ width: `${scoredOriginBreakdown.setPiecePercentage}%` }}
               title={`Bola Parada: ${scoredOriginBreakdown.setPieceCount}`}
             />
@@ -318,7 +314,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         {/* Gráfico de barras horizontais por tipo */}
         <div className="space-y-2">
           {topScoredTypes.length === 0 ? (
-            <p className="text-xs text-slate-500 italic py-2">Sem golos marcados registados.</p>
+            <p className="text-xs text-ui-muted italic py-2">Sem golos marcados registados.</p>
           ) : (
             topScoredTypes.map((gt) => {
               const isSetPiece = gt.category === 'bola_parada';
@@ -330,21 +326,21 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                 >
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${isSetPiece ? 'bg-amber-400' : 'bg-cyan-400'}`} />
-                      <span className="font-bold text-slate-200">{gt.type}</span>
-                      <span className="text-[10px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md">
+                      <span className={`w-2 h-2 rounded-full ${isSetPiece ? 'bg-ui-warning' : 'bg-ui-brand'}`} />
+                      <span className="font-bold text-ui-text">{gt.type}</span>
+                      <span className="text-[10px] text-ui-muted bg-ui-surface-2/80 px-2 py-0.5 rounded-md">
                         {isSetPiece ? 'Bola Parada' : 'Bola Corrida'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 font-mono">
-                      <span className="text-emerald-400 font-bold">{gt.count}</span>
-                      <span className="text-slate-400 text-xs font-bold w-9 text-right">{gt.percentage}%</span>
+                      <span className="text-ui-success font-bold">{gt.count}</span>
+                      <span className="text-ui-muted text-xs font-bold w-9 text-right">{gt.percentage}%</span>
                     </div>
                   </div>
-                  <div className="h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-ui-surface rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        isSetPiece ? 'bg-amber-400' : 'bg-cyan-400'
+                        isSetPiece ? 'bg-ui-warning' : 'bg-ui-brand'
                       }`}
                       style={{ width: `${gt.percentage}%` }}
                     />
@@ -360,11 +356,11 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       {/* 4. 🔴 COMO SOFREMOS [gráfico] */}
       {/* ──────────────────────────────────────────────────────────── */}
       <section className="ui-card p-5">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3.5">
-          <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2 uppercase tracking-wide">
-            <span className="text-rose-400">🔴</span> Como Sofremos
+        <div className="flex items-center justify-between pb-3 border-b border-ui-line mb-3.5">
+          <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2 uppercase tracking-wide">
+            <span className="text-ui-danger">🔴</span> Como Sofremos
           </h2>
-          <span className="text-xs font-bold font-mono text-rose-400 bg-rose-500/10 px-2.5 py-0.5 rounded-full">
+          <span className="text-xs font-bold font-mono text-ui-danger bg-ui-danger/10 px-2.5 py-0.5 rounded-full">
             {goalsConceded} {goalsConceded === 1 ? 'golo' : 'golos'}
           </span>
         </div>
@@ -372,21 +368,21 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         {/* Proporção Sofridos: Bola Corrida vs Bola Parada */}
         <div className="space-y-1.5 mb-4">
           <div className="flex justify-between text-xs font-bold">
-            <span className="text-cyan-300">
+            <span className="text-ui-brand">
               Bola Corrida: {concededOriginBreakdown.openPlayPercentage}% ({concededOriginBreakdown.openPlayCount})
             </span>
-            <span className="text-amber-300">
+            <span className="text-ui-warning">
               Bola Parada: {concededOriginBreakdown.setPiecePercentage}% ({concededOriginBreakdown.setPieceCount})
             </span>
           </div>
-          <div className="h-2.5 bg-slate-950 rounded-full overflow-hidden flex shadow-inner">
+          <div className="h-2.5 bg-ui-inset rounded-full overflow-hidden flex shadow-inner">
             <div
-              className="bg-cyan-400 h-full transition-all duration-500"
+              className="bg-ui-brand h-full transition-all duration-500"
               style={{ width: `${concededOriginBreakdown.openPlayPercentage}%` }}
               title={`Bola Corrida: ${concededOriginBreakdown.openPlayCount}`}
             />
             <div
-              className="bg-amber-400 h-full transition-all duration-500"
+              className="bg-ui-warning h-full transition-all duration-500"
               style={{ width: `${concededOriginBreakdown.setPiecePercentage}%` }}
               title={`Bola Parada: ${concededOriginBreakdown.setPieceCount}`}
             />
@@ -396,7 +392,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         {/* Gráfico de barras horizontais por tipo sofrido */}
         <div className="space-y-2">
           {topConcededTypes.length === 0 ? (
-            <p className="text-xs text-slate-500 italic py-2">Sem golos sofridos registados.</p>
+            <p className="text-xs text-ui-muted italic py-2">Sem golos sofridos registados.</p>
           ) : (
             topConcededTypes.map((gt) => {
               const isSetPiece = gt.category === 'bola_parada';
@@ -404,21 +400,21 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
                 <div key={gt.type} className="ui-inset p-2.5">
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${isSetPiece ? 'bg-amber-400' : 'bg-rose-400'}`} />
-                      <span className="font-bold text-slate-200">{gt.type}</span>
-                      <span className="text-[10px] text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md">
+                      <span className={`w-2 h-2 rounded-full ${isSetPiece ? 'bg-ui-warning' : 'bg-ui-danger'}`} />
+                      <span className="font-bold text-ui-text">{gt.type}</span>
+                      <span className="text-[10px] text-ui-muted bg-ui-surface-2/80 px-2 py-0.5 rounded-md">
                         {isSetPiece ? 'Bola Parada' : 'Bola Corrida'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 font-mono">
-                      <span className="text-rose-400 font-bold">{gt.count}</span>
-                      <span className="text-slate-400 text-xs font-bold w-9 text-right">{gt.percentage}%</span>
+                      <span className="text-ui-danger font-bold">{gt.count}</span>
+                      <span className="text-ui-muted text-xs font-bold w-9 text-right">{gt.percentage}%</span>
                     </div>
                   </div>
-                  <div className="h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-ui-surface rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        isSetPiece ? 'bg-amber-400' : 'bg-rose-500'
+                        isSetPiece ? 'bg-ui-warning' : 'bg-ui-danger'
                       }`}
                       style={{ width: `${gt.percentage}%` }}
                     />
@@ -434,18 +430,18 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
       {/* 5. ⏱️ QUANDO MARCAMOS [gráfico] */}
       {/* ──────────────────────────────────────────────────────────── */}
       <section className="ui-card p-5">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div className="flex items-center justify-between pb-3 border-b border-ui-line mb-4">
           <div>
-            <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-white flex items-center gap-2 uppercase tracking-wide">
-              <span className="text-cyan-400">⏱️</span> Quando Marcamos
+            <h2 className="text-sm sm:text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2 uppercase tracking-wide">
+              <span className="text-ui-brand">⏱️</span> Quando Marcamos
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-ui-muted mt-0.5">
               1.º Golo Médio:{' '}
-              <strong className="text-emerald-400">
+              <strong className="text-ui-success">
                 {firstGoalMetrics.firstGoalScoredAvgMin !== null ? `${firstGoalMetrics.firstGoalScoredAvgMin}'` : '—'}
               </strong>{' '}
               • Sofrido:{' '}
-              <strong className="text-rose-400">
+              <strong className="text-ui-danger">
                 {firstGoalMetrics.firstGoalConcededAvgMin !== null
                   ? `${firstGoalMetrics.firstGoalConcededAvgMin}'`
                   : '—'}
@@ -454,11 +450,11 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
           </div>
 
           <div className="flex items-center gap-3 text-xs font-bold">
-            <span className="text-emerald-400 flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" /> Marcados
+            <span className="text-ui-success flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-ui-success" /> Marcados
             </span>
-            <span className="text-rose-400 flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-400" /> Sofridos
+            <span className="text-ui-danger flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-ui-danger" /> Sofridos
             </span>
           </div>
         </div>
@@ -466,43 +462,43 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         {/* 1.ª vs 2.ª Parte Cards */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="ui-inset p-3 text-center">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+            <div className="text-[11px] font-bold text-ui-muted uppercase tracking-wider mb-1">
               1.ª Parte (0–{configuredHalfDuration}')
             </div>
             <div className="flex items-center justify-center gap-3">
               <div>
-                <span className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-emerald-400">
+                <span className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-ui-success">
                   {firstHalfScored}
                 </span>
-                <span className="text-[9px] text-slate-400 block font-bold">MARCADOS</span>
+                <span className="text-[9px] text-ui-muted block font-bold">MARCADOS</span>
               </div>
-              <div className="h-6 w-px bg-slate-800" />
+              <div className="h-6 w-px bg-ui-surface-2" />
               <div>
-                <span className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-rose-400">
+                <span className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-ui-danger">
                   {firstHalfConceded}
                 </span>
-                <span className="text-[9px] text-slate-400 block font-bold">SOFRIDOS</span>
+                <span className="text-[9px] text-ui-muted block font-bold">SOFRIDOS</span>
               </div>
             </div>
           </div>
 
           <div className="ui-inset p-3 text-center">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+            <div className="text-[11px] font-bold text-ui-muted uppercase tracking-wider mb-1">
               2.ª Parte ({configuredHalfDuration + 1}–{configuredHalfDuration * 2}'+)
             </div>
             <div className="flex items-center justify-center gap-3">
               <div>
-                <span className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-emerald-400">
+                <span className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-ui-success">
                   {secondHalfScored}
                 </span>
-                <span className="text-[9px] text-slate-400 block font-bold">MARCADOS</span>
+                <span className="text-[9px] text-ui-muted block font-bold">MARCADOS</span>
               </div>
-              <div className="h-6 w-px bg-slate-800" />
+              <div className="h-6 w-px bg-ui-surface-2" />
               <div>
-                <span className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-rose-400">
+                <span className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-ui-danger">
                   {secondHalfConceded}
                 </span>
-                <span className="text-[9px] text-slate-400 block font-bold">SOFRIDOS</span>
+                <span className="text-[9px] text-ui-muted block font-bold">SOFRIDOS</span>
               </div>
             </div>
           </div>
@@ -516,31 +512,31 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
 
             return (
               <div key={p.key} className="ui-inset p-2 flex items-center gap-2.5 text-xs">
-                <span className="w-14 shrink-0 font-mono font-bold text-slate-300 text-[11px]" title={p.label}>
+                <span className="w-14 shrink-0 font-mono font-bold text-ui-text text-[11px]" title={p.label}>
                   {shortPeriodLabel(p.label)}
                 </span>
 
                 <div className="flex-1 space-y-1">
                   {/* Scored bar */}
                   <div className="flex items-center gap-1.5">
-                    <div className="h-2 flex-1 bg-slate-900 rounded-full overflow-hidden">
+                    <div className="h-2 flex-1 bg-ui-surface rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-emerald-400 rounded-full transition-all"
+                        className="h-full bg-ui-success rounded-full transition-all"
                         style={{ width: `${scoredWidth}%` }}
                       />
                     </div>
-                    <span className="w-5 text-right font-mono font-bold text-emerald-400 text-[11px]">{p.scored}</span>
+                    <span className="w-5 text-right font-mono font-bold text-ui-success text-[11px]">{p.scored}</span>
                   </div>
 
                   {/* Conceded bar */}
                   <div className="flex items-center gap-1.5">
-                    <div className="h-2 flex-1 bg-slate-900 rounded-full overflow-hidden">
+                    <div className="h-2 flex-1 bg-ui-surface rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-rose-500 rounded-full transition-all"
+                        className="h-full bg-ui-danger rounded-full transition-all"
                         style={{ width: `${concededWidth}%` }}
                       />
                     </div>
-                    <span className="w-5 text-right font-mono font-bold text-rose-400 text-[11px]">{p.conceded}</span>
+                    <span className="w-5 text-right font-mono font-bold text-ui-danger text-[11px]">{p.conceded}</span>
                   </div>
                 </div>
               </div>
@@ -549,7 +545,7 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
         </div>
 
         {analysis.goalsWithoutMinuteCount > 0 && (
-          <p className="text-[11px] text-slate-400 mt-2">
+          <p className="text-[11px] text-ui-muted mt-2">
             {analysis.goalsWithoutMinuteCount === 1
               ? '1 golo sem minuto registado não entra neste gráfico.'
               : `${analysis.goalsWithoutMinuteCount} golos sem minuto registado não entram neste gráfico.`}
@@ -558,24 +554,24 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
 
         {/* Destaque Pico Ofensivo & Risco */}
         {(timingWindows.mostScoredPeriod || timingWindows.mostConcededPeriod) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-ui-line">
             {timingWindows.mostScoredPeriod && (
-              <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-2.5 flex items-center gap-2">
+              <div className="bg-ui-success-soft border border-ui-success/30 rounded-xl p-2.5 flex items-center gap-2">
                 <span className="text-lg">🔥</span>
                 <div>
-                  <div className="text-[10px] font-bold text-emerald-400 uppercase">Pico Ofensivo</div>
-                  <div className="text-xs font-bold text-white">
+                  <div className="text-[10px] font-bold text-ui-success uppercase">Pico Ofensivo</div>
+                  <div className="text-xs font-bold text-ui-text">
                     {timingWindows.mostScoredPeriod.label} ({timingWindows.mostScoredPeriod.count} golos)
                   </div>
                 </div>
               </div>
             )}
             {timingWindows.mostConcededPeriod && (
-              <div className="bg-rose-950/40 border border-rose-500/30 rounded-xl p-2.5 flex items-center gap-2">
+              <div className="bg-ui-danger-soft border border-ui-danger/30 rounded-xl p-2.5 flex items-center gap-2">
                 <span className="text-lg">⚠️</span>
                 <div>
-                  <div className="text-[10px] font-bold text-rose-400 uppercase">Pico de Risco Defensivo</div>
-                  <div className="text-xs font-bold text-white">
+                  <div className="text-[10px] font-bold text-ui-danger uppercase">Pico de Risco Defensivo</div>
+                  <div className="text-xs font-bold text-ui-text">
                     {timingWindows.mostConcededPeriod.label} ({timingWindows.mostConcededPeriod.count} golos sofridos)
                   </div>
                 </div>
@@ -603,11 +599,11 @@ export const SimplifiedOverview: React.FC<SimplifiedOverviewProps> = ({
           <div className="text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-2">
               <span className="text-xl">📊</span>
-              <h3 className="text-base sm:text-lg font-['Chakra_Petch'] font-black text-white">
+              <h3 className="text-base sm:text-lg font-['Chakra_Petch'] font-black text-ui-text">
                 Ver Análise Detalhada
               </h3>
             </div>
-            <p className="text-xs text-slate-300 mt-1 max-w-md">
+            <p className="text-xs text-ui-text mt-1 max-w-md">
               Aceda à cronologia minuto-a-minuto, bolas paradas, confronto direto, atletas e exportação em PDF/Excel.
             </p>
           </div>

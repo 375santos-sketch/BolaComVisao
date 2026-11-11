@@ -37,9 +37,9 @@ export const BarChart: React.FC<BarChartProps> = ({ title, categories, details, 
   return (
     <figure className="space-y-2">
       <figcaption className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-200">{title}</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-ui-text">{title}</span>
         {series.length > 1 && (
-          <span className="flex items-center gap-3 text-[11px] text-slate-300">
+          <span className="flex items-center gap-3 text-[11px] text-ui-text">
             {series.map((s) => (
               <span key={s.name} className="flex items-center gap-1">
                 <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: s.color }} />
@@ -116,7 +116,7 @@ export const BarChart: React.FC<BarChartProps> = ({ title, categories, details, 
         {active !== null && (
           <div
             role="status"
-            className="ui-inset absolute top-1 pointer-events-none px-2.5 py-1.5 text-[11px] text-slate-100 whitespace-nowrap"
+            className="ui-inset absolute top-1 pointer-events-none px-2.5 py-1.5 text-[11px] text-ui-text whitespace-nowrap"
             style={{ left: Math.min(Math.max(0, pad.left + active * groupW - 20), width - 150) }}
           >
             <div className="font-bold">{details?.[active] || categories[active]}</div>

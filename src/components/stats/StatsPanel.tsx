@@ -31,8 +31,8 @@ const short = (name: string) => (name.length > 9 ? `${name.slice(0, 8)}…` : na
 
 const Tile: React.FC<{ value: React.ReactNode; label: string }> = ({ value, label }) => (
   <div className="ui-inset p-2.5 text-center">
-    <div className="text-lg font-extrabold text-white font-mono">{value}</div>
-    <div className="text-[10px] text-slate-400 uppercase">{label}</div>
+    <div className="text-lg font-extrabold text-ui-text font-mono">{value}</div>
+    <div className="text-[10px] text-ui-muted uppercase">{label}</div>
   </div>
 );
 
@@ -85,7 +85,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
     onShowToast?.(`Excel gerado: ${name}`);
   };
 
-  const select = 'w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white';
+  const select = 'w-full bg-ui-inset border border-ui-line-strong rounded-lg px-2 py-1.5 text-xs text-ui-text';
 
   return (
     <div className={inline ? '' : 'ui-overlay fixed inset-0 z-[100000] flex items-end sm:items-center justify-center'}>
@@ -95,18 +95,18 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
         className={
           inline
             ? 'ui-card w-full p-4 space-y-4 text-left'
-            : 'w-full max-w-3xl max-h-[96dvh] overflow-y-auto bg-slate-900 border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-4 text-left'
+            : 'w-full max-w-3xl max-h-[96dvh] overflow-y-auto bg-ui-surface border border-ui-brand/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-4 text-left'
         }
       >
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-bold text-white font-['Chakra_Petch'] uppercase tracking-wide">
+          <h2 className="text-base font-bold text-ui-text font-['Chakra_Petch'] uppercase tracking-wide">
             📊 Painel {playerName ? `· ${playerName}` : '· Equipa'}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="text-slate-400 hover:text-white px-2 text-lg"
+            className="text-ui-muted hover:text-ui-text px-2 text-lg"
           >
             ✕
           </button>
@@ -138,8 +138,8 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
                 onClick={() => setScope(s.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                   filter.scope === s.id
-                    ? 'bg-cyan-500 text-slate-950 border-cyan-400'
-                    : 'bg-slate-950 text-cyan-300/80 border-slate-800 hover:border-cyan-500/40'
+                    ? 'bg-ui-brand text-ui-brand-ink border-ui-brand'
+                    : 'bg-ui-inset text-ui-brand/80 border-ui-line hover:border-ui-brand/40'
                 }`}
               >
                 {s.label}
@@ -176,7 +176,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
           )}
           {filter.scope === 'fase' &&
             (options.phases.length === 0 ? (
-              <p className="text-xs text-slate-400">Os jogos desta época ainda não têm fase/jornada registada.</p>
+              <p className="text-xs text-ui-muted">Os jogos desta época ainda não têm fase/jornada registada.</p>
             ) : (
               <select
                 aria-label="Fase"
@@ -193,7 +193,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
             ))}
           {filter.scope === 'periodo' && (
             <div className="grid grid-cols-2 gap-2">
-              <label className="text-[11px] text-slate-400">
+              <label className="text-[11px] text-ui-muted">
                 De
                 <input
                   type="date"
@@ -202,7 +202,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
                   className={select}
                 />
               </label>
-              <label className="text-[11px] text-slate-400">
+              <label className="text-[11px] text-ui-muted">
                 Até
                 <input
                   type="date"
@@ -216,7 +216,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
         </div>
 
         {games.length === 0 ? (
-          <p className="text-sm text-slate-400 py-6 text-center">Sem jogos terminados nesta escolha.</p>
+          <p className="text-sm text-ui-muted py-6 text-center">Sem jogos terminados nesta escolha.</p>
         ) : player ? (
           <section aria-label="Números do atleta" className="space-y-4">
             <div className="grid grid-cols-3 gap-2">
@@ -276,9 +276,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
             {team.games.length >= 2 && (
               <div aria-label="Evolução jogo a jogo">
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                    Evolução jogo a jogo
-                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-ui-text">Evolução jogo a jogo</span>
                   <span className="flex gap-3 text-[11px] text-ui-muted">
                     <span className="flex items-center gap-1">
                       <span className="h-2 w-2 rounded-full bg-ui-brand" /> Marcados
@@ -324,14 +322,12 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
             />
             {team.scorers.length > 0 && (
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-1">
-                  Golos e assistências
-                </div>
+                <div className="text-xs font-bold uppercase tracking-wider text-ui-text mb-1">Golos e assistências</div>
                 <ul className="flex flex-wrap gap-1.5 text-[11px]">
                   {team.scorers.map((s) => (
                     <li
                       key={s.playerId}
-                      className="px-2 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-200"
+                      className="px-2 py-1 rounded-lg bg-ui-inset border border-ui-line text-ui-text"
                     >
                       {s.name} <b>{s.goals}</b> golo(s) · <b>{s.assists}</b> assist.
                     </li>
@@ -342,8 +338,8 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
           </section>
         )}
 
-        <div className="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-[11px] text-slate-400 max-w-sm">
+        <div className="pt-2 border-t border-ui-line flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[11px] text-ui-muted max-w-sm">
             PDF e Excel destes jogos com gráficos. O Excel traz também as tabelas para o Power BI (sem contactos nem
             datas de nascimento).
           </p>
@@ -363,7 +359,7 @@ const GamesTable: React.FC<{ head: string[]; rows: (string | number)[][] }> = ({
   <div className="overflow-x-auto">
     <table aria-label="Jogos" className="w-full text-[11px] font-mono">
       <thead>
-        <tr className="text-slate-400 text-left">
+        <tr className="text-ui-muted text-left">
           {head.map((h) => (
             <th key={h} className="py-1 pr-2 font-normal">
               {h}
@@ -373,7 +369,7 @@ const GamesTable: React.FC<{ head: string[]; rows: (string | number)[][] }> = ({
       </thead>
       <tbody>
         {rows.map((r, i) => (
-          <tr key={i} className="border-t border-slate-800 text-slate-200">
+          <tr key={i} className="border-t border-ui-line text-ui-text">
             {r.map((c, j) => (
               <td key={j} className="py-1 pr-2 whitespace-nowrap">
                 {c}

@@ -155,30 +155,13 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
       {!pageMatch && (
         <>
-          <div className="mb-3 grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => setShowLeague(true)}
-              className="ui-btn ui-btn-soft py-2.5 text-ui-caption"
-            >
-              Classificação do campeonato
-            </button>
-            {/* Análise: until it has its own module, Estatísticas and Análise dos jogos open from here on the phone */}
-            <button
-              type="button"
-              onClick={() => onNavigate('stats')}
-              className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
-            >
-              Estatísticas
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('analise_jogos')}
-              className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
-            >
-              Análise dos jogos
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowLeague(true)}
+            className="ui-btn ui-btn-soft mb-3 w-full py-2.5 text-ui-caption"
+          >
+            Classificação do campeonato
+          </button>
           <div className="field">
             <input
               type="text"
