@@ -77,7 +77,7 @@ test('Planeamento: semana, próximo treino, datas em português e minutos realiz
   // Época: realized, scheduled and left-open trainings apart, with the rule written down
   await planning.getByRole('button', { name: 'Época' }).click();
   await expect(page.getByText('Treinos realizados', { exact: true })).toBeVisible();
-  await expect(page.getByText('Por fechar', { exact: true })).toBeVisible();
+  await expect(page.getByText('Por fechar', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('region', { name: 'Minutos por semana' })).toBeVisible();
   await page.getByText('Como contamos os minutos').click();
   await expect(page.getByText(/não consegue distinguir um treino/)).toBeVisible();
