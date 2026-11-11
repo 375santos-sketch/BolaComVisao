@@ -6,7 +6,7 @@ import { sortPlayerObjs } from '../../../../lib/utils';
 
 export function useScheduleEvents(state: AppState) {
   // Navigation & View Filters
-  const [viewMode, setViewMode] = useState<CalendarViewMode>('lista');
+  const [viewMode, setViewMode] = useState<CalendarViewMode>('semana');
   const [eventTypeFilter, setEventTypeFilter] = useState<EventFilterType>('all');
 
   // Date State

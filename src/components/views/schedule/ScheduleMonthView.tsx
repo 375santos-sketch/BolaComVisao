@@ -79,17 +79,17 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
           </div>
 
           <div className="text-right sm:text-center sm:hidden">
-            <div className="text-base font-['Chakra_Petch'] font-black text-white tracking-wide">
+            <div className="text-base font-['Chakra_Petch'] font-black text-ui-text tracking-wide">
               {MONTH_NAMES_PT[activeMonth]} {activeYear}
             </div>
           </div>
         </div>
 
         <div className="text-center hidden sm:block">
-          <div className="text-lg sm:text-xl font-['Chakra_Petch'] font-black text-white tracking-wide">
+          <div className="text-lg sm:text-xl font-['Chakra_Petch'] font-black text-ui-text tracking-wide">
             {MONTH_NAMES_PT[activeMonth]} {activeYear}
           </div>
-          <div className="text-xs font-mono text-slate-400">Calendário de Jogos, Treinos & Equipa Técnica</div>
+          <div className="text-xs font-mono text-ui-muted">Calendário de Jogos, Treinos & Equipa Técnica</div>
         </div>
 
         {/* Jump to Month Picker + Quick Add */}
@@ -151,9 +151,9 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
       {/* Monthly Matrix Grid */}
       <div className="ui-card p-3 sm:p-4 overflow-hidden">
         {/* Weekday Headers */}
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center pb-2 mb-2 border-b border-slate-800 text-xs font-['Chakra_Petch'] font-bold uppercase text-slate-400">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center pb-2 mb-2 border-b border-ui-line text-xs font-['Chakra_Petch'] font-bold uppercase text-ui-muted">
           {WEEKDAY_SHORT_PT.map((wd, i) => (
-            <div key={i} className={i >= 5 ? 'text-amber-400' : ''}>
+            <div key={i} className={i >= 5 ? 'text-ui-warning' : ''}>
               {wd}
             </div>
           ))}
@@ -187,12 +187,12 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
                     onClick={() => setSelectedDate(dateStr)}
                     className={`min-h-[64px] sm:min-h-[85px] p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
                       isToday
-                        ? 'bg-slate-950 border-cyan-400 shadow-[0_0_12px_rgba(0,210,255,0.25)] ring-1 ring-cyan-400'
+                        ? 'bg-ui-inset border-ui-brand shadow-[0_0_12px_rgba(0,210,255,0.25)] ring-1 ring-ui-brand'
                         : isSelected
-                          ? 'bg-slate-950 border-amber-400 shadow-md ring-1 ring-amber-400'
+                          ? 'bg-ui-inset border-ui-warning shadow-md ring-1 ring-ui-warning'
                           : dayEvs.length > 0
-                            ? 'bg-slate-950/90 border-slate-700/80 hover:border-slate-500'
-                            : 'bg-slate-950/60 border-slate-800/60 hover:border-slate-700'
+                            ? 'bg-ui-inset/90 border-ui-line-strong/80 hover:border-ui-line-strong'
+                            : 'bg-ui-inset/60 border-ui-line/60 hover:border-ui-line-strong'
                     }`}
                   >
                     {/* Day Cell Header */}
@@ -200,10 +200,10 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
                       <span
                         className={`text-xs font-bold font-mono ${
                           isToday
-                            ? 'text-cyan-300 font-black'
+                            ? 'text-ui-brand font-black'
                             : isSelected
-                              ? 'text-amber-300 font-black'
-                              : 'text-slate-300'
+                              ? 'text-ui-warning font-black'
+                              : 'text-ui-text'
                         }`}
                       >
                         {dayNum}
@@ -212,23 +212,23 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
                       {/* Event Indicators / Dot badges */}
                       <div className="flex items-center gap-0.5">
                         {matchEvents.length > 0 && (
-                          <span className="w-2 h-2 rounded-full bg-cyan-400" title={`${matchEvents.length} Jogos`} />
+                          <span className="w-2 h-2 rounded-full bg-ui-brand" title={`${matchEvents.length} Jogos`} />
                         )}
                         {trainingEvents.length > 0 && (
                           <span
-                            className="w-2 h-2 rounded-full bg-amber-400"
+                            className="w-2 h-2 rounded-full bg-ui-warning"
                             title={`${trainingEvents.length} Treinos`}
                           />
                         )}
                         {clubEvents.length > 0 && (
                           <span
-                            className="w-2 h-2 rounded-full bg-purple-400"
+                            className="w-2 h-2 rounded-full bg-ui-brand"
                             title={`${clubEvents.length} Reuniões/Formações`}
                           />
                         )}
                         {staffEvents.length > 0 && (
                           <span
-                            className="w-2 h-2 rounded-full bg-orange-400"
+                            className="w-2 h-2 rounded-full bg-ui-warning"
                             title={`${staffEvents.length} Indisponibilidades`}
                           />
                         )}
@@ -251,14 +251,14 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
                             }}
                             className={`px-1.5 py-0.5 rounded text-[9px] font-mono truncate font-bold cursor-pointer hover:scale-105 transition-all shadow-sm ${
                               isMatch
-                                ? 'bg-cyan-950 text-cyan-300 border border-cyan-500/40 hover:border-cyan-300'
+                                ? 'bg-ui-brand-soft text-ui-brand border border-ui-brand/40 hover:border-ui-brand'
                                 : isStaff
-                                  ? 'bg-orange-950 text-orange-300 border border-orange-500/40 hover:border-orange-300'
+                                  ? 'bg-ui-warning-soft text-ui-warning border border-ui-warning/40 hover:border-ui-warning'
                                   : isClub
-                                    ? 'bg-purple-950 text-purple-300 border border-purple-500/40 hover:border-purple-300'
+                                    ? 'bg-ui-brand-soft text-ui-brand border border-ui-brand/40 hover:border-ui-brand'
                                     : ev.isCompleted
-                                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40 hover:border-emerald-300'
-                                      : 'bg-amber-950 text-amber-300 border border-amber-500/40 hover:border-amber-300'
+                                      ? 'bg-ui-success-soft text-ui-success border border-ui-success/40 hover:border-ui-success'
+                                      : 'bg-ui-warning-soft text-ui-warning border border-ui-warning/40 hover:border-ui-warning'
                             }`}
                             title={`Clica para abrir / editar: ${ev.title}`}
                           >
@@ -268,16 +268,16 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
                         );
                       })}
                       {dayEvs.length > 2 && (
-                        <div className="text-[8px] font-mono text-slate-400 text-center">+{dayEvs.length - 2} mais</div>
+                        <div className="text-[8px] font-mono text-ui-muted text-center">+{dayEvs.length - 2} mais</div>
                       )}
                     </div>
 
                     {/* Mobile Event Counters */}
                     <div className="sm:hidden flex items-center justify-center gap-1 text-[9px] font-mono flex-wrap">
-                      {matchEvents.length > 0 && <span className="text-cyan-300">⚽{matchEvents.length}</span>}
-                      {trainingEvents.length > 0 && <span className="text-amber-300">⚡{trainingEvents.length}</span>}
-                      {clubEvents.length > 0 && <span className="text-purple-300">👥{clubEvents.length}</span>}
-                      {staffEvents.length > 0 && <span className="text-orange-300">🚫{staffEvents.length}</span>}
+                      {matchEvents.length > 0 && <span className="text-ui-brand">⚽{matchEvents.length}</span>}
+                      {trainingEvents.length > 0 && <span className="text-ui-warning">⚡{trainingEvents.length}</span>}
+                      {clubEvents.length > 0 && <span className="text-ui-brand">👥{clubEvents.length}</span>}
+                      {staffEvents.length > 0 && <span className="text-ui-warning">🚫{staffEvents.length}</span>}
                     </div>
                   </div>
                 );
@@ -289,14 +289,14 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
 
       {/* Selected Date Details Drawer below Month */}
       <div className="ui-card p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 mb-3 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 mb-3 border-b border-ui-line">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 text-base">📅</span>
+            <span className="p-2 rounded-xl bg-ui-brand/20 text-ui-brand border border-ui-brand/40 text-base">📅</span>
             <div>
-              <h3 className="text-base font-['Chakra_Petch'] font-black text-white capitalize">
+              <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text capitalize">
                 {formattedSelectedDate}
               </h3>
-              <span className="text-xs font-mono text-slate-400">
+              <span className="text-xs font-mono text-ui-muted">
                 {selectedDateEvents.length === 0
                   ? 'Nenhum evento agendado'
                   : `${selectedDateEvents.length} ${
@@ -327,7 +327,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenClubEventModal(selectedDate)}
-              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-text font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
             >
               <span>👥</span>
               <span>＋ Reunião / Formação</span>
@@ -335,7 +335,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenScheduleStaff(selectedDate)}
-              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-400 hover:to-rose-500 text-white font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1"
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-ui-warning to-ui-danger hover:from-ui-warning hover:to-ui-danger text-ui-text font-['Chakra_Petch'] font-bold text-xs uppercase transition-all flex items-center gap-1"
             >
               <span>🚫</span>
               <span>＋ Indisponível</span>
@@ -346,7 +346,7 @@ export const ScheduleMonthView: React.FC<ScheduleMonthViewProps> = ({
         {selectedDateEvents.length > 0 ? (
           <div className="space-y-3">{selectedDateEvents.map((ev) => renderEventCard(ev))}</div>
         ) : (
-          <div className="ui-inset p-6 text-center font-mono text-xs text-slate-400">
+          <div className="ui-inset p-6 text-center font-mono text-xs text-ui-muted">
             Dia livre na agenda. Clica em <strong>"+ Jogo"</strong>, <strong>"+ Treino"</strong>,{' '}
             <strong>"+ Reunião / Formação"</strong> ou <strong>"+ Indisponível"</strong> para agendar eventos para esta
             data.

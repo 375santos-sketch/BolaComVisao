@@ -18,11 +18,11 @@ const LevelHistory: React.FC<{ marks: LevelMark[] }> = ({ marks }) => {
   const trend = levelTrend(marks);
   return (
     <div aria-label="Como correu" className="mt-1">
-      <div className="flex flex-wrap items-center gap-1 text-[10px] text-slate-300">
+      <div className="flex flex-wrap items-center gap-1 text-[10px] text-ui-text">
         {marks.slice(-4).map((m, i) => (
           <React.Fragment key={`${m.date}-${i}`}>
-            {i > 0 && <span className="text-slate-500">→</span>}
-            <span className="whitespace-nowrap rounded-md border border-slate-700 bg-slate-900 px-1.5 py-0.5">
+            {i > 0 && <span className="text-ui-muted">→</span>}
+            <span className="whitespace-nowrap rounded-md border border-ui-line-strong bg-ui-surface px-1.5 py-0.5">
               {LEVELS[m.level].emoji} {m.date.slice(8, 10)}/{m.date.slice(5, 7)}
             </span>
           </React.Fragment>
@@ -31,7 +31,7 @@ const LevelHistory: React.FC<{ marks: LevelMark[] }> = ({ marks }) => {
       {trend && (
         <div
           className={`mt-0.5 text-[10px] ${
-            trend.tone === 'up' ? 'text-emerald-300' : trend.tone === 'down' ? 'text-rose-300' : 'text-slate-400'
+            trend.tone === 'up' ? 'text-ui-success' : trend.tone === 'down' ? 'text-ui-danger' : 'text-ui-muted'
           }`}
         >
           {trend.text}
@@ -234,17 +234,17 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
   if (editing) {
     return (
       <section aria-label="Editar exercício" className="card space-y-3">
-        <h3 className="text-sm font-black text-white font-['Chakra_Petch'] uppercase">
+        <h3 className="text-sm font-black text-ui-text font-['Chakra_Petch'] uppercase">
           {exercises.some((e) => e.id === editing.id) ? '✏️ Editar exercício' : '➕ Novo exercício'}
         </h3>
         {fromPhoto && (
-          <p role="note" className="rounded-xl bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-200">
+          <p role="note" className="rounded-xl bg-ui-success/10 px-3 py-2 text-[11px] text-ui-success">
             Lido da foto. Confirme o nome, o texto e o desenho antes de guardar.
           </p>
         )}
         {fromIdea && (
-          <div role="note" className="flex items-center justify-between gap-2 rounded-xl bg-cyan-500/10 px-3 py-2">
-            <span className="text-[11px] text-cyan-100">
+          <div role="note" className="flex items-center justify-between gap-2 rounded-xl bg-ui-brand/10 px-3 py-2">
+            <span className="text-[11px] text-ui-brand">
               ✨ Proposto pela IA para "{fromIdea.goal}". Reveja antes de guardar.
             </span>
             <button
@@ -257,7 +257,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
             </button>
           </div>
         )}
-        <label className="block text-[11px] text-slate-400">
+        <label className="block text-[11px] text-ui-muted">
           Nome
           <input
             className={input}
@@ -266,7 +266,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
             onChange={(e) => setEditing({ ...editing, name: e.target.value })}
           />
         </label>
-        <label className="block text-[11px] text-slate-400">
+        <label className="block text-[11px] text-ui-muted">
           Objetivo
           <AutoTextarea
             className={input}
@@ -276,7 +276,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
             onChange={(e) => setEditing({ ...editing, objective: e.target.value })}
           />
         </label>
-        <label className="block text-[11px] text-slate-400">
+        <label className="block text-[11px] text-ui-muted">
           Variantes
           <AutoTextarea
             className={input}
@@ -287,7 +287,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
           />
         </label>
         <div className="grid grid-cols-2 gap-2">
-          <label className="block text-[11px] text-slate-400">
+          <label className="block text-[11px] text-ui-muted">
             Duração (min)
             <input
               type="number"
@@ -300,7 +300,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
               }
             />
           </label>
-          <label className="block text-[11px] text-slate-400">
+          <label className="block text-[11px] text-ui-muted">
             Tipo
             <input
               className={input}
@@ -322,7 +322,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
             </datalist>
           </label>
         </div>
-        <label className="block text-[11px] text-slate-400">
+        <label className="block text-[11px] text-ui-muted">
           Descrição / regras (opcional)
           <AutoTextarea
             className={input}
@@ -333,7 +333,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
           />
         </label>
 
-        <label className="block text-[11px] text-slate-400">
+        <label className="block text-[11px] text-ui-muted">
           🎒 Material
           <AutoTextarea
             className={input}
@@ -351,19 +351,19 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
         </label>
 
         <div className="space-y-2">
-          <div className="text-[11px] text-slate-400">Desenho do exercício</div>
+          <div className="text-[11px] text-ui-muted">Desenho do exercício</div>
           {editing.image ? (
             <div className="space-y-2">
               <img
                 src={editing.image}
                 alt={`Desenho: ${editing.name || 'exercício'}`}
-                className="w-full max-h-64 object-contain rounded-xl bg-white"
+                className="w-full max-h-64 object-contain rounded-xl bg-[#ffffff]"
               />
               <div className="flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={() => setEditing({ ...editing, image: undefined })}
-                  className="text-[11px] text-rose-300 underline"
+                  className="text-[11px] text-ui-danger underline"
                 >
                   Remover imagem
                 </button>
@@ -371,7 +371,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
                   <button
                     type="button"
                     onClick={() => setEditing({ ...editing, image: fromPhoto.photo })}
-                    className="text-[11px] text-cyan-300 underline"
+                    className="text-[11px] text-ui-brand underline"
                   >
                     Usar a foto inteira
                   </button>
@@ -380,7 +380,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
                   <button
                     type="button"
                     onClick={() => setEditing({ ...editing, image: fromPhoto.drawing })}
-                    className="text-[11px] text-cyan-300 underline"
+                    className="text-[11px] text-ui-brand underline"
                   >
                     Usar só o desenho
                   </button>
@@ -388,11 +388,11 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
               </div>
             </div>
           ) : (
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-ui-muted">
               Importe uma foto do quadro, um desenho ou uma imagem tirada de outra app.
             </p>
           )}
-          <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-cyan-500/50 text-cyan-200 text-xs font-bold cursor-pointer">
+          <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-ui-brand/50 text-ui-brand text-xs font-bold cursor-pointer">
             📷 {loadingImage ? 'A preparar a imagem…' : editing.image ? 'Trocar imagem' : 'Importar imagem'}
             <input
               type="file"
@@ -477,7 +477,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
       </button>
       {ideaOpen && (
         <section aria-label="Criar exercício com IA" className="ui-inset space-y-2 p-3">
-          <label className="block text-[11px] text-slate-400">
+          <label className="block text-[11px] text-ui-muted">
             O que quer trabalhar?
             <AutoTextarea
               className={input}
@@ -488,7 +488,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
             />
           </label>
           <div className="grid grid-cols-2 gap-2">
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               Jogadores
               <input
                 type="number"
@@ -499,7 +499,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
                 onChange={(e) => setIdea({ ...idea, players: Number(e.target.value) || 0 })}
               />
             </label>
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               Minutos
               <input
                 type="number"
@@ -510,7 +510,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
                 onChange={(e) => setIdea({ ...idea, minutes: Number(e.target.value) || 0 })}
               />
             </label>
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               Espaço
               <select
                 className={input}
@@ -524,7 +524,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
                 ))}
               </select>
             </label>
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               Tipo
               <select
                 className={input}
@@ -547,7 +547,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
           >
             {creating ? 'A criar o exercício…' : '✨ Criar exercício'}
           </button>
-          <p className="text-[10px] text-slate-500">
+          <p className="text-[10px] text-ui-muted">
             A IA propõe; o exercício só fica na biblioteca depois de o rever e guardar.
           </p>
         </section>
@@ -595,7 +595,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
         </div>
       )}
       {list.length === 0 ? (
-        <div className="card text-center text-xs text-slate-400 py-8">
+        <div className="card text-center text-xs text-ui-muted py-8">
           {exercises.length === 0
             ? 'Ainda sem exercícios. Crie o primeiro e use-o depois no plano de cada treino.'
             : group === 'favoritos'
@@ -607,38 +607,38 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({
           {list.map((e) => (
             <li key={e.id} className="card p-3 flex gap-3 items-start">
               {e.image ? (
-                <img src={e.image} alt="" className="w-20 h-16 object-contain rounded-lg bg-white shrink-0" />
+                <img src={e.image} alt="" className="w-20 h-16 object-contain rounded-lg bg-[#ffffff] shrink-0" />
               ) : (
                 <div className="ui-inset w-20 h-16 flex items-center justify-center text-xl shrink-0">📋</div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-start gap-1">
-                  <div className="min-w-0 flex-1 text-xs font-bold text-white truncate">{e.name}</div>
+                  <div className="min-w-0 flex-1 text-xs font-bold text-ui-text truncate">{e.name}</div>
                   <button
                     type="button"
                     aria-label={`Favorito: ${e.name}`}
                     aria-pressed={Boolean(e.favorite)}
                     onClick={() => toggleFavorite(e)}
-                    className={`-mt-1 shrink-0 px-1 text-base leading-none ${e.favorite ? 'text-amber-400' : 'text-slate-600 hover:text-slate-400'}`}
+                    className={`-mt-1 shrink-0 px-1 text-base leading-none ${e.favorite ? 'text-ui-warning' : 'text-ui-muted hover:text-ui-muted'}`}
                   >
                     {e.favorite ? '★' : '☆'}
                   </button>
                 </div>
-                <div className="text-[10px] text-slate-400 font-mono">
+                <div className="text-[10px] text-ui-muted font-mono">
                   {typeOf(e)} · {e.durationMinutes} min
                   {e.playersCount ? ` · 👥 ${e.playersCount}` : ''}
                 </div>
-                {e.objective && <div className="text-[11px] text-slate-300 line-clamp-2 mt-0.5">{e.objective}</div>}
-                {materialTextOf(e) && <div className="text-[11px] text-slate-400 mt-0.5">🎒 {materialTextOf(e)}</div>}
-                <div className="text-[10px] text-cyan-300/80 mt-0.5">{usageLabel(usage.get(e.id))}</div>
+                {e.objective && <div className="text-[11px] text-ui-text line-clamp-2 mt-0.5">{e.objective}</div>}
+                {materialTextOf(e) && <div className="text-[11px] text-ui-muted mt-0.5">🎒 {materialTextOf(e)}</div>}
+                <div className="text-[10px] text-ui-brand/80 mt-0.5">{usageLabel(usage.get(e.id))}</div>
                 <LevelHistory marks={levelHistory(trainings, e.id)} />
                 <div className="flex gap-3 mt-1.5 text-[11px]">
-                  <button type="button" className="text-cyan-300 font-bold" onClick={() => setEditing(e)}>
+                  <button type="button" className="text-ui-brand font-bold" onClick={() => setEditing(e)}>
                     Editar
                   </button>
                   <button
                     type="button"
-                    className="text-rose-300"
+                    className="text-ui-danger"
                     onClick={() => {
                       if (!window.confirm(`Apagar "${e.name}" da biblioteca?`)) return;
                       onSave(exercises.filter((x) => x.id !== e.id));

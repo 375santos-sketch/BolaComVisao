@@ -62,10 +62,10 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
         </div>
 
         <div className="text-center">
-          <div className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-white">
+          <div className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-ui-text">
             Época / Ano Desportivo {activeYear}
           </div>
-          <div className="text-xs font-mono text-cyan-400">
+          <div className="text-xs font-mono text-ui-brand">
             Visão Geral Anual de Jogos, Treinos, Reuniões e Indisponibilidades
           </div>
         </div>
@@ -140,15 +140,15 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
             >
               <div>
                 {/* Month Card Header */}
-                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-                  <span className="font-['Chakra_Petch'] font-bold text-white uppercase text-sm">{mName}</span>
-                  <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/40">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-ui-line">
+                  <span className="font-['Chakra_Petch'] font-bold text-ui-text uppercase text-sm">{mName}</span>
+                  <span className="text-[10px] font-mono text-ui-brand bg-ui-brand-soft px-2 py-0.5 rounded border border-ui-brand/40">
                     {monthEvents.length} ev.
                   </span>
                 </div>
 
                 {/* Mini Weekday Headers */}
-                <div className="grid grid-cols-7 gap-0.5 text-center text-[9px] font-mono text-slate-500 mb-1">
+                <div className="grid grid-cols-7 gap-0.5 text-center text-[9px] font-mono text-ui-muted mb-1">
                   {WEEKDAY_SHORT_PT.map((wd, i) => (
                     <span key={i}>{wd[0]}</span>
                   ))}
@@ -188,18 +188,18 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
                         }}
                         className={`p-1 rounded transition-all ${
                           isToday
-                            ? 'bg-cyan-400 text-slate-950 font-black'
+                            ? 'bg-ui-brand text-ui-brand-ink font-black'
                             : hasMatch && hasTr
-                              ? 'bg-gradient-to-br from-cyan-500 to-amber-500 text-slate-950 font-bold'
+                              ? 'bg-gradient-to-br from-ui-brand to-ui-warning text-ui-brand-ink font-bold'
                               : hasMatch
-                                ? 'bg-cyan-950 text-cyan-300 border border-cyan-500/60 font-bold'
+                                ? 'bg-ui-brand-soft text-ui-brand border border-ui-brand/60 font-bold'
                                 : hasTr
-                                  ? 'bg-amber-950 text-amber-300 border border-amber-500/60 font-bold'
+                                  ? 'bg-ui-warning-soft text-ui-warning border border-ui-warning/60 font-bold'
                                   : hasClub
-                                    ? 'bg-purple-950 text-purple-300 border border-purple-500/60 font-bold'
+                                    ? 'bg-ui-brand-soft text-ui-brand border border-ui-brand/60 font-bold'
                                     : hasSt
-                                      ? 'bg-orange-950 text-orange-300 border border-orange-500/60 font-bold'
-                                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                                      ? 'bg-ui-warning-soft text-ui-warning border border-ui-warning/60 font-bold'
+                                      : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
                         }`}
                         title={dateStr}
                       >
@@ -211,7 +211,7 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
               </div>
 
               {/* Month Card Footer Stats */}
-              <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400 flex-wrap gap-1">
+              <div className="mt-3 pt-2 border-t border-ui-line/80 flex items-center justify-between text-[10px] font-mono text-ui-muted flex-wrap gap-1">
                 <span>⚽ {mMatches.length}</span>
                 <span>⚡ {mTrainings.length}</span>
                 <span>👥 {mClubs.length}</span>

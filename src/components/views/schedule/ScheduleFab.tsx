@@ -22,10 +22,10 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
   onOpenScheduleStaff
 }) => {
   const items: [string, string, string, (date?: string) => void][] = [
-    ['fab-add-match', 'Jogo', 'bg-cyan-500', onOpenScheduleMatch],
-    ['fab-add-training', 'Treino', 'bg-amber-400', onOpenScheduleTraining],
-    ['fab-add-clubevent', 'Reunião / formação', 'bg-violet-400', onOpenClubEventModal],
-    ['fab-add-staff', 'Indisponível (equipa técnica)', 'bg-slate-500', onOpenScheduleStaff]
+    ['fab-add-match', 'Jogo', 'bg-ui-brand', onOpenScheduleMatch],
+    ['fab-add-training', 'Treino', 'bg-ui-warning', onOpenScheduleTraining],
+    ['fab-add-clubevent', 'Reunião / formação', 'bg-ui-brand', onOpenClubEventModal],
+    ['fab-add-staff', 'Indisponível (equipa técnica)', 'bg-ui-line-strong', onOpenScheduleStaff]
   ];
   return (
     <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 sm:right-6 z-40 flex flex-col items-end gap-2.5 pointer-events-auto">
@@ -41,7 +41,7 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
                 setShowFabMenu(false);
                 open(selectedDate);
               }}
-              className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-100 hover:bg-slate-800/70"
+              className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-ui-text hover:bg-ui-surface-2/70"
             >
               <span className={`w-2.5 h-2.5 rounded-full ${dot}`} aria-hidden="true" />
               {label}
@@ -55,7 +55,7 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
         aria-expanded={showFabMenu}
         aria-label={showFabMenu ? 'Fechar' : 'Adicionar à agenda'}
         className={`w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center transition-all active:scale-95 ${
-          showFabMenu ? 'bg-slate-700 text-white' : 'ui-btn-primary'
+          showFabMenu ? 'bg-ui-surface-3 text-ui-text' : 'ui-btn-primary'
         }`}
         id="agenda-floating-add-fab"
       >

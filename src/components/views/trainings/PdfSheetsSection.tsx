@@ -115,24 +115,24 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
   return (
     <section aria-label="Fichas PDF" className="ui-card mb-3 space-y-2 rounded-2xl p-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-bold text-white">📄 Fichas PDF</h3>
+        <h3 className="text-sm font-bold text-ui-text">📄 Fichas PDF</h3>
         {docs && docs.length > 0 && (
-          <span className="text-[11px] text-slate-400">
+          <span className="text-[11px] text-ui-muted">
             {docs.length} {docs.length === 1 ? 'guardada' : 'guardadas'} neste aparelho
           </span>
         )}
       </div>
 
       {docs === null ? (
-        <p className="text-xs text-slate-400">A procurar as fichas guardadas neste aparelho…</p>
+        <p className="text-xs text-ui-muted">A procurar as fichas guardadas neste aparelho…</p>
       ) : docs.length === 0 ? (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-ui-muted">
           Não há fichas antigas neste aparelho. As fichas da antiga biblioteca de PDFs ficavam só no telemóvel ou
           computador onde foram importadas: abra a app nesse aparelho e elas aparecem aqui.
         </p>
       ) : (
         <>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-ui-muted">
             Estas fichas estão só neste aparelho. Ao passá-las para a biblioteca, a app separa cada exercício: fica só o
             desenho dele e a explicação, em todos os aparelhos e nos planos de treino.
           </p>
@@ -146,12 +146,12 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
               ⬇️ Passar {pending.length === 1 ? 'a ficha' : `as ${pending.length} fichas`} para a biblioteca
             </button>
           )}
-          <ul aria-label="Fichas guardadas neste aparelho" className="divide-y divide-slate-800">
+          <ul aria-label="Fichas guardadas neste aparelho" className="divide-y divide-ui-line">
             {docs.map((d) => (
               <li key={d.id} className="flex items-center gap-2 py-2">
                 <span className="min-w-0 flex-1">
-                  <b className="block truncate text-sm text-white">{d.title || d.fileName}</b>
-                  <span className="text-[11px] text-slate-400">
+                  <b className="block truncate text-sm text-ui-text">{d.title || d.fileName}</b>
+                  <span className="text-[11px] text-ui-muted">
                     {[
                       dateLabel(d.uploadedAt),
                       d.fileSize ? formatFileSize(d.fileSize) : '',
@@ -170,7 +170,7 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
                   👁️ Ver
                 </button>
                 {done(d.id) ? (
-                  <span className="shrink-0 text-[11px] font-semibold text-emerald-300">
+                  <span className="shrink-0 text-[11px] font-semibold text-ui-success">
                     ✓ {countOf(d.id)} {countOf(d.id) === 1 ? 'exercício' : 'exercícios'}
                   </span>
                 ) : (
@@ -192,7 +192,7 @@ export const PdfSheetsSection: React.FC<PdfSheetsSectionProps> = ({ exercises, o
 
       <div className="flex gap-2">{importButton}</div>
       {busy && (
-        <p role="status" className="text-xs font-semibold text-cyan-300">
+        <p role="status" className="text-xs font-semibold text-ui-brand">
           ⏳ {busy}
         </p>
       )}

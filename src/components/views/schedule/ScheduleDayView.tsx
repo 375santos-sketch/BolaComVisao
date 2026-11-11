@@ -1,4 +1,5 @@
 import React from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { CalendarEvent } from './types';
 
 interface ScheduleDayViewProps {
@@ -55,8 +56,8 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
             onClick={handleGoToday}
             className={`px-3 py-1.5 rounded-xl border text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
               selectedDate === todayStr
-                ? 'bg-cyan-500 text-slate-950 border-cyan-400'
-                : 'bg-slate-950 border-slate-800 text-cyan-300 hover:border-cyan-500'
+                ? 'bg-ui-brand text-ui-brand-ink border-ui-brand'
+                : 'bg-ui-inset border-ui-line text-ui-brand hover:border-ui-brand'
             }`}
           >
             Hoje
@@ -73,27 +74,28 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
         </div>
 
         <div className="text-center sm:text-right">
-          <div className="text-base sm:text-lg font-['Chakra_Petch'] font-black text-white capitalize">
+          <div className="text-base sm:text-lg font-['Chakra_Petch'] font-black text-ui-text capitalize">
             {formattedSelectedDate}
           </div>
-          <div className="text-xs font-mono text-cyan-400">
+          <div className="text-xs font-mono text-ui-brand">
             {selectedDateEvents.length} {selectedDateEvents.length === 1 ? 'evento registado' : 'eventos registados'}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <input
+          <DateTimePT
             type="date"
+            label="Data"
             value={selectedDate}
-            onChange={(e) => {
-              if (e.target.value) {
-                setSelectedDate(e.target.value);
-                const dt = new Date(e.target.value + 'T12:00:00');
+            onChange={(v) => {
+              if (v) {
+                setSelectedDate(v);
+                const dt = new Date(v + 'T12:00:00');
                 setActiveYear(dt.getFullYear());
                 setActiveMonth(dt.getMonth());
               }
             }}
-            className="ui-input text-xs"
+            inputClassName="ui-input text-xs"
           />
         </div>
       </div>
@@ -105,8 +107,8 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
 
           {/* Quick Actions Footer for Day View */}
           <div className="ui-card p-3.5 flex items-center justify-between gap-2 flex-wrap">
-            <span className="text-xs font-mono text-slate-400">
-              Adicionar outro evento para <strong className="text-white">{formattedSelectedDate}</strong>:
+            <span className="text-xs font-mono text-ui-muted">
+              Adicionar outro evento para <strong className="text-ui-text">{formattedSelectedDate}</strong>:
             </span>
             <div className="flex items-center gap-2 flex-wrap">
               <button
@@ -128,7 +130,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenClubEventModal(selectedDate)}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-text font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
               >
                 <span>👥</span>
                 <span>＋ Reunião / Formação</span>
@@ -136,7 +138,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenScheduleStaff(selectedDate)}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-400 hover:to-rose-500 text-white font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-ui-warning to-ui-danger hover:from-ui-warning hover:to-ui-danger text-ui-text font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1"
               >
                 <span>🚫</span>
                 <span>＋ Indisponível</span>
@@ -145,12 +147,12 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
           </div>
         </div>
       ) : (
-        <div className="p-8 rounded-2xl bg-slate-900/60 border-2 border-dashed border-slate-800 text-center">
+        <div className="p-8 rounded-2xl bg-ui-surface/60 border-2 border-dashed border-ui-line text-center">
           <div className="text-4xl mb-2">🏖️</div>
-          <h3 className="text-base font-bold text-white font-['Chakra_Petch'] mb-1">
+          <h3 className="text-base font-bold text-ui-text font-['Chakra_Petch'] mb-1">
             Sem Eventos Agendados para este Dia
           </h3>
-          <p className="text-xs text-slate-400 font-mono max-w-md mx-auto mb-4">
+          <p className="text-xs text-ui-muted font-mono max-w-md mx-auto mb-4">
             Podes agendar um jogo, treino, reunião/formação ou marcar uma indisponibilidade da equipa técnica para{' '}
             <strong>{formattedSelectedDate}</strong>.
           </p>
@@ -174,7 +176,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenClubEventModal(selectedDate)}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-text font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1.5"
             >
               <span>👥</span>
               <span>＋ Reunião / Formação</span>
@@ -182,7 +184,7 @@ export const ScheduleDayView: React.FC<ScheduleDayViewProps> = ({
             <button
               type="button"
               onClick={() => onOpenScheduleStaff(selectedDate)}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-400 hover:to-rose-500 text-white font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-ui-warning to-ui-danger hover:from-ui-warning hover:to-ui-danger text-ui-text font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md transition-all flex items-center gap-1.5"
             >
               <span>🚫</span>
               <span>＋ Indisponível (Equipa)</span>

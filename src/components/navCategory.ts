@@ -9,9 +9,10 @@ export function getActiveCategory(tab: TabType): MainCategory {
       return 'equipa';
     case 'calendario':
     case 'treinos':
-    case 'jogos':
+    case 'epoca':
       return 'planeamento';
     case 'jogo':
+    case 'jogos':
     case 'stats':
     case 'analise_jogos':
     case 'prejogo':

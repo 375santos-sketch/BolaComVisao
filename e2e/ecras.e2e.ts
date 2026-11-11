@@ -40,11 +40,19 @@ const addToAgenda = async (page: Page, item: string) => {
   await page.getByRole('menuitem', { name: item, exact: true }).click();
 };
 
+/** Planeamento → Agenda, in the list view (the Agenda opens on the week; these tests read the list of events). */
+const openAgendaList = async (page: Page) => {
+  await navTo(page, /planeamento/i);
+  await page.getByRole('group', { name: 'Vista da agenda' }).getByRole('button', { name: 'Lista' }).click();
+};
+
 /** Agenda → Lista: opens the row of a game or training (also among the past ones) to show its actions. */
 const openAgendaRow = async (page: Page, name: RegExp) => {
+  // The rows of the list, not the "Próximo" cards on top (they open the edit form)
+  const rows = page.locator('button:not(section[aria-label="Próximo"] button)').filter({ hasText: name });
   const past = page.getByRole('button', { name: /Ver os \d+ anteriores/ });
-  if (!(await page.getByRole('button', { name }).count()) && (await past.isVisible())) await past.click();
-  await page.getByRole('button', { name }).first().click();
+  if (!(await rows.count()) && (await past.isVisible())) await past.click();
+  await rows.first().click();
 };
 
 const signedIn = async (page: Page) => {
@@ -117,7 +125,7 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   await expect(page.getByPlaceholder('Procurar atleta')).toBeVisible();
   await expect(page.getByText('RUI SILVA')).toBeVisible();
 
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await expect(page.getByRole('heading', { name: 'Agenda', exact: true })).toBeVisible();
 
   await navTo(page, /jogo/i);
@@ -219,7 +227,7 @@ test('pré-jogo: abrir não grava nada; plano guardado no jogo da Agenda, PDF e 
 
 test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await addToAgenda(page, 'Jogo');
   await page.getByPlaceholder('Nome da equipa adversária').fill('Constância');
   await page.locator('input[type=date]').first().fill('2026-12-05');
@@ -320,8 +328,9 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
 
 test('calendário para os pais: link secreto com jogos e treinos que se atualiza sozinho', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
-  await page.getByRole('button', { name: /Calendário para os pais/ }).click();
+  await openAgendaList(page);
+  await page.getByRole('button', { name: 'Mais opções da agenda' }).click();
+  await page.getByRole('menuitem', { name: /Calendário para os pais/ }).click();
   const share = page.getByRole('dialog', { name: 'Calendário para os pais' });
   await share.getByRole('button', { name: 'Criar link do calendário' }).click();
   const link = share.getByLabel('Link do calendário');
@@ -349,7 +358,8 @@ test('calendário para os pais: link secreto com jogos e treinos que se atualiza
   await expect.poll(published, { timeout: 30_000 }).toContain('Mação');
 
   // Switched off: the link stops working
-  await page.getByRole('button', { name: /Calendário para os pais/ }).click();
+  await page.getByRole('button', { name: 'Mais opções da agenda' }).click();
+  await page.getByRole('menuitem', { name: /Calendário para os pais/ }).click();
   await page.getByRole('button', { name: 'Desativar este link' }).click();
   await expect.poll(published, { timeout: 30_000 }).toBeNull();
 });
@@ -370,7 +380,7 @@ test('análise: remates e eficácia de finalização', async ({ page }) => {
 
 test('relatório do adversário pós-jogo: números do jogo, notas guardadas na nuvem e PDF', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Relatório do adversário/ }).click();
@@ -405,7 +415,7 @@ test('relatório do adversário pós-jogo: números do jogo, notas guardadas na 
 
 test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await expect(page.getByText('Esparteiros')).toBeVisible();
   // Away win 2-1 reads like a scoreboard, home team first: Tramagal SU (Fora) 1 – 2
@@ -421,7 +431,7 @@ test('resultados: ficha do jogo e partilha com os pais', async ({ page }) => {
 
 test('resultados: editar um jogo terminado num só ecrã (golo novo) fica guardado', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Editar jogo/ }).click();
@@ -452,7 +462,7 @@ test('resultados: editar um jogo terminado num só ecrã (golo novo) fica guarda
 
 test('resultados: corrigir o local de um jogo terminado (casa/fora) fica guardado', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   const place = page.getByRole('group', { name: 'Local do jogo' });
@@ -470,7 +480,7 @@ test('resultados: corrigir o local de um jogo terminado (casa/fora) fica guardad
 
   await page.reload();
   await enterPanel(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await expect(
@@ -480,7 +490,7 @@ test('resultados: corrigir o local de um jogo terminado (casa/fora) fica guardad
 
 test('classificação: resultados colados da série, jogos da app e posição da equipa', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByRole('button', { name: /Classificação do campeonato/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Classificação do campeonato' });
@@ -548,7 +558,7 @@ test('classificação: print da jornada (sem o nosso jogo) e nova fase sem perde
     })
   );
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByRole('button', { name: /Classificação do campeonato/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Classificação do campeonato' });
@@ -600,7 +610,7 @@ test('classificação: print da jornada (sem o nosso jogo) e nova fase sem perde
 
 test('bolas paradas: caderno com desenho e quem marca aparece na Convocatória', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await openAgendaRow(page, /vs Abrantes/);
   await page.getByTitle('Abrir Convocatória').click();
   const card = page.getByRole('region', { name: 'Bolas paradas', exact: true });
@@ -631,7 +641,7 @@ test('bolas paradas: caderno com desenho e quem marca aparece na Convocatória',
 
 test('jogador do jogo: escolher o destaque, guardar no jogo e descarregar a imagem', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Jogador do jogo/ }).click();
@@ -670,7 +680,7 @@ test('votação dos pais: link anónimo, um voto por telemóvel e os dois mais v
   browser
 }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Jogador do jogo/ }).click();
@@ -743,7 +753,7 @@ test('assistente: perguntas sobre a equipa respondidas com os dados da app', asy
 
 test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   // Opens on every training (no empty "Agendados" filter), newest first.
   await expect(page.getByText('TREINO 2')).toBeVisible();
@@ -792,11 +802,13 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await page.getByRole('button', { name: /Treino 3/ }).click();
   await page.getByRole('button', { name: /Repetir/ }).click();
   await expect(page.getByText(/Treino repetido para/)).toBeVisible();
-  await expect(page.getByText('TREINO 4')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Treino 4.*Por fazer/ })).toBeVisible();
+  // …and it is the next training on top of Treinos
+  await expect(page.getByRole('region', { name: 'Próximo treino' })).toContainText('Treino 4');
 
   // Absences per athlete, with the reason.
   await page
-    .getByRole('button', { name: /Assiduidade/ })
+    .getByRole('button', { name: /^Presenças/ })
     .first()
     .click();
   await page.getByRole('button', { name: /Rui Silva/ }).click();
@@ -806,7 +818,7 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
 
 test('exercícios: biblioteca com desenho importado, usada no plano do treino', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   await page.getByRole('button', { name: '➕ Novo exercício' }).click();
@@ -841,7 +853,10 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
     .toBe('Rondo 4x2');
 
   // New training: the exercise joins the session plan with its drawing
-  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page.getByRole('button', { name: /Da biblioteca \(1\)/ }).click();
   await page
@@ -859,12 +874,15 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
   await models.getByLabel('Nome do modelo').fill('Rondo semanal');
   await models.getByRole('button', { name: 'Guardar', exact: true }).click();
   await expect(page.getByText('Modelo "Rondo semanal" guardado ✓')).toBeVisible();
-  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.getByRole('button', { name: /Guardar como agendado/i }).click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   await expect(page.getByRole('region', { name: 'Biblioteca de exercícios' })).toContainText(/Usado 1× · último hoje/);
 
   // A new training starts from the model; "Duplicar" opens a copy of a training to change and save
-  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page
     .getByRole('region', { name: 'Modelos de treino' })
@@ -876,7 +894,7 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
   await page.locator('[data-training-row]').first().click();
   await page.getByRole('button', { name: /Duplicar/ }).click();
   await expect(page.getByText(/Cópia do treino aberta/)).toBeVisible();
-  await expect(page.getByText(/Novo Treino/).first()).toBeVisible();
+  await expect(page.getByText(/Novo treino/).first()).toBeVisible();
 
   await expect
     .poll(
@@ -1214,7 +1232,7 @@ test('disponibilidade: lesão com data de regresso aparece no plantel e na Convo
   await page.getByRole('button', { name: 'Fechar a ficha' }).click();
   await expect(page.getByText('Lesionado até 15/01').first()).toBeVisible();
 
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await openAgendaRow(page, /vs Abrantes/);
   await page.getByTitle('Abrir Convocatória').click();
   await expect(page.getByText('🏥 Lesionado até 15/01 · entorse')).toBeVisible();
@@ -1346,7 +1364,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   });
 
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await openAgendaRow(page, /vs Abrantes/);
   await page
     .getByRole('button', { name: /Iniciar Jogo/ })
@@ -1532,7 +1550,7 @@ test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo',
 
   // An away game tomorrow: forecast for the game's hour and directions to the pitch
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await addToAgenda(page, 'Jogo');
   await page.getByPlaceholder('Nome da equipa adversária').fill('AD Tempo Teste');
   await page.locator('input[type=date]').first().fill(tomorrow);
@@ -1584,8 +1602,9 @@ test('agenda: jogos importados de um print do calendário e modo compacto', asyn
     });
   });
   await signedIn(page);
-  await navTo(page, /planeamento/i);
-  await page.getByRole('button', { name: /Importar jogos de um print do calendário/ }).click();
+  await openAgendaList(page);
+  await page.getByRole('button', { name: 'Mais opções da agenda' }).click();
+  await page.getByRole('menuitem', { name: /Importar jogos de um print do calendário/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Importar jogos por print' });
   const png = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==',
@@ -1617,7 +1636,8 @@ test('agenda: jogos importados de um print do calendário e modo compacto', asyn
     .toEqual(['2099-03-07 10:30 casa Jornada 1 Gd Calendário', '2099-03-14 09:15 fora Jornada 2 Ad Terceira']);
 
   // The same print again: both games are already in the Agenda
-  await page.getByRole('button', { name: /Importar jogos de um print do calendário/ }).click();
+  await page.getByRole('button', { name: 'Mais opções da agenda' }).click();
+  await page.getByRole('menuitem', { name: /Importar jogos de um print do calendário/ }).click();
   await dialog
     .getByLabel('Print do calendário')
     .setInputFiles({ name: 'calendario.png', mimeType: 'image/png', buffer: png });
@@ -1657,7 +1677,7 @@ test('foto do exercício, imagem da convocatória e plano para o adjunto', async
     });
   });
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   const png = Buffer.from(
@@ -1680,7 +1700,10 @@ test('foto do exercício, imagem da convocatória e plano para o adjunto', async
   await expect(page.getByRole('region', { name: 'Biblioteca de exercícios' })).toContainText('Rondo da foto');
 
   // Link for the assistant coach: created once, kept in the cloud with the next training's plan only
-  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Plano para o adjunto/ }).click();
   const share = page.getByRole('dialog', { name: 'Plano para o adjunto' });
   await share.getByRole('button', { name: 'Criar link para o adjunto' }).click();
@@ -1694,7 +1717,7 @@ test('foto do exercício, imagem da convocatória e plano para o adjunto', async
   await share.getByRole('button', { name: 'Fechar plano para o adjunto' }).click();
 
   // Convocatória picture for the parents
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await openAgendaRow(page, /vs AD Tempo Teste/);
   await page.getByTitle('Abrir Convocatória').click();
   await page.getByRole('button', { name: 'Todos', exact: true }).click();
@@ -1793,7 +1816,7 @@ test('terminar sessão apaga os dados do clube neste aparelho', async ({ page })
 
 test('lista do saco: material do exercício no treino, e modo sol que fica lembrado', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   await page.getByRole('button', { name: '➕ Novo exercício' }).click();
@@ -1813,14 +1836,17 @@ test('lista do saco: material do exercício no treino, e modo sol que fica lembr
   await expect(form.getByLabel('Tipo')).toHaveValue('Jogo reduzido');
   await form.getByRole('button', { name: 'Cancelar' }).click();
 
-  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page.getByRole('button', { name: /Da biblioteca/ }).click();
   await page
     .getByRole('group', { name: 'Escolher da biblioteca' })
     .getByRole('button', { name: /Jogo 5x5 com balizas/ })
     .click();
-  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.getByRole('button', { name: /Guardar como agendado/i }).click();
   await page.locator('[data-training-row]').first().click();
   const kit = page.getByRole('region', { name: 'Levar para o treino' });
   await expect(kit).toContainText('16 cones');
@@ -1843,7 +1869,7 @@ test('lista do saco: material do exercício no treino, e modo sol que fica lembr
 
 test('crónica do jogo e cromo do atleta (imagem e PDF de todos)', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Crónica do jogo/ }).click();
@@ -1891,7 +1917,7 @@ test('vídeo do jogo: link do YouTube, início das partes e cada lance no seu mo
     route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Vídeo</title>' })
   );
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await navTo(page, /jogo/i);
   await page.getByRole('button', { name: 'Resultados', exact: true }).first().click();
   await page.getByText('Tramagal SU').click();
   await page.getByRole('button', { name: /Vídeo do jogo/ }).click();
@@ -2012,7 +2038,7 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
     })
   );
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   await page.getByRole('button', { name: '✨ Criar exercício com IA' }).click();
@@ -2033,7 +2059,10 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   );
 
   // Hot day: water breaks between the blocks of the training
-  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page.getByPlaceholder('Ex: Campo Sintético, Campo Principal, Pavilhão...').fill('Campo Municipal');
   await page.getByRole('button', { name: /Da biblioteca/ }).click();
@@ -2041,7 +2070,7 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
     .getByRole('group', { name: 'Escolher da biblioteca' })
     .getByRole('button', { name: /Jogo 4x4 com zona de saída/ })
     .click();
-  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.getByRole('button', { name: /Guardar como agendado/i }).click();
   await page.locator('[data-training-row]').first().click();
   const heat = page.getByRole('region', { name: 'Calor: pausas de água' });
   await expect(heat).toContainText('33 °C');
@@ -2090,7 +2119,7 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
 
 test('exercício sem explicação para as crianças, assinatura nos PDFs e visita guiada', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   await page.getByRole('button', { name: '➕ Novo exercício' }).click();
@@ -2204,7 +2233,7 @@ test('fichas PDF antigas: cada exercício passa para a biblioteca só com o seu 
       }),
     fileData
   );
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   const sheets = page.getByRole('region', { name: 'Fichas PDF' });
@@ -2244,7 +2273,7 @@ test('fichas PDF antigas: cada exercício passa para a biblioteca só com o seu 
 
 test('montar o campo: meio campo à quinta, medidas em falta, passo a passo e envio ao adjunto', async ({ page }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   const library = page.getByRole('region', { name: 'Biblioteca de exercícios' });
@@ -2261,7 +2290,10 @@ test('montar o campo: meio campo à quinta, medidas em falta, passo a passo e en
   }
 
   // A Thursday training with both exercises
-  await page.getByRole('button', { name: /Lista/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Sessões/ })
+    .first()
+    .click();
   await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
   await page.locator('input[type="date"]').first().fill('2099-03-05');
   await page.getByPlaceholder('Ex: Campo Sintético, Campo Principal, Pavilhão...').fill('Campo do teste de montar');
@@ -2270,7 +2302,7 @@ test('montar o campo: meio campo à quinta, medidas em falta, passo a passo e en
   await pick.getByRole('button', { name: /Quadrado de aquecimento/ }).click();
   await page.getByRole('button', { name: /Da biblioteca/ }).click();
   await pick.getByRole('button', { name: /Jogo de posse/ }).click();
-  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.getByRole('button', { name: /Guardar como agendado/i }).click();
   await page.locator('[data-training-row]').filter({ hasText: 'Campo do teste de montar' }).click();
   await page.getByRole('button', { name: '📐 Montar o campo' }).click();
 
@@ -2321,7 +2353,7 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
   page
 }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page.getByRole('button', { name: /Exercícios/ }).click();
   await page.getByRole('button', { name: '➕ Novo exercício' }).click();
@@ -2331,7 +2363,10 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
   await form.getByRole('button', { name: 'Guardar exercício' }).click();
 
   const newTraining = async (date: string) => {
-    await page.getByRole('button', { name: /Lista/ }).first().click();
+    await page
+      .getByRole('button', { name: /^Sessões/ })
+      .first()
+      .click();
     await page.getByRole('button', { name: /Inserir Treino Único/ }).click();
     await page.locator('input[type="date"]').first().fill(date);
     await page.getByPlaceholder('Ex: Campo Sintético, Campo Principal, Pavilhão...').fill(`Campo do nível ${date}`);
@@ -2345,7 +2380,7 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
   // Monday: the rondo was easy
   await newTraining('2099-04-06');
   await expect(page.getByRole('region', { name: /Sugestão para/ })).toHaveCount(0);
-  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.getByRole('button', { name: /Guardar como agendado/i }).click();
   await page.locator('[data-training-row]').filter({ hasText: 'Campo do nível 2099-04-06' }).click();
   const rate = page.getByRole('group', { name: 'Como correu: Rondo com joker' });
   await rate.getByRole('button', { name: '😴 Fácil' }).click();
@@ -2364,7 +2399,7 @@ test('exercício no nível certo: marcar como correu, variante no treino seguint
   await expect(page.getByPlaceholder(/Instruções específicas para este bloco/).first()).toHaveValue(
     '⬆️ Mais difícil: espaço 12×12, máximo 2 toques.'
   );
-  await page.getByRole('button', { name: /Guardar como Agendado/ }).click();
+  await page.getByRole('button', { name: /Guardar como agendado/i }).click();
 
   // The new space goes to "Montar o campo"
   await page.locator('[data-training-row]').filter({ hasText: 'Campo do nível 2099-04-09' }).click();
@@ -2436,10 +2471,10 @@ test('atleta inativo: conta sempre como falta no treino até mudar o estado', as
   await today.getByRole('button', { name: /Guardar (treino|presenças)/ }).click();
 
   // The training counts the absence, with the reason "Inativo"
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
   await page
-    .getByRole('button', { name: /Assiduidade/ })
+    .getByRole('button', { name: /^Presenças/ })
     .first()
     .click();
   await page.getByRole('button', { name: /Inativo Teste/ }).click();
@@ -2448,7 +2483,7 @@ test('atleta inativo: conta sempre como falta no treino até mudar o estado', as
 
 test('acompanhar ao vivo: o outro treinador vê o jogo a acontecer no telemóvel dele', async ({ page, browser }) => {
   await signedIn(page);
-  await navTo(page, /planeamento/i);
+  await openAgendaList(page);
   await addToAgenda(page, 'Jogo');
   await page.getByPlaceholder('Nome da equipa adversária').fill('Equipa Ao Vivo');
   await page.locator('input[type=date]').first().fill(new Date().toISOString().slice(0, 10));

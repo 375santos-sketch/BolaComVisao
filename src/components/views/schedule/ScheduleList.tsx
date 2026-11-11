@@ -11,17 +11,17 @@ interface ScheduleListProps {
 }
 
 const BAR: Record<CalendarEvent['category'], string> = {
-  match: 'bg-cyan-500',
-  training: 'bg-amber-400',
-  club_event: 'bg-violet-400',
-  staff_unavailability: 'bg-slate-500'
+  match: 'bg-ui-brand',
+  training: 'bg-ui-warning',
+  club_event: 'bg-ui-brand',
+  staff_unavailability: 'bg-ui-line-strong'
 };
 
 const TAG = {
-  ok: 'bg-emerald-500/15 text-emerald-300',
-  warn: 'bg-amber-500/15 text-amber-300',
-  bad: 'bg-rose-500/15 text-rose-300',
-  muted: 'bg-slate-500/15 text-slate-300'
+  ok: 'bg-ui-success/15 text-ui-success',
+  warn: 'bg-ui-warning/15 text-ui-warning',
+  bad: 'bg-ui-danger/15 text-ui-danger',
+  muted: 'bg-ui-line-strong/15 text-ui-text'
 };
 
 function rowText(ev: CalendarEvent, today: string): { title: string; details: string[]; tag?: [string, string] } {
@@ -73,16 +73,16 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({ filteredEvents, toda
           type="button"
           aria-expanded={open}
           onClick={() => setOpenId(open ? null : ev.id)}
-          className={`ui-card w-full p-2.5 flex items-center gap-3 text-left transition-colors ${open ? 'border-cyan-500/60' : ''}`}
+          className={`ui-card w-full p-2.5 flex items-center gap-3 text-left transition-colors ${open ? 'border-ui-brand/60' : ''}`}
         >
           <span className={`w-1 self-stretch rounded-full ${BAR[ev.category]}`} aria-hidden="true" />
           <span className="ui-inset w-11 shrink-0 py-1 text-center rounded-xl">
-            <span className="block text-base font-bold leading-tight text-white">{ev.date.slice(8, 10)}</span>
-            <span className="block text-[10px] font-semibold uppercase text-slate-400">{weekday}</span>
+            <span className="block text-base font-bold leading-tight text-ui-text">{ev.date.slice(8, 10)}</span>
+            <span className="block text-[10px] font-semibold uppercase text-ui-muted">{weekday}</span>
           </span>
           <span className="flex-1 min-w-0">
-            <span className="block text-sm font-bold text-slate-100 truncate">{title}</span>
-            {details.length > 0 && <span className="block text-xs text-slate-400 truncate">{details.join(' · ')}</span>}
+            <span className="block text-sm font-bold text-ui-text truncate">{title}</span>
+            {details.length > 0 && <span className="block text-xs text-ui-muted truncate">{details.join(' · ')}</span>}
           </span>
           {tag && <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold ${tag[1]}`}>{tag[0]}</span>}
         </button>
@@ -93,7 +93,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({ filteredEvents, toda
 
   if (filteredEvents.length === 0) {
     return (
-      <div className="ui-card p-8 text-center text-xs text-slate-400">
+      <div className="ui-card p-8 text-center text-xs text-ui-muted">
         Ainda não há nada na Agenda. Carregue em ＋ para marcar um jogo ou um treino.
       </div>
     );
@@ -102,11 +102,11 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({ filteredEvents, toda
   return (
     <div className="space-y-4">
       {upcoming.length === 0 && (
-        <div className="ui-card p-5 text-center text-xs text-slate-400">Não há nada marcado a partir de hoje.</div>
+        <div className="ui-card p-5 text-center text-xs text-ui-muted">Não há nada marcado a partir de hoje.</div>
       )}
       {upcoming.map((section) => (
         <section key={section.key} aria-label={section.label}>
-          <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">{section.label}</h3>
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-ui-muted">{section.label}</h3>
           <ul className="space-y-2">{section.events.map(row)}</ul>
         </section>
       ))}

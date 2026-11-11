@@ -15,26 +15,27 @@ export const TrainingHeader: React.FC<TrainingHeaderProps> = ({
   completedCount
 }) => {
   const tabs: [TrainingsTab, string, number | null][] = [
-    ['list', 'Lista', totalTrainings],
-    ['season', 'Época', null],
-    ['stats', 'Assiduidade', completedCount],
+    ['list', 'Sessões', totalTrainings],
+    ['stats', 'Presenças', completedCount],
     ['library', 'Exercícios', null]
   ];
   return (
-    <div className="ui-card grid grid-cols-4 gap-1 mb-3 p-1 text-[12px] sm:text-[13px] font-semibold">
+    <div role="group" aria-label="Partes dos treinos" className="mb-4 flex gap-1 border-b border-ui-line">
       {tabs.map(([tab, label, count]) => (
         <button
           key={tab}
           type="button"
           aria-current={activeTab === tab ? 'page' : undefined}
-          className={`py-2 px-0.5 min-h-[40px] min-w-0 rounded-xl flex items-center justify-center gap-1.5 ${
-            activeTab === tab ? 'ui-btn-primary' : 'text-slate-400 hover:text-white hover:bg-slate-950/60'
+          className={`-mb-px flex min-h-[40px] flex-1 items-center justify-center gap-1.5 border-b-2 px-2 py-2 text-ui-body font-bold transition-colors sm:flex-none sm:px-4 ${
+            activeTab === tab ? 'border-ui-brand text-ui-text' : 'border-transparent text-ui-muted hover:text-ui-text'
           }`}
           onClick={() => setActiveTab(tab)}
         >
           {label}
           {count !== null && (
-            <span className="hidden sm:inline rounded-full bg-black/20 px-1.5 text-[11px]">{count}</span>
+            <span className="hidden rounded-full bg-ui-surface-3 px-1.5 text-ui-caption text-ui-muted sm:inline">
+              {count}
+            </span>
           )}
         </button>
       ))}

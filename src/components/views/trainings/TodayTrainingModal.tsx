@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { AbsenceReason, Player, Training } from '../../../types';
 import { withAttendance } from '../../../lib/trainingQuick';
 import { AttendanceGrid } from './AttendanceGrid';
@@ -33,12 +34,12 @@ export const TodayTrainingModal: React.FC<TodayTrainingModalProps> = ({
   return (
     <div className="ui-overlay fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3">
       <div role="dialog" aria-label="Treino de hoje" className="ui-card w-full max-w-2xl max-h-[92vh] flex flex-col">
-        <div className="p-4 border-b border-slate-800 flex items-start justify-between gap-3">
+        <div className="p-4 border-b border-ui-line flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-base font-bold text-white font-['Chakra_Petch'] uppercase tracking-wide">
+            <h3 className="text-base font-bold text-ui-text font-['Chakra_Petch'] uppercase tracking-wide">
               ✅ Treino de hoje{training.trainingNumber ? ` · Nº ${training.trainingNumber}` : ''}
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-ui-muted mt-0.5">
               {d}/{m}/{y} · Todos presentes: toca em quem faltou.
             </p>
           </div>
@@ -46,7 +47,7 @@ export const TodayTrainingModal: React.FC<TodayTrainingModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="text-slate-400 hover:text-white text-xl"
+            className="text-ui-muted hover:text-ui-text text-xl"
           >
             ✕
           </button>
@@ -54,16 +55,18 @@ export const TodayTrainingModal: React.FC<TodayTrainingModalProps> = ({
 
         <div className="p-4 space-y-3 overflow-y-auto">
           <div className="grid grid-cols-2 gap-2">
-            <label className="text-[11px] text-slate-400 uppercase font-bold">
+            <label className="text-[11px] text-ui-muted uppercase font-bold">
               Hora
-              <input
+              <DateTimePT
                 type="time"
+                label="Hora"
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="ui-input mt-1 w-full text-sm normal-case font-normal"
+                onChange={(v) => setTime(v)}
+                className="mt-1 normal-case font-normal"
+                inputClassName="ui-input w-full text-sm"
               />
             </label>
-            <label className="text-[11px] text-slate-400 uppercase font-bold">
+            <label className="text-[11px] text-ui-muted uppercase font-bold">
               Local
               <input
                 type="text"
@@ -84,9 +87,9 @@ export const TodayTrainingModal: React.FC<TodayTrainingModalProps> = ({
           />
         </div>
 
-        <div className="p-4 border-t border-slate-800 flex items-center justify-between gap-3">
-          <span className="text-xs font-mono text-slate-300">
-            <b className="text-emerald-400">{present}</b> presentes · <b className="text-red-400">{absences.length}</b>{' '}
+        <div className="p-4 border-t border-ui-line flex items-center justify-between gap-3">
+          <span className="text-xs font-mono text-ui-text">
+            <b className="text-ui-success">{present}</b> presentes · <b className="text-ui-danger">{absences.length}</b>{' '}
             faltas
           </span>
           <button

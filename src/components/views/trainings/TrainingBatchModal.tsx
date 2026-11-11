@@ -21,15 +21,15 @@ export const TrainingBatchModal: React.FC<TrainingBatchModalProps> = ({
 
   return (
     <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in text-left">
-      <div className="w-full max-w-xl bg-slate-900 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between border-b border-cyan-500/20 p-4 sm:p-5 shrink-0 bg-slate-900/95">
+      <div className="w-full max-w-xl bg-ui-surface border-t sm:border border-ui-brand/40 rounded-t-3xl sm:rounded-3xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between border-b border-ui-brand/20 p-4 sm:p-5 shrink-0 bg-ui-surface/95">
           <div className="flex items-center gap-2">
             <span className="text-2xl">📅</span>
             <div>
-              <h3 className="font-['Chakra_Petch'] font-black text-base text-white uppercase tracking-wider">
+              <h3 className="font-['Chakra_Petch'] font-black text-base text-ui-text uppercase tracking-wider">
                 Adicionar Vários Treinos por Período
               </h3>
-              <p className="text-[11px] font-mono text-slate-400">
+              <p className="text-[11px] font-mono text-ui-muted">
                 Gera grelha completa de treinos por período, dias da semana e horários
               </p>
             </div>

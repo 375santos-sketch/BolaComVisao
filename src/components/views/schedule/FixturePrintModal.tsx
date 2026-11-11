@@ -95,12 +95,12 @@ export const FixturePrintModal: React.FC<FixturePrintModalProps> = ({ state, onU
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-white font-['Chakra_Petch'] uppercase">📷 Importar jogos</h3>
-          <button type="button" onClick={onClose} aria-label="Fechar importar jogos" className="text-slate-400 text-lg">
+          <h3 className="text-base font-black text-ui-text font-['Chakra_Petch'] uppercase">📷 Importar jogos</h3>
+          <button type="button" onClick={onClose} aria-label="Fechar importar jogos" className="text-ui-muted text-lg">
             ✕
           </button>
         </div>
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] text-ui-muted">
           Faça um print do calendário da série (site da FPF ou da associação) e escolha-o aqui. A app lê os jogos e
           junta à Agenda só os da nossa equipa, com a data, a hora e se é em casa ou fora.
         </p>
@@ -124,7 +124,7 @@ export const FixturePrintModal: React.FC<FixturePrintModalProps> = ({ state, onU
         {fixtures && (
           <>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block text-[11px] text-slate-400">
+              <label className="block text-[11px] text-ui-muted">
                 A nossa equipa no print
                 <select
                   aria-label="A nossa equipa no print"
@@ -143,7 +143,7 @@ export const FixturePrintModal: React.FC<FixturePrintModalProps> = ({ state, onU
                   ))}
                 </select>
               </label>
-              <label className="block text-[11px] text-slate-400">
+              <label className="block text-[11px] text-ui-muted">
                 Tipo de jogo
                 <select
                   aria-label="Tipo de jogo"
@@ -159,9 +159,9 @@ export const FixturePrintModal: React.FC<FixturePrintModalProps> = ({ state, onU
             </div>
 
             {!ourAlias ? (
-              <p className="text-[11px] text-amber-300">Escolha como a nossa equipa aparece escrita no print.</p>
+              <p className="text-[11px] text-ui-warning">Escolha como a nossa equipa aparece escrita no print.</p>
             ) : drafts.length === 0 ? (
-              <p className="text-[11px] text-slate-400">Não há jogos da nossa equipa neste print.</p>
+              <p className="text-[11px] text-ui-muted">Não há jogos da nossa equipa neste print.</p>
             ) : (
               <ul aria-label="Jogos encontrados" className="space-y-1.5">
                 {drafts.map((d, i) => (
@@ -181,10 +181,10 @@ export const FixturePrintModal: React.FC<FixturePrintModalProps> = ({ state, onU
                         }}
                       />
                       <span className="flex-1 min-w-0">
-                        <span className="block text-slate-100 font-bold truncate">
+                        <span className="block text-ui-text font-bold truncate">
                           {d.location === 'casa' ? '🏠' : '✈️'} vs {d.opponent}
                         </span>
-                        <span className="block text-slate-400">
+                        <span className="block text-ui-muted">
                           {dayLabel(d.date)}
                           {d.time ? ` · ${d.time}` : ' · sem hora (fica 09:00, pode mudar depois)'}
                           {d.round ? ` · Jornada ${d.round}` : ''}

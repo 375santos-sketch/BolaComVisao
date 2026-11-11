@@ -2,7 +2,7 @@ import React from 'react';
 import { SessionBlock } from '../../../types';
 import { PHASE_LABELS, sessionPhases, sessionWarnings } from '../../../lib/sessionPhases';
 
-const COLOURS = { aquecimento: 'bg-amber-500', fundamental: 'bg-ui-brand', calma: 'bg-teal-500' } as const;
+const COLOURS = { aquecimento: 'bg-ui-warning', fundamental: 'bg-ui-brand', calma: 'bg-ui-muted' } as const;
 
 /** 🧩 The session in three parts (warm-up, main part, cool-down): minutes of each and what is missing. */
 export const SessionPhasesBar: React.FC<{ blocks: SessionBlock[] | undefined; lengthMinutes: number }> = ({

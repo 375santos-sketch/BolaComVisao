@@ -66,7 +66,14 @@ export default tseslint.config(
       'src/components/AttendanceSection.tsx',
       'src/components/BirthdaySection.tsx',
       'src/components/StaffSection.tsx',
-      'src/components/StaffHighlightSection.tsx'
+      'src/components/StaffHighlightSection.tsx',
+      // Módulo Planeamento (o leitor de PDF mostra as páginas em papel branco e fica de fora)
+      'src/components/views/ScheduleView.tsx',
+      'src/components/views/TrainingsView.tsx',
+      'src/components/views/ResultsView.tsx',
+      'src/components/views/schedule/**/*.tsx',
+      'src/components/views/trainings/!(PDFViewerModal).tsx',
+      'src/components/ui/DateTimePT.tsx'
     ],
     rules: {
       'no-restricted-syntax': [

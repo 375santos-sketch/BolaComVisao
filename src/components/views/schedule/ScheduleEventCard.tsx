@@ -70,17 +70,17 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
     return (
       <div key={ev.id} className="ui-card p-4 transition-all space-y-3">
         {/* Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-ui-line">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="text-sm font-bold text-white">
+            <div className="text-sm font-bold text-ui-text">
               {formattedDate} · {ev.time}
             </div>
 
             <span
               className={`text-[10px] font-mono px-2 py-0.5 rounded ${
                 ev.location?.includes('Casa')
-                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
-                  : 'bg-indigo-950 text-indigo-300 border border-indigo-500/40'
+                  ? 'bg-ui-success-soft text-ui-success border border-ui-success/40'
+                  : 'bg-ui-brand-soft text-ui-brand border border-ui-brand/40'
               }`}
             >
               {ev.location}
@@ -97,12 +97,12 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             )}
 
             {ev.tournamentName && (
-              <span className="text-[10px] font-mono text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30">
+              <span className="text-[10px] font-mono text-ui-warning bg-ui-warning-soft px-2 py-0.5 rounded border border-ui-warning/30">
                 🏆 {ev.tournamentName} {ev.phase ? `(${ev.phase})` : ''}
               </span>
             )}
             {!ev.tournamentName && ev.phase && (
-              <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">
+              <span className="text-[10px] font-mono text-ui-brand bg-ui-brand-soft px-2 py-0.5 rounded border border-ui-brand/30">
                 🏆 {ev.phase}
               </span>
             )}
@@ -183,20 +183,20 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             if (s) handleEditMatch(s);
             else if (m) onNavigate('jogos', m.id);
           }}
-          className="flex items-center justify-between gap-2 flex-wrap cursor-pointer group p-1.5 -m-1.5 rounded-xl hover:bg-slate-800/50 transition-colors"
+          className="flex items-center justify-between gap-2 flex-wrap cursor-pointer group p-1.5 -m-1.5 rounded-xl hover:bg-ui-surface-2/50 transition-colors"
           title={s ? 'Clica para abrir / editar os dados do jogo' : 'Clica para ver o relatório do jogo'}
         >
-          <div className="text-base font-black text-white font-['Chakra_Petch'] flex items-center gap-2">
-            <span className="text-cyan-400 font-mono text-xs">VS</span>
-            <span className="text-amber-300 text-lg group-hover:text-cyan-300 transition-colors flex items-center gap-1.5">
+          <div className="text-base font-black text-ui-text font-['Chakra_Petch'] flex items-center gap-2">
+            <span className="text-ui-brand font-mono text-xs">VS</span>
+            <span className="text-ui-warning text-lg group-hover:text-ui-brand transition-colors flex items-center gap-1.5">
               {s ? s.opponent : m?.opponent}
-              <span className="text-xs text-cyan-400 opacity-60 group-hover:opacity-100">↗</span>
+              <span className="text-xs text-ui-brand opacity-60 group-hover:opacity-100">↗</span>
             </span>
           </div>
 
           {s ? (
-            <span className="text-xs font-mono text-slate-300">
-              📋 <strong className="text-cyan-300">{ev.callupCount || 0}</strong> convocados
+            <span className="text-xs font-mono text-ui-text">
+              📋 <strong className="text-ui-brand">{ev.callupCount || 0}</strong> convocados
             </span>
           ) : m ? (
             <div className="flex items-center gap-2">
@@ -231,7 +231,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
         {/* Connected Strategic Sub-Actions */}
         {s && (
-          <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-800/80">
+          <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-ui-line/80">
             <button
               type="button"
               onClick={() => handleEditMatch(s)}
@@ -253,8 +253,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                     onClick={() => onNavigate('prejogo', s.id)}
                     className={`px-3 py-1.5 rounded-xl font-semibold text-xs flex items-center gap-1 transition-all ${
                       isPreMatchFin
-                        ? 'bg-emerald-950/90 border border-emerald-500/60 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.25)]'
-                        : 'bg-cyan-950/80 border border-cyan-500/50 hover:bg-cyan-900 text-cyan-300'
+                        ? 'bg-ui-success-soft border border-ui-success/60 text-ui-success shadow-[0_0_8px_rgba(16,185,129,0.25)]'
+                        : 'bg-ui-brand-soft border border-ui-brand/50 hover:bg-ui-brand-soft text-ui-brand'
                     }`}
                     title={isPreMatchFin ? 'Plano Pré-Jogo Finalizado' : 'Abrir Plano Pré-Jogo'}
                   >
@@ -267,8 +267,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                     onClick={() => onNavigate('convocatoria', s.id)}
                     className={`px-3 py-1.5 rounded-xl font-semibold text-xs flex items-center gap-1 transition-all ${
                       isCallupFin
-                        ? 'bg-emerald-950/90 border border-emerald-500/60 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.25)]'
-                        : 'bg-slate-950 border border-slate-700 hover:border-slate-500 text-slate-200'
+                        ? 'bg-ui-success-soft border border-ui-success/60 text-ui-success shadow-[0_0_8px_rgba(16,185,129,0.25)]'
+                        : 'bg-ui-inset border border-ui-line-strong hover:border-ui-line-strong text-ui-text'
                     }`}
                     title={isCallupFin ? 'Convocatória Finalizada' : 'Abrir Convocatória'}
                   >
@@ -316,14 +316,14 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
     return (
       <div key={ev.id} className="ui-card p-4 transition-all space-y-3">
         {/* Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-ui-line">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="px-2.5 py-0.5 rounded-lg bg-orange-950 text-orange-300 border border-orange-500/50 text-[10px] font-mono font-bold flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-lg bg-ui-warning-soft text-ui-warning border border-ui-warning/50 text-[10px] font-mono font-bold flex items-center gap-1">
               <span>🚫</span>
               <span>Indisponível (equipa técnica)</span>
             </span>
 
-            <div className="text-sm font-black font-['Chakra_Petch'] text-orange-300">
+            <div className="text-sm font-black font-['Chakra_Petch'] text-ui-warning">
               📅 {formattedDate}
               {formattedEndDate ? ` até ${formattedEndDate}` : ''}
             </div>
@@ -360,19 +360,19 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
         {/* Member Name */}
         <div
           onClick={() => u && handleEditStaff(u)}
-          className="flex items-center justify-between gap-2 flex-wrap cursor-pointer group p-1.5 -m-1.5 rounded-xl hover:bg-slate-800/50 transition-colors"
+          className="flex items-center justify-between gap-2 flex-wrap cursor-pointer group p-1.5 -m-1.5 rounded-xl hover:bg-ui-surface-2/50 transition-colors"
           title="Clica para abrir / editar a indisponibilidade"
         >
-          <div className="text-base font-black text-white font-['Chakra_Petch'] flex items-center gap-2">
-            <span className="text-orange-400 font-mono text-sm">👤</span>
-            <span className="text-orange-200 text-lg group-hover:text-orange-300 transition-colors flex items-center gap-1.5">
+          <div className="text-base font-black text-ui-text font-['Chakra_Petch'] flex items-center gap-2">
+            <span className="text-ui-warning font-mono text-sm">👤</span>
+            <span className="text-ui-warning text-lg group-hover:text-ui-warning transition-colors flex items-center gap-1.5">
               {ev.staffName || ev.title}
-              <span className="text-xs text-orange-400 opacity-60 group-hover:opacity-100">↗</span>
+              <span className="text-xs text-ui-warning opacity-60 group-hover:opacity-100">↗</span>
             </span>
           </div>
 
           {u?.reason && (
-            <span className="text-xs font-mono text-slate-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+            <span className="text-xs font-mono text-ui-muted bg-ui-inset px-2.5 py-1 rounded-lg border border-ui-line">
               💬 {u.reason}
             </span>
           )}
@@ -380,7 +380,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
         {/* Sub actions */}
         {u && (
-          <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-800/80">
+          <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-ui-line/80">
             <button
               type="button"
               onClick={() => handleEditStaff(u)}
@@ -437,12 +437,12 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
         key={ev.id}
         className={`p-4 rounded-2xl border transition-all shadow-md space-y-3 ${
           isEventCompleted
-            ? 'bg-slate-900/95 border-emerald-500/50 hover:border-emerald-400'
-            : 'bg-slate-900/90 border-purple-500/40 hover:border-purple-400'
+            ? 'bg-ui-surface/95 border-ui-success/50 hover:border-ui-success'
+            : 'bg-ui-surface/90 border-ui-brand/40 hover:border-ui-brand'
         }`}
       >
         {/* Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-ui-line">
           <div className="flex items-center gap-2.5 flex-wrap">
             {/* Interactive Status Switch (Agendado vs Concluído) */}
             {c && handleToggleClubEventStatus && (
@@ -454,8 +454,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   }}
                   className={`px-2.5 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1 ${
                     !isEventCompleted
-                      ? 'bg-amber-500 text-slate-950 shadow-[0_0_10px_rgba(245,158,11,0.4)]'
-                      : 'text-slate-400 hover:text-amber-300'
+                      ? 'bg-ui-warning text-ui-brand-ink shadow-[0_0_10px_rgba(245,158,11,0.4)]'
+                      : 'text-ui-muted hover:text-ui-warning'
                   }`}
                 >
                   <span>🟡</span>
@@ -469,8 +469,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   }}
                   className={`px-2.5 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1 ${
                     isEventCompleted
-                      ? 'bg-emerald-500 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
-                      : 'text-slate-400 hover:text-emerald-300'
+                      ? 'bg-ui-success text-ui-brand-ink shadow-[0_0_10px_rgba(16,185,129,0.4)]'
+                      : 'text-ui-muted hover:text-ui-success'
                   }`}
                 >
                   <span>🟢</span>
@@ -482,19 +482,19 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             <span
               className={`px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1 ${
                 isEventCompleted
-                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50'
-                  : 'bg-purple-950 text-purple-300 border border-purple-500/50'
+                  ? 'bg-ui-success-soft text-ui-success border border-ui-success/50'
+                  : 'bg-ui-brand-soft text-ui-brand border border-ui-brand/50'
               }`}
             >
               <span>{typeIcon}</span>
               <span>{typeLabel}</span>
             </span>
 
-            <div className="text-sm font-black font-['Chakra_Petch'] text-purple-300">
+            <div className="text-sm font-black font-['Chakra_Petch'] text-ui-brand">
               📅 {formattedDate}
               {formattedEndDate ? ` até ${formattedEndDate}` : ''}
               {c?.time && (
-                <span className="text-white ml-2">
+                <span className="text-ui-text ml-2">
                   ⏰ {c.time}h{c.endTime ? ` - ${c.endTime}h` : ''}
                 </span>
               )}
@@ -510,8 +510,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
                   onClick={() => handleToggleClubEventStatus(c.id, isEventCompleted)}
                   className={`px-3 py-1.5 rounded-xl font-semibold text-xs transition-all flex items-center gap-1 ${
                     !isEventCompleted
-                      ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
-                      : 'bg-amber-950 hover:bg-amber-900 border border-amber-500/50 text-amber-300'
+                      ? 'bg-ui-success hover:bg-ui-success text-ui-brand-ink shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                      : 'bg-ui-warning-soft hover:bg-ui-warning-soft border border-ui-warning/50 text-ui-warning'
                   }`}
                 >
                   <span>{!isEventCompleted ? `✓ Concluir ${singleNoun}` : '↩ Reabrir'}</span>
@@ -547,22 +547,20 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
         {/* Title & Metadata Badges */}
         <div
           onClick={() => c && handleEditClubEvent(c)}
-          className="space-y-2 cursor-pointer group p-1.5 -m-1.5 rounded-xl hover:bg-slate-800/50 transition-colors"
+          className="space-y-2 cursor-pointer group p-1.5 -m-1.5 rounded-xl hover:bg-ui-surface-2/50 transition-colors"
           title="Clica para abrir / editar a reunião ou formação"
         >
-          <div className="text-base font-black text-white font-['Chakra_Petch'] flex items-center gap-2">
+          <div className="text-base font-black text-ui-text font-['Chakra_Petch'] flex items-center gap-2">
             <span
               className={`text-lg transition-colors flex items-center gap-1.5 ${
-                isEventCompleted
-                  ? 'text-emerald-300 line-through opacity-85'
-                  : 'text-purple-300 group-hover:text-purple-200'
+                isEventCompleted ? 'text-ui-success line-through opacity-85' : 'text-ui-brand group-hover:text-ui-brand'
               }`}
             >
               {c?.title || ev.title}
-              <span className="text-xs text-purple-400 opacity-60 group-hover:opacity-100">↗</span>
+              <span className="text-xs text-ui-brand opacity-60 group-hover:opacity-100">↗</span>
             </span>
             {isEventCompleted && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-ui-success/20 text-ui-success border border-ui-success/40">
                 ✓ Concluído
               </span>
             )}
@@ -570,13 +568,13 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
           <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
             {c?.location && (
-              <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 flex items-center gap-1">
+              <span className="px-2.5 py-1 rounded-lg bg-ui-inset border border-ui-line text-ui-text flex items-center gap-1">
                 <span>📍</span>
                 <span>{c.location}</span>
               </span>
             )}
             {c?.attendees && (
-              <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-purple-300 flex items-center gap-1">
+              <span className="px-2.5 py-1 rounded-lg bg-ui-inset border border-ui-line text-ui-brand flex items-center gap-1">
                 <span>👥</span>
                 <span>Destinatários: {c.attendees}</span>
               </span>
@@ -584,8 +582,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           </div>
 
           {c?.notes && (
-            <div className="ui-inset p-3 text-xs font-mono text-slate-300 whitespace-pre-wrap">
-              <div className="text-[10px] uppercase text-purple-400 font-bold mb-1">📋 Ordem de Trabalhos / Notas:</div>
+            <div className="ui-inset p-3 text-xs font-mono text-ui-text whitespace-pre-wrap">
+              <div className="text-[10px] uppercase text-ui-brand font-bold mb-1">📋 Ordem de Trabalhos / Notas:</div>
               {c.notes}
             </div>
           )}
@@ -593,15 +591,15 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
         {/* Sub action */}
         {c && (
-          <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-800/80">
+          <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-ui-line/80">
             {handleToggleClubEventStatus && (
               <button
                 type="button"
                 onClick={() => handleToggleClubEventStatus(c.id, isEventCompleted)}
                 className={`px-3 py-1.5 rounded-xl font-semibold text-xs flex items-center gap-1 transition-all ${
                   !isEventCompleted
-                    ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black'
-                    : 'bg-slate-950 border border-amber-500/50 hover:bg-amber-950 text-amber-300'
+                    ? 'bg-ui-success hover:bg-ui-success text-ui-brand-ink font-black'
+                    : 'bg-ui-inset border border-ui-warning/50 hover:bg-ui-warning-soft text-ui-warning'
                 }`}
               >
                 <span>{!isEventCompleted ? '✓ Concluído' : '↩ Reabrir Compromisso'}</span>
@@ -645,12 +643,12 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
       key={ev.id}
       className={`p-4 rounded-2xl border transition-all shadow-md space-y-3 ${
         ev.isCompleted
-          ? 'bg-slate-900/90 border-emerald-500/40 hover:border-emerald-400'
-          : 'bg-slate-900/90 border-amber-500/30 hover:border-amber-400'
+          ? 'bg-ui-surface/90 border-ui-success/40 hover:border-ui-success'
+          : 'bg-ui-surface/90 border-ui-warning/30 hover:border-ui-warning'
       }`}
     >
       {/* Header Row: Status Switcher & Time */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-ui-line">
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Interactive Status Switch */}
           <div className="ui-inset inline-flex p-0.5">
@@ -661,8 +659,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               }}
               className={`px-2.5 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1 ${
                 !tr.completed
-                  ? 'bg-amber-500 text-slate-950 shadow-[0_0_10px_rgba(245,158,11,0.4)]'
-                  : 'text-slate-400 hover:text-amber-300'
+                  ? 'bg-ui-warning text-ui-brand-ink shadow-[0_0_10px_rgba(245,158,11,0.4)]'
+                  : 'text-ui-muted hover:text-ui-warning'
               }`}
             >
               <span>🟡</span>
@@ -676,8 +674,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
               }}
               className={`px-2.5 py-1 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1 ${
                 tr.completed
-                  ? 'bg-emerald-500 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
-                  : 'text-slate-400 hover:text-emerald-300'
+                  ? 'bg-ui-success text-ui-brand-ink shadow-[0_0_10px_rgba(16,185,129,0.4)]'
+                  : 'text-ui-muted hover:text-ui-success'
               }`}
             >
               <span>🟢</span>
@@ -685,16 +683,16 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             </button>
           </div>
 
-          <div className="text-sm font-black font-['Chakra_Petch'] text-cyan-300">
+          <div className="text-sm font-black font-['Chakra_Petch'] text-ui-brand">
             📅 {formattedDate} às {ev.time}h
           </div>
           {!tr.completed && <WeatherBadge date={tr.date} time={tr.time} places={[clubTown, tr.location || '']} />}
 
-          <span className="text-xs font-mono text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/30">
+          <span className="text-xs font-mono text-ui-warning bg-ui-warning-soft px-2 py-0.5 rounded border border-ui-warning/30">
             {ev.trainingType}
           </span>
 
-          {tr.location && <span className="text-xs font-mono text-slate-300">📍 {tr.location}</span>}
+          {tr.location && <span className="text-xs font-mono text-ui-text">📍 {tr.location}</span>}
         </div>
 
         {/* Quick Actions for Training */}
@@ -704,8 +702,8 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             onClick={() => handleToggleTrainingStatus(tr.id, tr.completed === true)}
             className={`px-3 py-1.5 rounded-xl font-semibold text-xs transition-all flex items-center gap-1 ${
               !tr.completed
-                ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
-                : 'bg-amber-950 hover:bg-amber-900 border border-amber-500/50 text-amber-300'
+                ? 'bg-ui-success hover:bg-ui-success text-ui-brand-ink shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                : 'bg-ui-warning-soft hover:bg-ui-warning-soft border border-ui-warning/50 text-ui-warning'
             }`}
           >
             <span>{!tr.completed ? '✓ Concluir Treino' : '↩ Reabrir'}</span>
@@ -738,18 +736,18 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
       {/* Presence & Interactive Title */}
       <div
         onClick={() => handleEditTraining(tr)}
-        className="flex items-center justify-between text-xs font-mono text-slate-300 cursor-pointer group p-1.5 -m-1.5 rounded-xl hover:bg-slate-800/50 transition-colors"
+        className="flex items-center justify-between text-xs font-mono text-ui-text cursor-pointer group p-1.5 -m-1.5 rounded-xl hover:bg-ui-surface-2/50 transition-colors"
         title="Clica para abrir o treino, presenças e exercícios"
       >
         <div className="flex items-center gap-2">
-          <span className="text-amber-400 font-bold group-hover:text-amber-300 transition-colors flex items-center gap-1">
+          <span className="text-ui-warning font-bold group-hover:text-ui-warning transition-colors flex items-center gap-1">
             ⚡ {ev.title}
-            <span className="text-xs text-amber-400 opacity-60 group-hover:opacity-100">↗</span>
+            <span className="text-xs text-ui-warning opacity-60 group-hover:opacity-100">↗</span>
           </span>
           <span>·</span>
           <span>
-            👥 <strong className="text-emerald-400">{ev.presencesCount}</strong> presentes ·{' '}
-            <strong className="text-red-400">{ev.absencesCount}</strong> faltas
+            👥 <strong className="text-ui-success">{ev.presencesCount}</strong> presentes ·{' '}
+            <strong className="text-ui-danger">{ev.absencesCount}</strong> faltas
           </span>
         </div>
 
@@ -759,14 +757,14 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
             e.stopPropagation();
             toggleExpand();
           }}
-          className="text-cyan-400 hover:text-cyan-300 font-bold underline text-xs"
+          className="text-ui-brand hover:text-ui-brand font-bold underline text-xs"
         >
           {isExpanded ? 'Ocultar Notas ▲' : 'Ver Notas & Objetivos ▼'}
         </button>
       </div>
 
       {/* Sub Action Buttons */}
-      <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-800/80">
+      <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-ui-line/80">
         <button
           type="button"
           onClick={() => handleEditTraining(tr)}
@@ -804,14 +802,14 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
       {/* Expanded Drawer for Training Notes */}
       {isExpanded && (
-        <div className="mt-3 pt-3 border-t border-slate-800 text-xs space-y-2">
+        <div className="mt-3 pt-3 border-t border-ui-line text-xs space-y-2">
           {tr.notes ? (
-            <div className="ui-inset p-3 text-slate-300 font-mono leading-relaxed">
-              <span className="text-cyan-400 font-bold block mb-1">📝 Objetivos & Exercícios:</span>
+            <div className="ui-inset p-3 text-ui-text font-mono leading-relaxed">
+              <span className="text-ui-brand font-bold block mb-1">📝 Objetivos & Exercícios:</span>
               {tr.notes}
             </div>
           ) : (
-            <div className="text-slate-500 italic font-mono text-[11px]">
+            <div className="text-ui-muted italic font-mono text-[11px]">
               Sem notas registadas. Clica em "Abrir / Editar Treino" para adicionar plano de sessão.
             </div>
           )}

@@ -1,36 +1,34 @@
 import React from 'react';
 import { Icon, IconName } from '../../ui/Icon';
 
-type AgendaTab = 'calendario' | 'treinos' | 'jogos';
+type PlanningTab = 'calendario' | 'treinos' | 'epoca';
 
-const TABS: { tab: AgendaTab; label: string; icon: IconName }[] = [
+const TABS: { tab: PlanningTab; label: string; icon: IconName }[] = [
   { tab: 'calendario', label: 'Agenda', icon: 'calendar' },
-  { tab: 'treinos', label: 'Treinos', icon: 'zap' },
-  { tab: 'jogos', label: 'Resultados', icon: 'trophy' }
+  { tab: 'treinos', label: 'Treinos', icon: 'whistle' },
+  { tab: 'epoca', label: 'Época', icon: 'chart' }
 ];
 
-/** Agenda · Treinos · Resultados, at the top of each of the three screens. */
-export const AgendaTabs: React.FC<{ current: AgendaTab; onNavigate: (tab: any) => void; className?: string }> = ({
+/** Planeamento: Agenda · Treinos · Época, at the top of each of the three screens. */
+export const AgendaTabs: React.FC<{ current: PlanningTab; onNavigate: (tab: any) => void; className?: string }> = ({
   current,
   onNavigate,
   className = ''
 }) => (
-  <div className={`ui-card grid grid-cols-3 gap-1 p-1 text-[13px] font-semibold ${className}`}>
+  <nav aria-label="Planeamento" className={`ui-card grid grid-cols-3 gap-1 p-1 ${className}`}>
     {TABS.map(({ tab, label, icon }) => (
       <button
         key={tab}
         type="button"
         aria-current={tab === current ? 'page' : undefined}
         onClick={() => tab !== current && onNavigate(tab)}
-        className={
-          tab === current
-            ? 'ui-btn ui-btn-primary py-2 px-1 flex items-center justify-center gap-1.5'
-            : 'py-2 px-1 rounded-xl text-slate-400 hover:text-white hover:bg-slate-950/60 flex items-center justify-center gap-1.5 transition-all'
-        }
+        className={`flex min-h-[40px] items-center justify-center gap-1.5 rounded-ui-sm px-1 py-2 text-ui-body font-bold transition-colors ${
+          tab === current ? 'bg-ui-brand-soft text-ui-brand' : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
+        }`}
       >
-        <Icon name={icon} className="w-4 h-4" />
+        <Icon name={icon} className="h-4 w-4" />
         <span>{label}</span>
       </button>
     ))}
-  </div>
+  </nav>
 );
