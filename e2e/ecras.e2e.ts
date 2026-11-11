@@ -894,7 +894,7 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
   await page.locator('[data-training-row]').first().click();
   await page.getByRole('button', { name: /Duplicar/ }).click();
   await expect(page.getByText(/Cópia do treino aberta/)).toBeVisible();
-  await expect(page.getByText(/Novo Treino/).first()).toBeVisible();
+  await expect(page.getByText(/Novo treino/).first()).toBeVisible();
 
   await expect
     .poll(
