@@ -13,22 +13,22 @@ interface StaffHighlightSectionProps {
 const ROLE_BADGES: Record<string, { icon: string; badgeClass: string; order: number }> = {
   'Treinador Principal': {
     icon: '👔',
-    badgeClass: 'bg-amber-950/90 text-amber-300 border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.25)]',
+    badgeClass: 'bg-ui-warning-soft text-ui-warning border-ui-warning/60 shadow-[0_0_10px_rgba(245,158,11,0.25)]',
     order: 1
   },
   'Treinador Adjunto': {
     icon: '📋',
-    badgeClass: 'bg-cyan-950/90 text-cyan-300 border-cyan-500/60 shadow-[0_0_10px_rgba(0,210,255,0.25)]',
+    badgeClass: 'bg-ui-brand-soft text-ui-brand border-ui-brand/60 shadow-[0_0_10px_rgba(0,210,255,0.25)]',
     order: 2
   },
   'Treinador de Guarda-Redes': {
     icon: '🧤',
-    badgeClass: 'bg-emerald-950/90 text-emerald-300 border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.25)]',
+    badgeClass: 'bg-ui-success-soft text-ui-success border-ui-success/60 shadow-[0_0_10px_rgba(16,185,129,0.25)]',
     order: 3
   },
   Diretor: {
     icon: '💼',
-    badgeClass: 'bg-purple-950/90 text-purple-300 border-purple-500/60 shadow-[0_0_10px_rgba(168,85,247,0.25)]',
+    badgeClass: 'bg-ui-brand-soft text-ui-brand border-ui-brand/60 shadow-[0_0_10px_rgba(168,85,247,0.25)]',
     order: 4
   }
 };
@@ -71,22 +71,22 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
   };
 
   const getRoleBadgeClass = (roleName: string) => {
-    return ROLE_BADGES[roleName]?.badgeClass || 'bg-slate-900 text-slate-300 border-slate-700';
+    return ROLE_BADGES[roleName]?.badgeClass || 'bg-ui-surface text-ui-text border-ui-line-strong';
   };
 
   return (
-    <div className="mt-8 pt-6 border-t-2 border-cyan-500/30 text-left">
+    <div className="mt-8 pt-6 border-t-2 border-ui-brand/30 text-left">
       {/* Highlight Header */}
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-bold text-lg">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-ui-brand to-ui-brand flex items-center justify-center text-ui-brand-ink font-bold text-lg">
             👔
           </div>
           <div>
-            <h2 className="text-base sm:text-lg font-black font-['Chakra_Petch'] uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-cyan-400">
+            <h2 className="text-base sm:text-lg font-black font-['Chakra_Petch'] uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-ui-line-strong via-ui-brand to-ui-brand">
               EQUIPA TÉCNICA
             </h2>
-            <div className="text-[11px] font-mono text-cyan-400/80">
+            <div className="text-[11px] font-mono text-ui-brand/80">
               Quadro Técnico & Liderança • {state.category || 'Sub-19'} {state.season || defaultSeason()}
             </div>
           </div>
@@ -108,7 +108,7 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
               setStaffToEdit(null);
               setIsModalOpen(true);
             }}
-            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase hover:brightness-110 active:scale-95 transition-all"
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand text-ui-brand-ink font-['Chakra_Petch'] font-bold text-xs uppercase hover:brightness-110 active:scale-95 transition-all"
           >
             + Adicionar
           </button>
@@ -143,7 +143,7 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
 
               {/* Name & Role */}
               <div className="min-w-0 flex-1">
-                <h4 className="font-['Chakra_Petch'] font-bold text-sm text-white group-hover:text-cyan-300 transition-colors truncate">
+                <h4 className="font-['Chakra_Petch'] font-bold text-sm text-ui-text group-hover:text-ui-brand transition-colors truncate">
                   {staff.name}
                 </h4>
                 <div className="mt-1">
@@ -154,7 +154,7 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
                     <span className="truncate">{staff.role}</span>
                   </span>
                 </div>
-                {staff.bio && <p className="text-[10px] font-mono text-slate-400 truncate mt-1">{staff.bio}</p>}
+                {staff.bio && <p className="text-[10px] font-mono text-ui-muted truncate mt-1">{staff.bio}</p>}
               </div>
             </div>
           ))}
@@ -164,10 +164,10 @@ export const StaffHighlightSection: React.FC<StaffHighlightSectionProps> = ({
           <div className="flex items-center gap-3 text-left">
             <span className="text-2xl">👔</span>
             <div>
-              <p className="text-xs font-bold text-white font-['Chakra_Petch'] uppercase">
+              <p className="text-xs font-bold text-ui-text font-['Chakra_Petch'] uppercase">
                 Ainda não foram inseridos elementos na Equipa Técnica
               </p>
-              <p className="text-[11px] font-mono text-slate-400">
+              <p className="text-[11px] font-mono text-ui-muted">
                 Regista o Treinador Principal, Treinador Adjunto, Treinador de Guarda-Redes e Diretor.
               </p>
             </div>

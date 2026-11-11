@@ -42,10 +42,12 @@ interface StatsPanelProps {
   onShowToast?: (msg: string) => void;
   /** Opens on one athlete (from the athlete's sheet); otherwise on the team. */
   initialPlayerId?: string;
+  /** Drawn inside the page (the athlete's sheet) instead of in a window on top. */
+  inline?: boolean;
 }
 
 /** Interactive statistics panel: team or athlete, by game, head-to-head, phase, season or any period. */
-export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowToast, initialPlayerId }) => {
+export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowToast, initialPlayerId, inline }) => {
   const options = useMemo(() => panelOptions(state.matches || [], state.season), [state.matches, state.season]);
   const [playerId, setPlayerId] = useState<string>(initialPlayerId || '');
   const [filter, setFilter] = useState<PanelFilter>({ scope: 'epoca', season: state.season });
@@ -86,11 +88,15 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
   const select = 'w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white';
 
   return (
-    <div className="ui-overlay fixed inset-0 z-[100000] flex items-end sm:items-center justify-center">
+    <div className={inline ? '' : 'ui-overlay fixed inset-0 z-[100000] flex items-end sm:items-center justify-center'}>
       <div
-        role="dialog"
+        role={inline ? 'region' : 'dialog'}
         aria-label="Painel de estatísticas"
-        className="w-full max-w-3xl max-h-[96dvh] overflow-y-auto bg-slate-900 border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-4 text-left"
+        className={
+          inline
+            ? 'ui-card w-full p-4 space-y-4 text-left'
+            : 'w-full max-w-3xl max-h-[96dvh] overflow-y-auto bg-slate-900 border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-4 text-left'
+        }
       >
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-base font-bold text-white font-['Chakra_Petch'] uppercase tracking-wide">

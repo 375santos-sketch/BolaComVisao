@@ -103,3 +103,18 @@ export function toggledGoal(player: Player, id: string, today: string): Player {
 export function withoutGoal(player: Player, id: string): Player {
   return { ...player, individualGoals: (player.individualGoals || []).filter((g) => g.id !== id) };
 }
+
+/**
+ * Strengths and points to improve of an evaluation: the areas with the highest and the lowest score of that
+ * evaluation (ties all listed). When every area has the same score there is nothing to single out.
+ */
+export function strengthsOf(e: PlayerEvaluation): {
+  strong: { key: EvaluationArea; label: string; score: number }[];
+  improve: { key: EvaluationArea; label: string; score: number }[];
+} {
+  const rows = EVALUATION_AREAS.map((a) => ({ key: a.key, label: a.short, score: e.scores[a.key] }));
+  const max = Math.max(...rows.map((r) => r.score));
+  const min = Math.min(...rows.map((r) => r.score));
+  if (max === min) return { strong: [], improve: [] };
+  return { strong: rows.filter((r) => r.score === max), improve: rows.filter((r) => r.score === min) };
+}

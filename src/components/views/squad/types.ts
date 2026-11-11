@@ -1,4 +1,5 @@
 import { PlayerStatus } from '../../../types';
+import { getPositionRank } from '../../../lib/utils';
 
 interface PositionGroup {
   id: string;
@@ -66,3 +67,9 @@ export type SquadTab = 'jogadores' | 'assiduidade' | 'testes' | 'equipa_tecnica'
 export type SquadViewMode = 'lista' | 'grelha';
 export type SquadSortBy = 'posicao' | 'numero' | 'nome';
 export type SquadSortDirection = 'asc' | 'desc';
+
+/** The sector of an athlete's position (the id of its POSITION_GROUPS entry: gr, def, med, ata or outros). */
+export function sectorOf(positions: string | undefined): string {
+  const rank = getPositionRank(positions);
+  return POSITION_GROUPS.find((g) => g.id !== 'outros' && g.ranks.includes(rank))?.id || 'outros';
+}

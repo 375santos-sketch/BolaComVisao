@@ -72,27 +72,22 @@ const TestTool: React.FC<{
       >
         <div className="flex items-center justify-between text-left">
           <div>
-            <h3 className="text-base font-bold text-white">
+            <h3 className="text-base font-bold text-ui-text">
               {test.emoji} {test.name}
             </h3>
-            <p className="text-xs text-slate-400">{player.name}</p>
+            <p className="text-xs text-ui-muted">{player.name}</p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fechar cronómetro"
-            className="text-slate-400 text-lg px-1"
-          >
+          <button type="button" onClick={onClose} aria-label="Fechar cronómetro" className="text-ui-muted text-lg px-1">
             ✕
           </button>
         </div>
 
         {counting ? (
           <>
-            <div className="text-[11px] font-bold tracking-wide text-slate-400">
+            <div className="text-[11px] font-bold tracking-wide text-ui-muted">
               {startedAt === null ? 'PRONTO?' : 'FALTAM'}
             </div>
-            <div className="text-6xl font-bold text-white font-['Chakra_Petch']" aria-live="polite">
+            <div className="text-6xl font-bold text-ui-text font-['Chakra_Petch']" aria-live="polite">
               0:{String(Math.ceil(startedAt === null ? COUNT_SECONDS : left)).padStart(2, '0')}
             </div>
             {startedAt === null ? (
@@ -105,21 +100,21 @@ const TestTool: React.FC<{
                 disabled={timeUp}
                 onClick={() => setCount((c) => c + 1)}
                 aria-label="Mais um"
-                className="mx-auto grid h-40 w-40 place-items-center rounded-full bg-emerald-600 text-5xl font-bold text-white font-['Chakra_Petch'] shadow-[0_0_0_10px_rgba(22,163,74,0.2)] active:scale-95 disabled:opacity-50"
+                className="mx-auto grid h-40 w-40 place-items-center rounded-full bg-ui-success text-5xl font-bold text-ui-text font-['Chakra_Petch'] shadow-[0_0_0_10px_rgba(22,163,74,0.2)] active:scale-95 disabled:opacity-50"
               >
                 +1
               </button>
             )}
-            <div className="text-2xl font-bold text-white font-['Chakra_Petch']" aria-label="Contagem">
+            <div className="text-2xl font-bold text-ui-text font-['Chakra_Petch']" aria-label="Contagem">
               {count} {test.id === 'toques30' ? 'toques' : 'passes'}
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-ui-muted">
               {timeUp ? '✓ Guardado.' : 'Toque no botão verde a cada um. Aos 30 s para e grava sozinho.'}
             </p>
           </>
         ) : (
           <>
-            <div className="text-6xl font-bold text-white font-['Chakra_Petch']" aria-label="Tempo">
+            <div className="text-6xl font-bold text-ui-text font-['Chakra_Petch']" aria-label="Tempo">
               {elapsed.toFixed(2).replace('.', ',')} s
             </div>
             {startedAt === null || result !== null ? (
@@ -146,11 +141,11 @@ const TestTool: React.FC<{
               </button>
             )}
             {result !== null && result < test.min ? (
-              <p role="alert" className="text-[11px] text-amber-300">
+              <p role="alert" className="text-[11px] text-ui-warning">
                 Tempo demasiado curto para este teste: repita.
               </p>
             ) : (
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-ui-muted">
                 Toque em "Partida" ao "Já!" e em "Chegou" quando passa a linha.
               </p>
             )}
@@ -211,7 +206,7 @@ const FitnessTestsSection: React.FC<FitnessTestsSectionProps> = ({ state, onUpda
     <section aria-label="Testes" className="space-y-3">
       <div className="ui-card p-3.5 space-y-2.5">
         <div>
-          <div className="text-[11px] font-bold text-slate-400">MOMENTO · ÉPOCA {season}</div>
+          <div className="text-[11px] font-bold text-ui-muted">MOMENTO · ÉPOCA {season}</div>
           <div role="group" aria-label="Momento" className="mt-1.5 flex gap-1.5">
             {ROUNDS.map((r) => {
               const any = players.some((p) => p.fitnessTests?.[roundKey(season, r.id)]);
@@ -222,7 +217,7 @@ const FitnessTestsSection: React.FC<FitnessTestsSectionProps> = ({ state, onUpda
                   aria-pressed={round === r.id}
                   onClick={() => setRound(r.id)}
                   className={`rounded-full border px-3 py-1.5 text-xs font-bold ${
-                    round === r.id ? 'border-cyan-500 bg-cyan-600 text-white' : 'border-slate-700 text-slate-300'
+                    round === r.id ? 'border-ui-brand bg-ui-brand text-ui-text' : 'border-ui-line-strong text-ui-text'
                   }`}
                 >
                   {r.label}
@@ -233,7 +228,7 @@ const FitnessTestsSection: React.FC<FitnessTestsSectionProps> = ({ state, onUpda
           </div>
         </div>
         <div>
-          <div className="text-[11px] font-bold text-slate-400">TESTE</div>
+          <div className="text-[11px] font-bold text-ui-muted">TESTE</div>
           <div role="group" aria-label="Teste" className="mt-1.5 flex flex-wrap gap-1.5">
             {FITNESS_TESTS.map((t) => (
               <button
@@ -245,7 +240,7 @@ const FitnessTestsSection: React.FC<FitnessTestsSectionProps> = ({ state, onUpda
                   setDrafts({});
                 }}
                 className={`rounded-full border px-3 py-1.5 text-xs font-bold ${
-                  testId === t.id ? 'border-cyan-500 bg-cyan-600 text-white' : 'border-slate-700 text-slate-300'
+                  testId === t.id ? 'border-ui-brand bg-ui-brand text-ui-text' : 'border-ui-line-strong text-ui-text'
                 }`}
               >
                 {t.emoji} {t.name}
@@ -253,13 +248,13 @@ const FitnessTestsSection: React.FC<FitnessTestsSectionProps> = ({ state, onUpda
             ))}
           </div>
         </div>
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] text-ui-muted">
           {test.how} {test.lowerIsBetter ? 'Menos é melhor.' : 'Mais é melhor.'}
           {earlier.length ? ` À esquerda: ${earlier[0].label.toLowerCase()}.` : ''}
         </p>
       </div>
 
-      <ul className="ui-card divide-y divide-slate-800" aria-label={`Resultados de ${test.name}`}>
+      <ul className="ui-card divide-y divide-ui-line" aria-label={`Resultados de ${test.name}`}>
         {players.map((p) => {
           const value = p.fitnessTests?.[key]?.[testId];
           const prevRound = earlier.find((r) => p.fitnessTests?.[roundKey(season, r.id)]?.[testId] !== undefined);
@@ -267,11 +262,11 @@ const FitnessTestsSection: React.FC<FitnessTestsSectionProps> = ({ state, onUpda
           const text = drafts[p.id] ?? (value !== undefined ? formatResult(test, value).replace(/ (s|cm)$/, '') : '');
           return (
             <li key={p.id} className="flex items-center gap-2.5 px-3 py-2">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-slate-800 text-sm font-bold text-white font-['Chakra_Petch']">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-ui-surface-2 text-sm font-bold text-ui-text font-['Chakra_Petch']">
                 {p.number ?? '–'}
               </span>
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-white">{p.name}</span>
-              <span className="w-14 shrink-0 text-right text-[11px] text-slate-500">
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ui-text">{p.name}</span>
+              <span className="w-14 shrink-0 text-right text-[11px] text-ui-muted">
                 {prev !== undefined ? `${prevRound!.short} ${formatResult(test, prev).replace(/ (s|cm)$/, '')}` : ''}
               </span>
               <input
@@ -298,7 +293,7 @@ const FitnessTestsSection: React.FC<FitnessTestsSectionProps> = ({ state, onUpda
           );
         })}
       </ul>
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-ui-muted">
         {done} de {players.length} registados · Cada atleta vê só a sua evolução, na sua ficha. Nunca há rankings.
       </p>
 

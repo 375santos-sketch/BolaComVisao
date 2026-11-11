@@ -17,7 +17,7 @@ import { SquadToolbar } from './squad/SquadToolbar';
 import { SquadListView } from './squad/SquadListView';
 import { SquadGridView } from './squad/SquadGridView';
 import { SquadPlayerFormModal } from './squad/SquadPlayerFormModal';
-import { SquadPlayerDetailModal } from './squad/SquadPlayerDetailModal';
+import { AthleteSheet } from './squad/AthleteSheet';
 
 const FitnessTestsSection = lazy(() => import('./squad/FitnessTestsSection'));
 
@@ -129,76 +129,103 @@ export const SquadView: React.FC<SquadViewProps> = ({
       {/* PLAYERS SECTION */}
       {squad.activeSquadTab === 'jogadores' && (
         <>
-          <SquadToolbar
-            state={state}
-            activeRosterCount={squad.activeRoster.length}
-            viewMode={squad.viewMode}
-            setViewMode={squad.setViewMode}
-            statusCounts={squad.statusCounts}
-            statusFilter={squad.statusFilter}
-            setStatusFilter={squad.setStatusFilter}
-            searchQuery={squad.searchQuery}
-            setSearchQuery={squad.setSearchQuery}
-            sortBy={squad.sortBy}
-            setSortBy={squad.setSortBy}
-            sortDirection={squad.sortDirection}
-            setSortDirection={squad.setSortDirection}
-            onOpenCreateModal={squad.handleOpenCreateModal}
-            onOpenImportExcel={() => squad.setIsImportExcelOpen(true)}
-            onUpdateState={onUpdateState}
-            onShowConfirm={onShowConfirm}
-            onShowToast={onShowToast}
-          />
+          {/* On a computer the athlete's sheet opens beside the list (list | sheet); on the phone it fills the screen */}
+          <div
+            className={
+              selectedPlayerObj ? 'lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-5' : ''
+            }
+          >
+            <div className="min-w-0">
+              <SquadToolbar
+                state={state}
+                activeRosterCount={squad.activeRoster.length}
+                viewMode={squad.viewMode}
+                setViewMode={squad.setViewMode}
+                statusCounts={squad.statusCounts}
+                statusFilter={squad.statusFilter}
+                setStatusFilter={squad.setStatusFilter}
+                sectorFilter={squad.sectorFilter}
+                setSectorFilter={squad.setSectorFilter}
+                searchQuery={squad.searchQuery}
+                setSearchQuery={squad.setSearchQuery}
+                sortBy={squad.sortBy}
+                setSortBy={squad.setSortBy}
+                sortDirection={squad.sortDirection}
+                setSortDirection={squad.setSortDirection}
+                onOpenCreateModal={squad.handleOpenCreateModal}
+                onOpenImportExcel={() => squad.setIsImportExcelOpen(true)}
+                onUpdateState={onUpdateState}
+                onShowConfirm={onShowConfirm}
+                onShowToast={onShowToast}
+              />
 
-          {/* Players Content Area */}
-          {squad.sortedRoster.length === 0 ? (
-            <div className="ui-card p-8 text-center my-4">
-              <div className="text-3xl mb-2">⚽</div>
-              <p className="text-sm font-['Chakra_Petch'] text-cyan-300 uppercase font-bold">
-                {squad.activeRoster.length === 0
-                  ? 'Nenhum jogador registado no plantel.'
-                  : 'Nenhum jogador encontrado com os filtros selecionados.'}
-              </p>
-              <p className="text-xs font-mono text-slate-500 mt-1 mb-4">
-                {squad.activeRoster.length === 0
-                  ? 'Comece por adicionar o primeiro atleta da equipa.'
-                  : 'Tente pesquisar com outro termo ou limpar os filtros.'}
-              </p>
-              {squad.activeRoster.length === 0 && (
-                <div className="flex items-center justify-center gap-3 flex-wrap">
-                  <button onClick={squad.handleOpenCreateModal} className="ui-btn ui-btn-primary px-4 py-2.5 text-xs">
-                    ➕ Criar Jogador Manualmente
-                  </button>
-                  <button
-                    onClick={() => squad.setIsImportExcelOpen(true)}
-                    className="ui-btn ui-btn-soft-success px-4 py-2.5 text-xs flex items-center gap-1.5"
-                  >
-                    <span>📥</span>
-                    <span>Importar Plantel de Excel</span>
-                  </button>
+              {/* Players Content Area */}
+              {squad.sortedRoster.length === 0 ? (
+                <div className="ui-card p-8 text-center my-4">
+                  <div className="text-3xl mb-2">⚽</div>
+                  <p className="text-sm font-['Chakra_Petch'] text-ui-brand uppercase font-bold">
+                    {squad.activeRoster.length === 0
+                      ? 'Nenhum jogador registado no plantel.'
+                      : 'Nenhum jogador encontrado com os filtros selecionados.'}
+                  </p>
+                  <p className="text-xs font-mono text-ui-muted mt-1 mb-4">
+                    {squad.activeRoster.length === 0
+                      ? 'Comece por adicionar o primeiro atleta da equipa.'
+                      : 'Tente pesquisar com outro termo ou limpar os filtros.'}
+                  </p>
+                  {squad.activeRoster.length === 0 && (
+                    <div className="flex items-center justify-center gap-3 flex-wrap">
+                      <button
+                        onClick={squad.handleOpenCreateModal}
+                        className="ui-btn ui-btn-primary px-4 py-2.5 text-xs"
+                      >
+                        ➕ Criar Jogador Manualmente
+                      </button>
+                      <button
+                        onClick={() => squad.setIsImportExcelOpen(true)}
+                        className="ui-btn ui-btn-soft-success px-4 py-2.5 text-xs flex items-center gap-1.5"
+                      >
+                        <span>📥</span>
+                        <span>Importar Plantel de Excel</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
+              ) : squad.viewMode === 'lista' ? (
+                <SquadListView
+                  state={state}
+                  sortedRoster={squad.sortedRoster}
+                  sortBy={squad.sortBy}
+                  sortDirection={squad.sortDirection}
+                  onSelectPlayer={squad.setSelectedPlayerId}
+                  onEditPlayer={squad.handleOpenEditModal}
+                />
+              ) : (
+                <SquadGridView
+                  state={state}
+                  sortedRoster={squad.sortedRoster}
+                  sortBy={squad.sortBy}
+                  sortDirection={squad.sortDirection}
+                  onSelectPlayer={squad.setSelectedPlayerId}
+                  onEditPlayer={squad.handleOpenEditModal}
+                  onRemovePlayer={squad.handleRemovePlayer}
+                />
               )}
             </div>
-          ) : squad.viewMode === 'lista' ? (
-            <SquadListView
+            <AthleteSheet
+              player={selectedPlayerObj}
+              stats={selectedPlayerStats}
               state={state}
-              sortedRoster={squad.sortedRoster}
-              sortBy={squad.sortBy}
-              sortDirection={squad.sortDirection}
-              onSelectPlayer={squad.setSelectedPlayerId}
-              onEditPlayer={squad.handleOpenEditModal}
+              onClose={() => squad.setSelectedPlayerId(null)}
+              onEdit={squad.handleOpenEditModal}
+              onRemove={(id) => {
+                squad.setSelectedPlayerId(null);
+                squad.handleRemovePlayer(id);
+              }}
+              onShowToast={onShowToast}
+              onUpdateState={onUpdateState}
             />
-          ) : (
-            <SquadGridView
-              state={state}
-              sortedRoster={squad.sortedRoster}
-              sortBy={squad.sortBy}
-              sortDirection={squad.sortDirection}
-              onSelectPlayer={squad.setSelectedPlayerId}
-              onEditPlayer={squad.handleOpenEditModal}
-              onRemovePlayer={squad.handleRemovePlayer}
-            />
-          )}
+          </div>
 
           {/* Highlight Area: EQUIPA TÉCNICA at bottom of Squad page */}
           <StaffHighlightSection
@@ -245,21 +272,6 @@ export const SquadView: React.FC<SquadViewProps> = ({
         setFormPhotoUrl={squad.setFormPhotoUrl}
         onPhotoFileUpload={squad.handlePhotoFileUpload}
         onSavePlayer={squad.handleSavePlayer}
-      />
-
-      {/* FULL PLAYER PROFILE DRAWER / MODAL */}
-      <SquadPlayerDetailModal
-        player={selectedPlayerObj}
-        stats={selectedPlayerStats}
-        state={state}
-        onClose={() => squad.setSelectedPlayerId(null)}
-        onEdit={squad.handleOpenEditModal}
-        onRemove={(id) => {
-          squad.setSelectedPlayerId(null);
-          squad.handleRemovePlayer(id);
-        }}
-        onShowToast={onShowToast}
-        onUpdateState={onUpdateState}
       />
 
       {/* Import Excel Modal */}

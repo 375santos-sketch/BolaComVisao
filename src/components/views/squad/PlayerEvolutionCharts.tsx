@@ -4,10 +4,10 @@ import { PlayerSeason } from '../../../lib/playerSeason';
 import { homeFirstScore } from '../../../lib/utils';
 
 // Dark-surface step of the validated palette (one series) and neutral tokens for track, grid and text
-const BAR = '#22c3ee';
-const TRACK = '#1e3448';
-const GRID = '#2b4257';
-const MUTED = '#8aa4ba';
+const BAR = 'var(--color-ui-brand)';
+const TRACK = 'var(--color-ui-surface-3)';
+const GRID = 'var(--color-ui-line)';
+const MUTED = 'var(--color-ui-muted)';
 
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const ddmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
@@ -51,7 +51,7 @@ export const PlayerEvolutionCharts: React.FC<{ data: PlayerSeason }> = ({ data }
     <div className="space-y-3" aria-label="Evolução do atleta">
       {games.length > 0 && (
         <figure className="m-0">
-          <figcaption className="text-[11px] font-mono uppercase text-cyan-300 font-bold mb-1">
+          <figcaption className="text-[11px] font-mono uppercase text-ui-brand font-bold mb-1">
             Minutos jogo a jogo
           </figcaption>
           <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Minutos jogados em cada jogo">
@@ -134,7 +134,7 @@ export const PlayerEvolutionCharts: React.FC<{ data: PlayerSeason }> = ({ data }
                       x={x + barW / 2}
                       y={(g.calledUp ? y(g.minutes) : top + plotH - 10) - 3}
                       fontSize={6.5}
-                      fill="#e2e8f0"
+                      fill="var(--color-ui-text)"
                       textAnchor="middle"
                     >
                       {extras}
@@ -149,7 +149,7 @@ export const PlayerEvolutionCharts: React.FC<{ data: PlayerSeason }> = ({ data }
               );
             })}
           </svg>
-          <p className="text-[11px] font-mono text-slate-300 min-h-[1.25rem]" aria-live="polite">
+          <p className="text-[11px] font-mono text-ui-text min-h-[1.25rem]" aria-live="polite">
             {current
               ? describe(current)
               : 'Toque numa barra para ver o jogo. Fundo = minutos do jogo; – = não convocado.'}
@@ -159,7 +159,7 @@ export const PlayerEvolutionCharts: React.FC<{ data: PlayerSeason }> = ({ data }
 
       {months.length > 0 && (
         <figure className="m-0">
-          <figcaption className="text-[11px] font-mono uppercase text-cyan-300 font-bold mb-1">
+          <figcaption className="text-[11px] font-mono uppercase text-ui-brand font-bold mb-1">
             Treinos por mês
           </figcaption>
           <ul aria-label="Presença nos treinos por mês" className="grid gap-1">
@@ -167,11 +167,11 @@ export const PlayerEvolutionCharts: React.FC<{ data: PlayerSeason }> = ({ data }
               const pct = m.held ? Math.round((m.present / m.held) * 100) : 0;
               return (
                 <li key={m.month} className="flex items-center gap-2 text-[11px] font-mono">
-                  <span className="w-8 text-slate-400">{monthLabel(m.month)}</span>
+                  <span className="w-8 text-ui-muted">{monthLabel(m.month)}</span>
                   <span className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: TRACK }}>
                     <span className="block h-full rounded-full" style={{ width: `${pct}%`, background: BAR }} />
                   </span>
-                  <span className="w-20 text-right text-slate-300">
+                  <span className="w-20 text-right text-ui-text">
                     {m.present}/{m.held} · {pct}%
                   </span>
                 </li>

@@ -24,13 +24,13 @@ export const SquadTabsNav: React.FC<SquadTabsNavProps> = ({
       <button
         onClick={() => setActiveSquadTab('jogadores')}
         className={`shrink-0 min-h-[38px] py-1.5 px-3 rounded-xl font-semibold text-[13px] transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 ${
-          activeSquadTab === 'jogadores' ? 'ui-btn-primary' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+          activeSquadTab === 'jogadores' ? 'ui-btn-primary' : 'text-ui-text hover:text-ui-text hover:bg-ui-surface-2/60'
         }`}
       >
         <span>Plantel</span>
         <span
           className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-            activeSquadTab === 'jogadores' ? 'bg-black/20' : 'bg-slate-800 text-slate-300'
+            activeSquadTab === 'jogadores' ? 'bg-ui-bg/20' : 'bg-ui-surface-2 text-ui-text'
           }`}
         >
           {activeRosterCount}
@@ -40,7 +40,9 @@ export const SquadTabsNav: React.FC<SquadTabsNavProps> = ({
       <button
         onClick={() => setActiveSquadTab('assiduidade')}
         className={`shrink-0 min-h-[38px] py-1.5 px-3 rounded-xl font-semibold text-[13px] transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 ${
-          activeSquadTab === 'assiduidade' ? 'ui-btn-primary' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+          activeSquadTab === 'assiduidade'
+            ? 'ui-btn-primary'
+            : 'text-ui-text hover:text-ui-text hover:bg-ui-surface-2/60'
         }`}
       >
         <span>Assiduidade</span>
@@ -49,7 +51,7 @@ export const SquadTabsNav: React.FC<SquadTabsNavProps> = ({
       <button
         onClick={() => setActiveSquadTab('testes')}
         className={`shrink-0 min-h-[38px] py-1.5 px-3 rounded-xl font-semibold text-[13px] transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 ${
-          activeSquadTab === 'testes' ? 'ui-btn-primary' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+          activeSquadTab === 'testes' ? 'ui-btn-primary' : 'text-ui-text hover:text-ui-text hover:bg-ui-surface-2/60'
         }`}
       >
         <span>Testes</span>
@@ -60,13 +62,13 @@ export const SquadTabsNav: React.FC<SquadTabsNavProps> = ({
         className={`shrink-0 min-h-[38px] py-1.5 px-3 rounded-xl font-semibold text-[13px] transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 ${
           activeSquadTab === 'equipa_tecnica'
             ? 'ui-btn-primary'
-            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+            : 'text-ui-text hover:text-ui-text hover:bg-ui-surface-2/60'
         }`}
       >
         <span>Equipa técnica</span>
         <span
           className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-            activeSquadTab === 'equipa_tecnica' ? 'bg-black/20' : 'bg-slate-800 text-slate-300'
+            activeSquadTab === 'equipa_tecnica' ? 'bg-ui-bg/20' : 'bg-ui-surface-2 text-ui-text'
           }`}
         >
           {staffCount}
@@ -76,18 +78,20 @@ export const SquadTabsNav: React.FC<SquadTabsNavProps> = ({
       <button
         onClick={() => setActiveSquadTab('aniversarios')}
         className={`shrink-0 min-h-[38px] py-1.5 px-3 rounded-xl font-semibold text-[13px] transition-all active:scale-95 touch-manipulation flex items-center justify-center gap-1.5 relative ${
-          activeSquadTab === 'aniversarios' ? 'ui-btn-primary' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+          activeSquadTab === 'aniversarios'
+            ? 'ui-btn-primary'
+            : 'text-ui-text hover:text-ui-text hover:bg-ui-surface-2/60'
         }`}
       >
         <span>Aniversários</span>
         {todayBirthdaysCount > 0 ? (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-fuchsia-400 text-slate-950 animate-bounce shadow">
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-ui-brand text-ui-brand-ink animate-bounce shadow">
             {todayBirthdaysCount} Hoje!
           </span>
         ) : (
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-              activeSquadTab === 'aniversarios' ? 'bg-black/20' : 'bg-slate-800 text-slate-300'
+              activeSquadTab === 'aniversarios' ? 'bg-ui-bg/20' : 'bg-ui-surface-2 text-ui-text'
             }`}
           >
             {allBirthdaysList.length}

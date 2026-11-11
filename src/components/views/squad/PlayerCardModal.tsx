@@ -64,13 +64,13 @@ const PlayerCardModal: React.FC<PlayerCardModalProps> = ({ player, state, onShow
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-white">🃏 Cromo de {player.name}</h3>
-          <button type="button" onClick={onClose} aria-label="Fechar cromo" className="text-slate-400 text-lg px-1">
+          <h3 className="text-base font-bold text-ui-text">🃏 Cromo de {player.name}</h3>
+          <button type="button" onClick={onClose} aria-label="Fechar cromo" className="text-ui-muted text-lg px-1">
             ✕
           </button>
         </div>
         {hasPhoto && (
-          <label className="flex items-start gap-2 text-[11px] text-slate-300">
+          <label className="flex items-start gap-2 text-[11px] text-ui-text">
             <input
               type="checkbox"
               checked={withPhoto}
@@ -88,7 +88,7 @@ const PlayerCardModal: React.FC<PlayerCardModalProps> = ({ player, state, onShow
           aria-label={`Cromo de ${player.name}`}
           className="mx-auto w-full max-w-[320px]"
         />
-        <p className="text-[11px] text-slate-400 text-center">
+        <p className="text-[11px] text-ui-muted text-center">
           Treinos: presenças / treinos dados na época. Jogos, golos e assistências da época {state.season || ''}.
         </p>
         <button type="button" onClick={share} className="ui-btn ui-btn-primary w-full py-3 text-sm">
