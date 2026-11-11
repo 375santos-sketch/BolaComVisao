@@ -31,9 +31,9 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
         key={player.id}
         className="ui-card p-3.5 transition-all duration-200 flex flex-col justify-between gap-3 group relative text-left"
       >
-        <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
+        <div className="flex items-center justify-between gap-2 border-b border-ui-line/80 pb-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="bg-cyan-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs px-2.5 py-0.5 rounded-lg shadow-sm shrink-0">
+            <span className="bg-ui-brand text-ui-brand-ink font-['Chakra_Petch'] font-black text-xs px-2.5 py-0.5 rounded-lg shadow-sm shrink-0">
               {player.number !== null && player.number !== undefined ? `#${player.number}` : 'S/N'}
             </span>
             <SquadPositionBadge posStr={player.positions} />
@@ -63,11 +63,11 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
               <img
                 src={player.photoUrl}
                 alt={player.name}
-                className="w-12 h-12 rounded-xl object-cover border border-cyan-500/50 shadow-md group-hover:border-cyan-400 transition-colors"
+                className="w-12 h-12 rounded-xl object-cover border border-ui-brand/50 shadow-md group-hover:border-ui-brand transition-colors"
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="ui-inset w-12 h-12 flex items-center justify-center text-lg text-cyan-400 font-bold transition-colors">
+              <div className="ui-inset w-12 h-12 flex items-center justify-center text-lg text-ui-brand font-bold transition-colors">
                 👤
               </div>
             )}
@@ -75,7 +75,7 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
 
           <div className="min-w-0 flex-1">
             <h3
-              className="font-bold text-sm text-white font-['Chakra_Petch'] leading-tight truncate group-hover:text-cyan-300 transition-colors mb-1"
+              className="font-bold text-sm text-ui-text font-['Chakra_Petch'] leading-tight truncate group-hover:text-ui-brand transition-colors mb-1"
               title={player.name}
             >
               {player.name}
@@ -119,10 +119,10 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
 
           return (
             <div key={group.id} className="space-y-2.5">
-              <div className="flex items-center justify-between pb-1.5 border-b border-cyan-500/20 text-cyan-400 font-['Chakra_Petch'] font-bold text-xs sm:text-sm uppercase tracking-wider">
+              <div className="flex items-center justify-between pb-1.5 border-b border-ui-brand/20 text-ui-brand font-['Chakra_Petch'] font-bold text-xs sm:text-sm uppercase tracking-wider">
                 <div className="flex items-center gap-2">
                   <span>{group.label}</span>
-                  <span className="text-xs font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-xs font-mono bg-ui-brand-soft text-ui-brand border border-ui-brand/40 px-2 py-0.5 rounded-full font-bold">
                     {groupPlayers.length}
                   </span>
                 </div>
@@ -141,10 +141,10 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
   // Non-position sort
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between pb-1.5 border-b border-cyan-500/20 text-cyan-400 font-['Chakra_Petch'] font-bold text-xs sm:text-sm uppercase tracking-wider">
+      <div className="flex items-center justify-between pb-1.5 border-b border-ui-brand/20 text-ui-brand font-['Chakra_Petch'] font-bold text-xs sm:text-sm uppercase tracking-wider">
         <div className="flex items-center gap-2">
           <span>{sortBy === 'numero' ? '🔢 Ordenado por Número da Camisola' : '🔤 Ordenado por Nome do Atleta'}</span>
-          <span className="text-xs font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded-full font-bold">
+          <span className="text-xs font-mono bg-ui-brand-soft text-ui-brand border border-ui-brand/40 px-2 py-0.5 rounded-full font-bold">
             {sortedRoster.length} Atletas
           </span>
         </div>

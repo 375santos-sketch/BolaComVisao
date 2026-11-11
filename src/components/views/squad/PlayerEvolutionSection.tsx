@@ -235,7 +235,7 @@ export const PlayerEvolutionSection: React.FC<{
                                 if (window.confirm(`Apagar a avaliação de ${ddmm(e.date)}?`))
                                   save(withoutEvaluation(player, e.id), 'Avaliação apagada');
                               }}
-                              className="px-1 text-xs text-ui-muted hover:text-rose-300"
+                              className="px-1 text-xs text-ui-muted hover:text-ui-danger"
                             >
                               ✕
                             </button>
@@ -298,7 +298,7 @@ export const PlayerEvolutionSection: React.FC<{
                       type="button"
                       aria-label={`Apagar o objetivo ${g.text}`}
                       onClick={() => save(withoutGoal(player, g.id), 'Objetivo apagado')}
-                      className="px-1 text-xs text-ui-muted hover:text-rose-300"
+                      className="px-1 text-xs text-ui-muted hover:text-ui-danger"
                     >
                       ✕
                     </button>

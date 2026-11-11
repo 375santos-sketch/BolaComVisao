@@ -13,7 +13,7 @@ import { isSeasonMatching, seasonFromDate } from './utils';
  *
  * Only the team's active athletes are counted.
  */
-export interface SquadIndicator {
+interface SquadIndicator {
   callupShare: number | null;
   attendance: number | null;
 }

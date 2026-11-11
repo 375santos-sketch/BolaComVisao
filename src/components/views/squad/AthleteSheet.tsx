@@ -164,7 +164,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
       ref={root}
       role="region"
       aria-label={`Ficha de ${player.name}`}
-      className="fixed inset-0 z-[60] overflow-y-auto bg-ui-bg pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:sticky lg:top-4 lg:z-auto lg:max-h-[calc(100dvh-2rem)] lg:bg-transparent lg:pb-0"
+      className="fixed inset-0 z-30 overflow-y-auto bg-ui-bg pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:sticky lg:top-4 lg:z-auto lg:max-h-[calc(100dvh-2rem)] lg:bg-transparent lg:pb-0"
     >
       {/* Header: who, how they are, and the main actions always at hand */}
       <div
@@ -224,7 +224,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
           <button type="button" onClick={() => setShowCard(true)} className={action}>
             <Icon name="trophy" className="h-4 w-4" /> Cromo
           </button>
-          <button type="button" onClick={exportPdf} className={action}>
+          <button type="button" onClick={exportPdf} aria-label="PDF Ficha do Atleta" className={action}>
             <Icon name="clipboard" className="h-4 w-4" /> PDF
           </button>
         </div>

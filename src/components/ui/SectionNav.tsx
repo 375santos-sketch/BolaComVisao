@@ -20,7 +20,9 @@ export const SectionNav: React.FC<{
           onClick={() => onJump(s.id)}
           aria-current={active === s.id ? 'true' : undefined}
           className={`whitespace-nowrap rounded-ui-sm px-3 py-1.5 text-ui-caption font-bold transition-colors ${
-            active === s.id ? 'bg-ui-brand-soft text-ui-brand' : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
+            active === s.id
+              ? 'bg-ui-brand-soft text-ui-brand'
+              : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
           }`}
         >
           {s.label}

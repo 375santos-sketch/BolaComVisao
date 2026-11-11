@@ -56,7 +56,17 @@ export default tseslint.config(
       'src/components/ui/Field.tsx',
       'src/components/dashboard/HomeOverview.tsx',
       'src/components/dashboard/TodayFocusCard.tsx',
-      'src/components/trends/GoalsLineChart.tsx'
+      'src/components/trends/GoalsLineChart.tsx',
+      // Módulo Equipa
+      'src/components/views/SquadView.tsx',
+      'src/components/views/squad/**/*.tsx',
+      'src/components/ui/Avatar.tsx',
+      'src/components/ui/AvailabilityPill.tsx',
+      'src/components/ui/SectionNav.tsx',
+      'src/components/AttendanceSection.tsx',
+      'src/components/BirthdaySection.tsx',
+      'src/components/StaffSection.tsx',
+      'src/components/StaffHighlightSection.tsx'
     ],
     rules: {
       'no-restricted-syntax': [

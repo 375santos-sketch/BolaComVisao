@@ -13,22 +13,22 @@ interface StaffSectionProps {
 const ROLE_CONFIG: Record<string, { icon: string; badgeClass: string; order: number }> = {
   'Treinador Principal': {
     icon: '👔',
-    badgeClass: 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)]',
+    badgeClass: 'bg-ui-warning-soft text-ui-warning border-ui-warning/50 shadow-[0_0_10px_rgba(245,158,11,0.2)]',
     order: 1
   },
   'Treinador Adjunto': {
     icon: '📋',
-    badgeClass: 'bg-cyan-950/80 text-cyan-300 border-cyan-500/50 shadow-[0_0_10px_rgba(0,210,255,0.2)]',
+    badgeClass: 'bg-ui-brand-soft text-ui-brand border-ui-brand/50 shadow-[0_0_10px_rgba(0,210,255,0.2)]',
     order: 2
   },
   'Treinador de Guarda-Redes': {
     icon: '🧤',
-    badgeClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]',
+    badgeClass: 'bg-ui-success-soft text-ui-success border-ui-success/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]',
     order: 3
   },
   Diretor: {
     icon: '💼',
-    badgeClass: 'bg-purple-950/80 text-purple-300 border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.2)]',
+    badgeClass: 'bg-ui-brand-soft text-ui-brand border-ui-brand/50 shadow-[0_0_10px_rgba(168,85,247,0.2)]',
     order: 4
   }
 };
@@ -93,7 +93,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
   const getRoleBadge = (roleName: string) => {
     const conf = ROLE_CONFIG[roleName] || {
       icon: '👔',
-      badgeClass: 'bg-slate-900 text-slate-300 border-slate-700',
+      badgeClass: 'bg-ui-surface text-ui-text border-ui-line-strong',
       order: 99
     };
 
@@ -114,14 +114,14 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h2 className="text-base sm:text-lg font-bold font-['Chakra_Petch'] uppercase text-white flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold font-['Chakra_Petch'] uppercase text-ui-text flex items-center gap-2">
                 <span>👔 Equipa Técnica</span>
               </h2>
-              <span className="text-xs font-mono bg-cyan-950 text-cyan-300 border border-cyan-500/40 px-2.5 py-0.5 rounded-full font-bold">
+              <span className="text-xs font-mono bg-ui-brand-soft text-ui-brand border border-ui-brand/40 px-2.5 py-0.5 rounded-full font-bold">
                 {staffMembers.length} {staffMembers.length === 1 ? 'Elemento' : 'Elementos'}
               </span>
             </div>
-            <p className="text-xs font-mono text-slate-400">
+            <p className="text-xs font-mono text-ui-muted">
               Gestão da equipa técnica e liderança associada ao escalão {state.category || 'Sub-19'} (
               {state.season || defaultSeason()}).
             </p>
@@ -130,7 +130,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={handleOpenAddModal}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand text-ui-brand-ink font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5"
             >
               <span>+ Adicionar Elemento</span>
             </button>
@@ -139,14 +139,14 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
 
         {/* Quick Role Filters */}
         {staffMembers.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-wrap pt-3 mt-3 border-t border-cyan-500/20">
-            <span className="text-[11px] font-mono text-slate-400 mr-1">Filtrar:</span>
+          <div className="flex items-center gap-1.5 flex-wrap pt-3 mt-3 border-t border-ui-brand/20">
+            <span className="text-[11px] font-mono text-ui-muted mr-1">Filtrar:</span>
             <button
               onClick={() => setRoleFilter('todos')}
               className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all ${
                 roleFilter === 'todos'
-                  ? 'bg-cyan-500 text-slate-950 font-bold'
-                  : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                  ? 'bg-ui-brand text-ui-brand-ink font-bold'
+                  : 'bg-ui-inset text-ui-muted hover:text-ui-text border border-ui-line'
               }`}
             >
               Todos ({staffMembers.length})
@@ -160,8 +160,8 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
                   onClick={() => setRoleFilter(rName)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all flex items-center gap-1 ${
                     roleFilter === rName
-                      ? 'bg-cyan-500 text-slate-950 font-bold'
-                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                      ? 'bg-ui-brand text-ui-brand-ink font-bold'
+                      : 'bg-ui-inset text-ui-muted hover:text-ui-text border border-ui-line'
                   }`}
                 >
                   <span>{ROLE_CONFIG[rName].icon}</span>
@@ -186,13 +186,13 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
                 className="ui-card p-4 transition-all duration-200 flex flex-col justify-between relative group overflow-hidden"
               >
                 {/* Background ambient gradient glow */}
-                <div className="absolute -top-10 -right-10 w-28 h-28 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/10 transition-colors" />
+                <div className="absolute -top-10 -right-10 w-28 h-28 bg-ui-brand/5 rounded-full blur-2xl pointer-events-none group-hover:bg-ui-brand/10 transition-colors" />
 
                 <div>
                   {/* Top: Avatar + Role Badge */}
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="relative w-16 h-16 rounded-2xl bg-slate-950 border-2 border-cyan-500/40 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
+                      <div className="relative w-16 h-16 rounded-2xl bg-ui-inset border-2 border-ui-brand/40 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
                         {staff.photoUrl ? (
                           <img
                             src={staff.photoUrl}
@@ -206,7 +206,7 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
                       </div>
 
                       <div>
-                        <h3 className="font-['Chakra_Petch'] font-bold text-base text-white group-hover:text-cyan-300 transition-colors leading-tight">
+                        <h3 className="font-['Chakra_Petch'] font-bold text-base text-ui-text group-hover:text-ui-brand transition-colors leading-tight">
                           {staff.name}
                         </h3>
                         <div className="mt-1">{getRoleBadge(staff.role)}</div>
@@ -216,26 +216,26 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
 
                   {/* Biography / Description */}
                   {staff.bio && (
-                    <p className="text-xs font-mono text-slate-300 bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 mb-3 leading-relaxed">
+                    <p className="text-xs font-mono text-ui-text bg-ui-inset/60 border border-ui-line/80 rounded-xl p-2.5 mb-3 leading-relaxed">
                       {staff.bio}
                     </p>
                   )}
 
                   {/* Contacts if available */}
                   {(staff.phone || staff.email) && (
-                    <div className="ui-inset space-y-1.5 text-[11px] font-mono text-slate-400 p-2 mb-3">
+                    <div className="ui-inset space-y-1.5 text-[11px] font-mono text-ui-muted p-2 mb-3">
                       {staff.phone && (
-                        <div className="flex items-center gap-1.5 text-slate-300">
+                        <div className="flex items-center gap-1.5 text-ui-text">
                           <span>📞</span>
-                          <a href={`tel:${staff.phone}`} className="hover:text-cyan-300 transition-colors">
+                          <a href={`tel:${staff.phone}`} className="hover:text-ui-brand transition-colors">
                             {staff.phone}
                           </a>
                         </div>
                       )}
                       {staff.email && (
-                        <div className="flex items-center gap-1.5 text-slate-300 truncate">
+                        <div className="flex items-center gap-1.5 text-ui-text truncate">
                           <span>✉️</span>
-                          <a href={`mailto:${staff.email}`} className="hover:text-cyan-300 transition-colors truncate">
+                          <a href={`mailto:${staff.email}`} className="hover:text-ui-brand transition-colors truncate">
                             {staff.email}
                           </a>
                         </div>
@@ -245,8 +245,8 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
                 </div>
 
                 {/* Bottom Action Buttons */}
-                <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80 mt-1">
-                  <span className="text-[10px] font-mono text-cyan-400/60">BolaComVisão Staff</span>
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-ui-line/80 mt-1">
+                  <span className="text-[10px] font-mono text-ui-brand/60">BolaComVisão Staff</span>
 
                   <div className="flex items-center gap-1.5">
                     <button
@@ -273,19 +273,19 @@ export const StaffSection: React.FC<StaffSectionProps> = ({ state, onUpdateState
       ) : (
         /* Empty State */
         <div className="ui-card p-8 text-center max-w-lg mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-cyan-950/60 border border-cyan-500/30 text-3xl flex items-center justify-center mx-auto mb-3 text-cyan-300">
+          <div className="w-16 h-16 rounded-2xl bg-ui-brand-soft border border-ui-brand/30 text-3xl flex items-center justify-center mx-auto mb-3 text-ui-brand">
             👔
           </div>
-          <h3 className="font-['Chakra_Petch'] font-bold text-base text-white uppercase tracking-wider mb-1">
+          <h3 className="font-['Chakra_Petch'] font-bold text-base text-ui-text uppercase tracking-wider mb-1">
             Nenhum Elemento Registado
           </h3>
-          <p className="text-xs font-mono text-slate-400 mb-4 max-w-sm mx-auto">
+          <p className="text-xs font-mono text-ui-muted mb-4 max-w-sm mx-auto">
             Adiciona os elementos da equipa técnica (Treinador Principal, Adjunto, Guarda-Redes, Diretor) para organizar
             a liderança do escalão.
           </p>
           <button
             onClick={handleOpenAddModal}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all inline-flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand text-ui-brand-ink font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all inline-flex items-center gap-1.5"
           >
             <span>+ Adicionar Elemento Técnico</span>
           </button>

@@ -1,6 +1,10 @@
 import React from 'react';
 
-const SIZES = { sm: 'h-9 w-9 text-ui-caption', md: 'h-11 w-11 text-ui-body', lg: 'h-16 w-16 text-ui-title sm:h-20 sm:w-20' };
+const SIZES = {
+  sm: 'h-9 w-9 text-ui-caption',
+  md: 'h-11 w-11 text-ui-body',
+  lg: 'h-16 w-16 text-ui-title sm:h-20 sm:w-20'
+};
 
 /**
  * An athlete's (or anyone's) picture: the photo when there is one, otherwise the shirt number or the initials, on a

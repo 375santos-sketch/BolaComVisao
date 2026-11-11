@@ -18,7 +18,7 @@ export const PlayerTestsSection: React.FC<PlayerTestsSectionProps> = ({ player, 
 
   return (
     <section aria-label="Testes da época" className="ui-inset p-3.5 space-y-1">
-      <div className="text-xs font-bold text-cyan-300 uppercase tracking-wider">
+      <div className="text-xs font-bold text-ui-brand uppercase tracking-wider">
         📏 Testes da época · {rounds.join(' → ')}
       </div>
       <ul>
@@ -26,12 +26,12 @@ export const PlayerTestsSection: React.FC<PlayerTestsSectionProps> = ({ player, 
           const done = e.values.filter((v): v is number => v !== undefined);
           const best = e.test.lowerIsBetter ? Math.min(...done) : Math.max(...done);
           return (
-            <li key={e.test.id} className="flex items-center gap-2 border-b border-slate-800 py-2 last:border-0">
+            <li key={e.test.id} className="flex items-center gap-2 border-b border-ui-line py-2 last:border-0">
               <span className="min-w-0 flex-1">
-                <b className="block text-sm text-white">
+                <b className="block text-sm text-ui-text">
                   {e.test.emoji} {e.test.name}
                 </b>
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-ui-muted">
                   {e.test.lowerIsBetter ? 'menos é melhor' : 'mais é melhor'}
                 </span>
               </span>
@@ -40,7 +40,7 @@ export const PlayerTestsSection: React.FC<PlayerTestsSectionProps> = ({ player, 
                   v === undefined ? null : (
                     <i
                       key={i}
-                      className={`w-3 rounded-sm ${i === e.values.length - 1 || v === done[done.length - 1] ? (e.trend === 'pior' ? 'bg-amber-400' : 'bg-emerald-400') : 'bg-slate-600'}`}
+                      className={`w-3 rounded-sm ${i === e.values.length - 1 || v === done[done.length - 1] ? (e.trend === 'pior' ? 'bg-ui-warning' : 'bg-ui-success') : 'bg-ui-surface-3'}`}
                       style={{
                         height: `${Math.max(
                           20,
@@ -51,7 +51,7 @@ export const PlayerTestsSection: React.FC<PlayerTestsSectionProps> = ({ player, 
                   )
                 )}
               </span>
-              <span className="shrink-0 text-sm font-bold text-white font-['Chakra_Petch']">
+              <span className="shrink-0 text-sm font-bold text-ui-text font-['Chakra_Petch']">
                 {e.trend !== null ? `${formatResult(e.test, e.first)} → ` : ''}
                 {formatResult(e.test, e.last)}{' '}
                 {e.trend === 'melhor' ? (e.big ? '🚀' : '▲') : e.trend === 'pior' ? '●' : ''}
@@ -61,7 +61,7 @@ export const PlayerTestsSection: React.FC<PlayerTestsSectionProps> = ({ player, 
         })}
       </ul>
       {compared.length > 0 && (
-        <p className="rounded-lg bg-emerald-500/10 px-2.5 py-1.5 text-xs font-semibold text-emerald-300">
+        <p className="rounded-lg bg-ui-success/10 px-2.5 py-1.5 text-xs font-semibold text-ui-success">
           Melhorou em {better} de {compared.length} {compared.length === 1 ? 'teste' : 'testes'} 💪
         </p>
       )}

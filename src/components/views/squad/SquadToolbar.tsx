@@ -28,6 +28,18 @@ interface SquadToolbarProps {
   onShowToast: (msg: string) => void;
 }
 
+/** The icon of each action of the "⋯" menu (the system's icons, no emojis). */
+const MENU_ICONS: Record<string, IconName> = {
+  'Ver em grelha': 'more',
+  'Ver em lista': 'more',
+  'PDF do plantel': 'clipboard',
+  'Fim de época (todos)': 'trophy',
+  'Cromos de todos (PDF)': 'users',
+  'Exportar para Excel': 'database',
+  'Importar de Excel': 'plus',
+  'Limpar o plantel': 'x'
+};
+
 // Available, injured and suspended are the tiles at the top; inactive athletes (rare) keep a small filter here
 const STATUSES: [string, string, string][] = [['inativo', '⏸️', 'inativos']];
 
@@ -66,11 +78,11 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
 
   const actions: [string, () => void][] = [
     [
-      viewMode === 'lista' ? '🔲 Ver em grelha' : '📜 Ver em lista',
+      viewMode === 'lista' ? 'Ver em grelha' : 'Ver em lista',
       () => setViewMode(viewMode === 'lista' ? 'grelha' : 'lista')
     ],
     [
-      '📄 PDF do plantel',
+      'PDF do plantel',
       async () => {
         if (noPlayers()) return;
         const { generateSquadPDF } = await import('../../../lib/pdfUtils');
@@ -79,7 +91,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
       }
     ],
     [
-      '🏆 Fim de época (todos)',
+      'Fim de época (todos)',
       async () => {
         const players = (state.roster || []).filter((p) => p && p.active !== false);
         if (players.length === 0) {
@@ -92,7 +104,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
       }
     ],
     [
-      '🃏 Cromos de todos (PDF)',
+      'Cromos de todos (PDF)',
       async () => {
         if (noPlayers()) return;
         const { generatePlayerCardsPDF } = await import('../../../lib/pdfUtils');
@@ -101,7 +113,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
       }
     ],
     [
-      '📊 Exportar para Excel',
+      'Exportar para Excel',
       async () => {
         if (noPlayers()) return;
         const { exportSquadExcel } = await import('../../../lib/exportUtils');
@@ -109,11 +121,11 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
         onShowToast('Plantel exportado para Excel 📊');
       }
     ],
-    ['📥 Importar de Excel', onOpenImportExcel],
+    ['Importar de Excel', onOpenImportExcel],
     ...(activeRosterCount > 0
       ? ([
           [
-            '🗑️ Limpar o plantel',
+            'Limpar o plantel',
             () =>
               onShowConfirm('Tens a certeza que queres limpar todos os jogadores do plantel desta equipa?', () => {
                 onUpdateState({ roster: [] });
@@ -154,7 +166,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
           <span className="sr-only">Procurar atleta</span>
           <Icon
             name="search"
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ui-muted pointer-events-none"
           />
           <input
             type="search"
@@ -189,8 +201,9 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
                     setMenuOpen(false);
                     run();
                   }}
-                  className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-100 hover:bg-slate-800/70"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-ui-text hover:bg-ui-surface-2/70"
                 >
+                  <Icon name={MENU_ICONS[label] || 'more'} className="h-4 w-4 shrink-0 text-ui-muted" />
                   {label}
                 </button>
               ))}
@@ -250,15 +263,15 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
                 title={on ? 'Mostrar todos' : `Mostrar só os ${label}`}
                 onClick={() => setStatusFilter(on ? 'todos' : key)}
                 className={`shrink-0 rounded-full border px-2.5 py-1 font-semibold ${
-                  on ? 'border-slate-500 bg-slate-800 text-white' : 'border-transparent text-slate-300'
+                  on ? 'border-ui-line-strong bg-ui-surface-2 text-ui-text' : 'border-transparent text-ui-text'
                 }`}
               >
-                {mark} <strong className="text-white">{count}</strong> {label}
+                {mark} <strong className="text-ui-text">{count}</strong> {label}
               </button>
             );
           })}
         </div>
-        <span className="ml-auto flex shrink-0 items-center gap-1 text-slate-400">
+        <span className="ml-auto flex shrink-0 items-center gap-1 text-ui-muted">
           Ordenar
           <CompactSelect
             label="Ordenar por"
@@ -276,7 +289,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
           onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
           aria-label={sortDirection === 'asc' ? 'Ordem crescente' : 'Ordem decrescente'}
           title="Trocar a ordem"
-          className="shrink-0 rounded-full px-1.5 text-slate-300"
+          className="shrink-0 rounded-full px-1.5 text-ui-text"
         >
           {sortDirection === 'asc' ? '↑' : '↓'}
         </button>
@@ -289,7 +302,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
             setSectorFilter?.('todos');
             setSearchQuery('');
           }}
-          className="text-xs font-semibold text-cyan-400"
+          className="text-xs font-semibold text-ui-brand"
         >
           ✕ Limpar filtros
         </button>

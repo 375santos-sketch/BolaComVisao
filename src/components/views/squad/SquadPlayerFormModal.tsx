@@ -77,10 +77,10 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
 
   return (
     <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
-      <div className="w-full max-w-lg bg-slate-900 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden">
+      <div className="w-full max-w-lg bg-ui-surface border-t sm:border border-ui-brand/40 rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20 mb-3 shrink-0">
-          <h3 className="text-base sm:text-lg font-bold font-['Chakra_Petch'] uppercase text-white flex items-center gap-2">
+        <div className="flex items-center justify-between pb-3 border-b border-ui-brand/20 mb-3 shrink-0">
+          <h3 className="text-base sm:text-lg font-bold font-['Chakra_Petch'] uppercase text-ui-text flex items-center gap-2">
             <span>{editingPlayerId ? '✏️ Editar Ficha de Atleta' : '➕ Novo Atleta do Plantel'}</span>
           </h3>
           <button
@@ -97,7 +97,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
           <div className="overflow-y-auto pr-1.5 space-y-4 flex-1 min-h-0 scrollbar-thin">
             {/* Photo Upload Section */}
             <div className="ui-inset p-3 text-center">
-              <label className="block text-xs font-mono text-cyan-300 mb-2">📷 Fotografia do Jogador</label>
+              <label className="block text-xs font-mono text-ui-brand mb-2">📷 Fotografia do Jogador</label>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 {/* Photo Preview */}
@@ -106,11 +106,11 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     <img
                       src={formPhotoUrl}
                       alt="Preview"
-                      className="w-20 h-20 rounded-2xl object-cover border-2 border-cyan-400 shadow-md"
+                      className="w-20 h-20 rounded-2xl object-cover border-2 border-ui-brand shadow-md"
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <div className="w-20 h-20 rounded-2xl bg-slate-900 border-2 border-dashed border-cyan-500/40 flex items-center justify-center text-2xl text-slate-500 font-mono">
+                    <div className="w-20 h-20 rounded-2xl bg-ui-surface border-2 border-dashed border-ui-brand/40 flex items-center justify-center text-2xl text-ui-muted font-mono">
                       👤
                     </div>
                   )}
@@ -118,7 +118,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setFormPhotoUrl('')}
-                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px]"
+                      className="absolute -top-2 -right-2 bg-ui-danger text-ui-text rounded-full w-5 h-5 flex items-center justify-center text-[10px]"
                       title="Remover Foto"
                     >
                       ✖
@@ -128,7 +128,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
 
                 {/* Upload Actions */}
                 <div className="space-y-2 text-left w-full sm:w-auto flex-1">
-                  <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 font-mono text-xs font-bold hover:bg-cyan-500/30 w-full justify-center">
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-ui-brand/20 border border-ui-brand/50 text-ui-brand font-mono text-xs font-bold hover:bg-ui-brand/30 w-full justify-center">
                     <span>📁 Ficheiro do Dispositivo</span>
                     <input type="file" accept="image/*" className="hidden" onChange={onPhotoFileUpload} />
                   </label>
@@ -146,13 +146,13 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
 
             {/* SECTION 1: DADOS PRINCIPAIS */}
             <div className="space-y-3">
-              <div className="text-xs font-['Chakra_Petch'] font-bold uppercase text-cyan-400 tracking-wider">
+              <div className="text-xs font-['Chakra_Petch'] font-bold uppercase text-ui-brand tracking-wider">
                 1. Identificação & Posicionamento
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-slate-300 mb-1">
-                  Nome Completo <span className="text-red-400">*</span>
+                <label className="block text-xs font-mono text-ui-text mb-1">
+                  Nome Completo <span className="text-ui-danger">*</span>
                 </label>
                 <input
                   type="text"
@@ -166,7 +166,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Nº da Camisola</label>
+                  <label className="block text-xs font-mono text-ui-text mb-1">Nº da Camisola</label>
                   <input
                     type="number"
                     placeholder="Ex: 7"
@@ -177,7 +177,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Situação Desportiva</label>
+                  <label className="block text-xs font-mono text-ui-text mb-1">Situação Desportiva</label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as PlayerStatus)}
@@ -192,9 +192,9 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
               </div>
 
               {(formStatus === 'lesionado' || formStatus === 'suspenso') && setFormStatusUntil && setFormStatusNote && (
-                <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-amber-950/30 border border-amber-500/30">
+                <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-ui-warning-soft border border-ui-warning/30">
                   <div>
-                    <label className="block text-xs font-mono text-amber-200 mb-1" htmlFor="player-status-until">
+                    <label className="block text-xs font-mono text-ui-warning mb-1" htmlFor="player-status-until">
                       Regressa a
                     </label>
                     <input
@@ -206,7 +206,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-amber-200 mb-1" htmlFor="player-status-note">
+                    <label className="block text-xs font-mono text-ui-warning mb-1" htmlFor="player-status-note">
                       Motivo
                     </label>
                     <input
@@ -219,14 +219,14 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                       className="ui-input w-full text-xs"
                     />
                   </div>
-                  <p className="col-span-2 text-[10px] text-amber-200/80">
+                  <p className="col-span-2 text-[10px] text-ui-warning/80">
                     Fica indisponível na Convocatória até esta data; a partir dela volta a estar disponível sozinho.
                   </p>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-mono text-slate-300 mb-1">Posição em Campo</label>
+                <label className="block text-xs font-mono text-ui-text mb-1">Posição em Campo</label>
                 <select
                   value={formPosition}
                   onChange={(e) => setFormPosition(e.target.value)}
@@ -243,14 +243,14 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
             </div>
 
             {/* SECTION 2: PERFIL FÍSICO */}
-            <div className="space-y-3 pt-2 border-t border-slate-800">
-              <div className="text-xs font-['Chakra_Petch'] font-bold uppercase text-cyan-400 tracking-wider">
+            <div className="space-y-3 pt-2 border-t border-ui-line">
+              <div className="text-xs font-['Chakra_Petch'] font-bold uppercase text-ui-brand tracking-wider">
                 2. Perfil Físico & Biometria
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Data Nascimento</label>
+                  <label className="block text-xs font-mono text-ui-text mb-1">Data Nascimento</label>
                   <input
                     type="date"
                     value={formBirthDate}
@@ -260,7 +260,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Pé Dominante</label>
+                  <label className="block text-xs font-mono text-ui-text mb-1">Pé Dominante</label>
                   <select
                     value={formDominantFoot}
                     onChange={(e) => setFormDominantFoot(e.target.value as DominantFoot)}
@@ -275,7 +275,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Altura</label>
+                  <label className="block text-xs font-mono text-ui-text mb-1">Altura</label>
                   <input
                     type="text"
                     placeholder="Ex: 1.82 m"
@@ -286,7 +286,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Peso</label>
+                  <label className="block text-xs font-mono text-ui-text mb-1">Peso</label>
                   <input
                     type="text"
                     placeholder="Ex: 75 kg"
@@ -299,14 +299,14 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
             </div>
 
             {/* SECTION 3: CONTACTOS */}
-            <div className="space-y-3 pt-2 border-t border-slate-800">
-              <div className="text-xs font-['Chakra_Petch'] font-bold uppercase text-cyan-400 tracking-wider">
+            <div className="space-y-3 pt-2 border-t border-ui-line">
+              <div className="text-xs font-['Chakra_Petch'] font-bold uppercase text-ui-brand tracking-wider">
                 3. Contactos & Encarregados de Educação
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Telefone</label>
+                  <label className="block text-xs font-mono text-ui-text mb-1">Telefone</label>
                   <input
                     type="tel"
                     placeholder="Ex: 912 345 678"
@@ -317,7 +317,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Email</label>
+                  <label className="block text-xs font-mono text-ui-text mb-1">Email</label>
                   <input
                     type="email"
                     placeholder="Ex: jogador@email.com"
@@ -329,7 +329,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-slate-300 mb-1">
+                <label className="block text-xs font-mono text-ui-text mb-1">
                   Contacto Emergência / Encarregado Educação
                 </label>
                 <input
@@ -344,7 +344,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
           </div>
 
           {/* Pinned Action Buttons Footer */}
-          <div className="flex gap-2 pt-3 mt-2 border-t border-slate-800 shrink-0 bg-slate-900 z-30 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_16px_rgba(0,0,0,0.4)]">
+          <div className="flex gap-2 pt-3 mt-2 border-t border-ui-line shrink-0 bg-ui-surface z-30 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_16px_rgba(0,0,0,0.4)]">
             <button
               type="button"
               onClick={onClose}
@@ -355,7 +355,7 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
 
             <button
               type="submit"
-              className="flex-1 py-3 min-h-[48px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs sm:text-sm uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              className="flex-1 py-3 min-h-[48px] rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand text-ui-brand-ink font-['Chakra_Petch'] font-extrabold text-xs sm:text-sm uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5"
             >
               {editingPlayerId ? 'Guardar Alterações 💾' : 'Adicionar Atleta 🚀'}
             </button>

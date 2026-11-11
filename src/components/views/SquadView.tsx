@@ -163,12 +163,12 @@ export const SquadView: React.FC<SquadViewProps> = ({
               {squad.sortedRoster.length === 0 ? (
                 <div className="ui-card p-8 text-center my-4">
                   <div className="text-3xl mb-2">⚽</div>
-                  <p className="text-sm font-['Chakra_Petch'] text-cyan-300 uppercase font-bold">
+                  <p className="text-sm font-['Chakra_Petch'] text-ui-brand uppercase font-bold">
                     {squad.activeRoster.length === 0
                       ? 'Nenhum jogador registado no plantel.'
                       : 'Nenhum jogador encontrado com os filtros selecionados.'}
                   </p>
-                  <p className="text-xs font-mono text-slate-500 mt-1 mb-4">
+                  <p className="text-xs font-mono text-ui-muted mt-1 mb-4">
                     {squad.activeRoster.length === 0
                       ? 'Comece por adicionar o primeiro atleta da equipa.'
                       : 'Tente pesquisar com outro termo ou limpar os filtros.'}

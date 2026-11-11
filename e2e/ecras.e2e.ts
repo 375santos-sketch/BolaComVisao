@@ -893,10 +893,16 @@ test('ficha do atleta: época, últimos jogos, faltas com motivo e PDF', async (
   await signedIn(page);
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  // Resumo at the top of the sheet: games, minutes, trainings (the same figures as before)
+  const summary = page.getByRole('region', { name: 'Resumo' });
+  await expect(summary).toContainText('convocado 2 · titular 2'); // played / called up
+  await expect(summary).toContainText("100'");
+  await expect(summary).toContainText('2 de 3'); // missed today's training (treinos test)
+  await page
+    .getByRole('navigation', { name: 'Secções da ficha' })
+    .getByRole('button', { name: 'Estatísticas' })
+    .click();
   const season = page.getByRole('region', { name: 'Época do atleta' });
-  await expect(season).toContainText('2/2'); // played / called up
-  await expect(season).toContainText("100'");
-  await expect(season).toContainText('Treinos 2/3'); // missed today's training (treinos test)
   await expect(season.getByRole('list', { name: 'Últimos jogos' })).toContainText('Tramagal SU');
   await expect(season.getByRole('list', { name: 'Faltas aos treinos' })).toContainText('Doente');
   // Evolution: minutes game by game (tap a bar for the details) and training attendance per month
@@ -917,7 +923,7 @@ test('fim de época: mensagem do treinador guardada na nuvem e PDF para a famíl
   await signedIn(page);
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
-  await page.getByRole('tab', { name: 'Perfil e notas' }).click();
+  await page.getByRole('navigation', { name: 'Secções da ficha' }).getByRole('button', { name: 'Histórico' }).click();
   const report = page.getByRole('region', { name: 'Relatório de fim de época' });
   await report.getByLabel('Mensagem do treinador para a família').fill('Uma época de grande evolução. Parabéns!');
   await report.getByRole('button', { name: 'Guardar mensagem' }).click();
@@ -936,7 +942,7 @@ test('fim de época: mensagem do treinador guardada na nuvem e PDF para a famíl
   await report.getByRole('button', { name: /PDF fim de época/ }).click();
   expect((await one).suggestedFilename()).toMatch(/^Fim_de_Epoca_Rui_Silva_2\d{3}_2\d{3}\.pdf$/);
 
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  await page.getByRole('button', { name: 'Fechar a ficha' }).click();
   const all = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Mais ações do plantel' }).click();
   await page.getByRole('menuitem', { name: /Fim de época/ }).click();
@@ -949,7 +955,7 @@ test('evolução do atleta: avaliação em 5 áreas com radar e objetivos indivi
   await signedIn(page);
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
-  await page.getByRole('tab', { name: 'Evolução' }).click();
+  await page.getByRole('navigation', { name: 'Secções da ficha' }).getByRole('button', { name: 'Avaliação' }).click();
   const evaluations = page.getByRole('region', { name: 'Avaliações' });
   await expect(evaluations).toContainText('Ainda sem avaliações');
   await evaluations.getByRole('button', { name: '+ Nova avaliação' }).click();
@@ -1158,8 +1164,9 @@ test('painel: equipa e atleta por época, jogo, confronto e período; exportar p
   // From the athlete's sheet the panel opens on the athlete.
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Tomás Gonçalves' }).click();
+  // …inside the sheet, not in a window on top
   await page.getByRole('button', { name: /Painel do atleta/ }).click();
-  await expect(panel).toContainText('Painel · Tomás Gonçalves');
+  await expect(page.getByRole('region', { name: 'Painel de estatísticas' })).toContainText('Painel · Tomás Gonçalves');
 });
 
 test('plantel: novo atleta fica guardado na nuvem e o outro treinador vê-o', async ({ page, browser }) => {
@@ -1202,6 +1209,9 @@ test('disponibilidade: lesão com data de regresso aparece no plantel e na Convo
   await page.getByLabel('Regressa a').fill('2099-01-15');
   await page.getByLabel('Motivo').fill('entorse');
   await page.locator('#player-form button[type=submit]').click();
+  await expect(page.getByText('Lesionado até 15/01').first()).toBeVisible();
+  // The sheet stays open after editing; back to the squad list, where the injury also shows
+  await page.getByRole('button', { name: 'Fechar a ficha' }).click();
   await expect(page.getByText('Lesionado até 15/01').first()).toBeVisible();
 
   await navTo(page, /planeamento/i);
@@ -1852,8 +1862,8 @@ test('crónica do jogo e cromo do atleta (imagem e PDF de todos)', async ({ page
 
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
-  await page.getByRole('tab', { name: 'Perfil e notas' }).click();
-  await page.getByRole('button', { name: '🃏 Cromo do atleta' }).click();
+  // The athlete's card is one of the actions at the top of the sheet
+  await page.getByRole('button', { name: 'Cromo', exact: true }).click();
   const card = page.getByRole('dialog', { name: 'Cromo do atleta' });
   await expect(card.getByRole('img', { name: 'Cromo de Rui Silva' })).toBeVisible();
   await page.waitForTimeout(600);
@@ -1870,7 +1880,7 @@ test('crónica do jogo e cromo do atleta (imagem e PDF de todos)', async ({ page
 
   await page.getByRole('button', { name: 'Mais ações do plantel' }).click();
   const download = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: '🃏 Cromos de todos (PDF)' }).click();
+  await page.getByRole('menuitem', { name: 'Cromos de todos (PDF)' }).click();
   expect((await download).suggestedFilename()).toMatch(/^Cromos_Drag.*\.pdf$/);
   await expect(page.getByText(/^\d+ cromos prontos a imprimir 🃏$/)).toBeVisible();
 });
@@ -1959,7 +1969,7 @@ test('testes: resultados por momento com cronómetro e evolução só na ficha d
   // The athlete's own evolution, in the athlete's sheet
   await page.getByRole('button', { name: 'Plantel', exact: false }).first().click();
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
-  await page.getByRole('tab', { name: 'Testes' }).click();
+  await page.getByRole('navigation', { name: 'Secções da ficha' }).getByRole('button', { name: 'Físico' }).click();
   const own = page.getByRole('region', { name: 'Testes da época' });
   await expect(own).toContainText(/Sprint 20 m.*4,10 s → 2,\d\d s 🚀/);
   await expect(own).toContainText('Melhorou em 1 de 1 teste 💪');

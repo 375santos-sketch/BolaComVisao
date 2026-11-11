@@ -84,22 +84,22 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
     if (isToday) {
       return {
         text: '🎉 HOJE!',
-        badgeBg: 'bg-fuchsia-500 text-slate-950 font-black animate-pulse shadow-[0_0_15px_rgba(217,70,239,0.6)]'
+        badgeBg: 'bg-ui-brand text-ui-brand-ink font-black animate-pulse shadow-[0_0_15px_rgba(217,70,239,0.6)]'
       };
     }
     if (days === 1) {
       return {
         text: '⚡ Amanhã',
-        badgeBg: 'bg-amber-500 text-slate-950 font-bold shadow-[0_0_10px_rgba(245,158,11,0.4)]'
+        badgeBg: 'bg-ui-warning text-ui-brand-ink font-bold shadow-[0_0_10px_rgba(245,158,11,0.4)]'
       };
     }
     if (days <= 7) {
-      return { text: `Em ${days} dias`, badgeBg: 'bg-cyan-950 text-cyan-300 border border-cyan-500/50' };
+      return { text: `Em ${days} dias`, badgeBg: 'bg-ui-brand-soft text-ui-brand border border-ui-brand/50' };
     }
     if (days <= 30) {
-      return { text: `Em ${days} dias`, badgeBg: 'bg-slate-900 text-slate-300 border border-slate-700' };
+      return { text: `Em ${days} dias`, badgeBg: 'bg-ui-surface text-ui-text border border-ui-line-strong' };
     }
-    return { text: `Em ${days} dias`, badgeBg: 'bg-slate-950 text-slate-400 border border-slate-800' };
+    return { text: `Em ${days} dias`, badgeBg: 'bg-ui-inset text-ui-muted border border-ui-line' };
   };
 
   return (
@@ -116,20 +116,22 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
           }}
           className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
             todayBirthdays.length > 0
-              ? 'bg-gradient-to-br from-fuchsia-950/90 to-purple-950/80 border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.3)] hover:scale-[1.02]'
-              : 'bg-slate-900/80 border-cyan-500/20 hover:border-cyan-500/40'
+              ? 'bg-gradient-to-br from-ui-brand/90 to-ui-brand/80 border-ui-brand shadow-[0_0_20px_rgba(217,70,239,0.3)] hover:scale-[1.02]'
+              : 'bg-ui-surface/80 border-ui-brand/20 hover:border-ui-brand/40'
           }`}
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-xl">🎂</span>
             {todayBirthdays.length > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-fuchsia-500 text-slate-950 text-[10px] font-black uppercase font-mono animate-bounce">
+              <span className="px-2 py-0.5 rounded-full bg-ui-brand text-ui-brand-ink text-[10px] font-black uppercase font-mono animate-bounce">
                 Hoje!
               </span>
             )}
           </div>
-          <div className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] text-white">{todayBirthdays.length}</div>
-          <div className="text-[11px] font-mono text-fuchsia-300 font-semibold uppercase tracking-wider">
+          <div className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] text-ui-text">
+            {todayBirthdays.length}
+          </div>
+          <div className="text-[11px] font-mono text-ui-brand font-semibold uppercase tracking-wider">
             Aniversários Hoje
           </div>
         </div>
@@ -144,12 +146,12 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-xl">⚡</span>
-            <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-1.5 py-0.5 rounded border border-cyan-500/30">
+            <span className="text-[10px] font-mono text-ui-brand bg-ui-brand-soft px-1.5 py-0.5 rounded border border-ui-brand/30">
               7 Dias
             </span>
           </div>
-          <div className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] text-cyan-300">{next7DaysCount}</div>
-          <div className="text-[11px] font-mono text-slate-400">Próximos 7 dias</div>
+          <div className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] text-ui-brand">{next7DaysCount}</div>
+          <div className="text-[11px] font-mono text-ui-muted">Próximos 7 dias</div>
         </div>
 
         {/* Card 30 Dias */}
@@ -162,12 +164,12 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-xl">📅</span>
-            <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-1.5 py-0.5 rounded border border-cyan-500/30">
+            <span className="text-[10px] font-mono text-ui-brand bg-ui-brand-soft px-1.5 py-0.5 rounded border border-ui-brand/30">
               30 Dias
             </span>
           </div>
-          <div className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] text-white">{next30DaysCount}</div>
-          <div className="text-[11px] font-mono text-slate-400">Próximos 30 dias</div>
+          <div className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] text-ui-text">{next30DaysCount}</div>
+          <div className="text-[11px] font-mono text-ui-muted">Próximos 30 dias</div>
         </div>
 
         {/* Card Total Registados */}
@@ -180,12 +182,12 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
         >
           <div className="flex items-center justify-between mb-1">
             <span className="text-xl">👥</span>
-            <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+            <span className="text-[10px] font-mono text-ui-muted bg-ui-inset px-1.5 py-0.5 rounded border border-ui-line">
               Total
             </span>
           </div>
-          <div className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] text-white">{allBirthdays.length}</div>
-          <div className="text-[11px] font-mono text-slate-400">Datas Registadas</div>
+          <div className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] text-ui-text">{allBirthdays.length}</div>
+          <div className="text-[11px] font-mono text-ui-muted">Datas Registadas</div>
         </div>
       </div>
 
@@ -193,19 +195,19 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
       {/* 2. FESTIVE BANNER: ANIVERSÁRIOS DE HOJE                                   */}
       {/* ========================================================================= */}
       {todayBirthdays.length > 0 && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-fuchsia-950/95 via-purple-950/90 to-slate-950 border-2 border-fuchsia-500 relative overflow-hidden">
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-ui-brand/95 via-ui-brand/90 to-ui-inset border-2 border-ui-brand relative overflow-hidden">
           {/* Subtle party icon decorations */}
           <div className="absolute top-2 right-3 text-4xl opacity-20 pointer-events-none select-none">🎉🎈✨</div>
 
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl p-2 rounded-xl bg-fuchsia-500/20 border border-fuchsia-400/50 text-fuchsia-300 animate-bounce">
+            <span className="text-2xl p-2 rounded-xl bg-ui-brand/20 border border-ui-brand/50 text-ui-brand animate-bounce">
               🎂
             </span>
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-fuchsia-300 block">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-ui-brand block">
                 FESTA NO BALNEÁRIO • ALERTA AUTOMÁTICO
               </span>
-              <h2 className="text-base sm:text-xl font-['Chakra_Petch'] font-black text-white">
+              <h2 className="text-base sm:text-xl font-['Chakra_Petch'] font-black text-ui-text">
                 {todayBirthdays.length === 1
                   ? `🎉 Hoje é o aniversário de ${todayBirthdays[0].name}!`
                   : `🎉 Hoje temos ${todayBirthdays.length} aniversários no clube!`}
@@ -219,7 +221,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                 <div className="flex items-center gap-3 min-w-0">
                   {/* Photo / Avatar */}
                   <div className="relative shrink-0">
-                    <div className="w-12 h-12 rounded-xl bg-slate-900 border-2 border-fuchsia-400 flex items-center justify-center overflow-hidden">
+                    <div className="w-12 h-12 rounded-xl bg-ui-surface border-2 border-ui-brand flex items-center justify-center overflow-hidden">
                       {person.photoUrl ? (
                         <img
                           src={person.photoUrl}
@@ -236,22 +238,22 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-['Chakra_Petch'] font-bold text-white text-sm sm:text-base truncate">
+                      <span className="font-['Chakra_Petch'] font-bold text-ui-text text-sm sm:text-base truncate">
                         {person.name}
                       </span>
                       {person.jerseyNumber !== undefined && person.jerseyNumber !== null && (
-                        <span className="px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono font-bold">
+                        <span className="px-1.5 py-0.2 rounded bg-ui-brand-soft text-ui-brand border border-ui-brand/40 text-[10px] font-mono font-bold">
                           #{person.jerseyNumber}
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-fuchsia-200 mt-0.5">
-                      <span className="px-1.5 py-0.2 rounded bg-fuchsia-950/80 border border-fuchsia-500/40 text-[10px] font-bold">
+                    <div className="flex items-center gap-1.5 text-xs font-mono text-ui-brand mt-0.5">
+                      <span className="px-1.5 py-0.2 rounded bg-ui-brand-soft border border-ui-brand/40 text-[10px] font-bold">
                         {person.type === 'jogador' ? 'Jogador' : person.roleOrPosition}
                       </span>
                       <span>—</span>
-                      <strong className="text-white font-bold text-xs sm:text-sm">{person.nextAge} anos</strong>
+                      <strong className="text-ui-text font-bold text-xs sm:text-sm">{person.nextAge} anos</strong>
                     </div>
                   </div>
                 </div>
@@ -261,7 +263,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                   <button
                     type="button"
                     onClick={() => setImagePerson(person)}
-                    className="px-2.5 py-1.5 rounded-xl bg-fuchsia-500 hover:bg-fuchsia-400 text-white font-black text-xs shadow transition-all"
+                    className="px-2.5 py-1.5 rounded-xl bg-ui-brand hover:bg-ui-brand text-ui-text font-black text-xs shadow transition-all"
                     title="Imagem de parabéns para partilhar"
                     aria-label={`Imagem de parabéns para ${person.name}`}
                   >
@@ -321,19 +323,19 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Filter 1: Type (Todos | Jogadores | Equipa Técnica) */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-            <span className="text-[11px] font-mono text-slate-400 uppercase font-bold mr-1 shrink-0">Ver:</span>
+            <span className="text-[11px] font-mono text-ui-muted uppercase font-bold mr-1 shrink-0">Ver:</span>
 
             <button
               type="button"
               onClick={() => setTypeFilter('todos')}
               className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
                 typeFilter === 'todos'
-                  ? 'bg-cyan-500 text-slate-950 font-black shadow-[0_0_10px_rgba(0,210,255,0.3)]'
-                  : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'
+                  ? 'bg-ui-brand text-ui-brand-ink font-black shadow-[0_0_10px_rgba(0,210,255,0.3)]'
+                  : 'bg-ui-inset text-ui-text border border-ui-line hover:border-ui-line-strong'
               }`}
             >
               <span>🌟 Todos</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/60 text-current">
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-ui-surface/60 text-current">
                 {allBirthdays.length}
               </span>
             </button>
@@ -343,12 +345,12 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
               onClick={() => setTypeFilter('jogadores')}
               className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
                 typeFilter === 'jogadores'
-                  ? 'bg-cyan-500 text-slate-950 font-black shadow-[0_0_10px_rgba(0,210,255,0.3)]'
-                  : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'
+                  ? 'bg-ui-brand text-ui-brand-ink font-black shadow-[0_0_10px_rgba(0,210,255,0.3)]'
+                  : 'bg-ui-inset text-ui-text border border-ui-line hover:border-ui-line-strong'
               }`}
             >
               <span>🏃 Jogadores</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/60 text-current">
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-ui-surface/60 text-current">
                 {allBirthdays.filter((b) => b.type === 'jogador').length}
               </span>
             </button>
@@ -358,12 +360,12 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
               onClick={() => setTypeFilter('equipa_tecnica')}
               className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1 ${
                 typeFilter === 'equipa_tecnica'
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-[0_0_10px_rgba(245,158,11,0.3)]'
-                  : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'
+                  ? 'bg-ui-warning text-ui-brand-ink font-black shadow-[0_0_10px_rgba(245,158,11,0.3)]'
+                  : 'bg-ui-inset text-ui-text border border-ui-line hover:border-ui-line-strong'
               }`}
             >
               <span>👔 Equipa Técnica</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/60 text-current">
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-ui-surface/60 text-current">
                 {allBirthdays.filter((b) => b.type === 'equipa_tecnica').length}
               </span>
             </button>
@@ -382,7 +384,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ui-muted hover:text-ui-text text-xs"
               >
                 ✕
               </button>
@@ -391,16 +393,16 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
         </div>
 
         {/* Filter 2: Period (Hoje | Próximos 7 dias | Próximos 30 dias | Todos) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1 border-t border-slate-800/60">
-          <span className="text-[11px] font-mono text-slate-400 uppercase font-bold mr-1 shrink-0">Período:</span>
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1 border-t border-ui-line/60">
+          <span className="text-[11px] font-mono text-ui-muted uppercase font-bold mr-1 shrink-0">Período:</span>
 
           <button
             type="button"
             onClick={() => setPeriodFilter('hoje')}
             className={`px-3 py-1 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
               periodFilter === 'hoje'
-                ? 'bg-fuchsia-500 text-slate-950 font-bold'
-                : 'bg-slate-950/70 text-slate-400 border border-slate-800 hover:text-slate-200'
+                ? 'bg-ui-brand text-ui-brand-ink font-bold'
+                : 'bg-ui-inset/70 text-ui-muted border border-ui-line hover:text-ui-text'
             }`}
           >
             🎂 Hoje ({todayBirthdays.length})
@@ -411,8 +413,8 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
             onClick={() => setPeriodFilter('7dias')}
             className={`px-3 py-1 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
               periodFilter === '7dias'
-                ? 'bg-cyan-500 text-slate-950 font-bold'
-                : 'bg-slate-950/70 text-slate-400 border border-slate-800 hover:text-slate-200'
+                ? 'bg-ui-brand text-ui-brand-ink font-bold'
+                : 'bg-ui-inset/70 text-ui-muted border border-ui-line hover:text-ui-text'
             }`}
           >
             ⚡ Próximos 7 dias ({next7DaysCount})
@@ -423,8 +425,8 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
             onClick={() => setPeriodFilter('30dias')}
             className={`px-3 py-1 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
               periodFilter === '30dias'
-                ? 'bg-cyan-500 text-slate-950 font-bold'
-                : 'bg-slate-950/70 text-slate-400 border border-slate-800 hover:text-slate-200'
+                ? 'bg-ui-brand text-ui-brand-ink font-bold'
+                : 'bg-ui-inset/70 text-ui-muted border border-ui-line hover:text-ui-text'
             }`}
           >
             📅 Próximos 30 dias ({next30DaysCount})
@@ -435,8 +437,8 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
             onClick={() => setPeriodFilter('todos')}
             className={`px-3 py-1 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
               periodFilter === 'todos'
-                ? 'bg-cyan-500 text-slate-950 font-bold'
-                : 'bg-slate-950/70 text-slate-400 border border-slate-800 hover:text-slate-200'
+                ? 'bg-ui-brand text-ui-brand-ink font-bold'
+                : 'bg-ui-inset/70 text-ui-muted border border-ui-line hover:text-ui-text'
             }`}
           >
             🗓️ Todos os Aniversários ({allBirthdays.length})
@@ -450,8 +452,8 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-cyan-400 text-lg">📅</span>
-            <h3 className="font-['Chakra_Petch'] font-bold text-base text-white uppercase tracking-wider">
+            <span className="text-ui-brand text-lg">📅</span>
+            <h3 className="font-['Chakra_Petch'] font-bold text-base text-ui-text uppercase tracking-wider">
               {periodFilter === 'hoje'
                 ? 'Aniversários de Hoje'
                 : periodFilter === '7dias'
@@ -460,23 +462,21 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                     ? 'Próximos 30 Dias'
                     : 'Próximos Aniversários'}
             </h3>
-            <span className="px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold">
+            <span className="px-2 py-0.5 rounded-full bg-ui-brand-soft text-ui-brand border border-ui-brand/40 text-xs font-mono font-bold">
               {filteredList.length}
             </span>
           </div>
 
-          <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
-            Ordenado por proximidade da data
-          </span>
+          <span className="text-[11px] font-mono text-ui-muted hidden sm:inline">Ordenado por proximidade da data</span>
         </div>
 
         {filteredList.length === 0 ? (
-          <div className="p-8 rounded-2xl bg-slate-900/60 border-2 border-dashed border-slate-800 text-center">
+          <div className="p-8 rounded-2xl bg-ui-surface/60 border-2 border-dashed border-ui-line text-center">
             <div className="text-4xl mb-2">🎈</div>
-            <h4 className="font-['Chakra_Petch'] font-bold text-white text-sm uppercase mb-1">
+            <h4 className="font-['Chakra_Petch'] font-bold text-ui-text text-sm uppercase mb-1">
               Nenhum aniversário encontrado para este filtro
             </h4>
-            <p className="text-xs font-mono text-slate-400 max-w-sm mx-auto mb-3">
+            <p className="text-xs font-mono text-ui-muted max-w-sm mx-auto mb-3">
               Experimenta selecionar outro período ou limpar o termo de pesquisa.
             </p>
             <button
@@ -502,10 +502,10 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                   key={person.id}
                   className={`p-4 rounded-2xl border transition-all relative overflow-hidden flex flex-col justify-between group ${
                     person.isToday
-                      ? 'bg-gradient-to-br from-fuchsia-950/90 via-slate-900 to-slate-950 border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.25)]'
+                      ? 'bg-gradient-to-br from-ui-brand/90 via-ui-surface to-ui-inset border-ui-brand shadow-[0_0_20px_rgba(217,70,239,0.25)]'
                       : isPlayer
-                        ? 'bg-slate-900/80 border-cyan-500/30 hover:border-cyan-400 hover:bg-slate-900'
-                        : 'bg-slate-900/80 border-amber-500/30 hover:border-amber-400 hover:bg-slate-900'
+                        ? 'bg-ui-surface/80 border-ui-brand/30 hover:border-ui-brand hover:bg-ui-surface'
+                        : 'bg-ui-surface/80 border-ui-warning/30 hover:border-ui-warning hover:bg-ui-surface'
                   }`}
                 >
                   {/* Top Row: Avatar, Name, Role & Days Badge */}
@@ -517,10 +517,10 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                           <div
                             className={`w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden border-2 shadow-sm ${
                               person.isToday
-                                ? 'bg-slate-900 border-fuchsia-400'
+                                ? 'bg-ui-surface border-ui-brand'
                                 : isPlayer
-                                  ? 'bg-slate-950 border-cyan-400/60'
-                                  : 'bg-slate-950 border-amber-400/60'
+                                  ? 'bg-ui-inset border-ui-brand/60'
+                                  : 'bg-ui-inset border-ui-warning/60'
                             }`}
                           >
                             {person.photoUrl ? (
@@ -539,11 +539,11 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                         {/* Name and Tag */}
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="font-['Chakra_Petch'] font-bold text-white text-sm sm:text-base leading-tight group-hover:text-cyan-300 transition-colors truncate">
+                            <h4 className="font-['Chakra_Petch'] font-bold text-ui-text text-sm sm:text-base leading-tight group-hover:text-ui-brand transition-colors truncate">
                               {person.name}
                             </h4>
                             {person.jerseyNumber !== undefined && person.jerseyNumber !== null && (
-                              <span className="px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono font-bold">
+                              <span className="px-1.5 py-0.2 rounded bg-ui-brand-soft text-ui-brand border border-ui-brand/40 text-[10px] font-mono font-bold">
                                 #{person.jerseyNumber}
                               </span>
                             )}
@@ -551,14 +551,14 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
 
                           <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                             {isPlayer ? (
-                              <span className="px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono font-semibold flex items-center gap-1">
+                              <span className="px-2 py-0.5 rounded-full bg-ui-brand-soft text-ui-brand border border-ui-brand/40 text-[10px] font-mono font-semibold flex items-center gap-1">
                                 <span>🏃 Jogador</span>
                                 {person.roleOrPosition && person.roleOrPosition !== 'Jogador' && (
                                   <span>• {person.roleOrPosition}</span>
                                 )}
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-semibold flex items-center gap-1">
+                              <span className="px-2 py-0.5 rounded-full bg-ui-warning-soft text-ui-warning border border-ui-warning/40 text-[10px] font-mono font-semibold flex items-center gap-1">
                                 <span>👔 {person.roleOrPosition}</span>
                               </span>
                             )}
@@ -575,30 +575,30 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                     {/* Birthday Info Card */}
                     <div className="ui-inset p-2.5 space-y-1.5 mb-3">
                       <div className="flex items-center justify-between text-xs font-mono">
-                        <span className="text-slate-400 flex items-center gap-1">
+                        <span className="text-ui-muted flex items-center gap-1">
                           <span>🎂 Data:</span>
                         </span>
-                        <span className="font-bold text-white">{person.formattedDayMonth}</span>
+                        <span className="font-bold text-ui-text">{person.formattedDayMonth}</span>
                       </div>
 
                       <div className="flex items-center justify-between text-xs font-mono">
-                        <span className="text-slate-400 flex items-center gap-1">
+                        <span className="text-ui-muted flex items-center gap-1">
                           <span>📆 Nascimento:</span>
                         </span>
-                        <span className="text-slate-300">{person.formattedBirthDate}</span>
+                        <span className="text-ui-text">{person.formattedBirthDate}</span>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs font-mono pt-1 border-t border-slate-800/80">
-                        <span className="text-slate-400">
+                      <div className="flex items-center justify-between text-xs font-mono pt-1 border-t border-ui-line/80">
+                        <span className="text-ui-muted">
                           {person.isToday ? '🎉 Completa hoje:' : '🎉 Irá completar:'}
                         </span>
-                        <span className="font-bold text-amber-300 text-sm">{person.nextAge} anos</span>
+                        <span className="font-bold text-ui-warning text-sm">{person.nextAge} anos</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-ui-line/80">
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
@@ -665,8 +665,8 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
         <div className="ui-inset p-4 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-amber-400 text-base">⚠️</span>
-              <span className="font-['Chakra_Petch'] font-bold text-xs uppercase text-amber-300">
+              <span className="text-ui-warning text-base">⚠️</span>
+              <span className="font-['Chakra_Petch'] font-bold text-xs uppercase text-ui-warning">
                 {totalMissing}{' '}
                 {totalMissing === 1 ? 'membro sem data de nascimento' : 'membros sem data de nascimento registada'}
               </span>
@@ -675,27 +675,27 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
             <button
               type="button"
               onClick={() => setShowMissingAlert(!showMissingAlert)}
-              className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 underline"
+              className="text-[11px] font-mono text-ui-brand hover:text-ui-brand underline"
             >
               {showMissingAlert ? 'Ocultar detalhes ▲' : 'Ver quem falta ▼'}
             </button>
           </div>
 
-          <p className="text-xs text-slate-400 font-mono">
+          <p className="text-xs text-ui-muted font-mono">
             Para que o sistema consiga emitir os alertas automáticos e notificações de aniversário, preenche a data de
             nascimento na ficha correspondente.
           </p>
 
           {showMissingAlert && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800 animate-fadeIn">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-ui-line animate-fadeIn">
               {playersMissingDate.length > 0 && (
                 <div className="ui-card p-2.5">
-                  <span className="text-[11px] font-mono font-bold text-cyan-400 block mb-1">
+                  <span className="text-[11px] font-mono font-bold text-ui-brand block mb-1">
                     🏃 Jogadores ({playersMissingDate.length}):
                   </span>
                   <div className="space-y-1 max-h-32 overflow-y-auto scrollbar-thin">
                     {playersMissingDate.map((p) => (
-                      <div key={p.id} className="flex items-center justify-between text-xs font-mono text-slate-300">
+                      <div key={p.id} className="flex items-center justify-between text-xs font-mono text-ui-text">
                         <span className="truncate">
                           {p.name} {p.number !== null ? `(#${p.number})` : ''}
                         </span>
@@ -703,7 +703,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                           <button
                             type="button"
                             onClick={() => onEditPlayer(p)}
-                            className="text-[10px] text-cyan-400 hover:underline shrink-0 ml-2"
+                            className="text-[10px] text-ui-brand hover:underline shrink-0 ml-2"
                           >
                             + Registar Data
                           </button>
@@ -716,12 +716,12 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
 
               {staffMissingDate.length > 0 && (
                 <div className="ui-card p-2.5">
-                  <span className="text-[11px] font-mono font-bold text-amber-400 block mb-1">
+                  <span className="text-[11px] font-mono font-bold text-ui-warning block mb-1">
                     👔 Equipa Técnica ({staffMissingDate.length}):
                   </span>
                   <div className="space-y-1 max-h-32 overflow-y-auto scrollbar-thin">
                     {staffMissingDate.map((s) => (
-                      <div key={s.id} className="flex items-center justify-between text-xs font-mono text-slate-300">
+                      <div key={s.id} className="flex items-center justify-between text-xs font-mono text-ui-text">
                         <span className="truncate">
                           {s.name} ({s.role})
                         </span>
@@ -729,7 +729,7 @@ export const BirthdaySection: React.FC<BirthdaySectionProps> = ({ state, onEditP
                           <button
                             type="button"
                             onClick={() => onEditStaff(s)}
-                            className="text-[10px] text-amber-400 hover:underline shrink-0 ml-2"
+                            className="text-[10px] text-ui-warning hover:underline shrink-0 ml-2"
                           >
                             + Registar Data
                           </button>
