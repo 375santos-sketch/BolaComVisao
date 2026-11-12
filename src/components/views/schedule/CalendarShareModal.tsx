@@ -113,7 +113,10 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
         ) : (
           <>
             <div className="ui-inset p-2.5">
-              <div className="text-[10px] text-ui-muted mb-1">Link do calendário ({events.length} jogos e treinos)</div>
+              <div className="text-[10px] text-ui-muted mb-1">
+                Link do calendário ({events.filter((e) => e.kind === 'jogo').length} jogos ·{' '}
+                {events.filter((e) => e.kind === 'treino').length} treinos)
+              </div>
               <input
                 readOnly
                 aria-label="Link do calendário"

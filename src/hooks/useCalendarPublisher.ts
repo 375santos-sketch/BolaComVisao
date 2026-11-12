@@ -11,7 +11,13 @@ export const calendarTeamName = (state: Pick<AppState, 'myClubName' | 'category'
 /** Events of the parents' calendar: from 30 days ago on. */
 export function calendarEventsOf(state: AppState, today = new Date()) {
   const from = new Date(today.getTime() - 30 * 86400000).toISOString().slice(0, 10);
-  return buildCalendarEvents(state.myClubName || 'A nossa equipa', state.schedule || [], state.trainings || [], from);
+  return buildCalendarEvents(
+    state.myClubName || 'A nossa equipa',
+    state.schedule || [],
+    state.trainings || [],
+    from,
+    state.matches || []
+  );
 }
 
 /**
