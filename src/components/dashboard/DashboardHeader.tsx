@@ -37,81 +37,103 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Greeting, then club, team and season, with the few tools always at hand */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
+      {/* Welcome: the night stadium, the brand, "Bem-vindo, Mister!" and the team's crest */}
+      <section aria-label="Boas-vindas" className="dash-hero">
+        <span aria-hidden className="bcv-beam bcv-beam-right" />
+        <span aria-hidden className="dash-hero-pitch" />
+        <div className="dash-crest" aria-hidden>
+          {state.clubLogoUrl ? (
+            <img
+              src={state.clubLogoUrl}
+              alt=""
+              className="h-full w-full object-contain p-2"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span>
+              {(state.myClubName || 'BCV')
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((w) => w[0])
+                .join('')
+                .toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="relative z-[2] flex items-center gap-2.5">
           {state.clubLogoUrl ? (
             <img
               src={state.clubLogoUrl}
               alt="Emblema do Clube"
-              className="h-12 w-12 shrink-0 rounded-ui object-cover border border-ui-line-strong bg-ui-inset p-0.5 sm:h-14 sm:w-14"
+              className="h-10 w-10 shrink-0 rounded-ui-sm object-cover border border-ui-line-strong bg-ui-inset p-0.5 lg:hidden"
               referrerPolicy="no-referrer"
             />
-          ) : (
-            <div className="ui-inset flex h-12 w-12 shrink-0 items-center justify-center rounded-ui text-ui-brand sm:h-14 sm:w-14">
-              <Icon name="ball" className="h-6 w-6" />
+          ) : null}
+          <div className="min-w-0 flex-1">
+            <div className="text-[17px] font-black tracking-tight text-ui-text sm:text-[20px]">
+              BolaCom<span className="text-ui-brand">Visão</span>
             </div>
-          )}
-          <div className="min-w-0">
-            <p className="hidden text-ui-caption font-bold uppercase tracking-[0.12em] text-ui-brand sm:block">
-              {greeting()}, {(state.currentUser?.name || 'Mister').split(' ')[0]}
-            </p>
-            <h1 className="truncate text-ui-title font-extrabold leading-tight text-ui-text sm:text-ui-headline">
-              {state.myClubName || 'BolaComVisão Clube'}
-            </h1>
             <div className="truncate text-ui-caption text-ui-muted">
-              {state.category || 'Sub-19'} · Época {state.season || defaultSeason()} ·{' '}
+              {state.myClubName || 'BolaComVisão Clube'} · {state.category || 'Sub-19'} · Época{' '}
+              {state.season || defaultSeason()} ·{' '}
               <span className="text-ui-text">{state.currentUser?.name || 'Mister'}</span>
             </div>
           </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          <SyncStatusBadge onClick={onOpenSync} fallbackSyncInfo={syncInfo} />
-          {isAdmin && onOpenAdminUsers && (
+          <div className="flex shrink-0 items-center gap-1.5">
+            <SyncStatusBadge onClick={onOpenSync} fallbackSyncInfo={syncInfo} />
+            {isAdmin && onOpenAdminUsers && (
+              <button
+                id="dashboard-admin-users-btn"
+                onClick={onOpenAdminUsers}
+                className="bcv-round relative"
+                title="Gestão de Utilizadores e Treinadores"
+                aria-label="Gestão de utilizadores"
+              >
+                <Icon name="users" className="h-[18px] w-[18px]" />
+                {pendingUsersCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ui-warning px-1 text-[10px] font-black text-ui-brand-ink">
+                    {pendingUsersCount}
+                  </span>
+                )}
+              </button>
+            )}
+            <SunModeButton className="bcv-round !p-0" />
+            {onOpenNotifications && (
+              <button
+                id="dashboard-notifications-btn"
+                onClick={onOpenNotifications}
+                className="bcv-round relative"
+                title="Notificações do Sistema"
+                aria-label="Notificações"
+              >
+                <Icon name="bell" className="h-[18px] w-[18px]" />
+                {unreadNotifs > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ui-danger px-1 text-[10px] font-bold text-ui-text">
+                    {unreadNotifs > 9 ? '9+' : unreadNotifs}
+                  </span>
+                )}
+              </button>
+            )}
             <button
-              id="dashboard-admin-users-btn"
-              onClick={onOpenAdminUsers}
-              className="ui-btn ui-btn-secondary relative w-10 h-10 flex items-center justify-center"
-              title="Gestão de Utilizadores e Treinadores"
-              aria-label="Gestão de utilizadores"
+              id="dashboard-settings-btn"
+              onClick={onOpenSettings}
+              className="bcv-round"
+              title="Definições da Aplicação"
+              aria-label="Definições"
             >
-              <Icon name="users" className="w-[18px] h-[18px]" />
-              {pendingUsersCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-ui-warning text-ui-brand-ink rounded-full text-[10px] font-black flex items-center justify-center">
-                  {pendingUsersCount}
-                </span>
-              )}
+              <Icon name="settings" className="h-[18px] w-[18px]" />
             </button>
-          )}
-          <SunModeButton className="w-10 h-10" />
-          {onOpenNotifications && (
-            <button
-              id="dashboard-notifications-btn"
-              onClick={onOpenNotifications}
-              className="ui-btn ui-btn-secondary relative w-10 h-10 flex items-center justify-center"
-              title="Notificações do Sistema"
-              aria-label="Notificações"
-            >
-              <Icon name="bell" className="w-[18px] h-[18px]" />
-              {unreadNotifs > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-ui-danger text-ui-text rounded-full text-[10px] font-bold flex items-center justify-center">
-                  {unreadNotifs > 9 ? '9+' : unreadNotifs}
-                </span>
-              )}
-            </button>
-          )}
-          <button
-            id="dashboard-settings-btn"
-            onClick={onOpenSettings}
-            className="ui-btn ui-btn-secondary w-10 h-10 flex items-center justify-center"
-            title="Definições da Aplicação"
-            aria-label="Definições"
-          >
-            <Icon name="settings" className="w-[18px] h-[18px]" />
-          </button>
+          </div>
         </div>
-      </div>
+        <div className="relative z-[2] mt-6 max-w-[70%] sm:mt-10">
+          <p className="text-ui-caption font-bold uppercase tracking-[0.12em] text-ui-brand">
+            {greeting()}, {(state.currentUser?.name || 'Mister').split(' ')[0]}
+          </p>
+          <h1 className="bcv-title mt-1 text-[32px] sm:text-[44px]">Bem-vindo, Mister!</h1>
+          <p className="mt-1.5 text-ui-body text-ui-text/85">Vamos continuar a construir a evolução da nossa equipa.</p>
+        </div>
+      </section>
 
       {/* Admin Pending Registrations Alert Ribbon */}
       {isAdmin && pendingUsersCount > 0 && onOpenAdminUsers && (
