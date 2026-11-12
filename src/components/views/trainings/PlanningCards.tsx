@@ -1,14 +1,96 @@
 import React from 'react';
-import { Training } from '../../../types';
+import { Exercise, Player, Training } from '../../../types';
 import { THEME_LABELS, ThemeKey } from '../../../lib/seasonPlan';
-import { PeriodSummary, WeekLoad, dayLabel, trainingMinutes } from '../../../lib/planningSummary';
+import {
+  PeriodSummary,
+  WeekLoad,
+  datePT,
+  dayLabel,
+  trainingMinutes,
+  trainingStatus
+} from '../../../lib/planningSummary';
+import { localDateISO } from '../../../lib/trainingQuick';
+import { trainingImage } from '../../../lib/trainingImage';
 import { EmptyState } from '../../ui/EmptyState';
-import { Icon } from '../../ui/Icon';
 import { SessionPhasesBar } from './SessionPhasesBar';
 import { THEME_COLORS } from './themeColors';
 
 const ddmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 const cleanType = (type?: string) => (type || '').replace(/^[^\p{L}]+/u, '').trim();
+
+/** A small pitch: the exercise's own drawing when there is one, else just the lines of a pitch (no made-up players). */
+export const MiniPitch: React.FC<{ image?: string; className?: string }> = ({ image, className = 'h-16 w-24' }) =>
+  image ? (
+    <img src={image} alt="" className={`shrink-0 rounded-ui-sm border border-ui-line object-cover ${className}`} />
+  ) : (
+    <span aria-hidden className={`mini-pitch shrink-0 ${className}`} />
+  );
+
+/**
+ * Treinos → Sessões: the last trainings (done or still to close), newest first, each with its drawing, date,
+ * length and attendance: the sessions before are one tap away.
+ */
+export const RecentSessionsCard: React.FC<{
+  trainings: Training[];
+  library?: Exercise[];
+  roster: Player[];
+  onOpen: (t: Training) => void;
+  onSeeAll: () => void;
+}> = ({ trainings, library = [], roster, onOpen, onSeeAll }) => {
+  const today = localDateISO();
+  const active = roster.filter((p) => p && p.active !== false).length;
+  const recent = trainings
+    .filter((t) => t?.date && t.date.slice(0, 10) <= today && trainingStatus(t, today) !== 'agendado')
+    .sort((a, b) => `${b.date.slice(0, 10)}${b.time || ''}`.localeCompare(`${a.date.slice(0, 10)}${a.time || ''}`))
+    .slice(0, 5);
+  return (
+    <section aria-label="Últimas sessões" className="ui-card h-full p-3 sm:p-4">
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <h2 className="ui-kicker">Últimas sessões</h2>
+        <button type="button" onClick={onSeeAll} className="text-ui-caption font-bold text-ui-brand">
+          Ver todas →
+        </button>
+      </div>
+      {recent.length ? (
+        <ul className="divide-y divide-ui-line">
+          {recent.map((t) => {
+            const done = trainingStatus(t, today) === 'realizado';
+            const theme = t.sessionPlan?.objective?.trim() || cleanType(t.type);
+            const present = done && active ? Math.max(0, active - (t.absences || []).length) : null;
+            const minutes = trainingMinutes(t);
+            return (
+              <li key={t.id}>
+                <button
+                  type="button"
+                  onClick={() => onOpen(t)}
+                  className="flex w-full items-center gap-3 py-2.5 text-left"
+                >
+                  <MiniPitch image={trainingImage(t, library)} className="h-11 w-16" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-ui-body font-bold text-ui-text">
+                      {t.trainingNumber ? `Treino ${t.trainingNumber}` : 'Treino'}
+                      {theme ? ` · ${theme}` : ''}
+                    </span>
+                    <span className="block truncate text-ui-caption text-ui-muted">
+                      {datePT(t.date)}
+                      {minutes ? ` · ${minutes} min` : ''}
+                      {present !== null ? ` · ${present} presentes` : ''}
+                    </span>
+                  </span>
+                  <span className={`ui-badge shrink-0 ${done ? 'ui-badge-success' : 'ui-badge-warning'}`}>
+                    {done ? 'Feito' : 'Por fechar'}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="py-2 text-ui-caption text-ui-muted">Ainda sem treinos feitos nesta época.</p>
+      )}
+    </section>
+  );
+};
 
 /**
  * Treinos → Sessões: the next training first. Date, time, place, objective and the parts of the session, with the
@@ -21,7 +103,9 @@ export const NextTrainingCard: React.FC<{
   onShare: () => void;
   onPdf: (t: Training) => void;
   onCreate: () => void;
-}> = ({ training, onOpenPlan, onAttendance, onShare, onPdf, onCreate }) => {
+  /** The exercises of the library (their drawings). */
+  library?: Exercise[];
+}> = ({ training, onOpenPlan, onAttendance, onShare, onPdf, onCreate, library = [] }) => {
   if (!training) {
     return (
       <section aria-label="Próximo treino" className="ui-card p-3">
@@ -57,12 +141,7 @@ export const NextTrainingCard: React.FC<{
             {cleanType(training.type) ? <span>{cleanType(training.type)}</span> : null}
           </p>
         </div>
-        <span
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-ui bg-ui-success-soft text-ui-success"
-          aria-hidden
-        >
-          <Icon name="whistle" className="h-5 w-5" />
-        </span>
+        <MiniPitch image={trainingImage(training, library)} className="h-16 w-24 sm:h-20 sm:w-32" />
       </div>
 
       <div className="ui-inset mt-3 p-3">

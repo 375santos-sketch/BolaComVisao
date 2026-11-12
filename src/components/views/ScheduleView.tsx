@@ -270,7 +270,13 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      <AgendaTabs current="calendario" onNavigate={onNavigate} />
+      <AgendaTabs
+        current="calendario"
+        onNavigate={onNavigate}
+        subtitle={[state.myClubName, state.category, state.season ? `Época ${state.season}` : '']
+          .filter(Boolean)
+          .join(' · ')}
+      />
 
       <NextUpCard
         training={nextTraining(state.trainings || [], todayStr)}
@@ -279,6 +285,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         onOpenGame={handleEditScheduledMatch}
         onNewTraining={() => handleOpenScheduleTraining()}
         onNewGame={() => handleOpenScheduleMatch()}
+        library={state.exerciseLibrary || []}
       />
 
       {showFixturePrint && (

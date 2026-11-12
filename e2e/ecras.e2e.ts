@@ -769,8 +769,9 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await signedIn(page);
   await openAgendaList(page);
   await page.getByRole('button', { name: 'Treinos', exact: true }).first().click();
-  // Opens on every training (no empty "Agendados" filter), newest first.
-  await expect(page.getByText('TREINO 2')).toBeVisible();
+  // Opens on every training (no empty "Agendados" filter), newest first; the last sessions are also at the top
+  await expect(page.getByRole('region', { name: 'Últimas sessões' })).toContainText('Treino 2');
+  await expect(page.getByText('TREINO 2').last()).toBeVisible();
 
   await page.getByRole('button', { name: /Treino de hoje/ }).click();
   const today = page.getByRole('dialog', { name: 'Treino de hoje' });
@@ -813,7 +814,10 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await today.getByRole('button', { name: 'Fechar' }).click();
 
   // Repeat today's training next week: planned, shown first (what's coming).
-  await page.getByRole('button', { name: /Treino 3/ }).click();
+  await page
+    .getByRole('button', { name: /Treino 3/ })
+    .last()
+    .click();
   await page.getByRole('button', { name: /Repetir/ }).click();
   await expect(page.getByText(/Treino repetido para/)).toBeVisible();
   await expect(page.getByRole('button', { name: /Treino 4.*Por fazer/ })).toBeVisible();

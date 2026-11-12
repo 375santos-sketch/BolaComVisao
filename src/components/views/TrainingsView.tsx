@@ -22,7 +22,7 @@ import { addDaysISO, localDateISO, trainingForToday, withAttendance } from '../.
 import { firstTrainingTime, teamSettings, trainingSlot } from '../../lib/teamSettings';
 import { nextTraining, weekSummary } from '../../lib/planningSummary';
 import { AgendaTabs } from './schedule/AgendaTabs';
-import { NextTrainingCard, WeekSummaryCard } from './trainings/PlanningCards';
+import { NextTrainingCard, RecentSessionsCard, WeekSummaryCard } from './trainings/PlanningCards';
 import { SectionHeader } from '../ui/SectionHeader';
 
 const PlanShareModal = lazy(() => import('./trainings/PlanShareModal').then((m) => ({ default: m.PlanShareModal })));
@@ -317,7 +317,14 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      <AgendaTabs current={section === 'epoca' ? 'epoca' : 'treinos'} onNavigate={onNavigate} className="mb-3" />
+      <AgendaTabs
+        current={section === 'epoca' ? 'epoca' : 'treinos'}
+        onNavigate={onNavigate}
+        className="mb-3"
+        subtitle={[state.myClubName, state.category, state.season ? `Época ${state.season}` : '']
+          .filter(Boolean)
+          .join(' · ')}
+      />
 
       {section === 'treinos' && (
         <TrainingHeader
@@ -364,20 +371,32 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
         />
       ) : (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-            <NextTrainingCard
-              training={nextTraining(state.trainings || [])}
-              onOpenPlan={handleOpenEditForm}
-              onAttendance={(training) => setTodayTraining({ training, isNew: false })}
-              onShare={() => setShowPlanShare(true)}
-              onPdf={(training) => {
-                generateTrainingSessionPDF(training, state);
-                onShowToast('A gerar PDF do Plano de Treino... 📄');
-              }}
-              onCreate={() => handleOpenCreateForm('single')}
+          {/* The next training and this week on the left; the last sessions on the right (below on the phone) */}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+            <div className="space-y-3">
+              <NextTrainingCard
+                training={nextTraining(state.trainings || [])}
+                library={state.exerciseLibrary || []}
+                onOpenPlan={handleOpenEditForm}
+                onAttendance={(training) => setTodayTraining({ training, isNew: false })}
+                onShare={() => setShowPlanShare(true)}
+                onPdf={(training) => {
+                  generateTrainingSessionPDF(training, state);
+                  onShowToast('A gerar PDF do Plano de Treino... 📄');
+                }}
+                onCreate={() => handleOpenCreateForm('single')}
+              />
+              <WeekSummaryCard week={weekSummary(state)} />
+            </div>
+            <RecentSessionsCard
+              trainings={state.trainings || []}
+              library={state.exerciseLibrary || []}
+              roster={state.roster || []}
+              onOpen={handleOpenEditForm}
+              onSeeAll={() => document.getElementById('todas-as-sessoes')?.scrollIntoView({ behavior: 'smooth' })}
             />
-            <WeekSummaryCard week={weekSummary(state)} />
           </div>
+          <span id="todas-as-sessoes" />
           <SectionHeader title="Todas as sessões" subtitle="Histórico e treinos marcados, com procura e filtros." />
           <TrainingList
             state={state}
