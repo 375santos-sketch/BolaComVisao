@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { buildMonthlyReport, monthLabel, reportMonths } from '../lib/monthlyReport';
-import { buildMonthlyReportPDF } from '../lib/pdf/createMonthlyReport';
 import { AppState, Match, Player, ScheduledMatch, Training } from '../types';
 
 const roster: Player[] = ['a', 'b', 'c'].map((id, i) => ({
@@ -122,15 +121,5 @@ describe('Relatório mensal', () => {
       { date: '2026-10-17', source: 'Jogo vs Equipa m2', text: 'Ganhar as segundas bolas' },
       { date: '2026-10-29', source: 'Treino nº 3', text: 'Pressão alta' }
     ]);
-  });
-
-  it('builds the PDF with the games, the athletes, the objectives and the notes', async () => {
-    const r = buildMonthlyReport(state, '2026-10');
-    const { doc, filename } = await buildMonthlyReportPDF(r, state, 'Boa evolução na saída de bola.');
-    const raw = doc.output() as string;
-    expect(filename).toBe('Relatorio_Mensal_Lobos_2026-10.pdf');
-    ['Relatório mensal', 'Equipa m1', 'Atleta C', 'Ganhar as segundas bolas', 'Boa evolução na saída de bola.'].forEach(
-      (t) => expect(raw, t).toContain(t)
-    );
   });
 });

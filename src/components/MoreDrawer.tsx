@@ -190,8 +190,8 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
         }),
         ...when(onOpenMonthlyReport, {
           icon: 'clipboard',
-          title: 'Relatório mensal',
-          detail: 'PDF para o coordenador',
+          title: 'Relatórios',
+          detail: 'Relatório mensal para o coordenador · PDF A4',
           run: onOpenMonthlyReport
         })
       ]
