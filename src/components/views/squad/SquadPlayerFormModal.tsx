@@ -1,4 +1,5 @@
 import React from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { PlayerStatus, DominantFoot } from '../../../types';
 import { POSITION_OPTIONS } from './types';
 
@@ -194,15 +195,13 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
               {(formStatus === 'lesionado' || formStatus === 'suspenso') && setFormStatusUntil && setFormStatusNote && (
                 <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-ui-warning-soft border border-ui-warning/30">
                   <div>
-                    <label className="block text-xs font-mono text-ui-warning mb-1" htmlFor="player-status-until">
-                      Regressa a
-                    </label>
-                    <input
-                      id="player-status-until"
+                    <label className="block text-xs font-mono text-ui-warning mb-1">Regressa a</label>
+                    <DateTimePT
                       type="date"
+                      label="Regressa a"
                       value={formStatusUntil}
-                      onChange={(e) => setFormStatusUntil(e.target.value)}
-                      className="ui-input w-full text-xs"
+                      onChange={(v) => setFormStatusUntil(v)}
+                      inputClassName="ui-input w-full text-xs"
                     />
                   </div>
                   <div>
@@ -251,11 +250,12 @@ export const SquadPlayerFormModal: React.FC<SquadPlayerFormModalProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-mono text-ui-text mb-1">Data Nascimento</label>
-                  <input
+                  <DateTimePT
                     type="date"
+                    label="Data de nascimento"
                     value={formBirthDate}
-                    onChange={(e) => setFormBirthDate(e.target.value)}
-                    className="ui-input w-full text-xs"
+                    onChange={(v) => setFormBirthDate(v)}
+                    inputClassName="ui-input w-full text-xs"
                   />
                 </div>
 

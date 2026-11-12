@@ -33,6 +33,7 @@ import { BackupReminder } from './components/BackupReminder';
 import { getSyncView } from './lib/syncView';
 import { SessionExpiredBanner } from './components/SessionExpiredBanner';
 import { MoreDrawer } from './components/MoreDrawer';
+import { useBackClosesWindows } from './hooks/useBackClosesWindows';
 import { ConfirmModal } from './components/ConfirmModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
 import { ViewLoadingFallback } from './components/ViewLoadingFallback';
@@ -81,6 +82,8 @@ import { NotificationModal } from './components/NotificationModal';
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
   useCalendarPublisher(state);
+  // 📱 The phone's back button closes the window that is open instead of leaving the app
+  useBackClosesWindows();
   usePlanPublisher(state);
   useLivePublisher(state);
   const latestStateRef = useRef(state);

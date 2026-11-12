@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useMemo, useState } from 'react';
+import { DateTimePT } from '../ui/DateTimePT';
 import { AppState, ScheduledMatch } from '../../types';
 import { t } from '../../i18n/dict';
 import { sortPlayerObjs } from '../../lib/utils';
@@ -369,10 +370,11 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           <div className="grid grid-cols-2 gap-2 mb-2">
             <div className="field mb-0">
               <label className="text-[11px]">Hora de concentração</label>
-              <input
+              <DateTimePT
                 type="time"
+                label="Hora de concentração"
                 value={match.meetingTime || ''}
-                onChange={(e) => handleUpdateMatchField('meetingTime', e.target.value)}
+                onChange={(v) => handleUpdateMatchField('meetingTime', v)}
               />
             </div>
             <div className="field mb-0">

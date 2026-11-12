@@ -2715,3 +2715,25 @@ test('Mais em 3 grupos, definições por partes e avisos no telemóvel', async (
   await expect(agenda).toContainText('Remover alertas');
   await mine.click();
 });
+
+test('o botão voltar do telemóvel fecha a janela aberta e não sai da app', async ({ page }) => {
+  await signedIn(page);
+  const url = page.url();
+  await navTo(page, /clube/i);
+  const more = page.getByRole('dialog', { name: 'Mais' });
+  await expect(more).toBeVisible();
+  await page.goBack();
+  await expect(more).toHaveCount(0);
+  expect(page.url()).toBe(url);
+  // A window over another: back closes only the one on top
+  await openMore(page, /Definições do clube/);
+  const settings = page.getByRole('dialog', { name: 'Definições do clube' });
+  await expect(settings).toBeVisible();
+  await page.goBack();
+  await expect(settings).toHaveCount(0);
+  // Closed with ✕: the history step goes away too, so the next back does not reopen anything
+  await openMore(page, /Aparência/);
+  await page.getByRole('button', { name: 'Fechar aparência' }).click();
+  await expect(page.getByRole('dialog', { name: 'Aparência' })).toHaveCount(0);
+  await expect(page.locator('#navbar')).toBeVisible();
+});

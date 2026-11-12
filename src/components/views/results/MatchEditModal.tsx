@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { Match, MatchType, Player } from '../../../types';
 import { STANDARD_GOAL_TYPES } from '../../../lib/gameAnalysis/constants';
 import { getLineupSize } from '../../../lib/constants';
@@ -110,7 +111,13 @@ export const MatchEditModal: React.FC<MatchEditModalProps> = ({ match, roster, c
           <div className="grid grid-cols-2 gap-2">
             <label className="text-[10px] text-ui-muted">
               Data
-              <input type="date" className={input} value={draft.date} onChange={(e) => set({ date: e.target.value })} />
+              <DateTimePT
+                type="date"
+                label="Data"
+                inputClassName={`${input} w-full`}
+                value={draft.date}
+                onChange={(v) => set({ date: v })}
+              />
             </label>
             <label className="text-[10px] text-ui-muted">
               Adversário

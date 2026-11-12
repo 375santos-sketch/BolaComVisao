@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { datePT } from '../../../lib/planningSummary';
 import { AggregatedAnalysis } from '../../../lib/gameAnalysis';
 import { homeFirstScore } from '../../../lib/utils';
 
@@ -69,7 +70,9 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                   className="ui-inset p-3.5 flex flex-col justify-between cursor-pointer transition-all group"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] text-ui-muted font-mono">{item.date || `Jogo #${idx + 1}`}</span>
+                    <span className="text-[10px] text-ui-muted font-mono">
+                      {datePT(item.date || '') || `Jogo #${idx + 1}`}
+                    </span>
                     <span className={`text-xs font-black px-2 py-0.5 rounded-lg border font-mono ${bgBadge}`}>
                       {item.result}
                     </span>
@@ -202,7 +205,8 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                           {currentOpponentStat.opponent || 'Adversário'}
                         </div>
                         <div className="text-[10px] text-ui-muted">
-                          {m.date || 'Data N/D'} • {m.location === 'casa' ? '🏠 Casa' : '✈️ Fora'} • {m.type || 'Jogo'}
+                          {datePT(m.date || '') || 'Data N/D'} • {m.location === 'casa' ? '🏠 Casa' : '✈️ Fora'} •{' '}
+                          {m.type || 'Jogo'}
                         </div>
                       </div>
                     </div>

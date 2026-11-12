@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { datePT } from '../lib/planningSummary';
 import { AppState, SquadProfile, Player } from '../types';
 import { uid, defaultSeason } from '../lib/utils';
 import { ImportExcelPlayersModal } from './ImportExcelPlayersModal';
@@ -389,7 +390,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                 <ul className="text-[11px] font-mono text-amber-200/90">
                   {inventedImports.map((m) => (
                     <li key={m.id}>
-                      {m.date} · vs {m.opponent}
+                      {datePT(m.date)} · vs {m.opponent}
                     </li>
                   ))}
                 </ul>

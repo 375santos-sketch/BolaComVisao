@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { datePT } from '../../../lib/planningSummary';
 import { AppState } from '../../../types';
 import { CoachViewFilter, computeCoachViewData } from '../../../lib/gameAnalysis';
 import { SquadGoalsAndAssistsModal, GoalsAssistsTab } from '../../SquadGoalsAndAssistsModal';
@@ -207,7 +208,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                 <optgroup label="Jogo Específico">
                   {finishedMatchesList.slice(0, 10).map((m) => (
                     <option key={`m-spec-${m.id}`} value={`match:${m.id}`}>
-                      {m.date} - vs {m.opponent}
+                      {datePT(m.date)} - vs {m.opponent}
                     </option>
                   ))}
                 </optgroup>
