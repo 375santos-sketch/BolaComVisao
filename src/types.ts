@@ -719,6 +719,8 @@ export interface SquadProfile {
   exerciseLibrary?: Exercise[];
   /** Secret part of the parents' calendar link (/cal/{token}.ics); none = calendar not shared. */
   calendarToken?: string;
+  /** Secret part of the coaches' own calendar link (everything in the Agenda, with reminders); never for parents. */
+  coachCalendarToken?: string;
   /** Secret part of the assistant coach's plan link (/plano/{token}); none = not shared. */
   planToken?: string;
   /** 🔭 Adversários: what the staff knows about each opponent (kept in the club record, like the templates). */
