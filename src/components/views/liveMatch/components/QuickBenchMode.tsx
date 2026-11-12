@@ -182,6 +182,31 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
             removeTheirs={onRemoveOpponentFoul}
             titles={['Adicionar Falta', 'Decrementar Falta', 'Adicionar Falta Adv', 'Decrementar Falta Adv']}
           />
+          {onQuickCard && (
+            <li className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-2">
+              <span className="flex items-center justify-end gap-1.5">
+                <span
+                  className="ui-figure w-8 text-center text-ui-title text-ui-warning"
+                  title="Cartões da nossa equipa"
+                >
+                  {(match.cards || []).length}
+                </span>
+                <button
+                  type="button"
+                  onClick={onQuickCard}
+                  title="Adicionar Cartão"
+                  className="ui-btn ui-btn-soft-warning h-10 px-2.5 text-ui-caption font-bold"
+                >
+                  + Cartão
+                </button>
+              </span>
+              <span className="w-24 text-center text-ui-caption font-bold text-ui-muted">Cartões</span>
+              <span className="text-ui-caption text-ui-muted">
+                {(match.cards || []).filter((c) => c.color === 'Amarelo').length} am. ·{' '}
+                {(match.cards || []).filter((c) => c.color === 'Vermelho').length} verm.
+              </span>
+            </li>
+          )}
         </ul>
         <p className="mt-2 text-center text-ui-caption text-ui-muted">
           Remates: {totalShotsFor} nós · {totalShotsAgainst} adversário
@@ -192,39 +217,32 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* The four things that happen in a game, within reach of the thumb */}
-      <section aria-label="Ações do jogo" className="grid grid-cols-2 gap-2.5">
+      {/* Goals first (ours and theirs), then the substitution; the rest is the list below */}
+      <section aria-label="Ações do jogo" className="grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={onQuickGoalScored}
           aria-label="+1 Golo marcado"
-          className="ui-btn ui-btn-success min-h-[76px] flex-col gap-0.5 text-ui-lead"
+          className="ui-btn ui-btn-success min-h-[54px] flex-col gap-0 text-ui-body"
         >
           <span className="font-extrabold">Golo nosso</span>
-          <span className="text-ui-caption font-semibold opacity-80">{myClubName}</span>
+          <span className="text-[11px] font-semibold opacity-80">{myClubName}</span>
         </button>
         <button
           type="button"
           onClick={onQuickGoalConceded}
           aria-label="+1 Golo sofrido"
-          className="ui-btn ui-btn-danger min-h-[76px] flex-col gap-0.5 text-ui-lead"
+          className="ui-btn ui-btn-danger min-h-[54px] flex-col gap-0 text-ui-body"
         >
           <span className="font-extrabold">Golo sofrido</span>
-          <span className="text-ui-caption font-semibold opacity-80">{match.opponent || 'Adversário'}</span>
+          <span className="text-[11px] font-semibold opacity-80">{match.opponent || 'Adversário'}</span>
         </button>
         <button
           type="button"
           onClick={onQuickSub}
-          className="ui-btn ui-btn-secondary min-h-[60px] text-ui-body font-bold"
+          className="ui-btn ui-btn-secondary col-span-2 min-h-[48px] text-ui-body font-bold"
         >
-          Substituição
-        </button>
-        <button
-          type="button"
-          onClick={onQuickCard}
-          className="ui-btn ui-btn-soft-warning min-h-[60px] text-ui-body font-bold"
-        >
-          Cartão
+          ⇄ Substituição
         </button>
       </section>
 

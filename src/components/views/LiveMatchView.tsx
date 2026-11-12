@@ -397,26 +397,54 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         </section>
       )}
 
-      {/* Goals, substitution and card: the four big buttons */}
+      {/* Goals, then the substitution, then shots, corners, fouls and cards as a list (always in view) */}
       {matchPhase !== 'nao_iniciado' && (
-        <QuickBenchMode
-          section="pad"
-          match={match}
-          myClubName={myClub}
-          roster={state.roster || []}
-          onQuickGoalScored={openAddGoalModal}
-          onQuickGoalConceded={openAddConcededModal}
-          onQuickSub={openAddSubModal}
-          onQuickCard={openAddCardModal}
-          onAddCorner={handleQuickAddCorner}
-          onAddFoul={handleQuickAddFoul}
-          onAddOpponentCorner={handleQuickAddOpponentCorner}
-          onAddOpponentFoul={handleQuickAddOpponentFoul}
-          onAddShotInBoxFor={handleQuickAddShotInBoxFor}
-          onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
-          onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
-          onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
-        />
+        <>
+          <QuickBenchMode
+            section="pad"
+            match={match}
+            myClubName={myClub}
+            roster={state.roster || []}
+            onQuickGoalScored={openAddGoalModal}
+            onQuickGoalConceded={openAddConcededModal}
+            onQuickSub={openAddSubModal}
+            onQuickCard={openAddCardModal}
+            onAddCorner={handleQuickAddCorner}
+            onAddFoul={handleQuickAddFoul}
+            onAddOpponentCorner={handleQuickAddOpponentCorner}
+            onAddOpponentFoul={handleQuickAddOpponentFoul}
+            onAddShotInBoxFor={handleQuickAddShotInBoxFor}
+            onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
+            onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
+            onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
+          />
+          <QuickBenchMode
+            section="numbers"
+            match={match}
+            myClubName={myClub}
+            roster={state.roster || []}
+            onQuickGoalScored={openAddGoalModal}
+            onQuickGoalConceded={openAddConcededModal}
+            onQuickSub={openAddSubModal}
+            onQuickCard={openAddCardModal}
+            onAddCorner={handleQuickAddCorner}
+            onRemoveCorner={handleQuickRemoveCorner}
+            onAddFoul={handleQuickAddFoul}
+            onRemoveFoul={handleQuickRemoveFoul}
+            onAddOpponentCorner={handleQuickAddOpponentCorner}
+            onRemoveOpponentCorner={handleQuickRemoveOpponentCorner}
+            onAddOpponentFoul={handleQuickAddOpponentFoul}
+            onRemoveOpponentFoul={handleQuickRemoveOpponentFoul}
+            onAddShotInBoxFor={handleQuickAddShotInBoxFor}
+            onRemoveShotInBoxFor={handleQuickRemoveShotInBoxFor}
+            onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
+            onRemoveShotOutBoxFor={handleQuickRemoveShotOutBoxFor}
+            onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
+            onRemoveShotInBoxAgainst={handleQuickRemoveShotInBoxAgainst}
+            onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
+            onRemoveShotOutBoxAgainst={handleQuickRemoveShotOutBoxAgainst}
+          />
+        </>
       )}
 
       {/* Em campo · Números · Cronologia */}
@@ -424,7 +452,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         {(
           [
             ['campo', 'Em campo'],
-            ['numeros', 'Números'],
+            ['numeros', 'Mais números'],
             ['cronologia', 'Cronologia']
           ] as const
         ).map(([id, label]) => (
@@ -511,32 +539,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 
       {liveTab === 'numeros' && (
         <div className="space-y-3">
-          <QuickBenchMode
-            section="numbers"
-            match={match}
-            myClubName={myClub}
-            roster={state.roster || []}
-            onQuickGoalScored={openAddGoalModal}
-            onQuickGoalConceded={openAddConcededModal}
-            onQuickSub={openAddSubModal}
-            onQuickCard={openAddCardModal}
-            onAddCorner={handleQuickAddCorner}
-            onRemoveCorner={handleQuickRemoveCorner}
-            onAddFoul={handleQuickAddFoul}
-            onRemoveFoul={handleQuickRemoveFoul}
-            onAddOpponentCorner={handleQuickAddOpponentCorner}
-            onRemoveOpponentCorner={handleQuickRemoveOpponentCorner}
-            onAddOpponentFoul={handleQuickAddOpponentFoul}
-            onRemoveOpponentFoul={handleQuickRemoveOpponentFoul}
-            onAddShotInBoxFor={handleQuickAddShotInBoxFor}
-            onRemoveShotInBoxFor={handleQuickRemoveShotInBoxFor}
-            onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
-            onRemoveShotOutBoxFor={handleQuickRemoveShotOutBoxFor}
-            onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
-            onRemoveShotInBoxAgainst={handleQuickRemoveShotInBoxAgainst}
-            onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
-            onRemoveShotOutBoxAgainst={handleQuickRemoveShotOutBoxAgainst}
-          />
           <MatchStatsSection match={match} onUpdateMatch={updateMatchInState} />
         </div>
       )}

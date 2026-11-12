@@ -1461,7 +1461,6 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await page.locator('select').first().selectOption('p10');
   await page.getByRole('button', { name: 'Confirmar Golo' }).click();
   // ↩︎ Any action can be undone with one tap (here a corner tapped by mistake)
-  await page.getByRole('button', { name: 'Números', exact: true }).click();
   await page.getByTitle('Adicionar Canto').first().click();
   await page.getByRole('button', { name: '↩︎ Desfazer: Canto a favor' }).click();
   await expect(page.getByText('Desfeito: Canto a favor')).toBeVisible();
