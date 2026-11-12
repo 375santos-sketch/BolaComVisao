@@ -1441,12 +1441,12 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
 
   // 2nd half: goal by the substitute, then 10 minutes in total (less simulated time keeps the sign-in valid).
   await advance('05:00');
-  // One-tap goal: tap who scored (minute from the clock), then undo it
-  const oneTap = page.getByRole('region', { name: 'Golo com um toque' });
-  await oneTap.getByRole('button', { name: '7 - Tomás Gonçalves' }).click();
-  await expect(oneTap.getByRole('status')).toContainText(/Golo de 7 - Tomás Gonçalves aos \d+'/);
-  await oneTap.getByRole('button', { name: 'Desfazer' }).click();
-  await expect(oneTap.getByRole('status')).toHaveCount(0);
+  // The one-tap goal was removed from the game (Bruno, 12/11/2026); the game's controls are together on top
+  await expect(page.getByRole('region', { name: 'Golo com um toque' })).toHaveCount(0);
+  const controls = page.getByRole('group', { name: 'Controlo do jogo' });
+  await expect(controls.getByRole('button', { name: '⏸️ Pausa' })).toBeVisible();
+  await expect(controls.getByRole('button', { name: 'Terminar jogo' })).toBeVisible();
+  await expect(controls.getByRole('button', { name: 'Terminar 1.ª parte' })).toHaveCount(0);
   await page.getByRole('button', { name: /GOLO MARCADO/i }).click();
   await page.locator('select').first().selectOption('p10');
   await page.getByRole('button', { name: 'Confirmar Golo' }).click();
@@ -1468,7 +1468,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   expect(await minutes('9 - Rui Silva')).toBe("0'");
 
   // Finish: checklist, then the 30-second summary with names and the round from the Agenda.
-  await page.getByRole('button', { name: /Validar e Terminar Jogo/i }).click();
+  await page.getByRole('button', { name: 'Terminar jogo', exact: true }).click();
   // The checklist confirms starters, that the minutes add up (7 x game length) and where the game was played
   await expect(page.getByText('7 titulares registados')).toBeVisible();
   await expect(page.getByText(/^\d+' = 7 x \d+'$/)).toBeVisible();

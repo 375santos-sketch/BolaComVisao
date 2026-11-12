@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
-import { GoalEvent, Match, Player } from '../../../../types';
-import { getCurrentPlayersOnPitch, getMatchPhase } from '../../../../lib/matchPhaseUtils';
-import { playerLabel } from '../../../../lib/utils';
+import React from 'react';
+import { Match, Player } from '../../../../types';
 
 interface QuickBenchModeProps {
   match: Match;
@@ -12,9 +10,6 @@ interface QuickBenchModeProps {
   onQuickSub: () => void;
   onQuickCard: () => void;
   /** One-tap goal: registers a goal by this athlete at the clock's minute (returns it, for "Desfazer"). */
-  onQuickGoalBy?: (playerId: string) => GoalEvent | null;
-  onUndoGoal?: (goalId: string) => void;
-  onEditGoal?: (goal: GoalEvent) => void;
   // Cantos & Faltas
   onAddCorner: () => void;
   onRemoveCorner?: () => void;
@@ -98,9 +93,6 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
   onQuickGoalConceded,
   onQuickSub,
   onQuickCard,
-  onQuickGoalBy,
-  onUndoGoal,
-  onEditGoal,
   onAddCorner,
   onRemoveCorner,
   onAddFoul,
@@ -127,21 +119,6 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
   const shotsInBoxAgainst = match.rematesDentroAreaAdv ?? match.shotsInBoxAgainst ?? 0;
   const shotsOutBoxAgainst = match.rematesForaAreaAdv ?? match.shotsOutBoxAgainst ?? 0;
   const totalShotsAgainst = shotsInBoxAgainst + shotsOutBoxAgainst;
-
-  // One-tap goal: athletes on the pitch right now, and the last goal registered this way (to undo or complete it)
-  const [lastQuick, setLastQuick] = useState<GoalEvent | null>(null);
-  const phase = getMatchPhase(match);
-  const playing = phase === 'parte1' || phase === 'parte2';
-  const onPitchIds = playing ? getCurrentPlayersOnPitch(match) : [];
-  const onPitch = onPitchIds
-    .map((id) => roster.find((p) => p.id === id))
-    .filter((p): p is Player => Boolean(p))
-    .sort((a, b) => (Number(a.number) || 99) - (Number(b.number) || 99));
-  const lastStillThere = lastQuick && (match.goals || []).some((g) => g.id === lastQuick.id) ? lastQuick : null;
-  const nameOf = (id: string | null) => {
-    const p = roster.find((x) => x.id === id);
-    return p ? playerLabel(p) : 'Atleta';
-  };
 
   // Lista dos últimos acontecimentos (últimos 3 golos/cartões)
   const recentGoals = [...(match.goals || [])].reverse().slice(0, 3);
@@ -250,64 +227,6 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
           Cartão
         </button>
       </section>
-
-      {/* One-tap goal: tap who scored (minute from the clock) */}
-      {onQuickGoalBy && playing && onPitch.length > 0 && (
-        <section aria-label="Golo com um toque" className="ui-card space-y-2 p-3">
-          <p className="text-ui-caption font-bold text-ui-muted">Golo com um toque · quem marcou?</p>
-          <div className="flex flex-wrap gap-1.5">
-            {onPitch.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                aria-label={playerLabel(p)}
-                onClick={() => {
-                  const goal = onQuickGoalBy(p.id);
-                  if (goal) setLastQuick(goal);
-                }}
-                className="ui-btn ui-btn-soft-success px-3 py-2 text-ui-caption"
-              >
-                <span className="ui-figure mr-1">{p.number ?? ''}</span>
-                {p.name.split(' ')[0]}
-              </button>
-            ))}
-          </div>
-          {lastStillThere && (
-            <div
-              role="status"
-              className="flex items-center justify-between gap-2 rounded-ui-sm bg-ui-success-soft p-2 text-ui-caption text-ui-text"
-            >
-              <span className="truncate">
-                Golo de {nameOf(lastStillThere.scorerId)}
-                {lastStillThere.minute ? ` aos ${lastStillThere.minute}` : ''}
-              </span>
-              <span className="flex shrink-0 gap-1.5">
-                {onEditGoal && (
-                  <button
-                    type="button"
-                    onClick={() => onEditGoal(lastStillThere)}
-                    className="ui-btn ui-btn-ghost px-2 py-1"
-                  >
-                    Assistência/origem
-                  </button>
-                )}
-                {onUndoGoal && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onUndoGoal(lastStillThere.id);
-                      setLastQuick(null);
-                    }}
-                    className="ui-btn ui-btn-soft-danger px-2 py-1"
-                  >
-                    Desfazer
-                  </button>
-                )}
-              </span>
-            </div>
-          )}
-        </section>
-      )}
 
       {recentGoals.length > 0 && (
         <p className="flex flex-wrap gap-1.5 px-1 text-ui-caption text-ui-muted">

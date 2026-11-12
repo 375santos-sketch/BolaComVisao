@@ -86,7 +86,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     openEditGoalModal,
     handleSaveGoal,
     handleDeleteGoal,
-    handleQuickGoalBy,
 
     // Conceded
     showConcededModal,
@@ -317,6 +316,12 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         match={match}
         myClubName={myClub}
         onTogglePause={matchPhase === 'parte1' || matchPhase === 'parte2' ? handleTogglePause : undefined}
+        onEndFirstHalf={
+          matchPhase === 'parte1'
+            ? () => onShowConfirm('Terminar a 1.ª parte e começar o intervalo?', handleGoToHalftime)
+            : undefined
+        }
+        onEndGame={matchPhase !== 'nao_iniciado' ? () => setShowChecklistModal(true) : undefined}
       />
 
       {/* Before kick-off and at half time: the line-up and the next step */}
@@ -392,7 +397,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         </section>
       )}
 
-      {/* Goals, substitution and card: the four big buttons, and the one-tap goal */}
+      {/* Goals, substitution and card: the four big buttons */}
       {matchPhase !== 'nao_iniciado' && (
         <QuickBenchMode
           section="pad"
@@ -400,9 +405,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           myClubName={myClub}
           roster={state.roster || []}
           onQuickGoalScored={openAddGoalModal}
-          onQuickGoalBy={handleQuickGoalBy}
-          onUndoGoal={handleDeleteGoal}
-          onEditGoal={openEditGoalModal}
           onQuickGoalConceded={openAddConcededModal}
           onQuickSub={openAddSubModal}
           onQuickCard={openAddCardModal}
@@ -568,28 +570,6 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           </div>
         </div>
       )}
-
-      {/* End of a part: its own action, with a confirmation (no longer a big button next to Pausa) */}
-      <div className="space-y-2 pt-2">
-        {matchPhase === 'parte1' && (
-          <button
-            type="button"
-            onClick={() => onShowConfirm('Terminar a 1.ª parte e começar o intervalo?', handleGoToHalftime)}
-            className="ui-btn ui-btn-secondary w-full py-3 text-ui-body font-bold"
-          >
-            Terminar 1.ª parte (intervalo)
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={() => setShowChecklistModal(true)}
-          className={`ui-btn w-full py-3 text-ui-body font-bold ${
-            matchPhase === 'parte2' ? 'ui-btn-primary' : 'ui-btn-ghost text-ui-muted'
-          }`}
-        >
-          Validar e Terminar Jogo
-        </button>
-      </div>
 
       {/* ↩︎ Desfazer: the last action, in a small bar above the menu */}
       {lastAction && (
