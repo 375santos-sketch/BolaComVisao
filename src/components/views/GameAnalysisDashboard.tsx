@@ -1,3 +1,4 @@
+import { AnalysisOverviewTop } from './gameAnalysis/AnalysisOverviewTop';
 import React, { useState, useMemo } from 'react';
 import { datePT } from '../../lib/planningSummary';
 import { TrendsSection } from '../trends/TeamTrends';
@@ -65,7 +66,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
   initialSection = 'equipa'
 }) => {
   // One Análise: Equipa · Atletas · Jogos, with the same filters for all
-  const [section, setSection] = useState<'equipa' | 'atletas' | 'jogos'>(initialSection);
+  const [section, setSection] = useState<'equipa' | 'atletas' | 'jogos' | 'relatorios'>(initialSection);
   const [showAsk, setShowAsk] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
   const [showExport, setShowExport] = useState(false);
@@ -268,7 +269,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
   };
 
   return (
-    <div className="pb-28 animate-fadeIn max-w-6xl mx-auto px-2 sm:px-4" id="game-analysis-dashboard">
+    <div className="analysis-360 pb-28 animate-fadeIn max-w-6xl mx-auto px-2 sm:px-4" id="game-analysis-dashboard">
       <Header
         title="Análise"
         lang={state.lang}
@@ -282,39 +283,31 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
         clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
       />
 
-      {/* Actions on top: ask the data (AI), the coach's report, the panel and the exports */}
-      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <button
-          type="button"
-          aria-pressed={showAsk}
-          onClick={() => setShowAsk((v) => !v)}
-          className={`ui-btn py-2.5 text-ui-caption ${showAsk ? 'ui-btn-primary' : 'ui-btn-soft'}`}
-        >
-          Perguntar aos dados
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowCoachReportModal(true)}
-          className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
-        >
-          Relatório do treinador
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowPanel(true)}
-          aria-label="Abrir painel (jogo, confronto, fase, época, período)"
-          className="ui-btn ui-btn-secondary py-2.5 text-ui-caption"
-        >
-          Abrir painel
-        </button>
+      {/* Análise 360°: the title over the stadium, and Exportar always at hand */}
+      <div className="squad-hero analysis-hero mb-3 !flex-row !items-end">
+        <div className="min-w-0 flex-1">
+          <h2 className="bcv-title text-[28px] sm:text-[36px]">
+            Análise <span className="analysis-360-mark">360°</span>
+          </h2>
+          <p className="truncate text-ui-caption text-ui-muted">
+            {[
+              myClub,
+              state.category,
+              state.season ? `Época ${state.season}` : '',
+              `${analysis.filteredMatches.length} jogos`
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+        </div>
         <div className="relative">
           <button
             type="button"
             aria-expanded={showExport}
             onClick={() => setShowExport((v) => !v)}
-            className="ui-btn ui-btn-secondary w-full py-2.5 text-ui-caption"
+            className="ui-btn ui-btn-secondary w-full px-3 py-2 text-ui-caption"
           >
-            Exportar
+            ⤓ Exportar
           </button>
           {showExport && (
             <div className="ui-card absolute right-0 top-11 z-30 w-56 space-y-1 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
@@ -345,18 +338,13 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
         </div>
       </div>
 
-      {showAsk && (
-        <div className="mb-3">
-          <AskDataSection state={state} />
-        </div>
-      )}
-
-      <div role="group" aria-label="Partes da análise" className="mb-4 flex gap-1 border-b border-ui-line">
+      <div role="group" aria-label="Partes da análise" className="analysis-tabs mb-3">
         {(
           [
-            ['equipa', 'Equipa'],
+            ['equipa', 'Visão geral'],
             ['atletas', 'Atletas'],
-            ['jogos', 'Jogos']
+            ['jogos', 'Jogos'],
+            ['relatorios', 'Relatórios']
           ] as const
         ).map(([id, label]) => (
           <button
@@ -364,16 +352,14 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             type="button"
             aria-pressed={section === id}
             onClick={() => setSection(id)}
-            className={`-mb-px flex-1 border-b-2 px-2 py-2.5 text-ui-body font-bold transition-colors sm:flex-none sm:px-6 ${
-              section === id ? 'border-ui-brand text-ui-text' : 'border-transparent text-ui-muted hover:text-ui-text'
-            }`}
+            className={section === id ? 'is-on' : ''}
           >
             {label}
           </button>
         ))}
       </div>
 
-      {/* The same filters for Equipa, Atletas and Jogos */}
+      {/* The same filters for every part (and for the exports) */}
       <AnalysisFilters
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -389,6 +375,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
 
       {section === 'equipa' && (
         <div className="space-y-5">
+          <AnalysisOverviewTop matches={analysis.filteredMatches} />
           <AnalysisSummaryCards analysis={analysis} myClub={myClub} />
           <TrendsSection matches={seasonMatches(state)} onPlan={() => onNavigate('treinos')} />
           <InsightsSection insights={analysis.insights} />
@@ -446,6 +433,80 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             }
           />
           <PlayerAnalysis analysis={analysis} players={state.roster} onOpenPlayer={handleOpenPlayer} />
+        </div>
+      )}
+
+      {section === 'relatorios' && (
+        <div className="space-y-3">
+          {/* Everything that comes out of the analysis, in one place */}
+          <section aria-label="Relatórios" className="space-y-2">
+            {(
+              [
+                [
+                  '✦',
+                  'Perguntar aos dados',
+                  '«Quem marcou mais fora?» · respostas com os jogos guardados',
+                  () => setShowAsk((v) => !v)
+                ],
+                ['📋', 'Relatório do treinador', 'Conclusões da época em texto', () => setShowCoachReportModal(true)],
+                [
+                  '▦',
+                  'Abrir painel',
+                  'Equipa ou atleta, por jogo, confronto, fase, época ou período · Power BI',
+                  () => setShowPanel(true)
+                ]
+              ] as const
+            ).map(([icon, title, detail, run]) => (
+              <button
+                key={title}
+                type="button"
+                onClick={run}
+                className="analysis-row"
+                aria-pressed={title === 'Perguntar aos dados' ? showAsk : undefined}
+              >
+                <span aria-hidden className="analysis-row-icon">
+                  {icon}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <b className="block text-ui-body text-ui-text">{title}</b>
+                  <span className="block truncate text-ui-caption text-ui-muted">{detail}</span>
+                </span>
+                <span aria-hidden className="text-ui-brand">
+                  ›
+                </span>
+              </button>
+            ))}
+            {showAsk && <AskDataSection state={state} />}
+          </section>
+          <section aria-label="Exportar" className="space-y-2">
+            <h3 className="ui-kicker px-1">Exportar</h3>
+            <button type="button" disabled={exporting} onClick={handleExportPDF} className="analysis-row">
+              <span aria-hidden className="analysis-row-icon">
+                ⤓
+              </span>
+              <span className="min-w-0 flex-1">
+                <b className="block text-ui-body text-ui-text">PDF da análise</b>
+                <span className="block text-ui-caption text-ui-muted">
+                  {analysis.filteredMatches.length} jogos, com os filtros escolhidos
+                </span>
+              </span>
+              <span aria-hidden className="text-ui-brand">
+                ›
+              </span>
+            </button>
+            <button type="button" disabled={exporting} onClick={handleExportExcel} className="analysis-row">
+              <span aria-hidden className="analysis-row-icon">
+                ⊞
+              </span>
+              <span className="min-w-0 flex-1">
+                <b className="block text-ui-body text-ui-text">Excel</b>
+                <span className="block text-ui-caption text-ui-muted">O mesmo ficheiro de sempre</span>
+              </span>
+              <span aria-hidden className="text-ui-brand">
+                ›
+              </span>
+            </button>
+          </section>
         </div>
       )}
 
