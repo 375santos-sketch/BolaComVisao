@@ -5,7 +5,14 @@ import { SquadTab, SquadViewMode, SquadSortBy, SquadSortDirection, POSITION_OPTI
 import { getPositionRank, sortPlayerObjs, uid, calcPlayerMinutes } from '../../../../lib/utils';
 import { withPlayableDurations } from '../../../../lib/playingTime';
 import { t } from '../../../../i18n/dict';
+import { availabilityOn } from '../../../../lib/availability';
 import { getAllBirthdays } from '../../../../lib/birthdayUtils';
+
+/** Injured or suspended today (a return date already reached counts as available again). */
+const unavailableToday = (p: Player) => {
+  const a = availabilityOn(p);
+  return !a.available && (a.status === 'lesionado' || a.status === 'suspenso');
+};
 
 interface UseSquadRosterProps {
   state: AppState;
@@ -85,7 +92,8 @@ export function useSquadRoster({
         (p.number !== null && p.number !== undefined && String(p.number).includes(q)) ||
         (p.positions || '').toLowerCase().includes(q);
       const pStatus = p.status || 'disponivel';
-      const matchStatus = statusFilter === 'todos' || pStatus === statusFilter;
+      const matchStatus =
+        statusFilter === 'todos' || (statusFilter === 'indisponivel' ? unavailableToday(p) : pStatus === statusFilter);
       const matchSector = sectorFilter === 'todos' || sectorOf(p.positions) === sectorFilter;
       return matchName && matchStatus && matchSector;
     });
@@ -133,6 +141,7 @@ export function useSquadRoster({
       (acc, p) => {
         const st = p.status || 'disponivel';
         acc[st] = (acc[st] || 0) + 1;
+        if (unavailableToday(p)) acc.indisponivel = (acc.indisponivel || 0) + 1;
         return acc;
       },
       {} as Record<string, number>

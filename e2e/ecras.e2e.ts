@@ -1256,6 +1256,11 @@ test('disponibilidade: lesão com data de regresso aparece no plantel e na Convo
   // The sheet stays open after editing; back to the squad list, where the injury also shows
   await page.getByRole('button', { name: 'Fechar a ficha' }).click();
   await expect(page.getByText('Lesionado até 15/01').first()).toBeVisible();
+  // "Indisponíveis hoje" shows only who cannot play today
+  await page.getByRole('button', { name: /1 indisponível hoje/ }).click();
+  await expect(page.getByRole('heading', { name: 'Gonçalo Teste' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Rui Silva' })).toHaveCount(0);
+  await page.getByRole('button', { name: /1 indisponível hoje/ }).click();
 
   await openAgendaList(page);
   await openAgendaRow(page, /vs Abrantes/);
