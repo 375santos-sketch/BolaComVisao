@@ -1,4 +1,4 @@
-import { Match, ScheduledMatch, Training } from '../types';
+import { ClubEvent, Match, ScheduledMatch, StaffUnavailability, Training } from '../types';
 
 /**
  * Shareable calendar for the parents (Agenda → "Calendário para os pais"): the team's games and trainings as an
@@ -10,7 +10,8 @@ import { Match, ScheduledMatch, Training } from '../types';
 export interface CalendarEvent {
   /** Stable id (the game's or training's id), so phones update events instead of duplicating them. */
   uid: string;
-  kind: 'jogo' | 'treino';
+  /** evento = meeting, course, camp (coaches' calendar only); indisponivel = a staff member away (idem). */
+  kind: 'jogo' | 'treino' | 'evento' | 'indisponivel';
   date: string; // YYYY-MM-DD
   time?: string; // HH:MM (no time = all-day event)
   durationMinutes: number;
@@ -108,6 +109,70 @@ export function buildCalendarEvents(
   );
 }
 
+const EVENT_ICON: Record<string, string> = { reuniao: '👥', formacao: '🎓', estagio: '🏕️', outro: '📌' };
+
+/** Days from `date` to `end` (both included, at most a year), as YYYY-MM-DD. */
+function daysBetween(date: string, end?: string): string[] {
+  const out: string[] = [];
+  const last = end && end > date ? end : date;
+  const t = new Date(`${date}T12:00:00Z`);
+  while (out.length < 366) {
+    const day = t.toISOString().slice(0, 10);
+    if (day > last) break;
+    out.push(day);
+    t.setUTCDate(t.getUTCDate() + 1);
+  }
+  return out;
+}
+
+/**
+ * The coaches' own calendar adds what is in the Agenda besides games and trainings: meetings, courses and camps
+ * (one event per day of a multi-day one) and the staff's unavailabilities (all day). Never in the parents' calendar.
+ */
+export function buildStaffEvents(
+  clubEvents: ClubEvent[],
+  unavailability: StaffUnavailability[],
+  from: string
+): CalendarEvent[] {
+  const meetings = (clubEvents || []).flatMap((ev) => {
+    const start = ev && dayOf(ev.date);
+    if (!start) return [];
+    const time = timeOf(ev.time);
+    const end = timeOf(ev.endTime);
+    const minutes =
+      time && end
+        ? Number(end.slice(0, 2)) * 60 + Number(end.slice(3)) - (Number(time.slice(0, 2)) * 60 + Number(time.slice(3)))
+        : 0;
+    return daysBetween(start, dayOf(ev.endDate))
+      .filter((d) => d >= from)
+      .map((d) => ({
+        uid: `evento-${ev.id}-${d}`,
+        kind: 'evento' as const,
+        date: d,
+        time,
+        durationMinutes: minutes > 0 ? minutes : 60,
+        title: `${EVENT_ICON[ev.type] || '📌'} ${ev.title}`,
+        location: ev.location?.trim() || undefined,
+        description: ev.attendees ? `Com: ${ev.attendees}` : undefined
+      }));
+  });
+  const away = (unavailability || []).flatMap((u) => {
+    const start = u && dayOf(u.date);
+    if (!start) return [];
+    return daysBetween(start, dayOf(u.endDate))
+      .filter((d) => d >= from)
+      .map((d) => ({
+        uid: `indisponivel-${u.id}-${d}`,
+        kind: 'indisponivel' as const,
+        date: d,
+        durationMinutes: 0,
+        title: `🚫 ${u.name} (indisponível)`,
+        description: u.reason || undefined
+      }));
+  });
+  return [...meetings, ...away];
+}
+
 // ---------- iCalendar (RFC 5545) ----------
 
 const escapeText = (s: string) =>
@@ -190,9 +255,11 @@ export const REMINDER_CHOICES: Array<{ minutes: number; label: string }> = [
 export interface ReminderPlan {
   treino: number[];
   jogo: number[];
+  /** Meetings, courses and camps (coaches' calendar). */
+  evento: number[];
 }
 
-export const DEFAULT_REMINDERS: ReminderPlan = { treino: [1440, 120], jogo: [1440, 120] };
+export const DEFAULT_REMINDERS: ReminderPlan = { treino: [1440, 120], jogo: [1440, 120], evento: [1440, 120] };
 
 const allowed = new Set(REMINDER_CHOICES.map((c) => c.minutes));
 const cleanList = (v: unknown): number[] =>
@@ -213,13 +280,15 @@ export function reminderPlanFromQuery(query: Record<string, unknown>): ReminderP
   if (query.alertas !== '1') return null;
   return {
     treino: query.treino === undefined ? DEFAULT_REMINDERS.treino : cleanList(query.treino),
-    jogo: query.jogo === undefined ? DEFAULT_REMINDERS.jogo : cleanList(query.jogo)
+    jogo: query.jogo === undefined ? DEFAULT_REMINDERS.jogo : cleanList(query.jogo),
+    evento: query.evento === undefined ? DEFAULT_REMINDERS.evento : cleanList(query.evento)
   };
 }
 
 /** The query of the coach's link for a plan (the inverse of reminderPlanFromQuery). */
 export const reminderQuery = (plan: ReminderPlan) =>
-  `alertas=1&treino=${cleanList(plan.treino.join(',')).join(',')}&jogo=${cleanList(plan.jogo.join(',')).join(',')}`;
+  `alertas=1&treino=${cleanList(plan.treino.join(',')).join(',')}&jogo=${cleanList(plan.jogo.join(',')).join(',')}` +
+  `&evento=${cleanList((plan.evento || []).join(',')).join(',')}`;
 
 const trigger = (minutes: number) =>
   minutes % 1440 === 0 ? `-P${minutes / 1440}D` : minutes % 60 === 0 ? `-PT${minutes / 60}H` : `-PT${minutes}M`;
@@ -236,7 +305,7 @@ const reminders = (e: CalendarEvent, plan: ReminderPlan): string[] => {
     `TRIGGER:${t}`,
     'END:VALARM'
   ];
-  const list = plan[e.kind] || [];
+  const list = e.kind === 'indisponivel' ? [] : plan[e.kind] || [];
   if (!list.length) return [];
   return e.time ? list.flatMap((m) => alarm(trigger(m))) : alarm('-PT15H');
 };
@@ -319,7 +388,7 @@ export function feedFromRestDocument(
     .filter((e) => e && typeof e.uid === 'string' && validDate(e.date as string) && typeof e.title === 'string')
     .map((e) => ({
       uid: String(e.uid),
-      kind: e.kind === 'treino' ? ('treino' as const) : ('jogo' as const),
+      kind: (['treino', 'evento', 'indisponivel'] as const).find((k) => k === e.kind) || ('jogo' as const),
       date: String(e.date),
       time: validTime(e.time as string),
       durationMinutes: Math.min(600, Math.max(15, Number(e.durationMinutes) || 90)),

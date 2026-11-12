@@ -11,7 +11,7 @@ import {
   sendNotice
 } from '../services/push';
 import { calendarLinks } from '../services/publicCalendar';
-import { calendarEventsOf, createTeamCalendar } from '../hooks/useCalendarPublisher';
+import { coachCalendarEventsOf, createTeamCalendar } from '../hooks/useCalendarPublisher';
 import { DEFAULT_REMINDERS, REMINDER_CHOICES, ReminderPlan } from '../lib/calendarFeed';
 import { Sheet } from './ui/Sheet';
 
@@ -39,7 +39,9 @@ const loadReminders = (): ReminderPlan => {
     const raw = JSON.parse(localStorage.getItem(REMINDERS_KEY) || 'null');
     const list = (v: unknown, fallback: number[]) =>
       Array.isArray(v) ? v.filter((n) => REMINDER_CHOICES.some((c) => c.minutes === n)) : fallback;
-    return raw ? { treino: list(raw.treino, []), jogo: list(raw.jogo, []) } : DEFAULT_REMINDERS;
+    return raw
+      ? { treino: list(raw.treino, []), jogo: list(raw.jogo, []), evento: list(raw.evento, DEFAULT_REMINDERS.evento) }
+      : DEFAULT_REMINDERS;
   } catch {
     return DEFAULT_REMINDERS;
   }
@@ -66,12 +68,13 @@ const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onUpdateSt
   const [prefs, setPrefs] = useState<PushPrefs>(loadPrefs);
   const [busy, setBusy] = useState(false);
   const [alsoMine, setAlsoMine] = useState(loadAlsoMine);
-  const calendarToken = (state.teams || []).find((t) => t.id === state.activeTeamId)?.calendarToken;
+  // The coaches' own calendar (everything in the Agenda); the parents' link is another one, without reminders
+  const calendarToken = (state.teams || []).find((t) => t.id === state.activeTeamId)?.coachCalendarToken;
   const [plan, setPlan] = useState<ReminderPlan>(loadReminders);
   const reminderLink = calendarToken ? calendarLinks(calendarToken).reminders(plan) : null;
-  const inCalendar = calendarEventsOf(state);
-  const gamesCount = inCalendar.filter((e) => e.kind === 'jogo').length;
-  const trainingsCount = inCalendar.length - gamesCount;
+  const inCalendar = coachCalendarEventsOf(state);
+  const count = (kind: string) => inCalendar.filter((e) => e.kind === kind).length;
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   const toggleReminder = (kind: keyof ReminderPlan, minutes: number) => {
     const list = plan[kind].includes(minutes) ? plan[kind].filter((m) => m !== minutes) : [...plan[kind], minutes];
     const next = { ...plan, [kind]: list.sort((a, b) => b - a) };
@@ -141,8 +144,8 @@ const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onUpdateSt
   const createCalendar = () =>
     run(async () => {
       if (!onUpdateState) return;
-      onUpdateState({ teams: await createTeamCalendar(state) });
-      onShowToast('Calendário da equipa criado ✓');
+      onUpdateState({ teams: await createTeamCalendar(state, 'treinador') });
+      onShowToast('O teu calendário de treinador foi criado ✓');
     });
 
   const sw = (checked: boolean) => (
@@ -259,18 +262,20 @@ const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onUpdateSt
         <section aria-label="Lembretes da agenda" className="space-y-2">
           <h3 className={heading}>Agenda</h3>
           <p className="text-ui-caption text-ui-muted">
-            Os <b className="text-ui-text">jogos e treinos</b> da equipa no calendário do iPhone, com lembretes mesmo
-            com a app fechada. Atualiza-se sozinho quando muda a Agenda (o iPhone vai buscar as novidades de algumas em
-            algumas horas).
+            Tudo o que está na Agenda (<b className="text-ui-text">jogos, treinos, reuniões e formações</b> e as
+            indisponibilidades da equipa técnica) no calendário do iPhone, com lembretes mesmo com a app fechada.
+            Atualiza-se sozinho quando muda a Agenda (o iPhone vai buscar as novidades de algumas em algumas horas).
           </p>
           <p className="text-ui-caption text-ui-text">
-            No calendário: <b>{gamesCount}</b> {gamesCount === 1 ? 'jogo' : 'jogos'} · <b>{trainingsCount}</b>{' '}
-            {trainingsCount === 1 ? 'treino' : 'treinos'} (desde há 30 dias).
+            No calendário: {plural(count('jogo'), 'jogo', 'jogos')} · {plural(count('treino'), 'treino', 'treinos')} ·{' '}
+            {plural(count('evento'), 'reunião ou formação', 'reuniões e formações')} ·{' '}
+            {plural(count('indisponivel'), 'dia de indisponibilidade', 'dias de indisponibilidade')} (desde há 30 dias).
           </p>
           {(
             [
               ['treino', 'Lembrar os treinos'],
-              ['jogo', 'Lembrar os jogos']
+              ['jogo', 'Lembrar os jogos'],
+              ['evento', 'Lembrar as reuniões e formações']
             ] as const
           ).map(([kind, label]) => (
             <div key={kind} role="group" aria-label={label} className="space-y-1">
@@ -313,7 +318,8 @@ const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onUpdateSt
                 </li>
               </ol>
               <p className="text-ui-caption text-ui-muted">
-                O link dos pais continua sem lembretes. As convocatórias não vão para o calendário.
+                Este calendário é só teu (e de quem tiver este link): não o envies aos pais. O calendário dos pais
+                (Agenda → ⋯) continua só com jogos e treinos, sem lembretes. As convocatórias não vão para nenhum.
               </p>
             </>
           ) : (
@@ -323,7 +329,7 @@ const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onUpdateSt
               onClick={createCalendar}
               className="ui-btn ui-btn-secondary w-full py-2.5 text-ui-caption"
             >
-              Criar o calendário da equipa
+              Criar o meu calendário de treinador
             </button>
           )}
         </section>
