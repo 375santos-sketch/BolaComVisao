@@ -2701,8 +2701,17 @@ test('Mais em 3 grupos, definições por partes e avisos no telemóvel', async (
   expect(await page.evaluate(() => localStorage.getItem('bcv_push_also_mine_v1'))).toBe('1');
   const agenda = push.getByRole('region', { name: 'Lembretes da agenda' });
   const link = agenda.getByRole('link', { name: /Ligar ao calendário do iPhone/ });
-  if (!(await link.count())) await agenda.getByRole('button', { name: 'Criar o calendário da equipa' }).click();
-  await expect(link).toHaveAttribute('href', /^webcal:\/\/.+\/cal\/[a-zA-Z0-9]{24}\.ics\?alertas=1$/);
+  if (!(await link.count())) await agenda.getByRole('button', { name: 'Criar o meu calendário de treinador' }).click();
+  await expect(link).toHaveAttribute(
+    'href',
+    /^webcal:\/\/.+\/cal\/[a-zA-Z0-9]{24}\.ics\?alertas=1&treino=1440,120&jogo=1440,120&evento=1440,120$/
+  );
+  await expect(agenda).toContainText(/No calendário: \d+ jogos? · \d+ treinos? · \d+ reuni/);
+  // The coach chooses when: games 2 days and 3 hours before (24 h and 2 h off)
+  const games = agenda.getByRole('group', { name: 'Lembrar os jogos' });
+  for (const label of ['2 dias', '3 h', '24 h', '2 h'])
+    await games.getByRole('button', { name: label, exact: true }).click();
+  await expect(link).toHaveAttribute('href', /\?alertas=1&treino=1440,120&jogo=2880,180&evento=1440,120$/);
   await expect(agenda).toContainText('Remover alertas');
   await mine.click();
 });

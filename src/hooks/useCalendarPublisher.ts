@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AppState } from '../types';
-import { buildCalendarEvents, newCalendarToken } from '../lib/calendarFeed';
+import { buildCalendarEvents, buildStaffEvents, newCalendarToken } from '../lib/calendarFeed';
 import { hashData } from '../lib/recordSync';
 import { publishCalendar } from '../services/publicCalendar';
 
@@ -11,35 +11,59 @@ export const calendarTeamName = (state: Pick<AppState, 'myClubName' | 'category'
 /** Events of the parents' calendar: from 30 days ago on. */
 export function calendarEventsOf(state: AppState, today = new Date()) {
   const from = new Date(today.getTime() - 30 * 86400000).toISOString().slice(0, 10);
-  return buildCalendarEvents(state.myClubName || 'A nossa equipa', state.schedule || [], state.trainings || [], from);
+  return buildCalendarEvents(
+    state.myClubName || 'A nossa equipa',
+    state.schedule || [],
+    state.trainings || [],
+    from,
+    state.matches || []
+  );
 }
 
 /**
- * Creates the team's calendar link (the same one the parents get): publishes the games and trainings under a new
- * secret token and returns the teams with that token saved on the active team. Throws when it cannot.
+ * Events of the coaches' own calendar (private link, never given to the parents): the same games and trainings,
+ * plus the meetings and courses and the staff's unavailabilities of the Agenda.
  */
-export async function createTeamCalendar(state: AppState): Promise<NonNullable<AppState['teams']>> {
-  // Same club workspace as the cloud sync (accounts without a club code use the default "main" club)
-  const clubId = state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined;
+export function coachCalendarEventsOf(state: AppState, today = new Date()) {
+  const from = new Date(today.getTime() - 30 * 86400000).toISOString().slice(0, 10);
+  return [
+    ...calendarEventsOf(state, today),
+    ...buildStaffEvents(state.clubEvents || [], state.staffUnavailability || [], from)
+  ].sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''));
+}
+
+type Which = 'pais' | 'treinador';
+const TOKEN_FIELD = { pais: 'calendarToken', treinador: 'coachCalendarToken' } as const;
+const eventsFor = (which: Which, state: AppState) =>
+  which === 'pais' ? calendarEventsOf(state) : coachCalendarEventsOf(state);
+/** Same club workspace as the cloud sync (accounts without a club code use the default "main" club). */
+const clubOf = (state: AppState) => (state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined);
+
+/**
+ * Creates a calendar link of the team: the parents' one (games and trainings) or the coaches' own (everything in the
+ * Agenda). Publishes it under a new secret token and returns the teams with that token saved on the active team.
+ */
+export async function createTeamCalendar(
+  state: AppState,
+  which: Which = 'pais'
+): Promise<NonNullable<AppState['teams']>> {
+  const clubId = clubOf(state);
   if (!clubId || !state.activeTeamId) throw new Error('Precisa de ter sessão iniciada na nuvem.');
   const token = newCalendarToken();
   await publishCalendar(token, {
     clubId,
     teamId: state.activeTeamId,
     teamName: calendarTeamName(state),
-    events: calendarEventsOf(state)
+    events: eventsFor(which, state)
   });
-  return (state.teams || []).map((t) => (t.id === state.activeTeamId ? { ...t, calendarToken: token } : t));
+  return (state.teams || []).map((t) => (t.id === state.activeTeamId ? { ...t, [TOKEN_FIELD[which]]: token } : t));
 }
 
-/**
- * Keeps the parents' calendar up to date: whenever the Agenda or the trainings change (and the link is on), the
- * new list of games and trainings is published a few seconds later. Unchanged lists are not written again.
- */
-export function useCalendarPublisher(state: AppState): void {
-  const token = (state.teams || []).find((t) => t.id === state.activeTeamId)?.calendarToken;
-  const clubId = state.currentUser?.clubId;
-  const events = token ? calendarEventsOf(state) : [];
+/** Publishes one calendar again a few seconds after its events change (unchanged lists are not written again). */
+function usePublish(state: AppState, which: Which) {
+  const token = (state.teams || []).find((t) => t.id === state.activeTeamId)?.[TOKEN_FIELD[which]];
+  const clubId = clubOf(state);
+  const events = token ? eventsFor(which, state) : [];
   const teamName = calendarTeamName(state);
   const hash = token ? hashData({ events, teamName }) : '';
 
@@ -63,10 +87,19 @@ export function useCalendarPublisher(state: AppState): void {
             /* the next change publishes again */
           }
         })
-        .catch((err) => console.warn('Calendário para os pais: não foi possível atualizar.', err));
+        .catch((err) => console.warn('Calendário: não foi possível atualizar.', err));
     }, 3000);
     return () => clearTimeout(timer);
     // events/teamName are summarised by hash
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, clubId, state.activeTeamId, hash]);
+}
+
+/**
+ * Keeps the team's calendars up to date: whenever the Agenda or the trainings change (and the link is on), the new
+ * list is published a few seconds later. The parents' calendar and the coaches' own one are kept apart.
+ */
+export function useCalendarPublisher(state: AppState): void {
+  usePublish(state, 'pais');
+  usePublish(state, 'treinador');
 }

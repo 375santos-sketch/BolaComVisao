@@ -1,4 +1,4 @@
-import { ScheduledMatch, Training } from '../types';
+import { ClubEvent, Match, ScheduledMatch, StaffUnavailability, Training } from '../types';
 
 /**
  * Shareable calendar for the parents (Agenda → "Calendário para os pais"): the team's games and trainings as an
@@ -10,7 +10,8 @@ import { ScheduledMatch, Training } from '../types';
 export interface CalendarEvent {
   /** Stable id (the game's or training's id), so phones update events instead of duplicating them. */
   uid: string;
-  kind: 'jogo' | 'treino';
+  /** evento = meeting, course, camp (coaches' calendar only); indisponivel = a staff member away (idem). */
+  kind: 'jogo' | 'treino' | 'evento' | 'indisponivel';
   date: string; // YYYY-MM-DD
   time?: string; // HH:MM (no time = all-day event)
   durationMinutes: number;
@@ -28,51 +29,148 @@ interface CalendarFeed {
 const TYPE_LABEL: Record<string, string> = { campeonato: 'Campeonato', torneio: 'Torneio', amigavel: 'Amigável' };
 const validDate = (d?: string) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
 const validTime = (t?: string) => (typeof t === 'string' && /^\d{1,2}:\d{2}$/.test(t.trim()) ? t.trim() : undefined);
+/** The day of a saved date, also when it carries a time ("2026-11-15T10:30…"). */
+const dayOf = (d?: string) => (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}/.test(d) ? d.slice(0, 10) : undefined);
+/** "10:30", "10h30", "10H" → "10:30" / "10:00". */
+const timeOf = (t?: string) => {
+  const m = typeof t === 'string' ? /^\s*(\d{1,2})\s*[:hH.]\s*(\d{2})?\s*$/.exec(t) : null;
+  return m && Number(m[1]) < 24 ? `${m[1].padStart(2, '0')}:${m[2] || '00'}` : undefined;
+};
 
-/** Events of the team from `from` (YYYY-MM-DD) on: scheduled games and trainings, oldest first. */
+type GameLike = Pick<ScheduledMatch, 'opponent' | 'type' | 'tournamentName' | 'phase' | 'location'> &
+  Partial<Pick<ScheduledMatch, 'venue' | 'meetingTime' | 'meetingPoint'>>;
+
+function gameEvent(teamName: string, id: string, date: string, time: string | undefined, g: GameLike): CalendarEvent {
+  const home = g.location !== 'fora';
+  const competition =
+    g.type === 'torneio' ? g.tournamentName || TYPE_LABEL.torneio : TYPE_LABEL[g.type] || TYPE_LABEL.amigavel;
+  const extra = [competition, g.phase].filter(Boolean).join(' · ');
+  return {
+    uid: `jogo-${id}`,
+    kind: 'jogo',
+    date,
+    time,
+    durationMinutes: 90,
+    title: `⚽ ${home ? `${teamName} vs ${g.opponent}` : `${g.opponent} vs ${teamName}`}${extra ? ` (${extra})` : ''}`,
+    location: g.venue?.trim() || (home ? 'Em casa' : 'Fora'),
+    description: [
+      g.meetingTime ? `Concentração: ${g.meetingTime}${g.meetingPoint ? ` · ${g.meetingPoint}` : ''}` : '',
+      home ? 'Jogo em casa' : 'Jogo fora'
+    ]
+      .filter(Boolean)
+      .join('\n')
+  };
+}
+
+/**
+ * Events of the team from `from` (YYYY-MM-DD) on, oldest first: the games of the Agenda (scheduled, and those already
+ * started or played, once each) and the trainings.
+ */
 export function buildCalendarEvents(
   teamName: string,
   schedule: ScheduledMatch[],
   trainings: Training[],
-  from: string
+  from: string,
+  matches: Match[] = []
 ): CalendarEvent[] {
-  const games: CalendarEvent[] = (schedule || [])
-    .filter((g) => g && validDate(g.date) && g.date >= from)
-    .map((g) => {
-      const home = g.location !== 'fora';
-      const competition =
-        g.type === 'torneio' ? g.tournamentName || TYPE_LABEL.torneio : TYPE_LABEL[g.type] || TYPE_LABEL.amigavel;
-      const extra = [competition, g.phase].filter(Boolean).join(' · ');
-      return {
-        uid: `jogo-${g.id}`,
-        kind: 'jogo' as const,
-        date: g.date,
-        time: validTime(g.time),
-        durationMinutes: 90,
-        title: `⚽ ${home ? `${teamName} vs ${g.opponent}` : `${g.opponent} vs ${teamName}`}${extra ? ` (${extra})` : ''}`,
-        location: g.venue?.trim() || (home ? 'Em casa' : 'Fora'),
-        description: [
-          g.meetingTime ? `Concentração: ${g.meetingTime}${g.meetingPoint ? ` · ${g.meetingPoint}` : ''}` : '',
-          home ? 'Jogo em casa' : 'Jogo fora'
-        ]
-          .filter(Boolean)
-          .join('\n')
-      };
-    });
-  const sessions: CalendarEvent[] = (trainings || [])
-    .filter((t) => t && validDate(t.date) && t.date >= from)
-    .map((t) => ({
-      uid: `treino-${t.id}`,
-      kind: 'treino' as const,
-      date: t.date,
-      time: validTime(t.time),
-      durationMinutes: t.durationMinutes || 90,
-      title: `🏃 Treino${t.trainingNumber ? ` Nº ${t.trainingNumber}` : ''} · ${teamName}`,
-      location: t.location?.trim() || undefined
-    }));
+  const games: CalendarEvent[] = [];
+  const seen = new Set<string>();
+  (schedule || []).forEach((g) => {
+    const date = g && dayOf(g.date);
+    if (!date || date < from || !g.id) return;
+    seen.add(g.id);
+    games.push(gameEvent(teamName, g.id, date, timeOf(g.time) || timeOf(g.date.slice(11, 16)), g));
+  });
+  // A game that was started from the Agenda keeps the Agenda's id (the phone updates the same event)
+  (matches || []).forEach((m) => {
+    const date = m && dayOf(m.date);
+    const id = m?.originalSchedule?.id || m?.id;
+    if (!date || date < from || !id || seen.has(id)) return;
+    seen.add(id);
+    games.push(gameEvent(teamName, id, date, timeOf(m.originalSchedule?.time), { ...m.originalSchedule, ...m }));
+  });
+  const sessions: CalendarEvent[] = (trainings || []).flatMap((t) => {
+    const date = t && dayOf(t.date);
+    if (!date || date < from) return [];
+    return [
+      {
+        uid: `treino-${t.id}`,
+        kind: 'treino' as const,
+        date,
+        time: timeOf(t.time),
+        durationMinutes: t.durationMinutes || 90,
+        title: `🏃 Treino${t.trainingNumber ? ` Nº ${t.trainingNumber}` : ''} · ${teamName}`,
+        location: t.location?.trim() || undefined
+      }
+    ];
+  });
   return [...games, ...sessions].sort(
     (a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '')
   );
+}
+
+const EVENT_ICON: Record<string, string> = { reuniao: '👥', formacao: '🎓', estagio: '🏕️', outro: '📌' };
+
+/** Days from `date` to `end` (both included, at most a year), as YYYY-MM-DD. */
+function daysBetween(date: string, end?: string): string[] {
+  const out: string[] = [];
+  const last = end && end > date ? end : date;
+  const t = new Date(`${date}T12:00:00Z`);
+  while (out.length < 366) {
+    const day = t.toISOString().slice(0, 10);
+    if (day > last) break;
+    out.push(day);
+    t.setUTCDate(t.getUTCDate() + 1);
+  }
+  return out;
+}
+
+/**
+ * The coaches' own calendar adds what is in the Agenda besides games and trainings: meetings, courses and camps
+ * (one event per day of a multi-day one) and the staff's unavailabilities (all day). Never in the parents' calendar.
+ */
+export function buildStaffEvents(
+  clubEvents: ClubEvent[],
+  unavailability: StaffUnavailability[],
+  from: string
+): CalendarEvent[] {
+  const meetings = (clubEvents || []).flatMap((ev) => {
+    const start = ev && dayOf(ev.date);
+    if (!start) return [];
+    const time = timeOf(ev.time);
+    const end = timeOf(ev.endTime);
+    const minutes =
+      time && end
+        ? Number(end.slice(0, 2)) * 60 + Number(end.slice(3)) - (Number(time.slice(0, 2)) * 60 + Number(time.slice(3)))
+        : 0;
+    return daysBetween(start, dayOf(ev.endDate))
+      .filter((d) => d >= from)
+      .map((d) => ({
+        uid: `evento-${ev.id}-${d}`,
+        kind: 'evento' as const,
+        date: d,
+        time,
+        durationMinutes: minutes > 0 ? minutes : 60,
+        title: `${EVENT_ICON[ev.type] || '📌'} ${ev.title}`,
+        location: ev.location?.trim() || undefined,
+        description: ev.attendees ? `Com: ${ev.attendees}` : undefined
+      }));
+  });
+  const away = (unavailability || []).flatMap((u) => {
+    const start = u && dayOf(u.date);
+    if (!start) return [];
+    return daysBetween(start, dayOf(u.endDate))
+      .filter((d) => d >= from)
+      .map((d) => ({
+        uid: `indisponivel-${u.id}-${d}`,
+        kind: 'indisponivel' as const,
+        date: d,
+        durationMinutes: 0,
+        title: `🚫 ${u.name} (indisponível)`,
+        description: u.reason || undefined
+      }));
+  });
+  return [...meetings, ...away];
 }
 
 // ---------- iCalendar (RFC 5545) ----------
@@ -143,23 +241,77 @@ const VTIMEZONE = [
   'END:VTIMEZONE'
 ];
 
+/** When the reminders can ring, in minutes before the start (the coach picks some for trainings and for games). */
+export const REMINDER_CHOICES: Array<{ minutes: number; label: string }> = [
+  { minutes: 2880, label: '2 dias' },
+  { minutes: 1440, label: '24 h' },
+  { minutes: 720, label: '12 h' },
+  { minutes: 180, label: '3 h' },
+  { minutes: 120, label: '2 h' },
+  { minutes: 60, label: '1 h' },
+  { minutes: 30, label: '30 min' }
+];
+
+export interface ReminderPlan {
+  treino: number[];
+  jogo: number[];
+  /** Meetings, courses and camps (coaches' calendar). */
+  evento: number[];
+}
+
+export const DEFAULT_REMINDERS: ReminderPlan = { treino: [1440, 120], jogo: [1440, 120], evento: [1440, 120] };
+
+const allowed = new Set(REMINDER_CHOICES.map((c) => c.minutes));
+const cleanList = (v: unknown): number[] =>
+  Array.from(
+    new Set(
+      String(v ?? '')
+        .split(',')
+        .map((x) => Number(x.trim()))
+        .filter((n) => allowed.has(n))
+    )
+  ).sort((x, y) => y - x);
+
 /**
- * Reminders for the coach's own phone (the link with ?alertas=1): the day before and 2 hours before each game and
- * training with a time; 9:00 of the day before for those without one. The parents' link stays without reminders.
+ * The reminders asked for in the coach's link: ?alertas=1&treino=1440,120&jogo=2880,180 (only the choices above).
+ * Without ?alertas=1 there are none (the parents' link); with it and nothing else, 24 h and 2 h before.
  */
-const reminders = (timed: boolean, title: string): string[] => {
-  const alarm = (trigger: string) => [
+export function reminderPlanFromQuery(query: Record<string, unknown>): ReminderPlan | null {
+  if (query.alertas !== '1') return null;
+  return {
+    treino: query.treino === undefined ? DEFAULT_REMINDERS.treino : cleanList(query.treino),
+    jogo: query.jogo === undefined ? DEFAULT_REMINDERS.jogo : cleanList(query.jogo),
+    evento: query.evento === undefined ? DEFAULT_REMINDERS.evento : cleanList(query.evento)
+  };
+}
+
+/** The query of the coach's link for a plan (the inverse of reminderPlanFromQuery). */
+export const reminderQuery = (plan: ReminderPlan) =>
+  `alertas=1&treino=${cleanList(plan.treino.join(',')).join(',')}&jogo=${cleanList(plan.jogo.join(',')).join(',')}` +
+  `&evento=${cleanList((plan.evento || []).join(',')).join(',')}`;
+
+const trigger = (minutes: number) =>
+  minutes % 1440 === 0 ? `-P${minutes / 1440}D` : minutes % 60 === 0 ? `-PT${minutes / 60}H` : `-PT${minutes}M`;
+
+/**
+ * The alarms of one event. Events without a time (all day): one reminder at 9:00 of the day before, when that kind
+ * has any.
+ */
+const reminders = (e: CalendarEvent, plan: ReminderPlan): string[] => {
+  const alarm = (t: string) => [
     'BEGIN:VALARM',
     'ACTION:DISPLAY',
-    `DESCRIPTION:${escapeText(title)}`,
-    `TRIGGER:${trigger}`,
+    `DESCRIPTION:${escapeText(e.title)}`,
+    `TRIGGER:${t}`,
     'END:VALARM'
   ];
-  return timed ? [...alarm('-P1D'), ...alarm('-PT2H')] : alarm('-PT15H');
+  const list = e.kind === 'indisponivel' ? [] : plan[e.kind] || [];
+  if (!list.length) return [];
+  return e.time ? list.flatMap((m) => alarm(trigger(m))) : alarm('-PT15H');
 };
 
 /** The feed as an .ics file (subscribed to by Google Calendar, iPhone, Outlook). */
-export function buildICS(feed: CalendarFeed, options: { reminders?: boolean } = {}): string {
+export function buildICS(feed: CalendarFeed, options: { reminders?: ReminderPlan | null } = {}): string {
   const name = `${feed.teamName} · jogos e treinos`;
   const lines = [
     'BEGIN:VCALENDAR',
@@ -186,7 +338,7 @@ export function buildICS(feed: CalendarFeed, options: { reminders?: boolean } = 
     lines.push(`SUMMARY:${escapeText(e.title)}`);
     if (e.location) lines.push(`LOCATION:${escapeText(e.location)}`);
     if (e.description) lines.push(`DESCRIPTION:${escapeText(e.description)}`);
-    if (options.reminders) lines.push(...reminders(Boolean(e.time), e.title));
+    if (options.reminders) lines.push(...reminders(e, options.reminders));
     lines.push('END:VEVENT');
   });
   lines.push('END:VCALENDAR');
@@ -236,7 +388,7 @@ export function feedFromRestDocument(
     .filter((e) => e && typeof e.uid === 'string' && validDate(e.date as string) && typeof e.title === 'string')
     .map((e) => ({
       uid: String(e.uid),
-      kind: e.kind === 'treino' ? ('treino' as const) : ('jogo' as const),
+      kind: (['treino', 'evento', 'indisponivel'] as const).find((k) => k === e.kind) || ('jogo' as const),
       date: String(e.date),
       time: validTime(e.time as string),
       durationMinutes: Math.min(600, Math.max(15, Number(e.durationMinutes) || 90)),

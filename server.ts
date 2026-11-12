@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
-import { buildICS, feedFromRestDocument } from './src/lib/calendarFeed';
+import { buildICS, feedFromRestDocument, reminderPlanFromQuery } from './src/lib/calendarFeed';
 import {
   cleanPrintExercise,
   cleanPrintExercises,
@@ -465,8 +465,9 @@ async function startServer() {
       if (!feed) return res.status(404).type('text/plain').send('Calendário não encontrado.');
       res.set('Cache-Control', 'public, max-age=900');
       res.set('Content-Disposition', 'inline; filename="calendario.ics"');
-      // ?alertas=1: the coach's own link, with reminders (the day before and 2 hours before)
-      return res.type('text/calendar; charset=utf-8').send(buildICS(feed, { reminders: req.query.alertas === '1' }));
+      // ?alertas=1: the coach's own link, with the reminders chosen in the app (?treino=1440,120&jogo=…)
+      const reminders = reminderPlanFromQuery(req.query as Record<string, unknown>);
+      return res.type('text/calendar; charset=utf-8').send(buildICS(feed, { reminders }));
     } catch (err) {
       console.error('Erro na rota /cal:', err);
       return res.status(502).type('text/plain').send('Calendário temporariamente indisponível.');
