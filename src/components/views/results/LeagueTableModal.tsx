@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { AppState, LeagueGame, LeagueSetup } from '../../../types';
 import {
   computeStandings,
@@ -315,11 +316,12 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
               </label>
               <label className="text-[10px] text-ui-muted">
                 Começa em
-                <input
+                <DateTimePT
                   type="date"
-                  className={input}
+                  label="Começa em"
+                  inputClassName={`${input} w-full`}
                   value={newPhase.startDate}
-                  onChange={(e) => setNewPhase({ ...newPhase, startDate: e.target.value })}
+                  onChange={(v) => setNewPhase({ ...newPhase, startDate: v })}
                 />
               </label>
             </div>
@@ -426,11 +428,12 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
                 </label>
                 <label className="text-[10px] text-ui-muted">
                   Data (opcional)
-                  <input
+                  <DateTimePT
                     type="date"
-                    className={input}
+                    label="Data (opcional)"
+                    inputClassName={`${input} w-full`}
                     value={form.date}
-                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                    onChange={(v) => setForm({ ...form, date: v })}
                   />
                 </label>
               </div>

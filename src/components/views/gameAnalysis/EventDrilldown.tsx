@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { datePT } from '../../../lib/planningSummary';
 import { AggregatedAnalysis } from '../../../lib/gameAnalysis';
 import { Player } from '../../../types';
 
@@ -136,7 +137,8 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
                     </div>
 
                     <div className="text-[10px] text-ui-muted mt-0.5">
-                      vs {ev.match.opponent} • {ev.match.location === 'casa' ? '🏠 Casa' : '✈️ Fora'} • {ev.match.date}
+                      vs {ev.match.opponent} • {ev.match.location === 'casa' ? '🏠 Casa' : '✈️ Fora'} •{' '}
+                      {datePT(ev.match.date)}
                     </div>
                   </div>
                 </div>
@@ -227,7 +229,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
                 <div className="text-xs font-bold text-ui-text">
                   vs {selectedEvent.match.opponent} ({selectedEvent.match.location === 'casa' ? 'Casa' : 'Fora'})
                 </div>
-                <div className="text-[10px] text-ui-muted">{selectedEvent.match.date}</div>
+                <div className="text-[10px] text-ui-muted">{datePT(selectedEvent.match.date)}</div>
               </div>
             </div>
 

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { DateTimePT } from '../ui/DateTimePT';
 import { AppState } from '../../types';
 import {
   GOAL_BLOCKS,
@@ -195,20 +196,22 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
             <div className="grid grid-cols-2 gap-2">
               <label className="text-[11px] text-ui-muted">
                 De
-                <input
+                <DateTimePT
                   type="date"
+                  label="De"
                   value={filter.from || ''}
-                  onChange={(e) => setFilter({ ...filter, from: e.target.value })}
-                  className={select}
+                  onChange={(v) => setFilter({ ...filter, from: v })}
+                  inputClassName={`${select} w-full`}
                 />
               </label>
               <label className="text-[11px] text-ui-muted">
                 Até
-                <input
+                <DateTimePT
                   type="date"
+                  label="Até"
                   value={filter.to || ''}
-                  onChange={(e) => setFilter({ ...filter, to: e.target.value })}
-                  className={select}
+                  onChange={(v) => setFilter({ ...filter, to: v })}
+                  inputClassName={`${select} w-full`}
                 />
               </label>
             </div>

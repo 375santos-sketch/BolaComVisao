@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { datePT } from '../../lib/planningSummary';
 import { TrendsSection } from '../trends/TeamTrends';
 import { seasonMatches } from '../../lib/homeSummary';
 import { AppState } from '../../types';
@@ -512,7 +513,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                           )}
                         </div>
                         <div className="text-[10px] text-ui-muted">
-                          vs {ev.match.opponent} ({ev.match.date})
+                          vs {ev.match.opponent} ({datePT(ev.match.date)})
                         </div>
                       </div>
                     </div>
@@ -532,7 +533,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                           )}
                         </div>
                         <div className="text-[10px] text-ui-muted">
-                          vs {ev.match.opponent} ({ev.match.date})
+                          vs {ev.match.opponent} ({datePT(ev.match.date)})
                         </div>
                       </div>
                     </div>

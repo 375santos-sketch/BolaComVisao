@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DateTimePT } from './ui/DateTimePT';
 import { AppState, CoachCareer, CoachClub, CoachCourse } from '../types';
 import { careerOf, careerStatus, clubDetail, dateLabel, sortClubs, sortCourses, withCareer } from '../lib/coachCareer';
 import { uid } from '../lib/utils';
@@ -242,11 +243,13 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
           <div className="grid grid-cols-2 gap-2">
             <label className="text-[11px] text-cyan-100">
               Válido até
-              <input
+              <DateTimePT
                 type="date"
-                className="ui-input mt-0.5 w-full text-sm"
+                label="Válido até"
+                className="mt-0.5"
+                inputClassName="ui-input w-full text-sm"
                 value={career.validUntil || ''}
-                onChange={(e) => field('validUntil', e.target.value)}
+                onChange={(v) => field('validUntil', v)}
               />
             </label>
             <label className="text-[11px] text-cyan-100">
@@ -345,12 +348,12 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
                 value={course.entity || ''}
                 onChange={(e) => setCourse({ ...course, entity: e.target.value })}
               />
-              <input
+              <DateTimePT
                 type="date"
-                className="ui-input text-sm"
-                aria-label="Data da formação"
+                label="Data da formação"
+                inputClassName="ui-input w-full text-sm"
                 value={course.date}
-                onChange={(e) => setCourse({ ...course, date: e.target.value })}
+                onChange={(v) => setCourse({ ...course, date: v })}
               />
               <label className="text-[11px] text-slate-400">
                 Créditos

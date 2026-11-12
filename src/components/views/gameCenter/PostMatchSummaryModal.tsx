@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { datePT } from '../../../lib/planningSummary';
 import { Match, AppState } from '../../../types';
 import { MatchTimeline } from './MatchTimeline';
 import { parseMinuteToNumber } from '../../../lib/gameAnalysisUtils';
@@ -96,7 +97,7 @@ export const PostMatchSummaryModal: React.FC<PostMatchSummaryModalProps> = ({
   const generateWhatsAppMessage = () => {
     const lines = [
       `⚽ *RESUMO DO JOGO | ${myClubName} vs ${match.opponent || 'Adversário'}*`,
-      `📅 *Data:* ${match.date || 'Hoje'}`,
+      `📅 *Data:* ${datePT(match.date || '') || 'Hoje'}`,
       `🏆 *Tipo:* ${compDetails.typeLabel} | *Fase/Jornada:* ${compDetails.faseJornadaText}`,
       `🏅 *Resultado Final:* ${myClubName} ${scoredCount} - ${concededCount} ${match.opponent || 'Adversário'} (${statusLabel.toUpperCase()})`,
       ''

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DateTimePT } from './ui/DateTimePT';
 import { compressImageFile, PHOTO_MAX_BYTES, PHOTO_MAX_SIDE } from '../lib/imageCompress';
 import { StaffMember } from '../types';
 import { uid } from '../lib/utils';
@@ -271,11 +272,12 @@ const StaffModalForm: React.FC<Omit<StaffModalProps, 'isOpen'>> = ({
             <label className="block text-xs font-mono font-semibold text-slate-300 mb-1">
               🎂 Data de Nascimento <span className="text-slate-500 font-normal">(para alertas automáticos)</span>
             </label>
-            <input
+            <DateTimePT
               type="date"
+              label="Data de nascimento"
               value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              className="ui-input w-full text-xs"
+              onChange={(v) => setBirthDate(v)}
+              inputClassName="ui-input w-full text-xs"
             />
           </div>
 
