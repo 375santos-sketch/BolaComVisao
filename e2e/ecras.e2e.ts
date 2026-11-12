@@ -1468,7 +1468,8 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await advance('05:00');
 
   // Playing minutes: 25 + 10, Duarte left at 16', Henrique came on at 16'.
-  // Ao vivo → Em campo: the minutes of each athlete are always listed
+  // Ao vivo → Em campo: the minutes of each athlete are always listed (counted again when the tab opens)
+  await page.getByRole('button', { name: 'Cronologia', exact: true }).click();
   await page.getByRole('button', { name: 'Em campo', exact: true }).click();
   const minutes = (name: string) => page.locator('li').filter({ hasText: name }).locator('span').last().innerText();
   expect(await minutes('1 - Duarte Matos')).toBe("16'");

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppState, Match } from '../../types';
 import { t } from '../../i18n/dict';
 import { calculateMatchScore } from '../../lib/utils';
@@ -151,6 +151,15 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   } = useLiveMatch({ state, onUpdateState, onShowToast });
 
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
+
+  // While the clock runs, the minutes of each athlete are counted again every 15 seconds (not only after an action)
+  const [, setMinuteTick] = useState(0);
+  const clockRunning = Boolean(match?.timer?.isRunning);
+  useEffect(() => {
+    if (!clockRunning) return;
+    const id = setInterval(() => setMinuteTick((n) => n + 1), 15000);
+    return () => clearInterval(id);
+  }, [clockRunning]);
 
   if (!match) {
     return (
