@@ -68,6 +68,7 @@ const GameAnalysisDashboard = lazyWithRetry(
   () => import('./components/views/GameAnalysisDashboard'),
   'GameAnalysisDashboard'
 );
+const ClubView = lazyWithRetry(() => import('./components/views/ClubView'), 'ClubView');
 const SquadView = lazyWithRetry(() => import('./components/views/SquadView'), 'SquadView');
 const PreMatchView = lazyWithRetry(() => import('./components/views/PreMatchView'), 'PreMatchView');
 
@@ -1038,6 +1039,26 @@ export default function App() {
               />
             )}
 
+            {currentTab === 'clube' && (
+              <ClubView
+                state={state}
+                onNavigate={handleNavigate}
+                onOpenMore={() => setShowMoreDrawer(true)}
+                onOpenSettings={() => setShowSettings(true)}
+                onOpenDatabase={() => setShowDatabase(true)}
+                onOpenSync={() => showSyncStatus()}
+                onOpenSeasons={() => setShowSeasonSelector(true)}
+                onOpenSeasonGrowth={() => setShowSeasonGrowth(true)}
+                onOpenInviteStaff={() => setShowInviteStaff(true)}
+                onOpenAdminUsers={() => setShowAdminUsers(true)}
+                onOpenTour={() => {
+                  handleNavigate('home');
+                  setTourOpen(true);
+                }}
+                pendingUsersCount={pendingUsersCount}
+              />
+            )}
+
             {currentTab === 'plantel' && (
               <SquadView
                 key={currentTab}
@@ -1059,7 +1080,6 @@ export default function App() {
           currentTab={currentTab}
           lang={state.lang}
           onNavigate={(tab) => setCurrentTab(tab)}
-          onOpenMore={() => setShowMoreDrawer(true)}
           onOpenSettings={() => setShowSettings(true)}
           hasActiveMatch={hasActiveMatch}
           pendingCount={pendingUsersCount}

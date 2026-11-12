@@ -11,6 +11,7 @@ import {
   navTo,
   newCoachPage,
   openMore,
+  openMoreMenu,
   resetToLegacyFormat,
   syncBadge,
   watchPageErrors
@@ -180,7 +181,7 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
   await expect(page.getByText(/ANÁLISE/i).first()).toBeVisible();
 
   // Simplified "Mais" menu: these were removed (21/10/2026)
-  await navTo(page, /clube/i);
+  const moreMenu = await openMoreMenu(page);
   for (const removed of [
     /Módulos & Funcionalidades/,
     /Chat da Equipa Técnica/,
@@ -194,7 +195,7 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
     await expect(page.getByRole('button', { name: removed })).toHaveCount(0);
   }
   for (const kept of [/Definições do clube/, /Cópias de segurança/, /Trocar de equipa/]) {
-    await expect(page.getByRole('button', { name: kept })).toBeVisible();
+    await expect(moreMenu.getByRole('button', { name: kept })).toBeVisible();
   }
   await page.keyboard.press('Escape');
 });
@@ -2193,7 +2194,10 @@ test('exercício sem explicação para as crianças, assinatura nos PDFs e visit
 
   // 🧭 Guided tour, from Mais
   await openMore(page, /^Ajuda/);
-  await page.getByRole('button', { name: /Visita guiada/ }).click();
+  await page
+    .getByRole('dialog', { name: 'Ajuda' })
+    .getByRole('button', { name: /Visita guiada/ })
+    .click();
   const tour = page.getByRole('dialog', { name: 'Visita guiada' });
   await expect(tour).toContainText('Bem-vindo à BolaComVisão');
   await tour.getByRole('button', { name: 'Seguinte →' }).click();
@@ -2457,7 +2461,10 @@ test('antes e depois da época: foto da equipa na nuvem, autorização dos pais 
 }) => {
   await signedIn(page);
   await openMore(page, /^Épocas/);
-  await page.getByRole('button', { name: /Antes e depois da época/ }).click();
+  await page
+    .getByRole('dialog', { name: 'Épocas' })
+    .getByRole('button', { name: /Antes e depois da época/ })
+    .click();
   const dialog = page.getByRole('dialog', { name: 'Antes e depois da época' });
   await dialog.getByLabel('Foto da equipa no início da época').setInputFiles('e2e/fixtures/exercicio.jpg');
   await expect(page.getByText('Foto do início guardada ✓')).toBeVisible();
@@ -2662,10 +2669,37 @@ test('avisos do jogo: cada treinador liga no seu telemóvel; no iPhone primeiro 
   await iphone.close();
 });
 
-test('Mais em 3 grupos, definições por partes e avisos no telemóvel', async ({ page }) => {
+test('Clube: página do clube com equipas, acessos, épocas, dados e ajuda', async ({ page }) => {
   await signedIn(page);
   await navTo(page, /clube/i);
-  const more = page.getByRole('dialog', { name: 'Mais' });
+  await expect(page.locator('#navbar').getByRole('button', { name: /clube/i })).toHaveAttribute('aria-current', 'page');
+  for (const group of ['Clube', 'Dados', 'Ajuda'])
+    await expect(page.getByRole('region', { name: group, exact: true })).toBeVisible();
+  const club = page.getByRole('region', { name: 'Clube', exact: true });
+  for (const row of [
+    /Equipas e escalões/,
+    /Convidar treinador/,
+    /^Épocas/,
+    /Antes e depois da época/,
+    /Definições do clube/
+  ])
+    await expect(club.getByRole('button', { name: row })).toBeVisible();
+  // The club's teams: real ones, the one in use marked
+  await expect(page.getByRole('region', { name: 'Equipas do clube' }).getByText('Em uso')).toBeVisible();
+  // A row opens its window
+  await club.getByRole('button', { name: /Definições do clube/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Definições do clube' })).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar definições do clube' }).click();
+  await expect(page.getByRole('dialog', { name: 'Definições do clube' })).toHaveCount(0);
+  // Personal items stay in Mais → A minha conta
+  const more = await openMoreMenu(page);
+  await expect(more.getByRole('region', { name: 'A minha conta' })).toBeVisible();
+  await page.keyboard.press('Escape');
+});
+
+test('Mais em 3 grupos, definições por partes e avisos no telemóvel', async ({ page }) => {
+  await signedIn(page);
+  const more = await openMoreMenu(page);
   for (const group of ['Equipa', 'Clube', 'A minha conta'])
     await expect(more.getByRole('region', { name: group })).toBeVisible();
   const account = more.getByRole('region', { name: 'A minha conta' });
@@ -2737,8 +2771,7 @@ test('Mais em 3 grupos, definições por partes e avisos no telemóvel', async (
 test('o botão voltar do telemóvel fecha a janela aberta e não sai da app', async ({ page }) => {
   await signedIn(page);
   const url = page.url();
-  await navTo(page, /clube/i);
-  const more = page.getByRole('dialog', { name: 'Mais' });
+  const more = await openMoreMenu(page);
   await expect(more).toBeVisible();
   await page.goBack();
   await expect(more).toHaveCount(0);

@@ -95,7 +95,9 @@ export default tseslint.config(
       'src/components/SettingsModal.tsx',
       'src/components/ClubSettingsSection.tsx',
       'src/components/AppearanceSheet.tsx',
-      'src/components/PushSettingsModal.tsx'
+      'src/components/PushSettingsModal.tsx',
+      'src/components/views/ClubView.tsx',
+      'src/components/AdminUsersModal.tsx'
     ],
     rules: {
       'no-restricted-syntax': [

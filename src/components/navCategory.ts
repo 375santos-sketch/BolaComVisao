@@ -18,6 +18,7 @@ export function getActiveCategory(tab: TabType): MainCategory {
     case 'prejogo':
       return 'performance';
     case 'teams':
+    case 'clube':
       return 'mais';
     default:
       return 'home';
