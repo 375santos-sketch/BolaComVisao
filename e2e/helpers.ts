@@ -21,11 +21,14 @@ export async function login(page: Page, email: string) {
   await page.getByPlaceholder('ex: treinador ou treinador@email.com').fill(email);
   await page.locator('input[type=password]').first().fill(PASSWORD);
   await page.locator('button[type=submit]').first().click();
-  await expect(page.getByText('ESCOLHA A SUA EQUIPA / ÉPOCA')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Escolher Equipa' })).toBeVisible();
 }
 
 export async function enterPanel(page: Page) {
-  await page.getByText('ENTRAR NO PAINEL').first().click();
+  await page
+    .getByRole('button', { name: /^Entrar no Painel/ })
+    .first()
+    .click();
   await expect(page.locator('#navbar')).toBeVisible();
 }
 

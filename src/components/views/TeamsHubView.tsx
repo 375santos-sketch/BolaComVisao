@@ -5,6 +5,8 @@ import logoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { isAppAdmin } from '../../services/cloudAuthService';
 import { getUserAccessibleTeams, isAdminAccount } from '../../lib/permissionsEngine';
 import { SyncStatusBadge } from '../ui/SyncStatusBadge';
+import { SunModeButton } from '../ui/SunModeButton';
+import { Icon } from '../ui/Icon';
 
 interface TeamsHubViewProps {
   state: AppState;
@@ -55,6 +57,19 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
   const isUserAdmin = isAdminAccount(state.currentUser);
   const allTeams = state.teams || [];
   const teams = getUserAccessibleTeams(state.currentUser, allTeams);
+  // The team chosen on this screen (tap a card); the team in use, or the first one, to start with
+  const [chosenId, setChosenId] = useState<string | undefined>(
+    () => (teams.some((t) => t.id === state.activeTeamId) ? state.activeTeamId : teams[0]?.id) || undefined
+  );
+  const chosenTeam = teams.find((t) => t.id === chosenId) || teams[0];
+  const chosenLabel = chosenTeam
+    ? [
+        chosenTeam.id === state.activeTeamId ? state.myClubName || chosenTeam.clubName : chosenTeam.clubName,
+        chosenTeam.id === state.activeTeamId ? state.category || chosenTeam.category : chosenTeam.category
+      ]
+        .filter(Boolean)
+        .join(' ')
+    : '';
 
   const handleCreateTeam = (e: React.FormEvent) => {
     e.preventDefault();
@@ -270,111 +285,88 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
   };
 
   return (
-    <div className="teams-hub text-center animate-fade-in max-w-xl mx-auto px-2 py-4 pb-28">
-      {/* App Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20 mb-4">
-        <div className="flex items-center gap-2.5">
-          <img
-            src={logoImg}
-            alt="BolaComVisão Logo"
-            className="w-10 h-10 rounded-xl object-cover border-2 border-cyan-400"
-            referrerPolicy="no-referrer"
-          />
-          <div className="text-left">
-            <h1 className="text-xl font-extrabold font-['Chakra_Petch'] uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-300">
-              BolaComVisão
-            </h1>
-            <div className="text-[10px] font-mono text-cyan-300/80 uppercase tracking-wider">
-              Gestão Tática & Planteis
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {onOpenSync && <SyncStatusBadge onClick={onOpenSync} fallbackSyncInfo={syncInfo} />}
-
-          {state.currentUser && (
-            <div className="ui-card hidden sm:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono text-cyan-200">
-              <span>👤</span>
-              <span className="font-bold text-white">{state.currentUser.name}</span>
-            </div>
-          )}
-
-          {onOpenAdminUsers && isAdmin && (
-            <button
-              onClick={onOpenAdminUsers}
-              className={`relative p-2 rounded-xl border text-sm transition-transform hover:scale-105 cursor-pointer ${
-                pendingUsersCount > 0
-                  ? 'bg-amber-950/80 border-amber-500 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.5)] animate-pulse'
-                  : 'bg-slate-900 border-cyan-500/30 text-cyan-300 hover:border-cyan-400'
-              }`}
-              title="Gestão de Acessos de Treinadores (👥)"
-            >
-              <span>👥</span>
-              {pendingUsersCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-amber-500 text-slate-950 font-mono text-[9px] font-black rounded-full flex items-center justify-center border border-slate-950 animate-bounce">
-                  {pendingUsersCount}
-                </span>
-              )}
-            </button>
-          )}
-
-          <button
-            onClick={onOpenSettings}
-            className="ui-btn ui-btn-soft p-2 transition-transform text-sm"
-            title="Definições do Sistema"
-          >
-            ⚙️
-          </button>
-
-          {onLogout && (
-            <button
-              type="button"
-              onClick={() => {
-                onShowConfirm('Tem a certeza de que deseja terminar a sessão e sair da sua conta?', () => {
-                  onLogout();
-                });
-              }}
-              className="ui-btn ui-btn-soft-danger flex items-center gap-1.5 px-3 py-1.5 text-xs"
-              title="Terminar Sessão e Sair"
-              id="header-logout-btn"
-            >
-              <span>🚪</span>
-              <span className="hidden sm:inline">Terminar Sessão</span>
-            </button>
-          )}
-        </div>
+    <div className="teams-hub relative mx-auto max-w-6xl px-1 pb-24 pt-2 text-left sm:px-3 lg:pb-12">
+      {/* The night stadium behind the whole screen (drawn with light, no photos) */}
+      <div aria-hidden className="bcv-stadium">
+        <span className="bcv-beam bcv-beam-left" />
+        <span className="bcv-beam bcv-beam-right" />
+        <span className="bcv-pitch" />
       </div>
 
-      {/* Main Title Banner */}
-      <div className="my-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-[10px] font-mono tracking-widest uppercase mb-2">
-          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-          Painel Inicial de Seleção
+      {/* Top bar: brand, save state, sun mode, settings, access, sign out */}
+      <header className="relative flex items-center gap-2.5">
+        <img
+          src={logoImg}
+          alt=""
+          className="h-10 w-10 rounded-ui-sm object-cover shadow-[0_0_20px_rgba(34,211,238,0.35)] sm:h-12 sm:w-12"
+          referrerPolicy="no-referrer"
+        />
+        <div className="text-[19px] font-black tracking-tight text-ui-text sm:text-[22px]">
+          BolaCom<span className="text-ui-brand">Visão</span>
         </div>
-        <h2 className="text-2xl font-bold font-['Chakra_Petch'] uppercase tracking-wider text-white">
-          Escolha a sua Equipa / Época
-        </h2>
-        <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
-          Selecione a equipa com que deseja trabalhar para aceder ao seu plantel, jogos, treinos e estatísticas.
-        </p>
-      </div>
-
-      {/* Action Bar */}
-      <div className="flex items-center justify-between gap-2 my-4">
-        <span className="text-xs font-mono text-slate-300">
-          {teams.length} {teams.length === 1 ? 'Equipa Disponível' : 'Equipas Disponíveis'}
-        </span>
-
-        {isUserAdmin && (
+        <div className="flex-1" />
+        {onOpenSync && <SyncStatusBadge onClick={onOpenSync} fallbackSyncInfo={syncInfo} />}
+        {state.currentUser && (
+          <span className="bcv-chip hidden items-center gap-1.5 sm:inline-flex">
+            <span aria-hidden>👤</span>
+            <b>{state.currentUser.name}</b>
+          </span>
+        )}
+        {onOpenAdminUsers && isAdmin && (
           <button
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all hover:brightness-110 active:scale-95 flex items-center gap-1.5 cursor-pointer"
-            onClick={() => setIsCreating(true)}
+            type="button"
+            onClick={onOpenAdminUsers}
+            className="bcv-round relative"
+            title="Gestão de Acessos de Treinadores (👥)"
+            aria-label="Utilizadores e acessos"
           >
-            <span>➕</span>
-            <span>Nova Equipa / Época</span>
+            <span aria-hidden>👥</span>
+            {pendingUsersCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ui-warning px-1 text-[9px] font-black text-ui-bg">
+                {pendingUsersCount}
+              </span>
+            )}
           </button>
         )}
+        <SunModeButton className="bcv-round !p-0" />
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="bcv-round"
+          title="Definições do Sistema"
+          aria-label="Definições"
+        >
+          <Icon name="settings" className="h-[18px] w-[18px]" />
+        </button>
+        {onLogout && (
+          <button
+            type="button"
+            onClick={() => {
+              onShowConfirm('Tem a certeza de que deseja terminar a sessão e sair da sua conta?', () => {
+                onLogout();
+              });
+            }}
+            className="bcv-round"
+            title="Terminar Sessão e Sair"
+            aria-label="Terminar sessão"
+            id="header-logout-btn"
+          >
+            <span aria-hidden>🚪</span>
+          </button>
+        )}
+      </header>
+
+      {/* Title */}
+      <div className="relative mb-6 mt-8 sm:mb-8 sm:mt-14">
+        <h1 className="bcv-title text-[42px] sm:text-[64px] lg:text-[76px]">Escolher Equipa</h1>
+        <p className="mt-2 max-w-xl text-[15px] text-ui-text/85 sm:text-[18px]">
+          O próximo passo na evolução começa aqui.
+          <span className="hidden sm:inline">
+            {' '}
+            Escolhe a equipa para entrares no planeamento, jogos, treinos e estatísticas.
+          </span>
+        </p>
+        <div className="bcv-underline mt-4" />
       </div>
 
       {/* Form: Create New Team */}
@@ -608,7 +600,11 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           </div>
         )
       ) : (
-        <div className="space-y-4">
+        <div
+          role="list"
+          aria-label="Equipas"
+          className="relative grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4"
+        >
           {teams.map((team) => {
             const isActive = team.id === state.activeTeamId;
             const isEditing = editingTeamId === team.id;
@@ -743,142 +739,150 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               );
             }
 
+            const chosen = team.id === chosenId;
+            const initials =
+              (currentClubName || 'Equipa')
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((w) => w[0])
+                .join('')
+                .toUpperCase() || 'EQ';
             return (
-              <div
+              <article
                 key={team.id}
-                onClick={() => onSelectTeam(team.id)}
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all text-left relative overflow-hidden group cursor-pointer active:scale-[0.99] touch-manipulation ${
-                  isActive
-                    ? 'bg-slate-950/90 border-cyan-400 shadow-[0_0_25px_rgba(0,210,255,0.25)]'
-                    : 'bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-950'
-                }`}
+                role="listitem"
+                aria-label={`${currentClubName} ${currentCategory || ''}`.trim()}
+                aria-current={chosen ? 'true' : undefined}
+                onClick={() => setChosenId(team.id)}
+                onDoubleClick={() => onSelectTeam(team.id)}
+                className={`bcv-team-card group ${chosen ? 'is-chosen' : ''}`}
               >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  {/* Left Section: Logo & Name Info */}
-                  <div className="flex items-center gap-3">
-                    <div className="ui-card w-12 h-12 flex items-center justify-center overflow-hidden shrink-0">
-                      {currentLogo ? (
-                        <img
-                          src={currentLogo}
-                          alt="Logo"
-                          className="w-full h-full object-contain p-1"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <span className="text-2xl">🛡️</span>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold font-['Chakra_Petch'] text-base text-white uppercase tracking-wide">
-                          {currentClubName}
-                        </span>
-                        {isActive && (
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-emerald-400 text-[10px] font-mono uppercase font-bold tracking-wider">
-                            ✓ Selecionada
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="px-2.5 py-0.5 rounded-md bg-cyan-950 border border-cyan-500/30 text-cyan-300 text-[11px] font-mono font-semibold">
-                          {currentCategory || 'Sub-19'}
-                        </span>
-                        <span className="px-2.5 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-slate-300 text-[11px] font-mono">
-                          Época {currentSeason || defaultSeason()}
-                        </span>
-                      </div>
-
-                      <div className="text-[11px] font-mono text-slate-400 mt-2 flex gap-3 flex-wrap items-center">
-                        <span className="flex items-center gap-1">
-                          <span>👥</span>
-                          <strong
-                            className={currentRosterLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'}
-                          >
-                            {currentRosterLen}
-                          </strong>
-                          <span>{currentRosterLen === 1 ? 'Jogador' : 'Jogadores'}</span>
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="flex items-center gap-1">
-                            <span>⚽</span>
-                            <strong
-                              className={totalMatchesLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'}
-                            >
-                              {totalMatchesLen}
-                            </strong>
-                            <span>{totalMatchesLen === 1 ? 'Jogo' : 'Jogos'}</span>
-                          </span>
-                          {scheduledMatchesCount > 0 && (
-                            <span
-                              className="text-[10px] px-1.5 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono font-medium"
-                              title={`${scheduledMatchesCount} ${scheduledMatchesCount === 1 ? 'jogo agendado' : 'jogos agendados'}${playedMatchesCount > 0 ? `, ${playedMatchesCount} já realizados` : ''}`}
-                            >
-                              {scheduledMatchesCount} {scheduledMatchesCount === 1 ? 'agendado' : 'agendados'}
-                            </span>
-                          )}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span>🏃</span>
-                          <strong
-                            className={
-                              currentTrainingsLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'
-                            }
-                          >
-                            {currentTrainingsLen}
-                          </strong>
-                          <span>{currentTrainingsLen === 1 ? 'Treino' : 'Treinos'}</span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Section: Action Buttons */}
-                  <div
-                    className="w-full sm:w-auto flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      className="flex-1 sm:flex-none px-5 py-2.5 min-h-[42px] rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 touch-manipulation"
-                      onClick={() => onSelectTeam(team.id)}
-                    >
-                      <span>Entrar no Painel</span>
-                      <span>➔</span>
-                    </button>
-
-                    {isUserAdmin && (
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          className="ui-btn ui-btn-secondary px-2.5 py-1.5 min-h-[34px] text-xs touch-manipulation"
-                          title="Editar Informações"
-                          onClick={() => handleStartEdit(team)}
-                        >
-                          ✏️ Editar
-                        </button>
-                        <button
-                          className="ui-btn ui-btn-secondary px-2.5 py-1.5 min-h-[34px] text-xs touch-manipulation"
-                          title="Duplicar para Nova Época"
-                          onClick={() => handleDuplicateToNewSeason(team)}
-                        >
-                          📋 Duplicar
-                        </button>
-                        <button
-                          className="ui-btn ui-btn-secondary px-2.5 py-1.5 min-h-[34px] text-xs touch-manipulation"
-                          title="Apagar Equipa"
-                          onClick={() => handleDeleteTeam(team.id)}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                {chosen && (
+                  <span aria-hidden className="bcv-tick">
+                    ✓
+                  </span>
+                )}
+                <div className="bcv-emblem">
+                  {currentLogo ? (
+                    <img
+                      src={currentLogo}
+                      alt=""
+                      className="h-full w-full object-contain p-1.5"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span>{initials}</span>
+                  )}
                 </div>
-              </div>
+                <div className="min-w-0 sm:text-center">
+                  <h2 className="truncate text-[18px] font-extrabold text-ui-text sm:text-[19px]">{currentClubName}</h2>
+                  <p className="text-[13px] text-ui-text/75">
+                    {currentCategory || 'Sub-19'} · Época {currentSeason || defaultSeason()}
+                  </p>
+                </div>
+                <dl className="bcv-team-stats">
+                  <div>
+                    <dt>{currentRosterLen === 1 ? 'atleta' : 'atletas'}</dt>
+                    <dd>{currentRosterLen}</dd>
+                  </div>
+                  <div title={`${playedMatchesCount} registados · ${scheduledMatchesCount} agendados`}>
+                    <dt>{totalMatchesLen === 1 ? 'jogo' : 'jogos'}</dt>
+                    <dd>{totalMatchesLen}</dd>
+                  </div>
+                  <div>
+                    <dt>{currentTrainingsLen === 1 ? 'treino' : 'treinos'}</dt>
+                    <dd>{currentTrainingsLen}</dd>
+                  </div>
+                </dl>
+                <div className="bcv-team-actions" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    className={`ui-btn flex-1 py-2 text-ui-caption font-extrabold ${chosen ? 'ui-btn-primary' : 'ui-btn-secondary'}`}
+                    onClick={() => onSelectTeam(team.id)}
+                    aria-label={`Entrar no Painel: ${currentClubName} ${currentCategory || ''}`.trim()}
+                  >
+                    Entrar →
+                  </button>
+                  {isUserAdmin && (
+                    <>
+                      <button
+                        type="button"
+                        className="bcv-mini"
+                        title="Editar Informações"
+                        aria-label="Editar"
+                        onClick={() => handleStartEdit(team)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        className="bcv-mini"
+                        title="Duplicar para Nova Época"
+                        aria-label="Duplicar para nova época"
+                        onClick={() => handleDuplicateToNewSeason(team)}
+                      >
+                        📋
+                      </button>
+                      <button
+                        type="button"
+                        className="bcv-mini"
+                        title="Apagar Equipa"
+                        aria-label="Apagar equipa"
+                        onClick={() => handleDeleteTeam(team.id)}
+                      >
+                        🗑️
+                      </button>
+                    </>
+                  )}
+                </div>
+              </article>
             );
           })}
+          {isUserAdmin && !isCreating && (
+            <button type="button" onClick={() => setIsCreating(true)} className="bcv-team-card bcv-new-team">
+              <span aria-hidden className="text-4xl text-ui-brand">
+                ＋
+              </span>
+              <span className="text-[16px] font-extrabold text-ui-text">Nova Equipa / Época</span>
+              <span className="text-ui-caption text-ui-muted">Só o administrador</span>
+            </button>
+          )}
         </div>
       )}
+
+      {/* What the coach finds inside, and the way in */}
+      {chosenTeam && (
+        <div className="relative mt-8 hidden items-center gap-6 lg:flex">
+          <ul className="flex items-center gap-6 text-ui-caption text-ui-text/85" aria-label="O que encontras">
+            <li className="flex items-center gap-2">
+              <Icon name="calendar" className="h-5 w-5 text-ui-brand" /> Planeamento
+            </li>
+            <li className="flex items-center gap-2">
+              <Icon name="chart" className="h-5 w-5 text-ui-brand" /> Análise de desempenho
+            </li>
+            <li className="flex items-center gap-2">
+              <Icon name="trophy" className="h-5 w-5 text-ui-brand" /> Evolução da equipa
+            </li>
+          </ul>
+          <div className="flex-1" />
+          <button type="button" className="bcv-cta" onClick={() => onSelectTeam(chosenTeam.id)}>
+            Entrar no {chosenLabel} →
+          </button>
+        </div>
+      )}
+      {chosenTeam && (
+        <div className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-30 lg:hidden">
+          <button type="button" className="bcv-cta w-full" onClick={() => onSelectTeam(chosenTeam.id)}>
+            Entrar no {chosenLabel} →
+          </button>
+        </div>
+      )}
+      <div className="bcv-foot relative mt-10 hidden lg:flex" aria-hidden>
+        <span />
+        BOLACOMVISÃO • FUTEBOL DE FORMAÇÃO
+        <span />
+      </div>
     </div>
   );
 };

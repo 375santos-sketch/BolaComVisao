@@ -285,7 +285,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
           });
         }
 
-        onShowToast(`Bem-vindo, ${cloudResult.user.name}! ☁️ Base de Dados Partilhada Ativa`);
+        onShowToast(`Bem-vindo, ${cloudResult.user.name}!`);
         onLoginSuccess();
         return;
       }

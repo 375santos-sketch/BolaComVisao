@@ -73,8 +73,14 @@ const signedIn = async (page: Page) => {
 
 test('entrar: escolha da equipa e painel inicial', async ({ page }) => {
   await login(page, COACH_A);
-  await expect(page.getByText('DRAGÕES')).toBeVisible();
-  await expect(page.getByText('Sub-11').first()).toBeVisible();
+  // Escolher Equipa: each team as a card (name, age group, season, numbers), the one chosen marked, one way in
+  await expect(page.getByRole('heading', { name: 'Escolher Equipa' })).toBeVisible();
+  const card = page.getByRole('listitem', { name: /Dragões Sub-11/ });
+  await expect(card.getByRole('heading', { name: 'Dragões' })).toBeVisible();
+  await expect(card).toContainText('Sub-11 · Época');
+  await expect(card).toHaveAttribute('aria-current', 'true');
+  await expect(card.getByText('atletas')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Entrar no Dragões Sub-11 →' })).toBeVisible();
   await enterPanel(page);
   await expect(page.getByText('Treinador A', { exact: true })).toBeVisible();
 
