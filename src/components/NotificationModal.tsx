@@ -136,25 +136,23 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col bg-slate-900 border-t sm:border border-cyan-500/30 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="w-full max-w-xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col bg-ui-surface border-t sm:border border-ui-brand/30 rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="p-4 bg-slate-950/90 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
+        <div className="p-4 bg-ui-inset/90 border-b border-ui-brand/20 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 text-lg">
+            <div className="w-9 h-9 rounded-xl bg-ui-brand/20 border border-ui-brand/40 flex items-center justify-center text-ui-brand text-lg">
               🔔
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-white font-['Chakra_Petch'] font-bold text-base uppercase tracking-wider">
-                  Centro de Notificações
-                </h3>
+                <h3 className="text-ui-text font-bold text-base ">Centro de Notificações</h3>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-red-500/90 text-white font-mono text-xs font-black animate-pulse">
+                  <span className="px-2 py-0.5 rounded-full bg-ui-danger/90 text-ui-text tabular-nums text-xs font-black">
                     {unreadCount} novas
                   </span>
                 )}
               </div>
-              <p className="text-[11px] font-mono text-slate-400">
+              <p className="text-[11px] tabular-nums text-ui-muted">
                 Alertas automáticos: Treinos 24h, Convocatórias 18h Quinta e Assiduidade &lt;50%
               </p>
             </div>
@@ -170,7 +168,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         </div>
 
         {/* Quick Toolbar (Browser notification status, mark all read, test) */}
-        <div className="px-4 py-2.5 bg-slate-950/60 border-b border-cyan-500/10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono shrink-0">
+        <div className="px-4 py-2.5 bg-ui-inset/60 border-b border-ui-brand/10 flex flex-wrap items-center justify-between gap-2 text-xs tabular-nums shrink-0">
           <div className="flex items-center gap-1.5">
             {!browserPermitted ? (
               <button
@@ -182,7 +180,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 <span>Ativar no Navegador</span>
               </button>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-bold bg-emerald-950/50 border border-emerald-500/30 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-[11px] text-ui-success font-bold bg-ui-success-soft border border-ui-success/30 px-2 py-0.5 rounded-md">
                 <span>✓</span> Notificações do Navegador Ativas
               </span>
             )}
@@ -222,73 +220,73 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         </div>
 
         {/* Filter Category Tabs */}
-        <div className="px-4 pt-3 pb-2 bg-slate-900 flex items-center gap-1.5 overflow-x-auto scrollbar-none border-b border-slate-800/80 shrink-0">
+        <div className="px-4 pt-3 pb-2 bg-ui-surface flex items-center gap-1.5 overflow-x-auto scrollbar-none border-b border-ui-line/80 shrink-0">
           <button
             onClick={() => setSelectedFilter('todas')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs tabular-nums font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
               selectedFilter === 'todas'
-                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.3)] font-black'
-                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
+                ? 'bg-ui-brand text-ui-brand-ink font-black'
+                : 'bg-ui-inset text-ui-muted border border-ui-line hover:text-ui-text'
             }`}
           >
             <span>Todas</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/50 text-current">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-ui-surface/50 text-current">
               {notifications.length}
             </span>
           </button>
 
           <button
             onClick={() => setSelectedFilter('treino_24h')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs tabular-nums font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
               selectedFilter === 'treino_24h'
-                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.3)] font-black'
-                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
+                ? 'bg-ui-brand text-ui-brand-ink font-black'
+                : 'bg-ui-inset text-ui-muted border border-ui-line hover:text-ui-text'
             }`}
           >
             <span>⚽ Treinos (24h)</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/50 text-current">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-ui-surface/50 text-current">
               {notifications.filter((n) => n.type === 'treino_24h').length}
             </span>
           </button>
 
           <button
             onClick={() => setSelectedFilter('convocatoria_quinta')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs tabular-nums font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
               selectedFilter === 'convocatoria_quinta'
-                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.3)] font-black'
-                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
+                ? 'bg-ui-brand text-ui-brand-ink font-black'
+                : 'bg-ui-inset text-ui-muted border border-ui-line hover:text-ui-text'
             }`}
           >
             <span>📋 Convocatórias (Qui 18h)</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/50 text-current">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-ui-surface/50 text-current">
               {notifications.filter((n) => n.type === 'convocatoria_quinta').length}
             </span>
           </button>
 
           <button
             onClick={() => setSelectedFilter('assiduidade_baixa')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs tabular-nums font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
               selectedFilter === 'assiduidade_baixa'
-                ? 'bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.3)] font-black'
-                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
+                ? 'bg-ui-brand text-ui-brand-ink font-black'
+                : 'bg-ui-inset text-ui-muted border border-ui-line hover:text-ui-text'
             }`}
           >
             <span>🚨 Assiduidade (&lt;50%)</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/50 text-current">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-ui-surface/50 text-current">
               {notifications.filter((n) => n.type === 'assiduidade_baixa').length}
             </span>
           </button>
 
           <button
             onClick={() => setSelectedFilter('aniversario')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-xl text-xs tabular-nums font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
               selectedFilter === 'aniversario'
-                ? 'bg-fuchsia-500 text-slate-950 shadow-[0_0_12px_rgba(217,70,239,0.3)] font-black'
-                : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
+                ? 'bg-ui-brand text-ui-brand-ink font-black'
+                : 'bg-ui-inset text-ui-muted border border-ui-line hover:text-ui-text'
             }`}
           >
             <span>🎂 Aniversários</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-900/50 text-current">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-ui-surface/50 text-current">
               {notifications.filter((n) => n.type === 'aniversario').length}
             </span>
           </button>
@@ -296,14 +294,14 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
           {notifications.some((n) => n.type === 'novo_registo') && (
             <button
               onClick={() => setSelectedFilter('novo_registo')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-xl text-xs tabular-nums font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 selectedFilter === 'novo_registo'
-                  ? 'bg-cyan-500 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.3)] font-black'
-                  : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-white'
+                  ? 'bg-ui-brand text-ui-brand-ink font-black'
+                  : 'bg-ui-inset text-ui-muted border border-ui-line hover:text-ui-text'
               }`}
             >
               <span>🛡️ Novos Registos</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-500 text-white font-bold">
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-ui-danger text-ui-text font-bold">
                 {notifications.filter((n) => n.type === 'novo_registo').length}
               </span>
             </button>
@@ -315,10 +313,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
           {filteredNotifications.length === 0 ? (
             <div className="ui-inset py-12 text-center">
               <div className="text-4xl mb-3">✨</div>
-              <p className="text-sm font-['Chakra_Petch'] text-cyan-300 font-bold uppercase">
-                Tudo em dia! Sem notificações pendentes
-              </p>
-              <p className="text-xs font-mono text-slate-500 mt-1 max-w-sm mx-auto">
+              <p className="text-sm text-ui-brand font-bold ">Tudo em dia! Sem notificações pendentes</p>
+              <p className="text-xs tabular-nums text-ui-muted mt-1 max-w-sm mx-auto">
                 {selectedFilter === 'todas'
                   ? 'A aplicação monitoriza os teus treinos a 24h, o fecho de convocatórias às quintas-feiras, a assiduidade dos atletas e novos pedidos de registo.'
                   : 'Nenhum alerta nesta categoria no momento.'}
@@ -331,23 +327,22 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
               // Category visual style
               let typeIcon = '🔔';
-              let typeBg = 'bg-slate-800 border-slate-700 text-slate-300';
+              let typeBg = 'bg-ui-surface-2 border-ui-line-strong text-ui-text';
               if (notif.type === 'treino_24h') {
                 typeIcon = '⚽';
-                typeBg = 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300';
+                typeBg = 'bg-ui-success-soft border-ui-success/40 text-ui-success';
               } else if (notif.type === 'convocatoria_quinta') {
                 typeIcon = '📋';
-                typeBg = 'bg-amber-950/60 border-amber-500/40 text-amber-300';
+                typeBg = 'bg-ui-warning-soft border-ui-warning/40 text-ui-warning';
               } else if (notif.type === 'assiduidade_baixa') {
                 typeIcon = '🚨';
-                typeBg = 'bg-red-950/60 border-red-500/40 text-red-300';
+                typeBg = 'bg-ui-danger-soft border-ui-danger/40 text-ui-danger';
               } else if (notif.type === 'novo_registo') {
                 typeIcon = '🛡️';
-                typeBg = 'bg-cyan-950/80 border-cyan-400/60 text-cyan-300 shadow-[0_0_12px_rgba(0,210,255,0.25)]';
+                typeBg = 'bg-ui-brand-soft border-ui-brand/60 text-ui-brand';
               } else if (notif.type === 'aniversario') {
                 typeIcon = '🎂';
-                typeBg =
-                  'bg-fuchsia-950/80 border-fuchsia-400/60 text-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.25)]';
+                typeBg = 'bg-ui-brand-soft border-ui-brand/60 text-ui-brand';
               }
 
               return (
@@ -356,8 +351,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                   onClick={() => (notif.targetTab || notif.type === 'novo_registo') && handleActionClick(notif)}
                   className={`p-3.5 rounded-2xl border transition-all duration-150 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group relative cursor-pointer ${
                     isUnread
-                      ? 'bg-slate-900 border-cyan-500/50 shadow-[0_0_15px_rgba(0,210,255,0.1)] hover:border-cyan-400'
-                      : 'bg-slate-950/70 border-slate-800/80 hover:border-slate-700 opacity-80 hover:opacity-100'
+                      ? 'bg-ui-surface border-ui-brand/50 hover:border-ui-brand'
+                      : 'bg-ui-inset/70 border-ui-line/80 hover:border-ui-line-strong opacity-80 hover:opacity-100'
                   }`}
                 >
                   {/* Left Column: Icon + Details */}
@@ -367,31 +362,31 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                         {typeIcon}
                       </div>
                       {isUnread && (
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full border-2 border-slate-900 animate-ping" />
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-ui-brand rounded-full border-2 border-ui-line animate-ping" />
                       )}
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-bold text-xs sm:text-sm text-white font-['Chakra_Petch'] leading-tight group-hover:text-cyan-300 transition-colors">
+                        <span className="font-bold text-xs sm:text-sm text-ui-text leading-tight group-hover:text-ui-brand transition-colors">
                           {notif.title}
                         </span>
 
                         {isHigh && (
-                          <span className="px-1.5 py-0.2 rounded-md bg-red-950/80 border border-red-500/50 text-red-400 text-[10px] font-mono font-bold">
+                          <span className="px-1.5 py-0.2 rounded-md bg-ui-danger-soft border border-ui-danger/50 text-ui-danger text-[10px] tabular-nums font-bold">
                             Alta Prioridade
                           </span>
                         )}
 
-                        <span className="text-[10px] font-mono text-slate-500 ml-auto sm:ml-0">
+                        <span className="text-[10px] tabular-nums text-ui-muted ml-auto sm:ml-0">
                           ⏱️ {formatTimestamp(notif.timestamp)}
                         </span>
                       </div>
 
-                      <p className="text-xs font-mono text-slate-300 leading-relaxed">{notif.message}</p>
+                      <p className="text-xs tabular-nums text-ui-text leading-relaxed">{notif.message}</p>
 
                       {notif.details && (
-                        <div className="ui-inset text-[11px] font-mono text-cyan-400/80 mt-1 px-2 py-1 inline-block">
+                        <div className="ui-inset text-[11px] tabular-nums text-ui-brand/80 mt-1 px-2 py-1 inline-block">
                           ℹ️ {notif.details}
                         </div>
                       )}
@@ -399,17 +394,17 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                   </div>
 
                   {/* Right Column: Actions */}
-                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800 w-full sm:w-auto justify-end">
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center pt-2 sm:pt-0 border-t sm:border-t-0 border-ui-line w-full sm:w-auto justify-end">
                     {(notif.targetTab || notif.type === 'novo_registo') && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleActionClick(notif);
                         }}
-                        className={`px-3 py-1.5 rounded-xl font-['Chakra_Petch'] font-black text-xs uppercase shadow transition-all flex items-center gap-1.5 ${
+                        className={`px-3 py-1.5 rounded-xl font-black text-xs shadow transition-all flex items-center gap-1.5 ${
                           notif.type === 'novo_registo'
-                            ? 'bg-cyan-400 hover:bg-cyan-300 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.4)]'
-                            : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.3)]'
+                            ? 'bg-ui-brand hover:bg-ui-brand text-ui-brand-ink'
+                            : 'bg-ui-brand hover:bg-ui-brand text-ui-brand-ink'
                         }`}
                         title={
                           notif.type === 'novo_registo'
@@ -436,8 +431,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                       onClick={(e) => handleToggleRead(notif.id, e)}
                       className={`p-1.5 rounded-xl border text-xs transition-colors ${
                         isUnread
-                          ? 'bg-slate-950 border-slate-700 hover:border-cyan-400 text-slate-400 hover:text-cyan-300'
-                          : 'bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-300'
+                          ? 'bg-ui-inset border-ui-line-strong hover:border-ui-brand text-ui-muted hover:text-ui-brand'
+                          : 'bg-ui-inset border-ui-line text-ui-muted hover:text-ui-text'
                       }`}
                       title={isUnread ? 'Marcar como lida' : 'Marcar como não lida'}
                     >
@@ -459,9 +454,9 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 bg-slate-950/98 border-t border-cyan-500/20 flex items-center justify-between text-[11px] font-mono text-slate-400 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_16px_rgba(0,0,0,0.4)]">
+        <div className="p-3.5 bg-ui-inset/98 border-t border-ui-brand/20 flex items-center justify-between text-[11px] tabular-nums text-ui-muted shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_16px_rgba(0,0,0,0.4)]">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-ui-brand animate-ping" />
             <span>Sistema Inteligente BolaComVisão</span>
           </div>
 

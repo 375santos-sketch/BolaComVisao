@@ -265,7 +265,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
               <button
                 type="button"
                 onClick={() => setCreationMode('single')}
-                className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   creationMode === 'single'
                     ? 'bg-ui-warning text-ui-brand-ink shadow-md font-black'
                     : 'text-ui-muted hover:text-ui-text'
@@ -278,7 +278,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
               <button
                 type="button"
                 onClick={() => setCreationMode('batch')}
-                className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   creationMode === 'batch'
                     ? 'bg-gradient-to-r from-ui-brand to-ui-brand text-ui-brand-ink font-black shadow-[0_0_15px_rgba(0,210,255,0.4)]'
                     : 'text-ui-muted hover:text-ui-text'
@@ -860,7 +860,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                               >
                                 {p.number !== null ? p.number : '—'}
                               </span>
-                              <span className="text-xs font-['Chakra_Petch'] font-bold truncate">{p.name}</span>
+                              <span className="text-xs font-bold truncate">{p.name}</span>
                             </div>
 
                             <span className="text-xs shrink-0 font-bold">{isAbsent ? '❌ Falta' : '🟢 Pres.'}</span>

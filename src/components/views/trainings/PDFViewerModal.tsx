@@ -198,25 +198,25 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
 
   return (
     <div className="ui-overlay fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in text-left">
-      <div className="bg-slate-900 border-2 border-cyan-500/40 rounded-3xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden">
+      <div className="bg-ui-surface border-2 border-ui-brand/40 rounded-3xl w-full max-w-6xl h-[94vh] flex flex-col overflow-hidden">
         {/* HEADER BAR */}
-        <div className="p-3 sm:p-4 border-b border-cyan-500/20 bg-slate-950 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div className="p-3 sm:p-4 border-b border-ui-brand/20 bg-ui-inset flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-base text-cyan-300 shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-ui-brand/20 border border-ui-brand/40 flex items-center justify-center text-base text-ui-brand shrink-0">
               📄
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold font-['Chakra_Petch'] text-white uppercase tracking-wider truncate">
+              <h3 className="text-sm sm:text-base font-bold text-ui-text uppercase tracking-wider truncate">
                 {docItem.title}
               </h3>
-              <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400 truncate">
+              <div className="flex items-center gap-2 text-[10px] tabular-nums text-ui-muted truncate">
                 <span>📁 {docItem.fileName}</span>
                 <span>•</span>
                 <span>{formatFileSize(docItem.fileSize)}</span>
                 {numPages > 0 && (
                   <>
                     <span>•</span>
-                    <span className="text-cyan-300 font-bold">{numPages} Página(s)</span>
+                    <span className="text-ui-brand font-bold">{numPages} Página(s)</span>
                   </>
                 )}
               </div>
@@ -259,7 +259,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
         </div>
 
         {/* TOOLBAR CONTROLS (ZOOM, PAGES, ROTATE, LAYOUT) */}
-        <div className="px-3 py-2 border-b border-slate-800 bg-slate-950/80 flex flex-wrap items-center justify-between gap-2 shrink-0 text-xs font-mono">
+        <div className="px-3 py-2 border-b border-ui-line bg-ui-inset/80 flex flex-wrap items-center justify-between gap-2 shrink-0 text-xs tabular-nums">
           {/* Pagination */}
           <div className="flex items-center gap-1.5">
             <button
@@ -272,7 +272,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
               ◀
             </button>
 
-            <span className="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-white font-bold min-w-[70px] text-center">
+            <span className="px-2 py-1 rounded-lg bg-ui-surface border border-ui-line text-ui-text font-bold min-w-[70px] text-center">
               {isLoading ? '...' : `${currentPage} / ${numPages || 1}`}
             </span>
 
@@ -316,7 +316,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
               🔍+
             </button>
 
-            <span className="text-slate-700">|</span>
+            <span className="text-ui-muted">|</span>
 
             <button type="button" onClick={handleRotate} className="ui-btn ui-btn-secondary p-1.5" title="Rodar 90º">
               🔄
@@ -325,10 +325,10 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
             <button
               type="button"
               onClick={() => setViewLayout(viewLayout === 'scroll' ? 'single' : 'scroll')}
-              className={`px-2.5 py-1 rounded-lg border text-xs font-mono transition-colors ${
+              className={`px-2.5 py-1 rounded-lg border text-xs tabular-nums transition-colors ${
                 viewLayout === 'scroll'
-                  ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
-                  : 'bg-slate-900 border-slate-700 text-slate-400'
+                  ? 'bg-ui-brand/20 border-ui-brand/50 text-ui-brand'
+                  : 'bg-ui-surface border-ui-line-strong text-ui-muted'
               }`}
               title="Alternar entre modo contínuo e página a página"
             >
@@ -340,25 +340,23 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
         {/* CANVAS CANVAS CONTAINER / VIEWER BODY */}
         <div
           ref={canvasContainerRef}
-          className="flex-1 bg-slate-950/95 overflow-auto p-4 sm:p-6 flex flex-col items-center gap-6"
+          className="flex-1 bg-ui-inset/95 overflow-auto p-4 sm:p-6 flex flex-col items-center gap-6"
         >
           {isLoading && (
             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-3">
-              <div className="w-10 h-10 border-3 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-              <div className="text-sm font-['Chakra_Petch'] font-bold text-cyan-300 uppercase">
+              <div className="w-10 h-10 border-3 border-ui-brand border-t-transparent rounded-full animate-spin" />
+              <div className="text-sm font-bold text-ui-brand uppercase">
                 A processar e renderizar PDF com máxima qualidade...
               </div>
-              <div className="text-xs font-mono text-slate-500">Por favor aguarda um momento</div>
+              <div className="text-xs tabular-nums text-ui-muted">Por favor aguarda um momento</div>
             </div>
           )}
 
           {loadError && !isLoading && (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4 max-w-md">
               <div className="text-5xl">⚠️</div>
-              <div className="text-base font-bold font-['Chakra_Petch'] text-red-400 uppercase">
-                Erro ao Renderizar Ficheiro
-              </div>
-              <p className="text-xs font-mono text-slate-400">{loadError}</p>
+              <div className="text-base font-bold text-ui-danger uppercase">Erro ao Renderizar Ficheiro</div>
+              <p className="text-xs tabular-nums text-ui-muted">{loadError}</p>
               <div className="flex gap-2">
                 <button type="button" onClick={handleOpenInNewTab} className="ui-btn ui-btn-primary px-4 py-2 text-xs">
                   Abrir noutra janela ↗️
@@ -378,7 +376,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
 
           {/* Single Page Mode */}
           {!isLoading && !loadError && viewLayout === 'single' && (
-            <div className="flex flex-col items-center justify-center shadow-2xl rounded-xl overflow-hidden border border-slate-700 bg-white">
+            <div className="flex flex-col items-center justify-center shadow-2xl rounded-xl overflow-hidden border border-ui-line-strong bg-white">
               <canvas
                 ref={(el) => {
                   if (el) {
@@ -397,9 +395,9 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
               {Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
                 <div
                   key={pageNum}
-                  className="flex flex-col items-center relative group shadow-2xl rounded-xl overflow-hidden border border-slate-700 bg-white"
+                  className="flex flex-col items-center relative group shadow-2xl rounded-xl overflow-hidden border border-ui-line-strong bg-white"
                 >
-                  <span className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-md bg-slate-900/80 text-white text-[10px] font-mono pointer-events-none">
+                  <span className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-md bg-ui-surface/80 text-ui-text text-[10px] tabular-nums pointer-events-none">
                     Pág. {pageNum} / {numPages}
                   </span>
                   <canvas
@@ -418,14 +416,14 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
         </div>
 
         {/* FOOTER BAR */}
-        <div className="p-3 border-t border-slate-800 bg-slate-950 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-          <div className="flex items-center gap-2 text-slate-400">
+        <div className="p-3 border-t border-ui-line bg-ui-inset flex flex-wrap items-center justify-between gap-2 text-xs tabular-nums">
+          <div className="flex items-center gap-2 text-ui-muted">
             <span>Categoria:</span>
-            <span className="text-cyan-300 font-bold uppercase">{docItem.category}</span>
+            <span className="text-ui-brand font-bold uppercase">{docItem.category}</span>
             {docItem.tags && docItem.tags.length > 0 && (
               <div className="hidden sm:flex items-center gap-1 ml-2">
                 {docItem.tags.map((t) => (
-                  <span key={t} className="px-1.5 py-0.2 bg-slate-900 border border-slate-800 text-slate-400 rounded">
+                  <span key={t} className="px-1.5 py-0.2 bg-ui-surface border border-ui-line text-ui-muted rounded">
                     #{t}
                   </span>
                 ))}
