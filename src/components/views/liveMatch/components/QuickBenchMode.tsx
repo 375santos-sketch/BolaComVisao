@@ -43,24 +43,26 @@ const Counter: React.FC<{
   removeTheirs?: () => void;
   titles: [string, string, string, string];
 }> = ({ label, ours, theirs, addOurs, removeOurs, addTheirs, removeTheirs, titles }) => (
-  <li className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-2">
+  <li className="grid grid-cols-[1fr_auto_1fr] items-center gap-1 py-2 sm:gap-2">
     <span className="flex items-center justify-end gap-1.5">
       {removeOurs && (
         <button
           type="button"
           onClick={removeOurs}
           title={titles[1]}
-          className="ui-btn ui-btn-ghost h-9 w-9 text-ui-muted"
+          className="ui-btn ui-btn-ghost h-9 w-7 text-ui-muted sm:w-9"
         >
           −
         </button>
       )}
-      <span className="ui-figure w-8 text-center text-ui-title text-ui-brand">{ours}</span>
+      <span className="ui-figure w-6 text-center text-ui-title text-ui-brand sm:w-8">{ours}</span>
       <button type="button" onClick={addOurs} title={titles[0]} className="ui-btn ui-btn-soft h-10 w-11 text-ui-body">
         +1
       </button>
     </span>
-    <span className="w-24 text-center text-ui-caption font-bold text-ui-muted">{label}</span>
+    <span className="w-[4.5rem] text-center text-ui-caption font-bold leading-tight text-ui-muted sm:w-24">
+      {label}
+    </span>
     <span className="flex items-center gap-1.5">
       <button
         type="button"
@@ -70,13 +72,13 @@ const Counter: React.FC<{
       >
         +1
       </button>
-      <span className="ui-figure w-8 text-center text-ui-title text-ui-text">{theirs}</span>
+      <span className="ui-figure w-6 text-center text-ui-title text-ui-text sm:w-8">{theirs}</span>
       {removeTheirs && (
         <button
           type="button"
           onClick={removeTheirs}
           title={titles[3]}
-          className="ui-btn ui-btn-ghost h-9 w-9 text-ui-muted"
+          className="ui-btn ui-btn-ghost h-9 w-7 text-ui-muted sm:w-9"
         >
           −
         </button>
@@ -128,7 +130,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
       <section aria-label="Números do jogo" className="ui-card p-3 sm:p-4">
         <div className="grid grid-cols-[1fr_auto_1fr] gap-2 border-b border-ui-line pb-2 text-ui-caption font-bold">
           <span className="truncate text-right text-ui-brand">{myClubName}</span>
-          <span className="w-24" />
+          <span className="w-[4.5rem] sm:w-24" />
           <span className="truncate text-ui-text">{match.opponent || 'Adversário'}</span>
         </div>
         <ul className="divide-y divide-ui-line">
@@ -183,7 +185,7 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
             titles={['Adicionar Falta', 'Decrementar Falta', 'Adicionar Falta Adv', 'Decrementar Falta Adv']}
           />
           {onQuickCard && (
-            <li className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-2">
+            <li className="grid grid-cols-[1fr_auto_1fr] items-center gap-1 py-2 sm:gap-2">
               <span className="flex items-center justify-end gap-1.5">
                 <span
                   className="ui-figure w-8 text-center text-ui-title text-ui-warning"
@@ -200,7 +202,9 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
                   + Cartão
                 </button>
               </span>
-              <span className="w-24 text-center text-ui-caption font-bold text-ui-muted">Cartões</span>
+              <span className="w-[4.5rem] text-center text-ui-caption font-bold leading-tight text-ui-muted sm:w-24">
+                Cartões
+              </span>
               <span className="text-ui-caption text-ui-muted">
                 {(match.cards || []).filter((c) => c.color === 'Amarelo').length} am. ·{' '}
                 {(match.cards || []).filter((c) => c.color === 'Vermelho').length} verm.

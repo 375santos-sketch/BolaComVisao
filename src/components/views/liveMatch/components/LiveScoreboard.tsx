@@ -44,27 +44,26 @@ export const LiveScoreboard: React.FC<{
     <div className="sticky top-0 z-30 -mx-2 px-2 pt-1 pb-2 sm:-mx-4 sm:px-4 bg-ui-bg/95 backdrop-blur">
       <section
         aria-label="Placar"
-        className={`ui-card grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2.5 ${
-          paused ? 'border-ui-warning' : ''
-        }`}
+        className={`ui-card flex items-center gap-2 px-3 py-2 ${paused ? 'border-ui-warning' : ''}`}
       >
-        <div className="min-w-0 text-center">
-          <p className="truncate text-ui-caption font-bold text-ui-muted">{myClubName}</p>
-          <p className="ui-figure text-ui-display leading-none text-ui-brand">{ours}</p>
-        </div>
-        <div className="flex flex-col items-center gap-1">
+        <span className="min-w-0 flex-1 truncate text-right text-ui-caption font-bold text-ui-muted">{myClubName}</span>
+        <span className="ui-figure shrink-0 text-ui-title leading-none">
+          <span className="text-ui-brand">{ours}</span>
+          <span className="mx-1 text-ui-muted">–</span>
+          <span className="text-ui-text">{theirs}</span>
+        </span>
+        <span className="min-w-0 flex-1 truncate text-ui-caption font-bold text-ui-muted">
+          {match.opponent || 'Adversário'}
+        </span>
+        <span className="flex shrink-0 flex-col items-end leading-tight">
           <span className={`ui-badge ${phase === 'intervalo' ? 'ui-badge-brand' : paused ? 'ui-badge-warning' : ''}`}>
             {paused ? 'Em pausa' : PHASE[phase] || ''}
           </span>
-          <span className="ui-figure tracking-wider text-ui-title text-ui-text">
+          <span className="ui-figure text-ui-body text-ui-text">
             {formatMatchTime(getMatchElapsedMs(match))}
+            <span className="ml-1 text-ui-caption font-normal text-ui-muted">{minute ? `${minute}'` : ''}</span>
           </span>
-          <span className="text-ui-caption text-ui-muted">{minute ? `minuto ${minute}'` : '—'}</span>
-        </div>
-        <div className="min-w-0 text-center">
-          <p className="truncate text-ui-caption font-bold text-ui-muted">{match.opponent || 'Adversário'}</p>
-          <p className="ui-figure text-ui-display leading-none text-ui-text">{theirs}</p>
-        </div>
+        </span>
       </section>
       {(onTogglePause || onEndFirstHalf || onEndGame) && (
         <div role="group" aria-label="Controlo do jogo" className="mt-1.5 flex gap-1.5">
@@ -74,7 +73,7 @@ export const LiveScoreboard: React.FC<{
               onClick={onTogglePause}
               aria-pressed={paused}
               aria-label={paused ? '▶️ Retomar o jogo' : '⏸️ Pausa'}
-              className={`ui-btn flex-1 px-2 py-2 text-ui-caption font-bold ${
+              className={`ui-btn flex-1 px-2 py-1.5 text-ui-caption font-bold ${
                 paused ? 'ui-btn-success' : 'ui-btn-secondary'
               }`}
             >
@@ -85,7 +84,7 @@ export const LiveScoreboard: React.FC<{
             <button
               type="button"
               onClick={onEndFirstHalf}
-              className="ui-btn ui-btn-secondary flex-1 px-2 py-2 text-ui-caption font-bold"
+              className="ui-btn ui-btn-secondary flex-1 px-2 py-1.5 text-ui-caption font-bold"
             >
               Terminar 1.ª parte
             </button>
@@ -94,7 +93,7 @@ export const LiveScoreboard: React.FC<{
             <button
               type="button"
               onClick={onEndGame}
-              className={`ui-btn flex-1 px-2 py-2 text-ui-caption font-bold ${
+              className={`ui-btn flex-1 px-2 py-1.5 text-ui-caption font-bold ${
                 phase === 'parte2' ? 'ui-btn-primary' : 'ui-btn-secondary'
               }`}
             >
