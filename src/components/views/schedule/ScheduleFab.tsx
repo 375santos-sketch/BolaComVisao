@@ -9,6 +9,8 @@ interface ScheduleFabProps {
   onOpenScheduleTraining: (date?: string) => void;
   onOpenClubEventModal: (date?: string) => void;
   onOpenScheduleStaff: (date?: string) => void;
+  /** On a computer the day already has + Treino / + Jogo / + Reunião / + Indisponível: no floating button over the events. */
+  hideOnComputer?: boolean;
 }
 
 /** The Agenda's only "add" button: Jogo, Treino, Reunião or Indisponível. */
@@ -19,7 +21,8 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
   onOpenScheduleMatch,
   onOpenScheduleTraining,
   onOpenClubEventModal,
-  onOpenScheduleStaff
+  onOpenScheduleStaff,
+  hideOnComputer = false
 }) => {
   const items: [string, string, string, (date?: string) => void][] = [
     ['fab-add-match', 'Jogo', 'bg-ui-brand', onOpenScheduleMatch],
@@ -28,7 +31,11 @@ export const ScheduleFab: React.FC<ScheduleFabProps> = ({
     ['fab-add-staff', 'Indisponível (equipa técnica)', 'bg-ui-line-strong', onOpenScheduleStaff]
   ];
   return (
-    <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 sm:right-6 z-40 flex flex-col items-end gap-2.5 pointer-events-auto">
+    <div
+      className={`fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 sm:right-6 z-40 flex flex-col items-end gap-2.5 pointer-events-auto ${
+        hideOnComputer ? 'lg:hidden' : ''
+      }`}
+    >
       {showFabMenu && (
         <div role="menu" aria-label="Adicionar à agenda" className="ui-card w-60 p-1.5 shadow-2xl animate-fadeIn">
           {items.map(([id, label, dot, open]) => (

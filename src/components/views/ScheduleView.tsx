@@ -474,6 +474,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
         onOpenScheduleTraining={handleOpenScheduleTraining}
         onOpenClubEventModal={handleOpenClubEventModal}
         onOpenScheduleStaff={handleOpenScheduleStaff}
+        hideOnComputer={viewMode !== 'lista'}
       />
     </div>
   );

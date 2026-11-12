@@ -109,7 +109,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
           </div>
 
           {/* Quick Action Buttons for Match */}
-          <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+          <div className="flex items-center gap-1.5 shrink-0 flex-wrap pr-14 lg:pr-0">
             {s && (
               <a
                 href={directionsUrl(s)}
@@ -231,7 +231,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
         {/* Connected Strategic Sub-Actions */}
         {s && (
-          <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-ui-line/80">
+          <div className="flex items-center gap-2 flex-wrap pt-2 pr-14 border-t border-ui-line/80 lg:pr-0">
             <button
               type="button"
               onClick={() => handleEditMatch(s)}
@@ -331,7 +331,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
           {/* Quick Action Buttons for Staff */}
           {u && (
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 pr-14 lg:pr-0">
               <button
                 type="button"
                 onClick={() => handleEditStaff(u)}
@@ -380,7 +380,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
         {/* Sub actions */}
         {u && (
-          <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-ui-line/80">
+          <div className="flex items-center gap-2 flex-wrap pt-2 pr-14 border-t border-ui-line/80 lg:pr-0">
             <button
               type="button"
               onClick={() => handleEditStaff(u)}
@@ -503,7 +503,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
           {/* Quick Action Buttons for Club Event */}
           {c && (
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 pr-14 lg:pr-0">
               {handleToggleClubEventStatus && (
                 <button
                   type="button"
@@ -591,7 +591,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
 
         {/* Sub action */}
         {c && (
-          <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-ui-line/80">
+          <div className="flex items-center gap-2 flex-wrap pt-2 pr-14 border-t border-ui-line/80 lg:pr-0">
             {handleToggleClubEventStatus && (
               <button
                 type="button"
@@ -696,7 +696,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
         </div>
 
         {/* Quick Actions for Training */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 pr-14 lg:pr-0">
           <button
             type="button"
             onClick={() => handleToggleTrainingStatus(tr.id, tr.completed === true)}
@@ -764,7 +764,7 @@ export const ScheduleEventCard: React.FC<ScheduleEventCardProps> = ({
       </div>
 
       {/* Sub Action Buttons */}
-      <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-ui-line/80">
+      <div className="flex items-center gap-2 flex-wrap pt-2 pr-14 border-t border-ui-line/80 lg:pr-0">
         <button
           type="button"
           onClick={() => handleEditTraining(tr)}
