@@ -1197,7 +1197,11 @@ test('painel: equipa e atleta por época, jogo, confronto e período; exportar p
   // From the athlete's sheet the panel opens on the athlete.
   await navTo(page, /equipa/i);
   await page.getByRole('heading', { name: 'Tomás Gonçalves' }).click();
-  // …inside the sheet, not in a window on top
+  // …inside the sheet (Estatísticas), not in a window on top
+  await page
+    .getByRole('navigation', { name: 'Secções da ficha' })
+    .getByRole('button', { name: 'Estatísticas' })
+    .click();
   await page.getByRole('button', { name: /Painel do atleta/ }).click();
   await expect(page.getByRole('region', { name: 'Painel de estatísticas' })).toContainText('Painel · Tomás Gonçalves');
 });
@@ -2015,7 +2019,10 @@ test('testes: resultados por momento com cronómetro e evolução só na ficha d
   // The athlete's own evolution, in the athlete's sheet
   await page.getByRole('button', { name: 'Plantel', exact: false }).first().click();
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
-  await page.getByRole('navigation', { name: 'Secções da ficha' }).getByRole('button', { name: 'Estatísticas' }).click();
+  await page
+    .getByRole('navigation', { name: 'Secções da ficha' })
+    .getByRole('button', { name: 'Estatísticas' })
+    .click();
   const own = page.getByRole('region', { name: 'Testes da época' });
   await expect(own).toContainText(/Sprint 20 m.*4,10 s → 2,\d\d s 🚀/);
   await expect(own).toContainText('Melhorou em 1 de 1 teste 💪');
