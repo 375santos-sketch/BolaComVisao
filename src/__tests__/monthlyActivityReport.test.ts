@@ -3,9 +3,13 @@ import {
   buildMonthlyActivityReport,
   emptyReportRecord,
   nextMonthOf,
-  reportRecordId
+  reportRecordId,
+  reportTimeline,
+  seasonMonths,
+  teamCoachName
 } from '../lib/monthlyActivityReport';
-import { Match, Player, Training } from '../types';
+import { canAccessTeam, canReviewReports, isCoordinator } from '../lib/permissionsEngine';
+import { Match, Player, Training, UserAccount } from '../types';
 
 // Fictitious data, only for this test
 const player = (id: string, number: number, positions = 'MC'): Player => ({
@@ -210,5 +214,70 @@ describe('relatório mensal de atividade', () => {
     expect(reportRecordId('2026-10')).toBe('relatorio-2026-10');
     expect(emptyReportRecord('2026-10')).toMatchObject({ status: 'rascunho', month: '2026-10' });
     expect(nextMonthOf('2026-12')).toBe('2027-01');
+  });
+});
+
+describe('coordenação dos relatórios', () => {
+  const user = (role: string, extra: Partial<UserAccount> = {}) =>
+    ({
+      id: 'u',
+      username: 'u',
+      email: 'u@clube.pt',
+      name: 'U',
+      role,
+      status: 'approved',
+      clubId: 'c1',
+      assignedTeams: [],
+      ...extra
+    }) as UserAccount;
+
+  it('the coordinator sees every team and reviews reports; a coach does not review', () => {
+    const coord = user('Coordenador Técnico');
+    expect(isCoordinator(coord)).toBe(true);
+    expect(canAccessTeam(coord, 'qualquer', 'c1')).toBe(true);
+    expect(canReviewReports(coord)).toBe(true);
+    expect(canReviewReports(user('Treinador Principal', { assignedTeams: ['all'] }))).toBe(false);
+    expect(canReviewReports(user('Coordenador Técnico', { status: 'pending' }))).toBe(false);
+    expect(canAccessTeam(user('Treinador Principal', { assignedTeams: ['sub9'] }), 'sub11', 'c1')).toBe(false);
+  });
+
+  it('season months, timeline and the head coach', () => {
+    expect(seasonMonths('2026/2027')).toEqual([
+      '2026-09',
+      '2026-10',
+      '2026-11',
+      '2026-12',
+      '2027-01',
+      '2027-02',
+      '2027-03',
+      '2027-04',
+      '2027-05',
+      '2027-06'
+    ]);
+    const t = reportTimeline({
+      id: 'r',
+      month: '2026-10',
+      status: 'devolvido',
+      createdAt: '2026-10-28T10:00:00Z',
+      validatedAt: '2026-11-02T10:00:00Z',
+      validatedBy: 'Treinador A',
+      deliveredAt: '2026-11-03T10:00:00Z',
+      returnedAt: '2026-11-04T10:00:00Z',
+      returnedBy: 'Coordenador C'
+    }).map((e) => e.text);
+    expect(t).toEqual([
+      'Rascunho criado',
+      'Validado pelo treinador (Treinador A)',
+      'Entregue ao coordenador',
+      'Devolvido ao treinador por Coordenador C'
+    ]);
+    expect(
+      teamCoachName({
+        staffMembers: [
+          { id: '1', name: 'Adjunto X', role: 'Treinador Adjunto' },
+          { id: '2', name: 'Principal Y', role: 'Treinador Principal' }
+        ]
+      } as never)
+    ).toBe('Principal Y');
   });
 });

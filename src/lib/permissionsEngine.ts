@@ -58,8 +58,8 @@ export function canAccessTeam(user: UserAccount | null | undefined, teamId?: str
     return true;
   }
 
-  // Director has access to all teams within their club
-  if (user.role === 'Diretor') {
+  // Director and technical coordinator have access to all teams within their club
+  if (user.role === 'Diretor' || isCoordinator(user)) {
     return true;
   }
 
@@ -339,4 +339,20 @@ export function isActiveTeamRevoked(
   if (isAdminAccount(user)) return false;
   const accessible = getUserAccessibleTeams(user, teams);
   return !accessible.some((t) => t.id === activeTeamId);
+}
+
+/** 🧭 The club's technical coordinator (role «Coordenador Técnico»). */
+export const COORDINATOR_ROLE = 'Coordenador Técnico';
+
+export function isCoordinator(user: UserAccount | null | undefined): boolean {
+  return Boolean(user && user.status === 'approved' && user.role === COORDINATOR_ROLE);
+}
+
+/**
+ * Who reviews the monthly reports (Relatórios do clube): the coordinator and the Administrador. Only they write the
+ * coordinator's notes and mark a report as reviewed or send it back.
+ */
+export function canReviewReports(user: UserAccount | null | undefined): boolean {
+  if (!user || user.status !== 'approved') return false;
+  return isCoordinator(user) || user.role === 'Administrador' || isAdminAccount(user);
 }

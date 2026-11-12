@@ -1,7 +1,8 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AppState, MonthlyReportRecord } from '../../types';
 import {
+  COACH_STATUSES,
   REPORT_DIMENSIONS,
   REPORT_LEVELS,
   REPORT_NEXT_FIELDS,
@@ -13,7 +14,11 @@ import {
 import { monthLabel, reportMonths } from '../../lib/monthlyReport';
 import { signatureFor } from '../../lib/signature';
 import { localDateISO } from '../../lib/trainingQuick';
+import { reportFilename } from '../../lib/pdf/reportPagesPdf';
 import { ReportPages } from './ReportPages';
+import { PdfExport, ScaledPreview } from './ReportExport';
+import { canReviewReports } from '../../lib/permissionsEngine';
+import { notifyReport } from '../../lib/reportNotices';
 import './monthlyReport.css';
 
 interface Props {
@@ -25,34 +30,6 @@ interface Props {
 }
 
 type Tab = 'dados' | 'avaliacao' | 'previa';
-
-/** A4 (210 mm) is 794 px wide at 96 dpi: the preview scales the pages to the space it has. */
-const A4_PX = 794;
-
-const ScaledPreview: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const outer = useRef<HTMLDivElement>(null);
-  const inner = useRef<HTMLDivElement>(null);
-  const [box, setBox] = useState({ scale: 1, height: 0 });
-  useLayoutEffect(() => {
-    const measure = () => {
-      if (!outer.current || !inner.current) return;
-      const scale = Math.min(1, outer.current.clientWidth / A4_PX);
-      setBox({ scale, height: inner.current.scrollHeight * scale });
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (outer.current) ro.observe(outer.current);
-    if (inner.current) ro.observe(inner.current);
-    return () => ro.disconnect();
-  }, []);
-  return (
-    <div ref={outer} className="relative overflow-hidden" style={{ height: box.height || undefined }}>
-      <div ref={inner} style={{ width: A4_PX, transform: `scale(${box.scale})`, transformOrigin: 'top left' }}>
-        {children}
-      </div>
-    </div>
-  );
-};
 
 const Card: React.FC<{ title: React.ReactNode; label: string; children: React.ReactNode }> = ({
   title,
@@ -86,9 +63,9 @@ const MonthlyReportView: React.FC<Props> = ({ state, onUpdateState, onShowToast,
   const [tab, setTab] = useState<Tab>('dados');
   const [athleteId, setAthleteId] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState<'pdf' | 'print' | null>(null);
-  const exportRef = useRef<HTMLDivElement>(null);
   const coachName = state.currentUser?.name || '';
   const signature = signatureFor(state, 'relatorios');
+  const reviewer = canReviewReports(state.currentUser);
 
   // Another month (or a change from another device while nothing is being typed): show the saved version
   const dirty = useRef(false);
@@ -105,7 +82,8 @@ const MonthlyReportView: React.FC<Props> = ({ state, onUpdateState, onShowToast,
 
   const persist = (rec: MonthlyReportRecord) => {
     if (!team) return;
-    const withDate = { ...rec, updatedAt: new Date().toISOString() };
+    const now = new Date().toISOString();
+    const withDate = { ...rec, createdAt: rec.createdAt || now, updatedAt: now };
     const others = (team.monthlyReports || []).filter((r) => r.id !== rec.id);
     onUpdateState({
       teams: (state.teams || []).map((t) => (t.id === team.id ? { ...t, monthlyReports: [...others, withDate] } : t))
@@ -128,43 +106,35 @@ const MonthlyReportView: React.FC<Props> = ({ state, onUpdateState, onShowToast,
 
   const setStatus = (status: MonthlyReportRecord['status']) => {
     const now = new Date().toISOString();
+    const again = draft.status === 'devolvido' || draft.status === 'revisto';
     const rec: MonthlyReportRecord = {
       ...draft,
       status,
       validatedAt: status === 'rascunho' ? undefined : draft.validatedAt || now,
       validatedBy: status === 'rascunho' ? undefined : draft.validatedBy || coachName || undefined,
-      deliveredAt: status === 'entregue' ? draft.deliveredAt || now : undefined
+      deliveredAt: status === 'entregue' ? (again ? now : draft.deliveredAt || now) : undefined,
+      // delivered again after corrections: the coordinator reviews it anew
+      reviewedAt: status === 'entregue' && again ? undefined : draft.reviewedAt,
+      reviewedBy: status === 'entregue' && again ? undefined : draft.reviewedBy
     };
     setDraft(rec);
     persist(rec);
     onShowToast(`Relatório: ${REPORT_STATUS_LABEL[status]}`);
+    if (status === 'entregue' && team) {
+      notifyReport(
+        state,
+        team.id,
+        `Relatório de ${report.label} entregue`,
+        `${report.team}${coachName ? ` · ${coachName}` : ''}`,
+        month
+      );
+    }
   };
 
   const close = () => {
     if (dirty.current) persist(draft);
     onClose();
   };
-
-  // PDF: the pages are rendered once more at their real size, off screen, and turned into a file
-  useEffect(() => {
-    if (busy !== 'pdf' || !exportRef.current) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const { reportPagesToPdf, reportFilename } = await import('../../lib/pdf/reportPagesPdf');
-        if (cancelled || !exportRef.current) return;
-        await reportPagesToPdf(exportRef.current, reportFilename(report.club, month));
-        onShowToast('Relatório mensal criado 📄');
-      } catch {
-        onShowToast('Não foi possível criar o PDF.');
-      } finally {
-        if (!cancelled) setBusy(null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [busy, month, report.club, onShowToast]);
 
   // Print: only the pages (see .mr-print-root in monthlyReport.css)
   useEffect(() => {
@@ -371,16 +341,22 @@ const MonthlyReportView: React.FC<Props> = ({ state, onUpdateState, onShowToast,
         )}
       </Card>
       <Card label="Coordenação" title="7 · Observações do coordenador">
-        <textarea
-          rows={2}
-          aria-label="Observações do coordenador"
-          className={field}
-          value={draft.coordinatorNotes || ''}
-          onChange={(e) => {
-            const v = e.target.value;
-            edit((r) => ({ ...r, coordinatorNotes: v }));
-          }}
-        />
+        {reviewer ? (
+          <textarea
+            rows={2}
+            aria-label="Observações do coordenador"
+            className={field}
+            value={draft.coordinatorNotes || ''}
+            onChange={(e) => {
+              const v = e.target.value;
+              edit((r) => ({ ...r, coordinatorNotes: v }));
+            }}
+          />
+        ) : (
+          <p className={`text-ui-caption ${draft.coordinatorNotes?.trim() ? 'text-ui-text' : 'text-ui-muted'}`}>
+            {draft.coordinatorNotes?.trim() || 'Escritas pelo coordenador quando rever o relatório.'}
+          </p>
+        )}
       </Card>
     </div>
   );
@@ -411,7 +387,7 @@ const MonthlyReportView: React.FC<Props> = ({ state, onUpdateState, onShowToast,
             </p>
           </div>
           <div role="group" aria-label="Estado do relatório" className="ui-inset flex gap-0.5 p-1 max-sm:w-full">
-            {(Object.keys(REPORT_STATUS_LABEL) as MonthlyReportRecord['status'][]).map((s) => (
+            {COACH_STATUSES.map((s) => (
               <button
                 key={s}
                 type="button"
@@ -444,6 +420,25 @@ const MonthlyReportView: React.FC<Props> = ({ state, onUpdateState, onShowToast,
             </button>
           </div>
         </header>
+
+        {(draft.status === 'devolvido' || draft.status === 'revisto') && (
+          <div
+            role="status"
+            className={`mt-3 rounded-ui border-l-4 p-3 text-ui-caption ${
+              draft.status === 'devolvido' ? 'border-ui-warning bg-ui-warning-soft' : 'border-ui-brand bg-ui-brand-soft'
+            }`}
+          >
+            <p className="font-extrabold text-ui-text">
+              {draft.status === 'devolvido'
+                ? `Devolvido pelo coordenador${draft.returnedAt ? ` a ${draft.returnedAt.slice(8, 10)}/${draft.returnedAt.slice(5, 7)}` : ''}`
+                : `Revisto pelo coordenador${draft.reviewedAt ? ` a ${draft.reviewedAt.slice(8, 10)}/${draft.reviewedAt.slice(5, 7)}` : ''}`}
+            </p>
+            {draft.coordinatorNotes?.trim() && <p className="mt-1 text-ui-text">«{draft.coordinatorNotes.trim()}»</p>}
+            {draft.status === 'devolvido' && (
+              <p className="mt-1 text-ui-muted">Corrija e volte a entregar (Entregue ao coordenador).</p>
+            )}
+          </div>
+        )}
 
         <nav aria-label="Partes do relatório" className="ui-inset my-3 flex gap-1 p-1 xl:hidden">
           {(
@@ -481,9 +476,15 @@ const MonthlyReportView: React.FC<Props> = ({ state, onUpdateState, onShowToast,
       </div>
 
       {busy === 'pdf' && (
-        <div className="mr-export" aria-hidden ref={exportRef}>
+        <PdfExport
+          filename={reportFilename(report.club, month)}
+          onDone={(ok) => {
+            setBusy(null);
+            onShowToast(ok ? 'Relatório mensal criado 📄' : 'Não foi possível criar o PDF.');
+          }}
+        >
           {pages}
-        </div>
+        </PdfExport>
       )}
       {busy === 'print' && createPortal(<div className="mr-print-root">{pages}</div>, document.body)}
     </div>

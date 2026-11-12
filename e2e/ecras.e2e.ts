@@ -1,7 +1,7 @@
 import { deflateSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
-import { COACH_A, COACH_B, FIRESTORE, owner, PASSWORD } from './seed';
+import { COACH_A, COACH_B, COORD, FIRESTORE, owner, PASSWORD } from './seed';
 import { buildICS, feedFromRestDocument } from '../src/lib/calendarFeed';
 import { parentsLiveFromRestDocument, renderParentsLivePage } from '../src/lib/parentsLive';
 import {
@@ -1571,6 +1571,76 @@ test('relatórios: relatório mensal com os dados do mês, avaliação guardada,
   await expect(dialog.getByRole('button', { name: 'Validado pelo treinador' })).toHaveAttribute('aria-pressed', 'true');
   await dialog.getByRole('button', { name: 'Avaliação', exact: true }).click();
   await expect(dialog.getByLabel('Evolução geral da equipa')).toHaveValue('Mês de boa evolução na saída de bola.');
+});
+
+test('coordenação: o coordenador vê os relatórios do clube, devolve com observações e pede os que faltam', async ({
+  page,
+  browser
+}) => {
+  // The coach delivers October's report
+  await signedIn(page);
+  await openMore(page, /Relatórios/);
+  const coachReport = page.getByRole('dialog', { name: 'Relatórios' });
+  await coachReport.getByLabel('Mês', { exact: true }).selectOption('2026-10');
+  await coachReport.getByRole('button', { name: 'Avaliação', exact: true }).click();
+  await coachReport.getByLabel('Evolução geral da equipa').fill('Boa evolução na saída de bola.');
+  await coachReport.getByRole('button', { name: 'Entregue ao coordenador' }).click();
+  await expect
+    .poll(
+      async () =>
+        [...(await cloudRecords()).values()].find((r) => r.kind === 'report' && r.month === '2026-10')?.status,
+      {
+        timeout: 30_000,
+        message: 'relatório entregue na nuvem'
+      }
+    )
+    .toBe('entregue');
+  // The coach does not write the coordinator's notes
+  await expect(coachReport.getByRole('textbox', { name: 'Observações do coordenador' })).toHaveCount(0);
+  await coachReport.getByRole('button', { name: 'Fechar relatórios' }).click();
+
+  // The coordinator (no team assigned) sees every team's report
+  const ctx = await browser.newContext();
+  const coord = await newCoachPage(ctx, COORD);
+  await navTo(coord, /clube/i);
+  await coord.getByRole('button', { name: /Relatórios do clube/ }).click();
+  const club = coord.getByRole('dialog', { name: 'Relatórios do clube' });
+  await club.getByLabel('Mês', { exact: true }).selectOption('2026-10');
+  const sub11 = club.getByRole('listitem', { name: 'Sub-11' });
+  await expect(sub11).toContainText('Entregue');
+  await sub11.getByRole('button', { name: 'Abrir' }).click();
+  await expect(club.getByRole('region', { name: 'Estado' })).toContainText('Entregue ao coordenador');
+  // Sending it back needs a note saying what to correct
+  await club.getByRole('button', { name: 'Devolver ao treinador' }).click();
+  await expect(coord.getByText('Escreva nas observações o que o treinador deve corrigir.')).toBeVisible();
+  await club.getByRole('textbox', { name: 'Observações do coordenador' }).fill('Falta a análise do jogo de 17/10.');
+  await club.getByRole('button', { name: 'Devolver ao treinador' }).click();
+  await expect(coord.getByText('Relatório: Devolvido ao treinador')).toBeVisible();
+  await expect
+    .poll(
+      async () =>
+        [...(await cloudRecords()).values()].find((r) => r.kind === 'report' && r.month === '2026-10')?.status,
+      {
+        timeout: 30_000,
+        message: 'relatório devolvido na nuvem'
+      }
+    )
+    .toBe('devolvido');
+  // A month without a report can be asked for (a notice to the team's phones)
+  await club.getByRole('button', { name: 'Voltar aos relatórios do clube' }).click();
+  await club.getByLabel('Mês', { exact: true }).selectOption('2026-09');
+  await expect(club.getByRole('listitem', { name: 'Sub-11' })).toContainText('Sem relatório');
+  await club.getByRole('button', { name: 'Pedir o relatório a Sub-11' }).click();
+  await expect(coord.getByText(/Pedido enviado|avisos|aviso|telemóvel/).first()).toBeVisible();
+  await ctx.close();
+
+  // The coach sees it was sent back, with the coordinator's note
+  await page.reload();
+  await enterPanel(page);
+  await openMore(page, /Relatórios/);
+  await coachReport.getByLabel('Mês', { exact: true }).selectOption('2026-10');
+  await expect(coachReport.getByRole('status')).toContainText('Devolvido pelo coordenador');
+  await expect(coachReport.getByRole('status')).toContainText('Falta a análise do jogo de 17/10.');
 });
 
 test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo', async ({ page }) => {

@@ -742,7 +742,15 @@ export const ReportPages: React.FC<Props> = ({ report, record, coachName, athlet
             </div>
             <div className="sign">
               <p className="lbl">Observações do coordenador</p>
-              <div className="sign-box">{record.coordinatorNotes}</div>
+              <div className="sign-box">
+                {record.coordinatorNotes}
+                {record.reviewedAt && (
+                  <p className="small">
+                    ✓ Revisto{record.reviewedBy ? ` por ${record.reviewedBy}` : ''} a {dm(record.reviewedAt)}/
+                    {record.reviewedAt.slice(0, 4)}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

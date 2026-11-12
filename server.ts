@@ -515,7 +515,12 @@ async function startServer() {
         .map((raw) => cleanSubscription(String((raw as { id?: unknown })?.id || ''), raw))
         .filter((s): s is NonNullable<typeof s> => Boolean(s) && /^[a-zA-Z0-9_-]{1,128}$/.test(s!.id));
       const targets = subscriptionsToNotify(subs, verification.uid, notice).slice(0, notice.kind === 'teste' ? 5 : 300);
-      const payload = JSON.stringify({ title: notice.title, body: notice.body, tag: notice.tag, url: '/?aoVivo=1' });
+      const payload = JSON.stringify({
+        title: notice.title,
+        body: notice.body,
+        tag: notice.tag,
+        url: notice.kind === 'relatorio' ? '/' : '/?aoVivo=1'
+      });
       let sent = 0;
       const gone: string[] = [];
       const failed: Array<{ status: number; reason: string }> = [];

@@ -21,7 +21,8 @@ export const VAPID_PUBLIC_KEY =
   'BDqsrXPNsvCzutR2U1dZKyTiC8Isk-05QvOixn4ZRrJB_wZwf20w_ryv7H-K01ZxbMeSoBsrlS21fb-3CchDxMs';
 
 export interface PushMessage {
-  kind: PushKind;
+  /** «relatorio»: the monthly reports (asked for, delivered, sent back); not a game notice, so no preference. */
+  kind: PushKind | 'relatorio';
   title: string;
   body: string;
   /** Same tag = the newer notice replaces the older one on the phone (one per game). */
@@ -93,7 +94,7 @@ export function cleanPrefs(raw: unknown): PushPrefs {
 interface NoticeRequest {
   clubId: string;
   teamId: string;
-  kind: PushKind | 'teste';
+  kind: PushKind | 'relatorio' | 'teste';
   title: string;
   body: string;
   tag: string;
@@ -113,7 +114,7 @@ export function cleanNoticeRequest(raw: unknown): NoticeRequest | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
   const kind = r.kind;
-  if (kind !== 'inicio' && kind !== 'golo' && kind !== 'fim' && kind !== 'teste') return null;
+  if (kind !== 'inicio' && kind !== 'golo' && kind !== 'fim' && kind !== 'relatorio' && kind !== 'teste') return null;
   const clubId = txt(r.clubId, 128);
   const teamId = txt(r.teamId, 128);
   const title = txt(r.title, 80);
@@ -170,7 +171,7 @@ export function subscriptionsToNotify(
   return subs.filter(
     (s) =>
       (s.uid !== senderUid || (notice.alsoMine === true && s.id !== notice.fromSubscriptionId)) &&
-      s.prefs[notice.kind as PushKind] &&
+      (notice.kind === 'relatorio' || s.prefs[notice.kind as PushKind]) &&
       (s.teamIds.length === 0 || s.teamIds.includes(notice.teamId))
   );
 }
