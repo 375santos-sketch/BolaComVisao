@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Match, Player } from '../../../../types';
 
 interface QuickBenchModeProps {
@@ -122,6 +122,41 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
   const shotsOutBoxAgainst = match.rematesForaAreaAdv ?? match.shotsOutBoxAgainst ?? 0;
   const totalShotsAgainst = shotsInBoxAgainst + shotsOutBoxAgainst;
 
+  // A tap shows at once (the button sinks for a moment) and a second tap on the same button within half a second is
+  // ignored: a shaky finger does not count twice
+  const [pressed, setPressed] = useState<string | null>(null);
+  const lastTap = useRef<{ key: string; at: number }>({ key: '', at: 0 });
+  const tap = (key: string, run: (() => void) | undefined, now: number) => {
+    if (!run) return;
+    if (lastTap.current.key === key && now - lastTap.current.at < 500) return;
+    lastTap.current = { key, at: now };
+    setPressed(key);
+    setTimeout(() => setPressed((k) => (k === key ? null : k)), 180);
+    run();
+  };
+  const counter = (
+    key: string,
+    label: string,
+    side: string,
+    total: number,
+    run: (() => void) | undefined,
+    title: string,
+    theirs = false
+  ) => (
+    <button
+      key={key}
+      type="button"
+      title={title}
+      aria-label={`${label}${side ? ` ${side}` : ''}: ${total}`}
+      onClick={(e) => tap(key, run, e.timeStamp)}
+      className={`live-count ${theirs ? 'is-theirs' : ''} ${pressed === key ? 'is-pressed' : ''}`}
+    >
+      <span>{label}</span>
+      {side && <small>{side}</small>}
+      <b>{total}</b>
+    </button>
+  );
+
   // Lista dos últimos acontecimentos (últimos 3 golos/cartões)
   const recentGoals = [...(match.goals || [])].reverse().slice(0, 3);
 
@@ -221,32 +256,113 @@ export const QuickBenchMode: React.FC<QuickBenchModeProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* Goals first (ours and theirs), then the substitution; the rest is the list below */}
+      {/* 1. Goals: the two big buttons */}
       <section aria-label="Ações do jogo" className="grid grid-cols-2 gap-2">
         <button
           type="button"
-          onClick={onQuickGoalScored}
+          onClick={(e) => tap('golo', onQuickGoalScored, e.timeStamp)}
           aria-label="+1 Golo marcado"
-          className="ui-btn ui-btn-success min-h-[54px] flex-col gap-0 text-ui-body"
+          className={`live-goal bg-[var(--color-ui-success)] text-ui-bg ${pressed === 'golo' ? 'is-pressed' : ''}`}
         >
-          <span className="font-extrabold">Golo nosso</span>
-          <span className="text-[11px] font-semibold opacity-80">{myClubName}</span>
+          <span>⚽ GOLO NOSSO</span>
+          <small>escolher marcador</small>
         </button>
         <button
           type="button"
-          onClick={onQuickGoalConceded}
+          onClick={(e) => tap('sofrido', onQuickGoalConceded, e.timeStamp)}
           aria-label="+1 Golo sofrido"
-          className="ui-btn ui-btn-danger min-h-[54px] flex-col gap-0 text-ui-body"
+          className={`live-goal bg-[var(--color-ui-danger)] text-ui-text ${pressed === 'sofrido' ? 'is-pressed' : ''}`}
         >
-          <span className="font-extrabold">Golo sofrido</span>
-          <span className="text-[11px] font-semibold opacity-80">{match.opponent || 'Adversário'}</span>
+          <span>GOLO SOFRIDO</span>
+          <small>{match.opponent || 'Adversário'}</small>
+        </button>
+      </section>
+
+      {/* 2. Corners and shots: one tap adds one (the total is on the button); mistakes go back with Desfazer */}
+      <section aria-label="Cantos e remates" className="space-y-1.5">
+        <div className="live-kicker">
+          <span>Cantos</span>
+          <b>
+            {match.cantos || 0} · {match.cantosAdv || 0}
+          </b>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {counter('canto', 'Canto nosso', '', match.cantos || 0, onAddCorner, 'Adicionar Canto')}
+          {counter(
+            'canto-adv',
+            'Canto deles',
+            '',
+            match.cantosAdv || 0,
+            onAddOpponentCorner,
+            'Adicionar Canto Adv',
+            true
+          )}
+        </div>
+        <div className="live-kicker pt-1">
+          <span>Remates</span>
+          <b>
+            {totalShotsFor} · {totalShotsAgainst}
+          </b>
+        </div>
+        <div className="grid grid-cols-4 gap-1.5">
+          {counter('rem-in', 'Dentro', 'nosso', shotsInBoxFor, onAddShotInBoxFor, 'Adicionar Remate Dentro da Área')}
+          {counter('rem-out', 'Fora', 'nosso', shotsOutBoxFor, onAddShotOutBoxFor, 'Adicionar Remate Fora da Área')}
+          {counter(
+            'rem-in-adv',
+            'Dentro',
+            'deles',
+            shotsInBoxAgainst,
+            onAddShotInBoxAgainst,
+            'Adicionar Remate Dentro da Área Adv',
+            true
+          )}
+          {counter(
+            'rem-out-adv',
+            'Fora',
+            'deles',
+            shotsOutBoxAgainst,
+            onAddShotOutBoxAgainst,
+            'Adicionar Remate Fora da Área Adv',
+            true
+          )}
+        </div>
+      </section>
+
+      {/* 3. Substitution, card and fouls: a step below, still one tap away */}
+      <section aria-label="Outros acontecimentos" className="grid grid-cols-4 gap-1.5">
+        <button
+          type="button"
+          onClick={(e) => tap('sub', onQuickSub, e.timeStamp)}
+          aria-label="Substituição"
+          className={`live-small ${pressed === 'sub' ? 'is-pressed' : ''}`}
+        >
+          ⇄ Subst.
         </button>
         <button
           type="button"
-          onClick={onQuickSub}
-          className="ui-btn ui-btn-secondary col-span-2 min-h-[48px] text-ui-body font-bold"
+          onClick={(e) => tap('cartao', onQuickCard, e.timeStamp)}
+          aria-label="Cartão"
+          className={`live-small text-ui-warning ${pressed === 'cartao' ? 'is-pressed' : ''}`}
         >
-          ⇄ Substituição
+          ▮ Cartão
+        </button>
+        <button
+          type="button"
+          onClick={(e) => tap('falta', onAddFoul, e.timeStamp)}
+          title="Adicionar Falta"
+          aria-label={`Falta nossa: ${match.faltas || 0}`}
+          className={`live-small ${pressed === 'falta' ? 'is-pressed' : ''}`}
+        >
+          Falta <b className="text-ui-brand">{match.faltas || 0}</b>
+        </button>
+        <button
+          type="button"
+          onClick={(e) => tap('falta-adv', onAddOpponentFoul, e.timeStamp)}
+          title="Adicionar Falta Adv"
+          aria-label={`Falta deles: ${match.faltasAdv || 0}`}
+          className={`live-small ${pressed === 'falta-adv' ? 'is-pressed' : ''}`}
+        >
+          Falta adv <b className="text-ui-danger">{match.faltasAdv || 0}</b>
         </button>
       </section>
 

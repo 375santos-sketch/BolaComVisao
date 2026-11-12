@@ -11,6 +11,8 @@ interface MatchTimelineProps {
   durationMinutes?: number;
   /** Squad used to show names instead of the stored player ids. */
   players?: Player[];
+  /** The live game: the latest event on top, and the score after each goal. */
+  live?: boolean;
 }
 
 interface TimelineItem {
@@ -24,6 +26,8 @@ interface TimelineItem {
   rawGoal?: GoalEvent;
   rawCard?: CardEvent;
   rawSub?: SubEvent;
+  /** The score right after this goal ("2-1"). */
+  score?: string;
 }
 
 export const MatchTimeline: React.FC<MatchTimelineProps> = ({
@@ -32,7 +36,8 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
   onEditCard,
   onEditSub,
   durationMinutes = 60,
-  players = []
+  players = [],
+  live = false
 }) => {
   const items: TimelineItem[] = [];
   const nameOf = (id?: string | null) => {
@@ -96,8 +101,16 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
     });
   });
 
-  // Sort chronological
+  // Sort chronological, and the score after each goal (in the order they happened)
   items.sort((a, b) => a.minute - b.minute);
+  let ours = 0;
+  let theirs = 0;
+  items.forEach((it) => {
+    if (it.kind === 'goal_scored') ours += 1;
+    if (it.kind === 'goal_conceded') theirs += 1;
+    if (it.kind === 'goal_scored' || it.kind === 'goal_conceded') it.score = `${ours}-${theirs}`;
+  });
+  if (live) items.reverse();
 
   if (items.length === 0) {
     return (
@@ -140,7 +153,17 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
               </div>
             </div>
 
-            {canEdit && <span className="text-[10px] font-mono text-ui-muted shrink-0">Editar ➔</span>}
+            <span className="flex shrink-0 items-center gap-2">
+              {item.score && (
+                <span
+                  className={`ui-badge ${item.kind === 'goal_scored' ? 'ui-badge-success' : 'ui-badge-danger'}`}
+                  title="Resultado depois deste golo"
+                >
+                  {item.score}
+                </span>
+              )}
+              {canEdit && <span className="text-[10px] font-mono text-ui-muted">Editar ➔</span>}
+            </span>
           </div>
         ))}
       </div>
