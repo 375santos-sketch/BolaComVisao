@@ -11,7 +11,8 @@ import {
   sendNotice
 } from '../services/push';
 import { calendarLinks } from '../services/publicCalendar';
-import { createTeamCalendar } from '../hooks/useCalendarPublisher';
+import { calendarEventsOf, createTeamCalendar } from '../hooks/useCalendarPublisher';
+import { DEFAULT_REMINDERS, REMINDER_CHOICES, ReminderPlan } from '../lib/calendarFeed';
 import { Sheet } from './ui/Sheet';
 
 interface PushSettingsModalProps {
@@ -28,6 +29,19 @@ const loadPrefs = (): PushPrefs => {
     return cleanPrefs(JSON.parse(localStorage.getItem(PREFS_KEY) || 'null') || DEFAULT_PUSH_PREFS);
   } catch {
     return DEFAULT_PUSH_PREFS;
+  }
+};
+
+/** When the iPhone's calendar reminds the trainings and the games, kept on this phone (it goes in the link). */
+const REMINDERS_KEY = 'bcv_cal_alerts_v1';
+const loadReminders = (): ReminderPlan => {
+  try {
+    const raw = JSON.parse(localStorage.getItem(REMINDERS_KEY) || 'null');
+    const list = (v: unknown, fallback: number[]) =>
+      Array.isArray(v) ? v.filter((n) => REMINDER_CHOICES.some((c) => c.minutes === n)) : fallback;
+    return raw ? { treino: list(raw.treino, []), jogo: list(raw.jogo, []) } : DEFAULT_REMINDERS;
+  } catch {
+    return DEFAULT_REMINDERS;
   }
 };
 
@@ -53,7 +67,21 @@ const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onUpdateSt
   const [busy, setBusy] = useState(false);
   const [alsoMine, setAlsoMine] = useState(loadAlsoMine);
   const calendarToken = (state.teams || []).find((t) => t.id === state.activeTeamId)?.calendarToken;
-  const reminderLink = calendarToken ? calendarLinks(calendarToken).reminders : null;
+  const [plan, setPlan] = useState<ReminderPlan>(loadReminders);
+  const reminderLink = calendarToken ? calendarLinks(calendarToken).reminders(plan) : null;
+  const inCalendar = calendarEventsOf(state);
+  const gamesCount = inCalendar.filter((e) => e.kind === 'jogo').length;
+  const trainingsCount = inCalendar.length - gamesCount;
+  const toggleReminder = (kind: keyof ReminderPlan, minutes: number) => {
+    const list = plan[kind].includes(minutes) ? plan[kind].filter((m) => m !== minutes) : [...plan[kind], minutes];
+    const next = { ...plan, [kind]: list.sort((a, b) => b - a) };
+    setPlan(next);
+    try {
+      localStorage.setItem(REMINDERS_KEY, JSON.stringify(next));
+    } catch {
+      /* kept for this time only */
+    }
+  };
   const needsInstall = support.ios && !support.standalone;
 
   const keepPrefs = (next: PushPrefs) => {
@@ -231,9 +259,41 @@ const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onUpdateSt
         <section aria-label="Lembretes da agenda" className="space-y-2">
           <h3 className={heading}>Agenda</h3>
           <p className="text-ui-caption text-ui-muted">
-            Os <b className="text-ui-text">treinos e jogos</b> da equipa no calendário do iPhone, com lembrete na
-            véspera e 2 horas antes, mesmo com a app fechada. Atualiza-se sozinho quando muda a Agenda.
+            Os <b className="text-ui-text">jogos e treinos</b> da equipa no calendário do iPhone, com lembretes mesmo
+            com a app fechada. Atualiza-se sozinho quando muda a Agenda (o iPhone vai buscar as novidades de algumas em
+            algumas horas).
           </p>
+          <p className="text-ui-caption text-ui-text">
+            No calendário: <b>{gamesCount}</b> {gamesCount === 1 ? 'jogo' : 'jogos'} · <b>{trainingsCount}</b>{' '}
+            {trainingsCount === 1 ? 'treino' : 'treinos'} (desde há 30 dias).
+          </p>
+          {(
+            [
+              ['treino', 'Lembrar os treinos'],
+              ['jogo', 'Lembrar os jogos']
+            ] as const
+          ).map(([kind, label]) => (
+            <div key={kind} role="group" aria-label={label} className="space-y-1">
+              <div className="text-ui-caption font-bold text-ui-muted">{label} (antes do início)</div>
+              <div className="flex flex-wrap gap-1.5">
+                {REMINDER_CHOICES.map((c) => {
+                  const on = plan[kind].includes(c.minutes);
+                  return (
+                    <button
+                      key={c.minutes}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => toggleReminder(kind, c.minutes)}
+                      className={`ui-btn px-2.5 py-1 text-ui-caption ${on ? 'ui-btn-primary' : 'ui-btn-secondary'}`}
+                    >
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {plan[kind].length === 0 && <p className="text-ui-caption text-ui-muted">Sem lembretes.</p>}
+            </div>
+          ))}
           {reminderLink ? (
             <>
               <a href={reminderLink} className="ui-btn ui-btn-primary w-full py-2.5 text-ui-caption">
@@ -246,6 +306,10 @@ const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onUpdateSt
                 <li>
                   No ecrã seguinte <b className="text-ui-text">desliga «Remover alertas»</b> (senão o iPhone apaga os
                   lembretes) e toca em <b className="text-ui-text">Adicionar</b>.
+                </li>
+                <li>
+                  Para mudar as horas dos lembretes: escolhe aqui, apaga o calendário antigo no iPhone (app Calendário →
+                  Calendários → ⓘ → Apagar calendário) e toca outra vez no botão.
                 </li>
               </ol>
               <p className="text-ui-caption text-ui-muted">

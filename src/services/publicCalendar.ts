@@ -1,6 +1,6 @@
 import { deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { CalendarEvent } from '../lib/calendarFeed';
+import { CalendarEvent, ReminderPlan, reminderQuery } from '../lib/calendarFeed';
 import { toPlainData } from '../lib/recordSync';
 
 /**
@@ -27,7 +27,7 @@ export function calendarLinks(token: string, origin = window.location.origin) {
     https,
     webcal,
     google: `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcal)}`,
-    /** The coach's own iPhone: the same calendar with reminders the day before and 2 hours before. */
-    reminders: `${webcal}?alertas=1`
+    /** The coach's own iPhone: the same calendar with the reminders chosen (the parents' link has none). */
+    reminders: (plan: ReminderPlan) => `${webcal}?${reminderQuery(plan)}`
   };
 }
