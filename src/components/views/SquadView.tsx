@@ -135,7 +135,7 @@ export const SquadView: React.FC<SquadViewProps> = ({
               selectedPlayerObj ? 'lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-5' : ''
             }
           >
-            <div className="min-w-0">
+            <div className="@container min-w-0">
               <SquadToolbar
                 state={state}
                 activeRosterCount={squad.activeRoster.length}

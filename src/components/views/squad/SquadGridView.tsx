@@ -1,9 +1,9 @@
 import React from 'react';
 import { AppState, Player } from '../../../types';
 import { SquadSortBy, SquadSortDirection, POSITION_GROUPS, STATUS_CONFIG } from './types';
-import { SquadPositionBadge } from './SquadPositionBadge';
 import { getPositionRank } from '../../../lib/utils';
 import { returnSuffix } from '../../../lib/availability';
+import { squadIndicators, pctLabel } from '../../../lib/squadIndicators';
 
 interface SquadGridViewProps {
   state: AppState;
@@ -16,96 +16,108 @@ interface SquadGridViewProps {
 }
 
 export const SquadGridView: React.FC<SquadGridViewProps> = ({
+  state,
   sortedRoster,
   sortBy,
   sortDirection,
-  onSelectPlayer,
-  onEditPlayer,
-  onRemovePlayer
+  onSelectPlayer
 }) => {
+  const indicators = squadIndicators(state);
+  const DOT: Record<string, string> = {
+    disponivel: 'bg-ui-success',
+    lesionado: 'bg-ui-warning',
+    suspenso: 'bg-ui-danger',
+    inativo: 'bg-ui-muted'
+  };
+
+  /*
+   * One athlete per card: picture (or initials), shirt number, name and position; a dot on the picture says if they
+   * can play, and below, discreetly, % of trainings and % of minutes when called up, with a small attendance bar.
+   * Tapping the card opens the sheet (edit, picture card, PDF and remove are there).
+   */
   const renderPlayerCard = (player: Player) => {
-    const st = STATUS_CONFIG[player.status || 'disponivel'];
-
+    const status = player.status || 'disponivel';
+    const ind = indicators.get(player.id) || { callupShare: null, attendance: null };
+    const st = STATUS_CONFIG[status];
+    const initials = player.name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase();
     return (
-      <div
+      <button
         key={player.id}
-        className="ui-card p-3.5 transition-all duration-200 flex flex-col justify-between gap-3 group relative text-left"
+        type="button"
+        onClick={() => onSelectPlayer(player.id)}
+        aria-label={`${player.name}: abrir a ficha`}
+        className="squad-card group"
       >
-        <div className="flex items-center justify-between gap-2 border-b border-ui-line/80 pb-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="bg-ui-brand text-ui-brand-ink font-['Chakra_Petch'] font-black text-xs px-2.5 py-0.5 rounded-lg shadow-sm shrink-0">
-              {player.number !== null && player.number !== undefined ? `#${player.number}` : 'S/N'}
+        {player.number !== null && player.number !== undefined && `${player.number}` !== '' && (
+          <span className="absolute left-3 top-2.5 text-ui-caption font-black text-ui-brand">{player.number}</span>
+        )}
+        <span className="relative">
+          {player.photoUrl ? (
+            <img
+              src={player.photoUrl}
+              alt=""
+              className="h-16 w-16 rounded-full border-2 border-ui-line object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-ui-line bg-ui-surface-2 text-[20px] font-extrabold text-ui-text">
+              {initials || '?'}
             </span>
-            <SquadPositionBadge posStr={player.positions} />
-          </div>
-
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={() => onEditPlayer(player)}
-              className="ui-btn ui-btn-secondary p-1.5 text-xs"
-              title="Editar Jogador"
-            >
-              ✏️
-            </button>
-            <button
-              onClick={() => onRemovePlayer(player.id)}
-              className="ui-btn ui-btn-secondary p-1.5 text-xs"
-              title="Remover Jogador"
-            >
-              🗑️
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="shrink-0 relative">
-            {player.photoUrl ? (
-              <img
-                src={player.photoUrl}
-                alt={player.name}
-                className="w-12 h-12 rounded-xl object-cover border border-ui-brand/50 shadow-md group-hover:border-ui-brand transition-colors"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="ui-inset w-12 h-12 flex items-center justify-center text-lg text-ui-brand font-bold transition-colors">
-                👤
-              </div>
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <h3
-              className="font-bold text-sm text-ui-text font-['Chakra_Petch'] leading-tight truncate group-hover:text-ui-brand transition-colors mb-1"
-              title={player.name}
-            >
-              {player.name}
-            </h3>
-            <span
-              className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold border inline-flex items-center gap-1 ${st.bg} ${st.text} ${st.border}`}
-            >
-              <span>{st.icon}</span>
-              <span>
-                {st.label}
-                {returnSuffix(player)}
-              </span>
-            </span>
-          </div>
-        </div>
-
-        <button
-          onClick={() => onSelectPlayer(player.id)}
-          className="ui-btn ui-btn-soft w-full py-1.5 px-3 text-xs flex items-center justify-center gap-1.5"
+          )}
+          <span
+            aria-hidden
+            className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-[3px] border-ui-surface ${DOT[status] || 'bg-ui-success'}`}
+          />
+        </span>
+        <h3
+          className="mt-2 w-full truncate text-ui-body font-extrabold text-ui-text group-hover:text-ui-brand"
+          title={player.name}
         >
-          <span>👁️</span>
-          <span>Ver Ficha Completa</span>
-        </button>
-      </div>
+          {player.name}
+        </h3>
+        <span className="w-full truncate text-ui-caption text-ui-muted">
+          {player.positions || 'Jogador'}
+          {status !== 'disponivel' && (
+            <span className={st.text}>
+              {' '}
+              · {st.label.toLowerCase()}
+              {returnSuffix(player)}
+            </span>
+          )}
+        </span>
+        <span className="mt-2 flex gap-3 text-[11px] text-ui-muted">
+          {ind.attendance !== null && (
+            <span>
+              <b className="text-ui-caption text-ui-text">{pctLabel(ind.attendance)}</b> treinos
+            </span>
+          )}
+          {ind.callupShare !== null && (
+            <span>
+              <b className="text-ui-caption text-ui-text">{pctLabel(ind.callupShare)}</b> min.
+            </span>
+          )}
+        </span>
+        {ind.attendance !== null && (
+          <span className="mt-2 h-1 w-full overflow-hidden rounded-full bg-ui-line" aria-hidden>
+            <span
+              className={`block h-full ${status === 'disponivel' ? 'bg-ui-success' : 'bg-ui-warning'}`}
+              style={{ width: `${Math.round(ind.attendance * 100)}%` }}
+            />
+          </span>
+        )}
+      </button>
     );
   };
 
   if (sortBy === 'posicao') {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         {(sortDirection === 'asc' ? POSITION_GROUPS : [...POSITION_GROUPS].reverse()).map((group) => {
           const groupPlayers = sortedRoster.filter((p) => {
             const rank = getPositionRank(p.positions);
@@ -119,16 +131,14 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
 
           return (
             <div key={group.id} className="space-y-2.5">
-              <div className="flex items-center justify-between pb-1.5 border-b border-ui-brand/20 text-ui-brand font-['Chakra_Petch'] font-bold text-xs sm:text-sm uppercase tracking-wider">
+              <div className="flex items-center justify-between px-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-ui-muted">
                 <div className="flex items-center gap-2">
                   <span>{group.label}</span>
-                  <span className="text-xs font-mono bg-ui-brand-soft text-ui-brand border border-ui-brand/40 px-2 py-0.5 rounded-full font-bold">
-                    {groupPlayers.length}
-                  </span>
+                  <span className="ui-badge">{groupPlayers.length}</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-2.5 @lg:grid-cols-3 @4xl:grid-cols-4 sm:gap-3">
                 {groupPlayers.map(renderPlayerCard)}
               </div>
             </div>
@@ -141,16 +151,16 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
   // Non-position sort
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between pb-1.5 border-b border-ui-brand/20 text-ui-brand font-['Chakra_Petch'] font-bold text-xs sm:text-sm uppercase tracking-wider">
+      <div className="flex items-center justify-between px-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-ui-muted">
         <div className="flex items-center gap-2">
           <span>{sortBy === 'numero' ? '🔢 Ordenado por Número da Camisola' : '🔤 Ordenado por Nome do Atleta'}</span>
-          <span className="text-xs font-mono bg-ui-brand-soft text-ui-brand border border-ui-brand/40 px-2 py-0.5 rounded-full font-bold">
-            {sortedRoster.length} Atletas
-          </span>
+          <span className="ui-badge">{sortedRoster.length} Atletas</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{sortedRoster.map(renderPlayerCard)}</div>
+      <div className="grid grid-cols-2 gap-2.5 @lg:grid-cols-3 @4xl:grid-cols-4 sm:gap-3">
+        {sortedRoster.map(renderPlayerCard)}
+      </div>
     </div>
   );
 };

@@ -78,10 +78,6 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
 
   const actions: [string, () => void][] = [
     [
-      viewMode === 'lista' ? 'Ver em grelha' : 'Ver em lista',
-      () => setViewMode(viewMode === 'lista' ? 'grelha' : 'lista')
-    ],
-    [
       'PDF do plantel',
       async () => {
         if (noPlayers()) return;
@@ -154,12 +150,22 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
 
   return (
     <div className="@container mb-3 space-y-2.5">
-      {/* The squad in four figures, which also filter the list */}
-      <div role="group" aria-label="Resumo do plantel" className="grid grid-cols-2 gap-2 @xl:grid-cols-4">
-        {tile('todos', 'Atletas', 'brand', 'users')}
-        {tile('disponivel', 'Disponíveis', 'success', 'ball')}
-        {tile('lesionado', 'Lesionados', 'danger', 'plus')}
-        {tile('suspenso', 'Suspensos', 'warning', 'clipboard')}
+      {/* The squad over the stadium, in four figures that also filter the list */}
+      <div className="squad-hero">
+        <div className="min-w-0">
+          <h2 className="bcv-title text-[30px] sm:text-[36px]">Plantel</h2>
+          <p className="truncate text-ui-caption text-ui-muted">
+            {[state.myClubName, state.category, state.season ? `Época ${state.season}` : '']
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+        </div>
+        <div role="group" aria-label="Resumo do plantel" className="grid grid-cols-2 gap-2 @xl:grid-cols-4 @xl:flex-1">
+          {tile('todos', 'Atletas', 'brand', 'users')}
+          {tile('disponivel', 'Disponíveis', 'success', 'ball')}
+          {tile('lesionado', 'Lesionados', 'danger', 'plus')}
+          {tile('suspenso', 'Suspensos', 'warning', 'clipboard')}
+        </div>
       </div>
       <div className="flex items-center gap-2">
         <label className="relative flex-1 min-w-0">
@@ -176,6 +182,34 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
             className="ui-input w-full !pl-9 text-sm min-h-[42px]"
           />
         </label>
+        {/* Cards (pictures, a little bigger) or the compact list (to go through 20 athletes quickly) */}
+        <div
+          role="group"
+          aria-label="Ver o plantel em"
+          className="flex h-[42px] shrink-0 rounded-ui-sm border border-ui-line bg-ui-surface-2 p-1"
+        >
+          {(
+            [
+              ['grelha', 'Cartões', 'users'],
+              ['lista', 'Lista', 'clipboard']
+            ] as const
+          ).map(([mode, label, icon]) => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={viewMode === mode}
+              aria-label={label}
+              title={label}
+              onClick={() => setViewMode(mode)}
+              className={`flex items-center gap-1.5 rounded-[8px] px-2.5 text-ui-caption font-bold ${
+                viewMode === mode ? 'bg-ui-brand-soft text-ui-brand' : 'text-ui-muted hover:text-ui-text'
+              }`}
+            >
+              <Icon name={icon} className="h-4 w-4" />
+              <span className="hidden sm:inline">{label}</span>
+            </button>
+          ))}
+        </div>
         <div className="relative">
           <button
             type="button"

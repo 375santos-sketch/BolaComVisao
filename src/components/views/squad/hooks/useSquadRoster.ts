@@ -30,7 +30,10 @@ export function useSquadRoster({
   const [staffToEdit, setStaffToEdit] = useState<StaffMember | null>(null);
 
   // View Mode: 'lista' | 'grelha'
-  const [viewMode, setViewMode] = useState<SquadViewMode>('lista');
+  const [viewMode, setViewMode] = useState<SquadViewMode>(() =>
+    // Computer: the cards; phone: the compact list
+    typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1024px)').matches ? 'grelha' : 'lista'
+  );
 
   // Filter & Search
   const [searchQuery, setSearchQuery] = useState('');
