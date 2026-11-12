@@ -143,8 +143,23 @@ const VTIMEZONE = [
   'END:VTIMEZONE'
 ];
 
+/**
+ * Reminders for the coach's own phone (the link with ?alertas=1): the day before and 2 hours before each game and
+ * training with a time; 9:00 of the day before for those without one. The parents' link stays without reminders.
+ */
+const reminders = (timed: boolean, title: string): string[] => {
+  const alarm = (trigger: string) => [
+    'BEGIN:VALARM',
+    'ACTION:DISPLAY',
+    `DESCRIPTION:${escapeText(title)}`,
+    `TRIGGER:${trigger}`,
+    'END:VALARM'
+  ];
+  return timed ? [...alarm('-P1D'), ...alarm('-PT2H')] : alarm('-PT15H');
+};
+
 /** The feed as an .ics file (subscribed to by Google Calendar, iPhone, Outlook). */
-export function buildICS(feed: CalendarFeed): string {
+export function buildICS(feed: CalendarFeed, options: { reminders?: boolean } = {}): string {
   const name = `${feed.teamName} · jogos e treinos`;
   const lines = [
     'BEGIN:VCALENDAR',
@@ -171,6 +186,7 @@ export function buildICS(feed: CalendarFeed): string {
     lines.push(`SUMMARY:${escapeText(e.title)}`);
     if (e.location) lines.push(`LOCATION:${escapeText(e.location)}`);
     if (e.description) lines.push(`DESCRIPTION:${escapeText(e.description)}`);
+    if (options.reminders) lines.push(...reminders(Boolean(e.time), e.title));
     lines.push('END:VEVENT');
   });
   lines.push('END:VCALENDAR');

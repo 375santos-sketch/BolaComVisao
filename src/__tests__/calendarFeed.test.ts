@@ -76,6 +76,24 @@ describe('Calendário para os pais', () => {
     expect(ics.endsWith('END:VCALENDAR\r\n')).toBe(true);
   });
 
+  it('lembretes só no link do treinador (?alertas=1): véspera e 2 h antes; sem hora, 9:00 da véspera', () => {
+    const feed = { teamName: 'Dragões Sub-11', events, updatedAt: Date.UTC(2026, 9, 23, 10) };
+    expect(buildICS(feed)).not.toContain('BEGIN:VALARM');
+    const ics = buildICS(feed, { reminders: true });
+    const timed = events.filter((e) => e.time).length;
+    const untimed = events.length - timed;
+    expect(ics.split('BEGIN:VALARM').length - 1).toBe(timed * 2 + untimed);
+    expect(ics.split('TRIGGER:-P1D').length - 1).toBe(timed);
+    expect(ics.split('TRIGGER:-PT2H').length - 1).toBe(timed);
+    expect(ics.split('TRIGGER:-PT15H').length - 1).toBe(untimed);
+    expect(untimed).toBeGreaterThan(0);
+    // Every alarm sits inside an event
+    ics
+      .split('BEGIN:VEVENT')
+      .slice(1)
+      .forEach((ev) => expect(ev.indexOf('END:VALARM')).toBeLessThan(ev.indexOf('END:VEVENT')));
+  });
+
   it('reads the published document as the server receives it (Firestore REST)', () => {
     const rest = {
       fields: {

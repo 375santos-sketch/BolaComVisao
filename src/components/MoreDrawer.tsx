@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AppState } from '../types';
 import { isAppAdmin } from '../services/cloudAuthService';
-import { Button } from './ui/Button';
 import { Icon, IconName } from './ui/Icon';
 import logoImg from '../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { defaultSeason } from '../lib/utils';
@@ -19,10 +18,8 @@ interface MoreDrawerProps {
   onOpenInviteStaff?: () => void;
   onOpenSeasons?: () => void;
   onOpenCareer?: () => void;
-  /** 🔔 Avisos do jogo. */
+  /** 🔔 Avisos no telemóvel. */
   onOpenPushSettings?: () => void;
-  /** 📡 Link do jogo para os pais. */
-  onOpenParentsLink?: () => void;
   /** 🧠 Quadro tático. */
   onOpenTacticsBoard?: () => void;
   /** 🔭 Adversários. */
@@ -35,6 +32,8 @@ interface MoreDrawerProps {
   onOpenSeasonGrowth?: () => void;
   onOpenSignature?: () => void;
   onOpenTour?: () => void;
+  /** 🎨 Aparência: tema, idioma e modo compacto. */
+  onOpenAppearance?: () => void;
   pendingUsersCount?: number;
   onLogout?: () => void;
 }
@@ -52,7 +51,6 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onOpenSeasons,
   onOpenCareer,
   onOpenPushSettings,
-  onOpenParentsLink,
   onOpenTacticsBoard,
   onOpenOpponents,
   onOpenCommunication,
@@ -60,82 +58,142 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
   onOpenSeasonGrowth,
   onOpenSignature,
   onOpenTour,
+  onOpenAppearance,
   pendingUsersCount = 0,
   onLogout
 }) => {
+  // A row with more than one thing inside (Épocas, Equipa técnica, Ajuda) opens its own short list here
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   if (!isOpen) return null;
 
   const isAdmin = isAppAdmin(state.currentUser);
 
-  const handleAction = (cb: () => void) => {
+  const close = () => {
+    setOpenGroup(null);
     onClose();
+  };
+  const handleAction = (cb: () => void) => {
+    close();
     cb();
   };
 
-  type Item = { id?: string; icon: IconName; title: string; detail: string; badge?: string; run: () => void };
+  type Item = {
+    id?: string;
+    icon: IconName;
+    title: string;
+    detail: string;
+    badge?: string;
+    run?: () => void;
+    /** Opens a short list instead of a screen. */
+    children?: Item[];
+    /** A link to a file instead of a button (the app's logo). */
+    download?: { href: string; file: string };
+  };
+  const when = (cond: unknown, item: Item): Item[] => (cond ? [item] : []);
   const career = careerOf(state);
   const careerWarnings = careerStatus(career, new Date().toISOString().slice(0, 10)).warnings;
+  const pending = isAdmin && pendingUsersCount > 0 ? `${pendingUsersCount} pendente` : undefined;
+
+  const seasons: Item[] = [
+    ...when(onOpenSeasons, {
+      icon: 'calendar',
+      title: 'Épocas',
+      detail: `${state.season || defaultSeason()} · ver épocas anteriores`,
+      run: onOpenSeasons
+    }),
+    ...when(onOpenSeasonGrowth, {
+      icon: 'trophy',
+      title: 'Antes e depois da época',
+      detail: 'Fotos da equipa e números da época numa imagem',
+      run: onOpenSeasonGrowth
+    })
+  ];
+  const staff: Item[] = [
+    ...when(onOpenInviteStaff, {
+      icon: 'plus',
+      title: 'Convidar treinador',
+      detail: 'Código ou link para a equipa técnica',
+      run: onOpenInviteStaff
+    }),
+    ...when(isAdmin && onOpenAdminUsers, {
+      icon: 'users',
+      title: 'Utilizadores e acessos',
+      detail: 'Aprovar treinadores e permissões',
+      badge: pending,
+      run: onOpenAdminUsers
+    })
+  ];
+  const help: Item[] = [
+    ...when(onOpenTour, {
+      icon: 'zap',
+      title: 'Visita guiada',
+      detail: 'Onde está cada coisa, em 1 minuto',
+      run: onOpenTour
+    }),
+    {
+      icon: 'clipboard',
+      title: 'Logótipo da app (SVG)',
+      detail: 'Para equipamentos, cartazes e documentos',
+      download: { href: '/bolacomvisao-logo.svg', file: 'bolacomvisao-logo.svg' }
+    },
+    {
+      icon: 'clipboard',
+      title: 'Logótipo da app (SVG alta qualidade)',
+      detail: 'O mesmo, com mais pormenor',
+      download: { href: '/bolacomvisao-logo-hd.svg', file: 'bolacomvisao-logo-hd.svg' }
+    },
+    {
+      icon: 'clipboard',
+      title: 'Logótipo da app (PNG)',
+      detail: 'Imagem de 1024 × 1024',
+      download: { href: '/bolacomvisao-logo.png', file: 'bolacomvisao-logo.png' }
+    }
+  ];
+
+  /** One row, or the only thing inside it when a group has just one (no list with a single line). */
+  const group = (item: Item): Item[] =>
+    !item.children || item.children.length === 0
+      ? item.run
+        ? [item]
+        : []
+      : item.children.length === 1
+        ? item.children
+        : [item];
+
   const groups: { title: string; items: Item[] }[] = [
     {
       title: 'Equipa',
       items: [
-        {
-          id: 'more-drawer-analise-jogos-btn',
-          icon: 'chart',
-          title: 'Análise dos Jogos',
-          detail: 'Gráficos, golos por período, PDF e Excel',
-          run: () => onNavigate('analise_jogos')
-        },
-        ...(onOpenAssistant
-          ? [
-              {
-                icon: 'zap' as IconName,
-                title: 'Assistente',
-                detail: 'Perguntas sobre a equipa e as ferramentas com IA',
-                run: onOpenAssistant
-              }
-            ]
-          : []),
-        ...(onOpenCommunication
-          ? [
-              {
-                icon: 'bell' as IconName,
-                title: 'Comunicação',
-                detail: 'Avisos de alterações e os canais para os pais',
-                run: onOpenCommunication
-              }
-            ]
-          : []),
-        ...(onOpenOpponents
-          ? [
-              {
-                icon: 'search' as IconName,
-                title: 'Adversários',
-                detail: 'Resultados, relatórios e a ficha de cada adversário',
-                run: onOpenOpponents
-              }
-            ]
-          : []),
-        ...(onOpenTacticsBoard
-          ? [
-              {
-                icon: 'whistle' as IconName,
-                title: 'Quadro tático',
-                detail: 'Sistema, posições, setas e estratégias guardadas',
-                run: onOpenTacticsBoard
-              }
-            ]
-          : []),
-        ...(onOpenMonthlyReport
-          ? [
-              {
-                icon: 'calendar' as IconName,
-                title: 'Relatório mensal',
-                detail: 'PDF para o coordenador',
-                run: onOpenMonthlyReport
-              }
-            ]
-          : [])
+        ...when(onOpenAssistant, {
+          icon: 'zap',
+          title: 'Assistente',
+          detail: 'Perguntas sobre a equipa e as ferramentas com IA',
+          run: onOpenAssistant
+        }),
+        ...when(onOpenCommunication, {
+          icon: 'bell',
+          title: 'Comunicação com os pais',
+          detail: 'Avisos, calendário e link do jogo em direto',
+          run: onOpenCommunication
+        }),
+        ...when(onOpenOpponents, {
+          icon: 'search',
+          title: 'Adversários',
+          detail: 'Resultados, relatórios e a ficha de cada adversário',
+          run: onOpenOpponents
+        }),
+        ...when(onOpenTacticsBoard, {
+          icon: 'whistle',
+          title: 'Quadro tático',
+          detail: 'Sistema, posições, setas e estratégias guardadas',
+          run: onOpenTacticsBoard
+        }),
+        ...when(onOpenMonthlyReport, {
+          icon: 'clipboard',
+          title: 'Relatório mensal',
+          detail: 'PDF para o coordenador',
+          run: onOpenMonthlyReport
+        })
       ]
     },
     {
@@ -147,213 +205,182 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
           detail: 'Outros escalões do clube',
           run: () => onNavigate('teams')
         },
-        ...(onOpenSeasons
-          ? [
-              {
-                icon: 'calendar' as IconName,
-                title: 'Épocas',
-                detail: `${state.season || defaultSeason()} · ver épocas anteriores`,
-                run: onOpenSeasons
-              }
-            ]
-          : []),
-        ...(onOpenSeasonGrowth
-          ? [
-              {
-                icon: 'trophy' as IconName,
-                title: 'Antes e depois da época',
-                detail: 'Fotos da equipa e números da época numa imagem',
-                run: onOpenSeasonGrowth
-              }
-            ]
-          : []),
-        ...(onOpenInviteStaff
-          ? [
-              {
-                icon: 'users' as IconName,
-                title: 'Convidar treinador',
-                detail: 'Código ou link para a equipa técnica',
-                run: onOpenInviteStaff
-              }
-            ]
-          : []),
-        ...(isAdmin && onOpenAdminUsers
-          ? [
-              {
-                icon: 'users' as IconName,
-                title: 'Utilizadores e acessos',
-                detail: 'Aprovar treinadores e permissões',
-                badge: pendingUsersCount > 0 ? `${pendingUsersCount} pendente` : undefined,
-                run: onOpenAdminUsers
-              }
-            ]
-          : [])
+        ...group({
+          icon: 'calendar',
+          title: 'Épocas',
+          detail: `${state.season || defaultSeason()} · anteriores · antes e depois`,
+          children: seasons
+        }),
+        ...group({
+          icon: 'users',
+          title: 'Equipa técnica',
+          detail: isAdmin ? 'Convidar treinador · utilizadores e acessos' : 'Convidar treinador',
+          badge: pending,
+          children: staff
+        }),
+        {
+          icon: 'settings',
+          title: 'Definições do clube',
+          detail: 'Nome, emblema, cor, jogos e treinos',
+          run: onOpenSettings
+        }
       ]
     },
     {
-      title: 'Definições',
+      title: 'A minha conta',
       items: [
-        ...(onOpenCareer
-          ? [
-              {
-                icon: 'trophy' as IconName,
-                title: 'A minha carreira',
-                detail: careerWarnings[0] || (career.title ? `${career.title}` : 'Título de treinador e formações'),
-                badge: careerWarnings.length ? 'Atenção' : undefined,
-                run: onOpenCareer
-              }
-            ]
-          : []),
-        ...(onOpenPushSettings
-          ? [
-              {
-                icon: 'zap' as IconName,
-                title: 'Avisos do jogo',
-                detail: 'Início, golos e fim no telemóvel, mesmo com a app fechada',
-                run: onOpenPushSettings
-              }
-            ]
-          : []),
-        ...(onOpenParentsLink
-          ? [
-              {
-                icon: 'users' as IconName,
-                title: 'Link do jogo para os pais',
-                detail: 'Os pais veem o jogo em direto, sem conta nem app',
-                run: onOpenParentsLink
-              }
-            ]
-          : []),
-        ...(onOpenSignature
-          ? [
-              {
-                icon: 'clipboard' as IconName,
-                title: 'Assinatura',
-                detail: 'A tua assinatura nos PDFs',
-                run: onOpenSignature
-              }
-            ]
-          : []),
-        ...(onOpenTour
-          ? [
-              {
-                icon: 'zap' as IconName,
-                title: 'Visita guiada',
-                detail: 'Onde está cada coisa, em 1 minuto',
-                run: onOpenTour
-              }
-            ]
-          : []),
-        {
-          icon: 'database',
-          title: 'Cópias de segurança',
-          detail: 'Guardar e repor os dados',
-          run: onOpenDatabase
-        },
-        {
-          icon: 'settings',
-          title: 'Definições do Clube',
-          detail: 'Nome, cores, escalão, duração das partes',
-          run: onOpenSettings
-        }
+        ...when(onOpenCareer, {
+          icon: 'trophy',
+          title: 'A minha carreira',
+          detail: careerWarnings[0] || (career.title ? `${career.title}` : 'Título de treinador e formações'),
+          badge: careerWarnings.length ? 'Atenção' : undefined,
+          run: onOpenCareer
+        }),
+        ...when(onOpenSignature, {
+          icon: 'clipboard',
+          title: 'Assinatura',
+          detail: 'A tua assinatura nos PDFs',
+          run: onOpenSignature
+        }),
+        ...when(onOpenPushSettings, {
+          icon: 'bell',
+          title: 'Avisos no telemóvel',
+          detail: 'Jogos ao vivo e lembretes da agenda, mesmo com a app fechada',
+          run: onOpenPushSettings
+        }),
+        ...when(onOpenAppearance, {
+          icon: 'sun',
+          title: 'Aparência',
+          detail: 'Tema, modo sol, idioma e modo compacto',
+          run: onOpenAppearance
+        }),
+        { icon: 'database', title: 'Cópias de segurança', detail: 'Guardar e repor os dados', run: onOpenDatabase },
+        { icon: 'search', title: 'Ajuda', detail: 'Visita guiada · logótipo da app', children: help }
       ]
     }
   ];
 
+  const opened = openGroup
+    ? groups.flatMap((g) => g.items).find((i) => i.title === openGroup && i.children)
+    : undefined;
+
+  const row = (item: Item) => {
+    const inner = (
+      <>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-sm bg-ui-brand-soft text-ui-brand">
+          <Icon name={item.icon} className="h-[18px] w-[18px]" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-1.5 text-ui-body font-bold text-ui-text">
+            {item.title}
+            {item.badge && <span className="ui-badge ui-badge-warning">{item.badge}</span>}
+          </span>
+          <span className="block truncate text-ui-caption text-ui-muted">{item.detail}</span>
+        </span>
+        <span aria-hidden className="text-ui-muted">
+          {item.download ? '↓' : '›'}
+        </span>
+      </>
+    );
+    const cls = 'flex w-full items-center gap-3 rounded-ui-sm px-1 py-2.5 text-left hover:bg-ui-surface-2';
+    if (item.download) {
+      return (
+        <a key={item.title} href={item.download.href} download={item.download.file} className={cls}>
+          {inner}
+        </a>
+      );
+    }
+    return (
+      <button
+        key={item.title}
+        id={item.id}
+        type="button"
+        onClick={() => (item.children ? setOpenGroup(item.title) : item.run && handleAction(item.run))}
+        className={cls}
+      >
+        {inner}
+      </button>
+    );
+  };
+
   return (
     <div
-      className="ui-overlay fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn"
-      onClick={onClose}
+      className="ui-overlay fixed inset-0 z-50 flex items-end justify-center p-0 animate-fadeIn sm:items-center sm:p-4"
+      onClick={close}
     >
       <div
-        className="w-full sm:max-w-md bg-slate-950 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl shadow-2xl px-5 pt-4 pb-5 text-left flex flex-col max-h-[85vh] overflow-y-auto animate-slideUp"
+        role="dialog"
+        aria-modal="true"
+        aria-label={opened ? opened.title : 'Mais'}
+        className="ui-card flex max-h-[85vh] w-full flex-col overflow-y-auto rounded-b-none px-5 pb-5 pt-4 text-left animate-slideUp sm:max-w-md sm:rounded-ui-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drawer Header */}
         <div className="flex items-center justify-between gap-3 pb-2">
-          <div className="flex items-center gap-2.5">
-            <img
-              src={logoImg}
-              alt="BolaComVisão"
-              className="w-9 h-9 rounded-xl object-cover border border-cyan-500/40"
-              referrerPolicy="no-referrer"
-            />
-            <div>
-              <h3 className="text-base font-bold text-white">Clube</h3>
-              <p className="text-xs text-slate-400">
-                {state.myClubName || 'BolaComVisão'} · {state.category || 'Sub-19'}
-              </p>
+          {opened ? (
+            <button
+              type="button"
+              onClick={() => setOpenGroup(null)}
+              className="flex items-center gap-2 text-left"
+              aria-label="Voltar ao menu Mais"
+            >
+              <span aria-hidden className="text-ui-lead text-ui-muted">
+                ‹
+              </span>
+              <span>
+                <span className="block text-ui-lead font-extrabold text-ui-text">{opened.title}</span>
+                <span className="block text-ui-caption text-ui-muted">Mais</span>
+              </span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2.5">
+              <img
+                src={logoImg}
+                alt="BolaComVisão"
+                className="h-9 w-9 rounded-ui-sm border border-ui-line object-cover"
+                referrerPolicy="no-referrer"
+              />
+              <div>
+                <h3 className="text-ui-lead font-extrabold text-ui-text">Mais</h3>
+                <p className="text-ui-caption text-ui-muted">
+                  {state.myClubName || 'BolaComVisão'} · {state.category || 'Sub-19'}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
           <button
             type="button"
-            onClick={onClose}
+            onClick={close}
             aria-label="Fechar"
-            className="ui-btn ui-btn-secondary w-9 h-9 flex items-center justify-center"
+            className="ui-btn ui-btn-secondary flex h-9 w-9 items-center justify-center"
           >
-            <Icon name="x" className="w-4 h-4" />
+            <Icon name="x" className="h-4 w-4" />
           </button>
         </div>
 
-        {groups.map(
-          (group) =>
-            group.items.length > 0 && (
-              <section key={group.title} aria-label={group.title} className="pt-3">
-                <h4 className="mb-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">{group.title}</h4>
-                <div className="divide-y divide-slate-800/80">
-                  {group.items.map((item) => (
-                    <button
-                      key={item.title}
-                      id={item.id}
-                      type="button"
-                      onClick={() => handleAction(item.run)}
-                      className="w-full py-2.5 flex items-center gap-3 text-left hover:bg-slate-900/60 rounded-lg"
-                    >
-                      <span className="w-9 h-9 shrink-0 rounded-xl bg-slate-800/80 text-cyan-400 flex items-center justify-center">
-                        <Icon name={item.icon} className="w-[18px] h-[18px]" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-1.5 text-sm font-bold text-white">
-                          {item.title}
-                          {item.badge && (
-                            <span className="rounded-md bg-amber-500/15 px-1.5 text-[10px] font-bold text-amber-300">
-                              {item.badge}
-                            </span>
-                          )}
-                        </span>
-                        <span className="block text-xs text-slate-400 truncate">{item.detail}</span>
-                      </span>
-                      <span className="text-slate-500">›</span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )
+        {opened ? (
+          <div className="divide-y divide-ui-line pt-2">{opened.children!.map(row)}</div>
+        ) : (
+          groups.map(
+            (g) =>
+              g.items.length > 0 && (
+                <section key={g.title} aria-label={g.title} className="pt-3">
+                  <h4 className="mb-1 text-[11px] font-bold uppercase tracking-wide text-ui-muted">{g.title}</h4>
+                  <div className="divide-y divide-ui-line">{g.items.map(row)}</div>
+                </section>
+              )
+          )
         )}
 
-        {/* The app's logo files, for whoever designs posters (administrator only) */}
-        {isAdmin && (
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
-            <span>Logótipo:</span>
-            <a href="/bolacomvisao-logo.svg" download="bolacomvisao-logo.svg" className="text-cyan-400 underline">
-              SVG
-            </a>
-            <a href="/bolacomvisao-logo-hd.svg" download="bolacomvisao-logo-hd.svg" className="text-cyan-400 underline">
-              SVG HD
-            </a>
-            <a href="/bolacomvisao-logo.png" download="bolacomvisao-logo.png" className="text-cyan-400 underline">
-              PNG
-            </a>
-          </div>
-        )}
-
-        {/* Footer / Logout */}
-        {onLogout && (
-          <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-            <div className="text-[11px] font-mono text-slate-400">{state.currentUser?.username}</div>
-            <Button variant="danger" size="xs" icon={<span>🚪</span>} onClick={() => handleAction(onLogout)}>
-              Terminar Sessão
-            </Button>
+        {onLogout && !opened && (
+          <div className="mt-4 flex items-center justify-between border-t border-ui-line pt-3">
+            <div className="text-[11px] text-ui-muted">{state.currentUser?.username}</div>
+            <button
+              type="button"
+              onClick={() => handleAction(onLogout)}
+              className="ui-btn ui-btn-soft-danger px-3 py-1.5 text-ui-caption"
+            >
+              Terminar sessão
+            </button>
           </div>
         )}
       </div>

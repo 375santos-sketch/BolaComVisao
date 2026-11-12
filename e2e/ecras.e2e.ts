@@ -169,7 +169,8 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
     .click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
 
-  await openMore(page, /Análise dos Jogos/);
+  // Análise is in the main menu (no longer repeated in "Mais")
+  await openFromResults(page, 'Análise dos jogos');
   await expect(page.getByText(/ANÁLISE/i).first()).toBeVisible();
 
   // Simplified "Mais" menu: these were removed (21/10/2026)
@@ -181,11 +182,12 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
     /Relatórios da Direção/,
     /Registo de Auditoria/,
     /Sincronização & Nuvem/,
-    /Alertas & Notificações/
+    /Alertas & Notificações/,
+    /Análise dos Jogos/
   ]) {
     await expect(page.getByRole('button', { name: removed })).toHaveCount(0);
   }
-  for (const kept of [/Definições do Clube/, /Cópias de segurança/, /Trocar de equipa/]) {
+  for (const kept of [/Definições do clube/, /Cópias de segurança/, /Trocar de equipa/]) {
     await expect(page.getByRole('button', { name: kept })).toBeVisible();
   }
   await page.keyboard.press('Escape');
@@ -1543,15 +1545,17 @@ test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo',
     })
   );
   await signedIn(page);
-  await openMore(page, /Definições do Clube/);
-  const club = page.getByRole('region', { name: 'Definições do clube' });
+  await openMore(page, /Definições do clube/);
+  const club = page.getByRole('dialog', { name: 'Definições do clube' });
   await club.getByRole('button', { name: 'Vermelho' }).click();
   await expect
     .poll(() =>
       page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--color-cyan-500').trim())
     )
     .toBe('#e23b3b');
-  await club.getByPlaceholder('Ex: Abrantes').fill('Abrantes');
+  await club.getByRole('button', { name: 'Treinos' }).click();
+  await club.getByPlaceholder('Ex.: Abrantes').fill('Abrantes');
+  await club.getByRole('button', { name: 'Jogos' }).click();
   await club.getByLabel('Amarelos para um jogo de castigo').selectOption('4');
   await page
     .getByRole('button', { name: /Fechar|Close/ })
@@ -1655,14 +1659,14 @@ test('agenda: jogos importados de um print do calendário e modo compacto', asyn
   await expect(dialog.getByRole('button', { name: 'Adicionar 0 jogo(s) à Agenda' })).toBeDisabled();
   await dialog.getByRole('button', { name: 'Fechar importar jogos' }).click();
 
-  // Compact mode: on this phone only, kept after reopening the app
-  await openMore(page, /Definições do Clube/);
+  // Compact mode: on this phone only, kept after reopening the app (Mais → A minha conta → Aparência)
+  await openMore(page, /Aparência/);
   await page.getByRole('checkbox', { name: /Modo compacto/ }).check();
   await expect(page.locator('html')).toHaveClass(/compact/);
   await page.reload();
   await expect(page.locator('html')).toHaveClass(/compact/);
   await enterPanel(page);
-  await openMore(page, /Definições do Clube/);
+  await openMore(page, /Aparência/);
   await page.getByRole('checkbox', { name: /Modo compacto/ }).uncheck();
   await expect(page.locator('html')).not.toHaveClass(/compact/);
 });
@@ -1813,7 +1817,7 @@ test('terminar sessão apaga os dados do clube neste aparelho', async ({ page })
     });
   await expect.poll(storedOnDevice).toContain('Rui Silva');
 
-  await openMore(page, /Terminar Sessão/);
+  await openMore(page, /Terminar sessão/);
   await expect(page.getByText('ENTRAR NA PLATAFORMA')).toBeVisible();
   await expect.poll(storedOnDevice).not.toContain('Rui Silva');
 
@@ -2170,7 +2174,8 @@ test('exercício sem explicação para as crianças, assinatura nos PDFs e visit
   await page.getByRole('button', { name: 'Fechar assinatura' }).click();
 
   // 🧭 Guided tour, from Mais
-  await openMore(page, /Visita guiada/);
+  await openMore(page, /^Ajuda/);
+  await page.getByRole('button', { name: /Visita guiada/ }).click();
   const tour = page.getByRole('dialog', { name: 'Visita guiada' });
   await expect(tour).toContainText('Bem-vindo à BolaComVisão');
   await tour.getByRole('button', { name: 'Seguinte →' }).click();
@@ -2433,7 +2438,8 @@ test('antes e depois da época: foto da equipa na nuvem, autorização dos pais 
   page
 }) => {
   await signedIn(page);
-  await openMore(page, /Antes e depois da época/);
+  await openMore(page, /^Épocas/);
+  await page.getByRole('button', { name: /Antes e depois da época/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Antes e depois da época' });
   await dialog.getByLabel('Foto da equipa no início da época').setInputFiles('e2e/fixtures/exercicio.jpg');
   await expect(page.getByText('Foto do início guardada ✓')).toBeVisible();
@@ -2558,7 +2564,9 @@ test('acompanhar ao vivo: o outro treinador vê o jogo a acontecer no telemóvel
 test('link do jogo para os pais: quem tem o link vê o jogo sem conta, sem substituições', async ({ page, browser }) => {
   // The game of the test above is still being played (Treinador A records it)
   await signedIn(page);
-  await openMore(page, /Link do jogo para os pais/);
+  // Mais → Comunicação com os pais → Link do jogo para os pais
+  await openMore(page, /Comunicação com os pais/);
+  await page.getByRole('button', { name: /Link do jogo para os pais/ }).click();
   const share = page.getByRole('dialog', { name: 'Link para os pais' });
   await share.getByRole('button', { name: 'Criar link para os pais' }).click();
   const input = share.getByLabel('Endereço do link');
@@ -2606,8 +2614,8 @@ test('avisos do jogo: cada treinador liga no seu telemóvel; no iPhone primeiro 
   browser
 }) => {
   await signedIn(page);
-  await openMore(page, /Avisos do jogo/);
-  const settings = page.getByRole('dialog', { name: 'Avisos do jogo' });
+  await openMore(page, /Avisos no telemóvel/);
+  const settings = page.getByRole('dialog', { name: 'Avisos no telemóvel' });
   await expect(settings.getByRole('switch', { name: /Receber avisos neste telemóvel/ })).toHaveAttribute(
     'aria-checked',
     'false'
@@ -2615,8 +2623,8 @@ test('avisos do jogo: cada treinador liga no seu telemóvel; no iPhone primeiro 
   for (const option of ['⚽ Início do jogo', '🥅 Golos', '🏁 Fim do jogo'])
     await expect(settings.getByRole('checkbox', { name: new RegExp(option) })).toBeChecked();
   await settings.getByRole('checkbox', { name: /Fim do jogo/ }).uncheck();
-  await settings.getByRole('button', { name: 'Fechar avisos' }).click();
-  await openMore(page, /Avisos do jogo/);
+  await settings.getByRole('button', { name: 'Fechar avisos no telemóvel' }).click();
+  await openMore(page, /Avisos no telemóvel/);
   await expect(settings.getByRole('checkbox', { name: /Fim do jogo/ })).not.toBeChecked();
 
   // On an iPhone, in Safari (app not installed): the steps to add it to the home screen first
@@ -2626,12 +2634,75 @@ test('avisos do jogo: cada treinador liga no seu telemóvel; no iPhone primeiro 
     viewport: { width: 393, height: 852 }
   });
   const phone = await newCoachPage(iphone, COACH_A);
-  await openMore(phone, /Avisos do jogo/);
+  await openMore(phone, /Avisos no telemóvel/);
   const install = phone.getByRole('region', { name: 'Instalar no iPhone' });
   await expect(install).toContainText('Adicionar ao ecrã principal');
   await expect(phone.getByRole('switch')).toHaveCount(0);
   await phone
-    .getByRole('dialog', { name: 'Avisos do jogo' })
+    .getByRole('dialog', { name: 'Avisos no telemóvel' })
     .screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/avisos-iphone.png` : undefined });
   await iphone.close();
+});
+
+test('Mais em 3 grupos, definições por partes e avisos no telemóvel', async ({ page }) => {
+  await signedIn(page);
+  await navTo(page, /clube/i);
+  const more = page.getByRole('dialog', { name: 'Mais' });
+  for (const group of ['Equipa', 'Clube', 'A minha conta'])
+    await expect(more.getByRole('region', { name: group })).toBeVisible();
+  const account = more.getByRole('region', { name: 'A minha conta' });
+  for (const item of [
+    /A minha carreira/,
+    /Assinatura/,
+    /Avisos no telemóvel/,
+    /Aparência/,
+    /Cópias de segurança/,
+    /Ajuda/
+  ])
+    await expect(account.getByRole('button', { name: item })).toBeVisible();
+  // A row with several things opens a short list, and goes back
+  await more.getByRole('button', { name: /^Épocas/ }).click();
+  const seasons = page.getByRole('dialog', { name: 'Épocas' });
+  await expect(seasons.getByRole('button', { name: /Antes e depois da época/ })).toBeVisible();
+  await seasons.getByRole('button', { name: 'Voltar ao menu Mais' }).click();
+  await more.getByRole('button', { name: /^Ajuda/ }).click();
+  await expect(page.getByRole('link', { name: /Logótipo da app \(SVG\)/ })).toHaveAttribute(
+    'href',
+    '/bolacomvisao-logo.svg'
+  );
+  await page.getByRole('button', { name: 'Voltar ao menu Mais' }).click();
+
+  // Definições do clube by parts; times always in 24 h; the administration part only for the administrator
+  await more.getByRole('button', { name: /Definições do clube/ }).click();
+  const settings = page.getByRole('dialog', { name: 'Definições do clube' });
+  const parts = settings.getByRole('navigation', { name: 'Partes das definições' });
+  for (const part of ['Clube', 'Jogos', 'Treinos', 'Dados'])
+    await expect(parts.getByRole('button', { name: part })).toBeVisible();
+  await expect(parts.getByRole('button', { name: 'Administração' })).toHaveCount(0);
+  await parts.getByRole('button', { name: 'Treinos' }).click();
+  const schedule = settings.getByRole('group', { name: 'Horário dos treinos' });
+  const monday = schedule.getByRole('checkbox', { name: 'Segunda' });
+  if (!(await monday.isChecked())) await monday.check();
+  await schedule.getByLabel('Hora do treino de segunda').fill('19:15');
+  await expect(schedule).toContainText('19:15');
+  await expect(schedule).not.toContainText(/PM|AM/);
+  await parts.getByRole('button', { name: 'Dados' }).click();
+  await expect(settings.getByRole('button', { name: 'Exportar JSON Backup' })).toBeVisible();
+  await expect(settings.getByRole('region', { name: 'Limpar a agenda' })).toBeVisible();
+  await settings.getByRole('button', { name: 'Fechar definições do clube' }).click();
+
+  // Avisos no telemóvel: "também dos jogos que eu registo" kept on this phone; reminders in the iPhone's calendar
+  await openMore(page, /Avisos no telemóvel/);
+  const push = page.getByRole('dialog', { name: 'Avisos no telemóvel' });
+  const mine = push.getByRole('switch', { name: /Também dos jogos que eu registo/ });
+  await expect(mine).toHaveAttribute('aria-checked', 'false');
+  await mine.click();
+  await expect(mine).toHaveAttribute('aria-checked', 'true');
+  expect(await page.evaluate(() => localStorage.getItem('bcv_push_also_mine_v1'))).toBe('1');
+  const agenda = push.getByRole('region', { name: 'Lembretes da agenda' });
+  const link = agenda.getByRole('link', { name: /Ligar ao calendário do iPhone/ });
+  if (!(await link.count())) await agenda.getByRole('button', { name: 'Criar o calendário da equipa' }).click();
+  await expect(link).toHaveAttribute('href', /^webcal:\/\/.+\/cal\/[a-zA-Z0-9]{24}\.ics\?alertas=1$/);
+  await expect(agenda).toContainText('Remover alertas');
+  await mine.click();
 });

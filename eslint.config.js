@@ -87,7 +87,13 @@ export default tseslint.config(
       'src/components/views/gameAnalysis/**/*.tsx',
       'src/components/views/coach/**/*.tsx',
       'src/components/views/stats/**/*.tsx',
-      'src/components/stats/**/*.tsx'
+      'src/components/stats/**/*.tsx',
+      // Clube e Definições
+      'src/components/MoreDrawer.tsx',
+      'src/components/SettingsModal.tsx',
+      'src/components/ClubSettingsSection.tsx',
+      'src/components/AppearanceSheet.tsx',
+      'src/components/PushSettingsModal.tsx'
     ],
     rules: {
       'no-restricted-syntax': [

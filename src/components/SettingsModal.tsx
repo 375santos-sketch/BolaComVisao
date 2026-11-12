@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { applyCompact, loadCompact } from '../lib/clubBrand';
-import { applySunMode, useSunMode } from '../lib/sunMode';
+
+type Part = 'clube' | 'jogos' | 'treinos' | 'dados' | 'admin';
 import { ClubSettingsSection } from './ClubSettingsSection';
 import { AppState, NotificationSettings } from '../types';
 import { t } from '../i18n/dict';
@@ -9,6 +9,9 @@ import { parseBackup, restoreFromBackup } from '../lib/backup';
 import { MASTER_ADMIN_EMAIL } from '../lib/constants';
 import { defaultNotificationSettings } from '../lib/notificationEngine';
 import { clearedAgenda } from '../lib/agendaReset';
+import { isAppAdmin } from '../services/cloudAuthService';
+import { Sheet } from './ui/Sheet';
+import { SectionNav } from './ui/SectionNav';
 
 interface SettingsModalProps {
   state: AppState;
@@ -29,8 +32,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenAdminUsers,
   pendingUsersCount = 0
 }) => {
-  const [compact, setCompact] = useState(loadCompact);
-  const sunMode = useSunMode();
+  const isAdmin = isAppAdmin(state.currentUser) && Boolean(onOpenAdminUsers);
+  const [part, setPart] = useState<Part>('clube');
   // Administrator contacts (shown to coaches waiting for approval); stored with the notification settings
   const notifSettings: NotificationSettings = { ...defaultNotificationSettings, ...(state.notificationSettings || {}) };
   const updateNotifSettings = (updates: Partial<NotificationSettings>) =>
@@ -81,337 +84,247 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     e.target.value = '';
   };
 
+  const parts: { id: Part; label: string; short?: string }[] = [
+    { id: 'clube', label: 'Clube' },
+    { id: 'jogos', label: 'Jogos' },
+    { id: 'treinos', label: 'Treinos' },
+    { id: 'dados', label: 'Dados' },
+    ...(isAdmin ? [{ id: 'admin' as Part, label: 'Administração', short: 'Admin' }] : [])
+  ];
+  const choice = (on: boolean) =>
+    `ui-btn flex-1 px-2 py-2 text-ui-caption ${on ? 'ui-btn-primary' : 'ui-btn-secondary'}`;
+  const label = 'block text-ui-caption font-bold text-ui-muted';
+
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="modal-card max-w-md max-h-[90vh] overflow-y-auto scrollbar-thin">
-        <h3 className="text-gold font-semibold text-lg mb-2">{t(state.lang, 'set_title')}</h3>
+    <Sheet title="Definições do clube" onClose={onClose}>
+      <p className="-mt-1 mb-2 text-ui-caption text-ui-muted">Vale para todos os treinadores desta equipa.</p>
+      <SectionNav
+        label="Partes das definições"
+        sections={parts}
+        active={part}
+        onJump={(id) => setPart(id as Part)}
+        fill
+        className="mb-4 rounded-ui-sm bg-ui-surface-2"
+      />
 
-        <div className="field text-left mt-4">
-          <label>{t(state.lang, 'set_club')}</label>
-          <input
-            type="text"
-            placeholder={t(state.lang, 'set_club_ph')}
-            value={state.myClubName || ''}
-            onChange={(e) => onUpdateState({ myClubName: e.target.value })}
-          />
-        </div>
-
-        <ClubSettingsSection state={state} onUpdateState={onUpdateState} onShowToast={onShowToast} />
-
-        <div className="field text-left mt-4">
-          <label>Símbolo / Emblema do Clube</label>
-          <div className="flex items-center gap-3 mt-1 p-2 bg-surface border border-line rounded-xl">
-            <div className="w-10 h-10 rounded-lg bg-surface-2 border border-line flex items-center justify-center overflow-hidden shrink-0">
-              {state.clubLogoUrl ? (
-                <img src={state.clubLogoUrl} alt="Símbolo" className="w-full h-full object-contain" />
-              ) : (
-                <span className="text-lg">🛡️</span>
-              )}
-            </div>
-            <div className="flex-1 flex gap-2 justify-end">
-              <label className="btn btn-outline text-xs py-1 px-2.5 cursor-pointer">
-                📷 {state.clubLogoUrl ? 'Alterar' : 'Carregar'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (evt) => {
-                      const dataUrl = evt.target?.result as string;
-                      if (dataUrl) onUpdateState({ clubLogoUrl: dataUrl });
-                    };
-                    reader.readAsDataURL(file);
-                  }}
-                />
-              </label>
-              {state.clubLogoUrl && (
-                <button
-                  className="btn btn-ghost text-xs py-1 px-2 text-red-400"
-                  onClick={() => onUpdateState({ clubLogoUrl: undefined })}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Download Logo Oficial BolaComVisão Vetorial */}
-          <div className="mt-3 p-3 bg-cyan-950/40 border border-cyan-500/30 rounded-xl space-y-2">
-            <div>
-              <div className="text-xs font-bold text-white font-['Chakra_Petch'] uppercase flex items-center gap-1.5">
-                <span>📐 Logótipo Oficial BolaComVisão</span>
-                <span className="text-[10px] text-cyan-400 bg-cyan-950/80 px-1.5 py-0.2 rounded border border-cyan-500/40 font-mono font-bold">
-                  VETORIAL SVG
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-300 mt-1">
-                Descarregue o logótipo em formato vetorial SVG para guardar no computador ou utilizar em equipamentos,
-                documentos e materiais gráficos.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <a
-                href="/bolacomvisao-logo.svg"
-                download="bolacomvisao-logo.svg"
-                className="py-1.5 px-3 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-['Chakra_Petch'] font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95"
-              >
-                <span>⬇️</span> Descarregar SVG Vetorial
-              </a>
-              <a
-                href="/bolacomvisao-logo-hd.svg"
-                download="bolacomvisao-logo-hd.svg"
-                className="py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 font-['Chakra_Petch'] font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-              >
-                <span>⬇️</span> SVG Alta Fidelidade
-              </a>
-              <a
-                href="/bolacomvisao-logo.png"
-                download="bolacomvisao-logo.png"
-                className="py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-mono text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-              >
-                <span>🖼️</span> PNG (1024×1024)
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div className="field text-left mt-4">
-          <label>{t(state.lang, 'set_lang')}</label>
-          <div className="seg">
-            <div
-              className={`seg-btn ${state.lang === 'pt' ? 'active' : ''}`}
-              onClick={() => onUpdateState({ lang: 'pt' })}
-            >
-              Português
-            </div>
-            <div
-              className={`seg-btn ${state.lang === 'en' ? 'active' : ''}`}
-              onClick={() => onUpdateState({ lang: 'en' })}
-            >
-              English
-            </div>
-          </div>
-        </div>
-
-        <div className="field text-left mt-4">
-          <label>{t(state.lang, 'set_theme')}</label>
-          <div className="seg">
-            <div
-              className={`seg-btn ${!sunMode && state.theme !== 'oceanonoturno' ? 'active' : ''}`}
-              onClick={() => {
-                applySunMode(false);
-                onUpdateState({ theme: 'original' });
-              }}
-            >
-              {t(state.lang, 'set_theme_orig')}
-            </div>
-            <div className={`seg-btn ${sunMode ? 'active' : ''}`} onClick={() => applySunMode(true)}>
-              {t(state.lang, 'set_theme_sun')}
-            </div>
-            <div
-              className={`seg-btn ${!sunMode && state.theme === 'oceanonoturno' ? 'active' : ''}`}
-              onClick={() => {
-                applySunMode(false);
-                onUpdateState({ theme: 'oceanonoturno' });
-              }}
-            >
-              {t(state.lang, 'set_theme_ocean')}
-            </div>
-          </div>
-        </div>
-
-        <label className="flex items-start gap-2 text-left mt-4 text-xs text-slate-300 cursor-pointer">
-          <input
-            type="checkbox"
-            className="mt-0.5"
-            checked={compact}
-            onChange={(e) => {
-              setCompact(e.target.checked);
-              applyCompact(e.target.checked);
-            }}
-          />
-          <span>
-            <strong className="text-white">📏 Modo compacto</strong> (neste telemóvel): listas mais apertadas e letra
-            mais pequena, para ver mais coisas sem andar para baixo.
-          </span>
-        </label>
-
-        <div className="field text-left mt-4">
-          <label>{t(state.lang, 'set_subs')}</label>
-          <div className="seg">
-            <div
-              className={`seg-btn ${state.trackSubs ? 'active' : ''}`}
-              onClick={() => onUpdateState({ trackSubs: true })}
-            >
-              {t(state.lang, 'set_yes')}
-            </div>
-            <div
-              className={`seg-btn ${!state.trackSubs ? 'active' : ''}`}
-              onClick={() => onUpdateState({ trackSubs: false })}
-            >
-              {t(state.lang, 'set_no')}
-            </div>
-          </div>
-          <div className="text-xs text-muted mt-2">{t(state.lang, 'set_subs_desc')}</div>
-        </div>
-
-        {/* Admin Staff & Access Management */}
-        {onOpenAdminUsers && (
-          <div className="mt-6 pt-4 border-t border-cyan-500/20 text-left">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs font-['Chakra_Petch'] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span>🛡️</span>
-                <span>Administração & Acessos de Treinadores</span>
-              </div>
-              {pendingUsersCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-mono text-[10px] font-black animate-pulse">
-                  {pendingUsersCount} Pendente{pendingUsersCount > 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] font-mono text-slate-400 mb-3">
-              Autorize novos registos para a base de dados do clube, atribua funções e receba alertas de novos pedidos.
-            </p>
-
-            <div className="ui-card space-y-2 mb-3 p-3">
-              <div className="text-[11px] font-['Chakra_Petch'] font-bold text-cyan-300 uppercase">
-                Contactos do Administrador para Notificações:
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[10px] font-mono text-slate-400 mb-1">E-mail do Administrador:</label>
-                  <input
-                    type="email"
-                    value={notifSettings.adminContactEmail || MASTER_ADMIN_EMAIL}
-                    onChange={(e) => updateNotifSettings({ adminContactEmail: e.target.value })}
-                    placeholder={MASTER_ADMIN_EMAIL}
-                    className="ui-input w-full text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono text-slate-400 mb-1">
-                    Telemóvel / WhatsApp (com indicativo):
-                  </label>
-                  <input
-                    type="tel"
-                    value={notifSettings.adminContactPhone || ''}
-                    onChange={(e) => updateNotifSettings({ adminContactPhone: e.target.value })}
-                    placeholder="+351 912 345 678"
-                    className="ui-input w-full text-xs"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                onClose();
-                onOpenAdminUsers();
-              }}
-              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-110 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>👥</span>
-              <span>Abrir Painel de Gestão de Treinadores</span>
-              {pendingUsersCount > 0 && <span>({pendingUsersCount} por aprovar)</span>}
-            </button>
-          </div>
-        )}
-
-        {/* Exportação & Cópia de Segurança Section */}
-        <div className="mt-6 pt-4 border-t border-slate-800 text-left">
-          <div className="text-xs font-['Chakra_Petch'] font-bold text-cyan-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <span>💾</span>
-            <span>Exportação & Cópia de Segurança</span>
-          </div>
-          <p className="text-[11px] font-mono text-slate-400 mb-3">
-            Guarde em ficheiro os dados do plantel e jogos ou importe uma cópia de segurança.
-          </p>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => {
-                exportJSONBackup(state);
-                if (onShowToast) onShowToast(t(state.lang, 'msg_bkp_exp'));
-              }}
-              className="ui-btn ui-btn-soft px-2.5 py-2 text-xs text-center"
-            >
-              Exportar JSON Backup
-            </button>
-
-            <button
-              onClick={() => document.getElementById('settings-import-file-input')?.click()}
-              className="ui-btn ui-btn-secondary px-2.5 py-2 text-xs text-center"
-            >
-              Importar JSON Backup
-            </button>
-
-            <button
-              onClick={() => {
-                exportCSVStats(state, state.lang);
-                if (onShowToast) onShowToast(t(state.lang, 'msg_csv_exp'));
-              }}
-              className="ui-btn ui-btn-secondary px-2.5 py-2 text-xs text-center"
-            >
-              Exportar Excel / CSV
-            </button>
-
-            <button
-              onClick={() => {
-                exportTXTReport(state, state.lang);
-                if (onShowToast) onShowToast(t(state.lang, 'msg_txt_exp'));
-              }}
-              className="ui-btn ui-btn-secondary px-2.5 py-2 text-xs text-center"
-            >
-              Relatório TXT
-            </button>
-
+      {part === 'clube' && (
+        <div className="space-y-4">
+          <label className={label}>
+            {t(state.lang, 'set_club')}
             <input
-              type="file"
-              id="settings-import-file-input"
-              accept=".json,application/json"
-              className="hidden"
-              onChange={handleImportFile}
+              type="text"
+              className="ui-input mt-1"
+              placeholder={t(state.lang, 'set_club_ph')}
+              value={state.myClubName || ''}
+              onChange={(e) => onUpdateState({ myClubName: e.target.value })}
             />
+          </label>
+
+          <div>
+            <div className={label}>Símbolo / emblema do clube</div>
+            <div className="mt-1 flex items-center gap-3 rounded-ui-sm border border-ui-line bg-ui-surface-2 p-2">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-ui-sm border border-ui-line bg-ui-surface">
+                {state.clubLogoUrl ? (
+                  <img src={state.clubLogoUrl} alt="Símbolo" className="h-full w-full object-contain" />
+                ) : (
+                  <span className="text-lg">🛡️</span>
+                )}
+              </div>
+              <div className="flex flex-1 justify-end gap-2">
+                <label className="ui-btn ui-btn-secondary cursor-pointer px-2.5 py-1 text-ui-caption">
+                  📷 {state.clubLogoUrl ? 'Alterar' : 'Carregar'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        const dataUrl = evt.target?.result as string;
+                        if (dataUrl) onUpdateState({ clubLogoUrl: dataUrl });
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                </label>
+                {state.clubLogoUrl && (
+                  <button
+                    type="button"
+                    aria-label="Tirar o emblema"
+                    className="ui-btn ui-btn-soft-danger px-2 py-1 text-ui-caption"
+                    onClick={() => onUpdateState({ clubLogoUrl: undefined })}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <ClubSettingsSection state={state} onUpdateState={onUpdateState} onShowToast={onShowToast} part="clube" />
+          <p className="text-ui-caption text-ui-muted">
+            O tema, o modo sol, o idioma e o modo compacto estão agora em Mais → A minha conta → Aparência.
+          </p>
+        </div>
+      )}
+
+      {part === 'jogos' && (
+        <div className="space-y-4">
+          <ClubSettingsSection state={state} onUpdateState={onUpdateState} onShowToast={onShowToast} part="jogos" />
+          <div role="group" aria-label={t(state.lang, 'set_subs')} className="space-y-1.5">
+            <div className={label}>{t(state.lang, 'set_subs')}</div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                aria-pressed={Boolean(state.trackSubs)}
+                className={choice(Boolean(state.trackSubs))}
+                onClick={() => onUpdateState({ trackSubs: true })}
+              >
+                {t(state.lang, 'set_yes')}
+              </button>
+              <button
+                type="button"
+                aria-pressed={!state.trackSubs}
+                className={choice(!state.trackSubs)}
+                onClick={() => onUpdateState({ trackSubs: false })}
+              >
+                {t(state.lang, 'set_no')}
+              </button>
+            </div>
+            <p className="text-ui-caption text-ui-muted">{t(state.lang, 'set_subs_desc')}</p>
           </div>
         </div>
+      )}
 
-        {onShowConfirm && (
-          <div className="mt-6 rounded-xl border border-rose-500/30 p-3 text-left">
-            <div className="text-xs font-bold text-rose-300">Limpar a agenda</div>
-            <p className="mt-1 text-[11px] text-slate-400">
-              Apaga os jogos marcados, os treinos por fazer, as reuniões e as indisponibilidades desta equipa. Os jogos
-              terminados e os treinos feitos ficam.
+      {part === 'treinos' && (
+        <ClubSettingsSection state={state} onUpdateState={onUpdateState} onShowToast={onShowToast} part="treinos" />
+      )}
+
+      {part === 'dados' && (
+        <div className="space-y-4">
+          <section aria-label="Exportação e cópia de segurança" className="space-y-2">
+            <div className="text-ui-body font-bold text-ui-text">Exportação e cópia de segurança</div>
+            <p className="text-ui-caption text-ui-muted">
+              Guarde em ficheiro os dados do plantel e jogos ou importe uma cópia de segurança.
             </p>
-            <button
-              type="button"
-              onClick={() =>
-                onShowConfirm(
-                  'Tem a certeza de que quer limpar a agenda? Os jogos marcados, os treinos por fazer, as reuniões e as indisponibilidades desta equipa são apagados.',
-                  () => {
-                    onUpdateState(clearedAgenda(state));
-                    onShowToast?.('Agenda limpa 📅');
-                  }
-                )
-              }
-              className="ui-btn ui-btn-soft-danger mt-2 px-3 py-2 text-xs"
-            >
-              🗑️ Limpar a agenda
-            </button>
-          </div>
-        )}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  exportJSONBackup(state);
+                  if (onShowToast) onShowToast(t(state.lang, 'msg_bkp_exp'));
+                }}
+                className="ui-btn ui-btn-soft px-2.5 py-2 text-ui-caption"
+              >
+                Exportar JSON Backup
+              </button>
+              <button
+                type="button"
+                onClick={() => document.getElementById('settings-import-file-input')?.click()}
+                className="ui-btn ui-btn-secondary px-2.5 py-2 text-ui-caption"
+              >
+                Importar JSON Backup
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  exportCSVStats(state, state.lang);
+                  if (onShowToast) onShowToast(t(state.lang, 'msg_csv_exp'));
+                }}
+                className="ui-btn ui-btn-secondary px-2.5 py-2 text-ui-caption"
+              >
+                Exportar Excel / CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  exportTXTReport(state, state.lang);
+                  if (onShowToast) onShowToast(t(state.lang, 'msg_txt_exp'));
+                }}
+                className="ui-btn ui-btn-secondary px-2.5 py-2 text-ui-caption"
+              >
+                Relatório TXT
+              </button>
+              <input
+                type="file"
+                id="settings-import-file-input"
+                accept=".json,application/json"
+                className="hidden"
+                onChange={handleImportFile}
+              />
+            </div>
+          </section>
 
-        <button className="btn btn-outline w-full mt-6" onClick={onClose}>
-          {t(state.lang, 'close')}
-        </button>
-      </div>
-    </div>
+          {onShowConfirm && (
+            <section aria-label="Limpar a agenda" className="rounded-ui-sm border border-ui-danger p-3">
+              <div className="text-ui-body font-bold text-ui-danger">Limpar a agenda</div>
+              <p className="mt-1 text-ui-caption text-ui-muted">
+                Apaga os jogos marcados, os treinos por fazer, as reuniões e as indisponibilidades desta equipa. Os
+                jogos terminados e os treinos feitos ficam.
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  onShowConfirm(
+                    'Tem a certeza de que quer limpar a agenda? Os jogos marcados, os treinos por fazer, as reuniões e as indisponibilidades desta equipa são apagados.',
+                    () => {
+                      onUpdateState(clearedAgenda(state));
+                      onShowToast?.('Agenda limpa 📅');
+                    }
+                  )
+                }
+                className="ui-btn ui-btn-soft-danger mt-2 px-3 py-2 text-ui-caption"
+              >
+                🗑️ Limpar a agenda
+              </button>
+            </section>
+          )}
+        </div>
+      )}
+
+      {part === 'admin' && isAdmin && onOpenAdminUsers && (
+        <div className="space-y-4">
+          <p className="text-ui-caption text-ui-muted">
+            Autorize novos registos para a base de dados do clube, atribua funções e receba alertas de novos pedidos.
+          </p>
+          <section aria-label="Contactos do administrador" className="space-y-3">
+            <div className="text-ui-body font-bold text-ui-text">Contactos para os pedidos de acesso</div>
+            <label className={label}>
+              E-mail do administrador
+              <input
+                type="email"
+                value={notifSettings.adminContactEmail || MASTER_ADMIN_EMAIL}
+                onChange={(e) => updateNotifSettings({ adminContactEmail: e.target.value })}
+                placeholder={MASTER_ADMIN_EMAIL}
+                className="ui-input mt-1"
+              />
+            </label>
+            <label className={label}>
+              Telemóvel / WhatsApp (com indicativo)
+              <input
+                type="tel"
+                value={notifSettings.adminContactPhone || ''}
+                onChange={(e) => updateNotifSettings({ adminContactPhone: e.target.value })}
+                placeholder="+351 912 345 678"
+                className="ui-input mt-1"
+              />
+            </label>
+          </section>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              onOpenAdminUsers();
+            }}
+            className="ui-btn ui-btn-primary w-full px-3 py-2.5 text-ui-caption"
+          >
+            👥 Abrir o painel de treinadores
+            {pendingUsersCount > 0 && <span> ({pendingUsersCount} por aprovar)</span>}
+          </button>
+        </div>
+      )}
+    </Sheet>
   );
 };

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AppState } from '../types';
-import { buildCalendarEvents } from '../lib/calendarFeed';
+import { buildCalendarEvents, newCalendarToken } from '../lib/calendarFeed';
 import { hashData } from '../lib/recordSync';
 import { publishCalendar } from '../services/publicCalendar';
 
@@ -12,6 +12,24 @@ export const calendarTeamName = (state: Pick<AppState, 'myClubName' | 'category'
 export function calendarEventsOf(state: AppState, today = new Date()) {
   const from = new Date(today.getTime() - 30 * 86400000).toISOString().slice(0, 10);
   return buildCalendarEvents(state.myClubName || 'A nossa equipa', state.schedule || [], state.trainings || [], from);
+}
+
+/**
+ * Creates the team's calendar link (the same one the parents get): publishes the games and trainings under a new
+ * secret token and returns the teams with that token saved on the active team. Throws when it cannot.
+ */
+export async function createTeamCalendar(state: AppState): Promise<NonNullable<AppState['teams']>> {
+  // Same club workspace as the cloud sync (accounts without a club code use the default "main" club)
+  const clubId = state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined;
+  if (!clubId || !state.activeTeamId) throw new Error('Precisa de ter sessão iniciada na nuvem.');
+  const token = newCalendarToken();
+  await publishCalendar(token, {
+    clubId,
+    teamId: state.activeTeamId,
+    teamName: calendarTeamName(state),
+    events: calendarEventsOf(state)
+  });
+  return (state.teams || []).map((t) => (t.id === state.activeTeamId ? { ...t, calendarToken: token } : t));
 }
 
 /**

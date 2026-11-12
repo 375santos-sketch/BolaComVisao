@@ -26,6 +26,8 @@ export function calendarLinks(token: string, origin = window.location.origin) {
   return {
     https,
     webcal,
-    google: `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcal)}`
+    google: `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcal)}`,
+    /** The coach's own iPhone: the same calendar with reminders the day before and 2 hours before. */
+    reminders: `${webcal}?alertas=1`
   };
 }

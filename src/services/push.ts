@@ -10,6 +10,25 @@ import { AppState, Match } from '../types';
  */
 
 const SAVED = 'bcv_push_sub_v1';
+/** "Também dos jogos que eu registo", kept on this phone (it is the phone recording the game that asks for it). */
+const ALSO_MINE = 'bcv_push_also_mine_v1';
+
+export function loadAlsoMine(): boolean {
+  try {
+    return localStorage.getItem(ALSO_MINE) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function saveAlsoMine(on: boolean) {
+  try {
+    if (on) localStorage.setItem(ALSO_MINE, '1');
+    else localStorage.removeItem(ALSO_MINE);
+  } catch {
+    /* the phone does not keep it: the switch shows off next time */
+  }
+}
 
 /** What this phone can do: notices need an installed app on the iPhone (iOS 16.4 or newer). */
 export function pushSupport() {
@@ -163,7 +182,15 @@ export async function sendNotice(
   const resp = await fetch('/api/avisar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ clubId, teamId, ...message, subscriptions })
+    body: JSON.stringify({
+      clubId,
+      teamId,
+      ...message,
+      subscriptions,
+      // The coach's other phones and tablets too, never this one
+      alsoMine: message.kind !== 'teste' && loadAlsoMine(),
+      fromSubscriptionId: savedSubscriptionId() || undefined
+    })
   });
   const data = await resp.json().catch(() => ({}));
   if (!resp.ok || !data.success) throw new Error(data.error || 'Não foi possível enviar o aviso.');
