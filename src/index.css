@@ -1838,3 +1838,290 @@ html.sol .modo-jogo {
     padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
+
+/* ---------- Escolher Equipa: the way into BolaComVisão (a night stadium drawn with light, no photos) ---------- */
+.teams-hub {
+  isolation: isolate;
+}
+.bcv-stadium {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 40% at 15% -5%, rgb(120 200 255 / 0.5), transparent 60%),
+    radial-gradient(55% 38% at 88% -8%, rgb(120 200 255 / 0.42), transparent 60%),
+    radial-gradient(120% 70% at 50% 0%, #0d2440 0%, #06111f 55%, #030812 100%);
+}
+.bcv-stadium::before {
+  /* the stands: rows of tiny lights and a dark ring */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.035) 0 2px, transparent 2px 9px) 0 20% / 100% 22% no-repeat,
+    linear-gradient(180deg, transparent 0 28%, rgb(10 40 70 / 0.55) 28% 42%, transparent 42%);
+}
+.bcv-beam {
+  position: absolute;
+  top: -12%;
+  width: 34%;
+  height: 80%;
+  background: linear-gradient(180deg, rgb(150 215 255 / 0.18), transparent);
+  filter: blur(8px);
+}
+.bcv-beam-left {
+  left: 4%;
+  transform: rotate(14deg);
+}
+.bcv-beam-right {
+  right: 2%;
+  transform: rotate(-14deg);
+}
+.bcv-pitch {
+  position: absolute;
+  left: -25%;
+  right: -25%;
+  bottom: 0;
+  height: 42%;
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.035) 0 60px, rgb(0 0 0 / 0.05) 60px 120px),
+    linear-gradient(180deg, #0b3b2a 0%, #06261b 60%, #03130d 100%);
+  transform: perspective(500px) rotateX(48deg);
+  transform-origin: bottom;
+  box-shadow: inset 0 30px 60px rgb(0 0 0 / 0.6);
+}
+.bcv-round {
+  display: inline-flex;
+  height: 40px;
+  width: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgb(159 182 204 / 0.25);
+  background: rgb(6 17 31 / 0.7);
+  color: #cfe6ff;
+  backdrop-filter: blur(6px);
+}
+.bcv-chip {
+  border-radius: 999px;
+  border: 1px solid rgb(159 182 204 / 0.3);
+  background: rgb(6 17 31 / 0.6);
+  padding: 7px 13px;
+  font-size: 13px;
+  color: #cfe2f5;
+}
+.bcv-title {
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--color-ui-text);
+  text-shadow: 0 6px 30px rgb(0 0 0 / 0.6);
+}
+.bcv-underline {
+  height: 4px;
+  width: 90px;
+  border-radius: 9px;
+  background: var(--color-ui-brand);
+  box-shadow: 0 0 14px var(--color-ui-brand);
+}
+.bcv-team-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 4px 14px;
+  align-items: center;
+  border-radius: 18px;
+  padding: 14px;
+  cursor: pointer;
+  text-align: left;
+  background: linear-gradient(180deg, rgb(18 34 58 / 0.72), rgb(6 14 26 / 0.86));
+  border: 1px solid rgb(159 182 204 / 0.22);
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(8px);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+.bcv-team-card:hover {
+  transform: translateY(-2px);
+}
+.bcv-team-card.is-chosen {
+  border: 2px solid var(--color-ui-brand);
+  background: linear-gradient(180deg, rgb(14 60 90 / 0.78), rgb(6 20 36 / 0.92));
+  box-shadow:
+    0 0 0 4px rgb(34 211 238 / 0.12),
+    0 0 34px rgb(34 211 238 / 0.32),
+    0 18px 40px rgb(0 0 0 / 0.5);
+}
+.bcv-tick {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  height: 26px;
+  width: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-ui-brand);
+  color: var(--color-ui-bg);
+  font-weight: 900;
+  box-shadow: 0 0 14px var(--color-ui-brand);
+}
+.bcv-emblem {
+  grid-row: span 2;
+  display: flex;
+  height: 72px;
+  width: 62px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
+  clip-path: polygon(50% 0, 100% 14%, 100% 58%, 50% 100%, 0 58%, 0 14%);
+  filter: drop-shadow(0 8px 14px rgb(0 0 0 / 0.5));
+}
+.bcv-emblem:has(img) {
+  background: rgb(255 255 255 / 0.92);
+}
+.bcv-team-stats {
+  grid-column: 2;
+  display: flex;
+  gap: 16px;
+  margin: 4px 0 0;
+}
+.bcv-team-stats > div {
+  display: flex;
+  flex-direction: column-reverse;
+  font-size: 11.5px;
+  color: var(--color-ui-muted);
+}
+.bcv-team-stats dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-ui-text);
+}
+.bcv-team-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.bcv-mini {
+  display: inline-flex;
+  min-width: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgb(159 182 204 / 0.25);
+  background: rgb(6 17 31 / 0.5);
+  font-size: 14px;
+}
+.bcv-new-team {
+  display: flex;
+  min-height: 120px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  border-style: dashed;
+}
+@media (min-width: 640px) {
+  /* Wider screens: the emblem on top, everything centred */
+  .bcv-team-card {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding: 20px 16px 16px;
+    text-align: center;
+  }
+  .bcv-emblem {
+    grid-row: auto;
+    height: 96px;
+    width: 84px;
+    font-size: 30px;
+    margin-bottom: 6px;
+  }
+  .bcv-team-stats {
+    grid-column: 1;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .bcv-team-actions {
+    width: 100%;
+  }
+}
+.bcv-cta {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22d3ee, #38bdf8);
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 900;
+  color: #04121a;
+  box-shadow: 0 10px 30px rgb(34 211 238 / 0.35);
+}
+.bcv-foot {
+  align-items: center;
+  gap: 14px;
+  justify-content: center;
+  color: #8fa6bd;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+}
+.bcv-foot span {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-ui-brand));
+}
+.bcv-foot span:last-child {
+  background: linear-gradient(90deg, var(--color-ui-brand), transparent);
+}
+/* Modo sol: a day stadium, light cards */
+html.sol .bcv-stadium {
+  background:
+    radial-gradient(60% 40% at 18% -5%, rgb(255 255 255 / 0.9), transparent 60%),
+    radial-gradient(120% 60% at 50% 0%, #e8f3fb 0%, #d6e7f3 60%, #cfe3ef 100%);
+}
+html.sol .bcv-stadium::before,
+html.sol .bcv-beam {
+  display: none;
+}
+html.sol .bcv-pitch {
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.18) 0 60px, rgb(0 0 0 / 0.03) 60px 120px),
+    linear-gradient(180deg, #5aa66f, #3f8a55);
+  box-shadow: none;
+}
+html.sol .bcv-team-card {
+  background: rgb(255 255 255 / 0.93);
+  border-color: #c9d8e6;
+  box-shadow: 0 10px 26px rgb(15 40 70 / 0.15);
+}
+html.sol .bcv-team-card.is-chosen {
+  box-shadow: 0 0 0 4px rgb(3 105 161 / 0.15);
+}
+html.sol .bcv-round,
+html.sol .bcv-chip,
+html.sol .bcv-mini {
+  background: #fff;
+  border-color: #c9d8e6;
+  color: #0b1a2b;
+}
+html.sol .bcv-title {
+  text-shadow: none;
+}
+html.sol .bcv-cta {
+  background: #0369a1;
+  color: #fff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bcv-team-card {
+    transition: none;
+  }
+}
