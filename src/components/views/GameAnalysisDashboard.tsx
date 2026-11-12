@@ -1,3 +1,4 @@
+import { AnalysisOverviewTop } from './gameAnalysis/AnalysisOverviewTop';
 import React, { useState, useMemo } from 'react';
 import { datePT } from '../../lib/planningSummary';
 import { TrendsSection } from '../trends/TeamTrends';
@@ -374,6 +375,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
 
       {section === 'equipa' && (
         <div className="space-y-5">
+          <AnalysisOverviewTop matches={analysis.filteredMatches} />
           <AnalysisSummaryCards analysis={analysis} myClub={myClub} />
           <TrendsSection matches={seasonMatches(state)} onPlan={() => onNavigate('treinos')} />
           <InsightsSection insights={analysis.insights} />
