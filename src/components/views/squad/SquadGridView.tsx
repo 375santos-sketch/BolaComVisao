@@ -138,7 +138,7 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4 sm:gap-3">
+              <div className="grid grid-cols-2 gap-2.5 @lg:grid-cols-3 @4xl:grid-cols-4 sm:gap-3">
                 {groupPlayers.map(renderPlayerCard)}
               </div>
             </div>
@@ -158,7 +158,7 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4 sm:gap-3">
+      <div className="grid grid-cols-2 gap-2.5 @lg:grid-cols-3 @4xl:grid-cols-4 sm:gap-3">
         {sortedRoster.map(renderPlayerCard)}
       </div>
     </div>
