@@ -97,6 +97,12 @@ interface NoticeRequest {
   title: string;
   body: string;
   tag: string;
+  /**
+   * "Também dos jogos que eu registo": the other phones and tablets of the coach recording the game get the notice
+   * too (never the phone that sends it, `fromSubscriptionId`).
+   */
+  alsoMine: boolean;
+  fromSubscriptionId?: string;
 }
 
 const ID = /^[A-Za-z0-9_-]{1,128}$/;
@@ -112,7 +118,17 @@ export function cleanNoticeRequest(raw: unknown): NoticeRequest | null {
   const teamId = txt(r.teamId, 128);
   const title = txt(r.title, 80);
   if (!ID.test(clubId) || !ID.test(teamId) || !title) return null;
-  return { clubId, teamId, kind, title, body: txt(r.body, 160), tag: txt(r.tag, 80) || 'bolacomvisao' };
+  const from = txt(r.fromSubscriptionId, 128);
+  return {
+    clubId,
+    teamId,
+    kind,
+    title,
+    body: txt(r.body, 160),
+    tag: txt(r.tag, 80) || 'bolacomvisao',
+    alsoMine: kind !== 'teste' && r.alsoMine === true,
+    fromSubscriptionId: ID.test(from) ? from : undefined
+  };
 }
 
 interface StoredSubscription {
@@ -141,18 +157,19 @@ export function cleanSubscription(id: string, raw: unknown): StoredSubscription 
 }
 
 /**
- * Who gets the notice: the other coaches of the team who want this kind (not the one who sent it). A test notice
- * goes only to the phones of whoever asked for it.
+ * Who gets the notice: the other coaches of the team who want this kind. The one who sent it gets it only on their
+ * other phones and tablets, and only when they asked for it ("Também dos jogos que eu registo"); never on the phone
+ * that sends it. A test notice goes only to the phones of whoever asked for it.
  */
 export function subscriptionsToNotify(
   subs: StoredSubscription[],
   senderUid: string,
-  notice: Pick<NoticeRequest, 'kind' | 'teamId'>
+  notice: Pick<NoticeRequest, 'kind' | 'teamId'> & Partial<Pick<NoticeRequest, 'alsoMine' | 'fromSubscriptionId'>>
 ): StoredSubscription[] {
   if (notice.kind === 'teste') return subs.filter((s) => s.uid === senderUid);
   return subs.filter(
     (s) =>
-      s.uid !== senderUid &&
+      (s.uid !== senderUid || (notice.alsoMine === true && s.id !== notice.fromSubscriptionId)) &&
       s.prefs[notice.kind as PushKind] &&
       (s.teamIds.length === 0 || s.teamIds.includes(notice.teamId))
   );

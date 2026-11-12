@@ -465,7 +465,8 @@ async function startServer() {
       if (!feed) return res.status(404).type('text/plain').send('Calendário não encontrado.');
       res.set('Cache-Control', 'public, max-age=900');
       res.set('Content-Disposition', 'inline; filename="calendario.ics"');
-      return res.type('text/calendar; charset=utf-8').send(buildICS(feed));
+      // ?alertas=1: the coach's own link, with reminders (the day before and 2 hours before)
+      return res.type('text/calendar; charset=utf-8').send(buildICS(feed, { reminders: req.query.alertas === '1' }));
     } catch (err) {
       console.error('Erro na rota /cal:', err);
       return res.status(502).type('text/plain').send('Calendário temporariamente indisponível.');

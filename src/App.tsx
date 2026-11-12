@@ -73,6 +73,7 @@ const PreMatchView = lazyWithRetry(() => import('./components/views/PreMatchView
 // Modals
 import { AdminUsersModal } from './components/AdminUsersModal';
 import { SettingsModal } from './components/SettingsModal';
+import { AppearanceSheet } from './components/AppearanceSheet';
 import { TeamInviteModal } from './components/TeamInviteModal';
 import { SeasonSelectorModal } from './components/SeasonSelectorModal';
 import { NotificationModal } from './components/NotificationModal';
@@ -154,6 +155,7 @@ export default function App() {
   // Modals & Overlay state
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showDatabase, setShowDatabase] = useState<boolean>(false);
+  const [showAppearance, setShowAppearance] = useState<boolean>(false);
   const [showMonthlyReport, setShowMonthlyReport] = useState<boolean>(false);
   const [showCareer, setShowCareer] = useState<boolean>(false);
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
@@ -1078,12 +1080,12 @@ export default function App() {
           onOpenCareer={() => setShowCareer(true)}
           onOpenSeasonGrowth={() => setShowSeasonGrowth(true)}
           onOpenPushSettings={() => setShowPushSettings(true)}
-          onOpenParentsLink={() => setShowParentsLink(true)}
           onOpenTacticsBoard={() => setShowTacticsBoard(true)}
           onOpenOpponents={() => setShowOpponents(true)}
           onOpenCommunication={() => setShowCommunication(true)}
           onOpenAssistant={() => setShowAssistantHub(true)}
           onOpenSignature={() => setShowSignature(true)}
+          onOpenAppearance={() => setShowAppearance(true)}
           onOpenTour={() => {
             handleNavigate('home');
             setTourOpen(true);
@@ -1113,7 +1115,12 @@ export default function App() {
         )}
         {showPushSettings && (
           <Suspense fallback={<ViewLoadingFallback />}>
-            <PushSettingsModal state={state} onShowToast={showToast} onClose={() => setShowPushSettings(false)} />
+            <PushSettingsModal
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onClose={() => setShowPushSettings(false)}
+            />
           </Suspense>
         )}
         {showCommunication && (
@@ -1211,6 +1218,10 @@ export default function App() {
               onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
             />
           </Suspense>
+        )}
+
+        {showAppearance && (
+          <AppearanceSheet state={state} onUpdateState={updateState} onClose={() => setShowAppearance(false)} />
         )}
 
         {/* Settings Modal */}

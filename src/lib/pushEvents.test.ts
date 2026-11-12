@@ -71,7 +71,33 @@ describe('avisos do jogo: no servidor', () => {
         body: 'Rui',
         tag: 'jogo-1'
       })
-    ).toEqual({ clubId: 'main', teamId: 'sub11', kind: 'golo', title: '⚽ Golo!', body: 'Rui', tag: 'jogo-1' });
+    ).toEqual({
+      clubId: 'main',
+      teamId: 'sub11',
+      kind: 'golo',
+      title: '⚽ Golo!',
+      body: 'Rui',
+      tag: 'jogo-1',
+      alsoMine: false,
+      fromSubscriptionId: undefined
+    });
+    // "Também dos jogos que eu registo": never for a test notice; a strange id is dropped
+    expect(
+      cleanNoticeRequest({
+        clubId: 'm',
+        teamId: 'a',
+        kind: 'fim',
+        title: 'x',
+        alsoMine: true,
+        fromSubscriptionId: 'tel1'
+      })
+    ).toMatchObject({ alsoMine: true, fromSubscriptionId: 'tel1' });
+    expect(cleanNoticeRequest({ clubId: 'm', teamId: 'a', kind: 'teste', title: 'x', alsoMine: true })).toMatchObject({
+      alsoMine: false
+    });
+    expect(
+      cleanNoticeRequest({ clubId: 'm', teamId: 'a', kind: 'fim', title: 'x', fromSubscriptionId: '../x' })
+    ).toMatchObject({ fromSubscriptionId: undefined });
     expect(cleanNoticeRequest({ clubId: '../x', teamId: 'a', kind: 'golo', title: 'x' })).toBeNull();
     expect(cleanNoticeRequest({ clubId: 'main', teamId: 'a', kind: 'spam', title: 'x' })).toBeNull();
     expect(cleanNoticeRequest(null)).toBeNull();
@@ -103,6 +129,24 @@ describe('avisos do jogo: no servidor', () => {
     expect(subscriptionsToNotify(subs, 'u-bruno', { kind: 'teste', teamId: 'sub11' }).map((s) => s.id)).toEqual([
       'bruno'
     ]);
+  });
+
+  it('também dos jogos que eu registo: os meus outros aparelhos, nunca o que regista', () => {
+    const subs = [
+      sub('bruno-telemovel', 'u-bruno'),
+      sub('bruno-tablet', 'u-bruno'),
+      sub('bruno-pc', 'u-bruno', { golo: false }),
+      sub('adjunto', 'u-adjunto')
+    ];
+    const ids = (alsoMine: boolean) =>
+      subscriptionsToNotify(subs, 'u-bruno', {
+        kind: 'golo',
+        teamId: 'sub11',
+        alsoMine,
+        fromSubscriptionId: 'bruno-telemovel'
+      }).map((s) => s.id);
+    expect(ids(false)).toEqual(['adjunto']);
+    expect(ids(true)).toEqual(['bruno-tablet', 'adjunto']);
   });
 
   it('subscrições incompletas ficam de fora; preferências em falta ficam ligadas', () => {

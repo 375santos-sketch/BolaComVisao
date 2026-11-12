@@ -52,7 +52,11 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({
       () => go('calendario')
     ],
     ['📋 Convocatória por WhatsApp', 'Lista e imagem da convocatória', () => go('convocatoria')],
-    ['🔔 Avisos do jogo', 'Início, golos e fim no telemóvel dos treinadores', () => onOpenPushSettings()],
+    [
+      '🔔 Avisos no telemóvel',
+      'Jogos ao vivo e lembretes da agenda no telemóvel dos treinadores',
+      () => onOpenPushSettings()
+    ],
     ['🔗 Plano para o adjunto', 'O treino de hoje num link (Treinos → Link para o adjunto)', () => go('treinos')]
   ];
 

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { AppState } from '../../../types';
-import { newCalendarToken } from '../../../lib/calendarFeed';
-import { calendarEventsOf, calendarTeamName } from '../../../hooks/useCalendarPublisher';
-import { calendarLinks, publishCalendar, unpublishCalendar } from '../../../services/publicCalendar';
+import { calendarEventsOf, calendarTeamName, createTeamCalendar } from '../../../hooks/useCalendarPublisher';
+import { calendarLinks, unpublishCalendar } from '../../../services/publicCalendar';
 
 interface CalendarShareModalProps {
   state: AppState;
@@ -23,8 +22,6 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
 }) => {
   const team = (state.teams || []).find((t) => t.id === state.activeTeamId);
   const token = team?.calendarToken;
-  // Same club workspace as the cloud sync (accounts without a club code use the default "main" club)
-  const clubId = state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined;
   const [busy, setBusy] = useState(false);
   const links = token ? calendarLinks(token) : null;
   const events = calendarEventsOf(state);
@@ -36,15 +33,13 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
     });
 
   const create = async () => {
-    if (!clubId || !state.activeTeamId) {
+    if (!state.currentUser?.id || !state.activeTeamId) {
       onShowToast('Precisa de ter sessão iniciada na nuvem para partilhar o calendário.');
       return;
     }
     setBusy(true);
-    const fresh = newCalendarToken();
     try {
-      await publishCalendar(fresh, { clubId, teamId: state.activeTeamId, teamName, events });
-      setToken(fresh);
+      onUpdateState({ teams: await createTeamCalendar(state) });
       onShowToast('Link do calendário criado ✓');
     } catch {
       onShowToast('Não foi possível criar o link. Verifique a ligação à internet.');
