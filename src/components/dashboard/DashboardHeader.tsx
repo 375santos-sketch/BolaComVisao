@@ -71,7 +71,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             />
           ) : null}
           <div className="min-w-0 flex-1">
-            <div className="text-[17px] font-black tracking-tight text-ui-text sm:text-[20px]">
+            <div className="truncate text-[17px] font-black tracking-tight text-ui-text sm:text-[20px]">
               BolaCom<span className="text-ui-brand">Visão</span>
             </div>
             <div className="truncate text-ui-caption text-ui-muted">

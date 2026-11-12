@@ -157,7 +157,7 @@ export const ClubView: React.FC<ClubViewProps> = ({
         </button>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-4">
           {groups.map((g) => (
             <section key={g.title} aria-label={g.title}>
