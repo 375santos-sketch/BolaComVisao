@@ -2621,3 +2621,21 @@ html.sol .analysis-tabs > button.is-on,
 html.sol .analysis-row-icon {
   box-shadow: none;
 }
+
+/* ---------- Clube: the crest beside the club's name ---------- */
+.club-crest {
+  display: flex;
+  height: 50px;
+  width: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
+  clip-path: polygon(50% 0, 100% 14%, 100% 58%, 50% 100%, 0 58%, 0 14%);
+}
+.club-crest:has(img) {
+  background: rgb(255 255 255 / 0.92);
+}

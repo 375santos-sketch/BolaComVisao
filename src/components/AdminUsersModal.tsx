@@ -359,89 +359,99 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
 
   return (
     <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border-t sm:border border-cyan-500/30 rounded-t-3xl sm:rounded-3xl w-full max-w-2xl max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden text-left">
-        {/* Modal Header */}
-        <div className="p-4 sm:p-5 border-b border-cyan-500/20 flex items-center justify-between bg-slate-950/80 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/40 flex items-center justify-center text-xl">
-              👥
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold font-['Chakra_Petch'] uppercase tracking-wider text-white flex items-center gap-2">
-                <span>Gestão de Acessos & Treinadores</span>
-                {pendingUsers.length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-mono font-black animate-pulse">
-                    {pendingUsers.length} Novo{pendingUsers.length > 1 ? 's' : ''}
-                  </span>
-                )}
-              </h2>
-              <p className="text-xs font-mono text-cyan-300/70">
-                Aprovação de novos registos e permissões da equipa técnica ({ADMIN_EMAIL})
-              </p>
-            </div>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Equipa técnica e acessos"
+        className="flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-ui-lg border-t border-ui-line bg-ui-surface text-left sm:max-h-[88dvh] sm:rounded-ui-lg sm:border"
+      >
+        {/* Header: what this is, discreetly, and who administers it */}
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-ui-line px-4 py-3.5 sm:px-5">
+          <div className="min-w-0">
+            <h2 className="flex items-center gap-2 text-ui-title font-extrabold text-ui-text">
+              <span className="truncate">Equipa técnica e acessos</span>
+              {pendingUsers.length > 0 && (
+                <span className="ui-badge ui-badge-warning shrink-0">
+                  {pendingUsers.length} {pendingUsers.length > 1 ? 'pedidos' : 'pedido'}
+                </span>
+              )}
+            </h2>
+            <p className="truncate text-ui-caption text-ui-muted">
+              Aprovar registos e definir funções e equipas · {ADMIN_EMAIL}
+            </p>
           </div>
-
           <button
+            type="button"
             onClick={onClose}
-            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-lg"
+            aria-label="Fechar equipa técnica e acessos"
+            className="ui-btn ui-btn-secondary flex h-9 w-9 shrink-0 items-center justify-center"
           >
             ✕
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex bg-slate-950 p-1.5 border-b border-cyan-500/10 shrink-0 gap-1 overflow-x-auto">
+        {/* Tabs */}
+        <div
+          role="tablist"
+          aria-label="Acessos"
+          className="flex shrink-0 gap-1 overflow-x-auto border-b border-ui-line bg-ui-inset p-1.5"
+        >
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'pending'}
             onClick={() => setActiveTab('pending')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
+            className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-ui-sm px-3 py-2 text-ui-caption font-bold transition-colors ${
               activeTab === 'pending'
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.3)]'
-                : 'text-slate-400 hover:text-amber-300 hover:bg-slate-900'
+                ? 'bg-ui-brand text-ui-brand-ink'
+                : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
             }`}
           >
-            <span>⏳ Pendentes</span>
+            Pedidos
             {pendingUsers.length > 0 && (
-              <span
-                className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-black ${
-                  activeTab === 'pending' ? 'bg-slate-950 text-amber-300' : 'bg-amber-500 text-slate-950'
-                }`}
-              >
+              <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ui-warning px-1 text-[10px] font-black text-ui-brand-ink">
                 {pendingUsers.length}
               </span>
             )}
           </button>
-
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'approved'}
             onClick={() => setActiveTab('approved')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
+            className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-ui-sm px-3 py-2 text-ui-caption font-bold transition-colors ${
               activeTab === 'approved'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.3)]'
-                : 'text-slate-400 hover:text-cyan-300 hover:bg-slate-900'
+                ? 'bg-ui-brand text-ui-brand-ink'
+                : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
             }`}
           >
-            <span>✓ Treinadores ({approvedUsers.length})</span>
+            Treinadores ({approvedUsers.length})
           </button>
-
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'new_user'}
             onClick={() => setActiveTab('new_user')}
-            className={`py-2 px-3 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
+            className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-ui-sm px-3 py-2 text-ui-caption font-bold transition-colors ${
               activeTab === 'new_user'
-                ? 'bg-emerald-500 text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
-                : 'text-emerald-400 hover:text-emerald-300 hover:bg-slate-900'
+                ? 'bg-ui-brand text-ui-brand-ink'
+                : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
             }`}
           >
-            <span>➕ Criar Treinador</span>
+            Criar acesso
           </button>
-
           <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'cloud'}
             onClick={() => setActiveTab('cloud')}
-            className={`py-2 px-3 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
+            className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-ui-sm px-3 py-2 text-ui-caption font-bold transition-colors ${
               activeTab === 'cloud'
-                ? 'bg-slate-800 text-cyan-300 border border-cyan-500/40'
-                : 'text-slate-400 hover:text-cyan-300 hover:bg-slate-900'
+                ? 'bg-ui-brand text-ui-brand-ink'
+                : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
             }`}
           >
-            <span>☁️ Nuvem</span>
+            Nuvem
           </button>
         </div>
 
@@ -450,27 +460,25 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
           {/* TAB 1: PENDING REGISTRATIONS */}
           {activeTab === 'pending' && (
             <div>
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 mb-4 text-xs text-amber-200 flex items-start gap-2.5">
+              <div className="bg-ui-warning/10 border border-ui-warning/30 rounded-2xl p-3.5 mb-4 text-xs text-ui-warning flex items-start gap-2.5">
                 <span className="text-base shrink-0">🛡️</span>
                 <div>
-                  <span className="font-bold text-amber-300">Controlo de Acesso pelo Administrador Único:</span> Novos
+                  <span className="font-bold text-ui-warning">Controlo de Acesso pelo Administrador Único:</span> Novos
                   treinadores e membros da equipa técnica que se registem só conseguem aceder à base de dados do clube
                   após a sua autorização expressa.
                 </div>
               </div>
 
               {loading ? (
-                <div className="py-12 text-center text-cyan-300 font-mono text-xs flex flex-col items-center gap-2">
+                <div className="py-12 text-center text-ui-brand font-mono text-xs flex flex-col items-center gap-2">
                   <span className="animate-spin text-2xl">🔄</span>
                   <span>A carregar pedidos na nuvem...</span>
                 </div>
               ) : pendingUsers.length === 0 ? (
                 <div className="ui-inset py-12 text-center p-6">
                   <div className="text-3xl mb-2">✨</div>
-                  <div className="text-sm font-bold text-white font-['Chakra_Petch'] uppercase">
-                    Não há pedidos pendentes
-                  </div>
-                  <p className="text-xs text-slate-400 font-mono mt-1">
+                  <div className="text-sm font-bold text-ui-text uppercase">Não há pedidos pendentes</div>
+                  <p className="text-xs text-ui-muted font-mono mt-1">
                     Todos os registos de treinadores estão autorizados ou tratados.
                   </p>
                 </div>
@@ -505,37 +513,33 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                     return (
                       <div
                         key={user.id}
-                        className="bg-slate-950 border-2 border-amber-500/40 rounded-2xl p-4 transition-all hover:border-amber-400 flex flex-col gap-3.5"
+                        className="bg-ui-inset border-2 border-ui-warning/40 rounded-2xl p-4 transition-all hover:border-ui-warning flex flex-col gap-3.5"
                       >
                         {/* Header & User identity */}
                         <div className="flex items-start justify-between gap-2">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-base font-bold text-white font-['Chakra_Petch']">
-                                👤 {user.name}
-                              </span>
-                              <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono uppercase font-bold">
+                              <span className="text-base font-bold text-ui-text">👤 {user.name}</span>
+                              <span className="px-2 py-0.5 rounded-full bg-ui-warning/20 text-ui-warning border border-ui-warning/40 text-[10px] font-mono uppercase font-bold">
                                 ⏳ Pendente
                               </span>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-xs font-mono">
-                              <div className="text-slate-300">
+                              <div className="text-ui-text">
                                 📧 Email:{' '}
-                                <span className="text-cyan-300 font-bold">{user.email || 'Não indicado'}</span>
+                                <span className="text-ui-brand font-bold">{user.email || 'Não indicado'}</span>
                               </div>
-                              <div className="text-slate-300">
-                                👤 Utilizador: <span className="text-white font-bold">@{user.username}</span>
+                              <div className="text-ui-text">
+                                👤 Utilizador: <span className="text-ui-text font-bold">@{user.username}</span>
                               </div>
-                              <div className="text-slate-300">
+                              <div className="text-ui-text">
                                 👨‍💼 Função pretendida:{' '}
-                                <span className="text-amber-300 font-bold">{user.role || 'Treinador'}</span>
+                                <span className="text-ui-warning font-bold">{user.role || 'Treinador'}</span>
                               </div>
-                              <div className="text-slate-400 text-[11px]">
+                              <div className="text-ui-muted text-[11px]">
                                 📅 Data do registo:{' '}
-                                <span className="text-slate-200">
-                                  {new Date(user.createdAt).toLocaleString('pt-PT')}
-                                </span>
+                                <span className="text-ui-text">{new Date(user.createdAt).toLocaleString('pt-PT')}</span>
                               </div>
                             </div>
                           </div>
@@ -581,7 +585,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                         <div className="ui-card p-3 space-y-3">
                           {/* Role Selection */}
                           <div>
-                            <label className="block text-[11px] font-mono text-cyan-300 font-bold mb-1">
+                            <label className="block text-[11px] font-mono text-ui-brand font-bold mb-1">
                               🏷️ Função Técnica a Atribuir:
                             </label>
                             <select
@@ -599,7 +603,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
 
                           {/* Teams / Squads Access Selection */}
                           <div>
-                            <label className="block text-[11px] font-mono text-cyan-300 font-bold mb-1.5">
+                            <label className="block text-[11px] font-mono text-ui-brand font-bold mb-1.5">
                               🛡️ Equipas / Escalões a que terá acesso:
                             </label>
 
@@ -609,8 +613,8 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                 onClick={() => toggleTeamAccess('all')}
                                 className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all border cursor-pointer ${
                                   isAllTeams
-                                    ? 'bg-cyan-500 text-slate-950 font-bold border-cyan-400 shadow-[0_0_8px_rgba(0,210,255,0.4)]'
-                                    : 'bg-slate-950 text-slate-400 border-slate-700 hover:border-slate-500'
+                                    ? 'bg-ui-brand text-ui-brand-ink font-bold border-ui-brand shadow-[0_0_8px_rgba(0,210,255,0.4)]'
+                                    : 'bg-ui-inset text-ui-muted border-ui-line-strong hover:border-ui-line-strong'
                                 }`}
                               >
                                 {isAllTeams ? '✓ Todas as Equipas (Acesso Total)' : 'Todas as Equipas'}
@@ -625,8 +629,8 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                     onClick={() => toggleTeamAccess(t.id)}
                                     className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all border cursor-pointer ${
                                       isSelected
-                                        ? 'bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
-                                        : 'bg-slate-950 text-slate-300 border-slate-700 hover:border-slate-500'
+                                        ? 'bg-ui-success text-ui-brand-ink font-bold border-ui-success shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+                                        : 'bg-ui-inset text-ui-text border-ui-line-strong hover:border-ui-line-strong'
                                     }`}
                                   >
                                     {isSelected ? `✓ ${t.category || t.clubName}` : t.category || t.clubName}
@@ -642,7 +646,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                           <button
                             onClick={() => handleApprove(user)}
                             disabled={isProcessing}
-                            className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                            className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-ui-success to-ui-success hover:from-ui-success hover:to-ui-success text-ui-brand-ink font-black text-xs uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                           >
                             {isProcessing ? 'A processar...' : '✅ Autorizar Acesso'}
                           </button>
@@ -670,55 +674,53 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
             <div className="space-y-4">
               {/* Summary Metrics Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+                <div className="bg-ui-warning/10 border border-ui-warning/30 rounded-2xl p-3 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-ui-warning/20 border border-ui-warning/40 flex items-center justify-center text-xl shrink-0">
                     👑
                   </div>
                   <div>
-                    <div className="text-[10px] font-mono text-amber-300 font-bold uppercase tracking-wider">
+                    <div className="text-[10px] font-mono text-ui-warning font-bold uppercase tracking-wider">
                       Administradores
                     </div>
-                    <div className="text-sm font-bold text-white font-['Chakra_Petch']">
+                    <div className="text-sm font-bold text-ui-text">
                       {adminUsers.length} Administrador{adminUsers.length === 1 ? '' : 'es'}
                     </div>
-                    <div className="text-[10px] font-mono text-amber-200/70 truncate max-w-[140px]">{ADMIN_EMAIL}</div>
+                    <div className="text-[10px] font-mono text-ui-warning/70 truncate max-w-[140px]">{ADMIN_EMAIL}</div>
                   </div>
                 </div>
 
-                <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-2xl p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-xl shrink-0">
+                <div className="bg-ui-brand/10 border border-ui-brand/30 rounded-2xl p-3 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-ui-brand/20 border border-ui-brand/40 flex items-center justify-center text-xl shrink-0">
                     ⚽
                   </div>
                   <div>
-                    <div className="text-[10px] font-mono text-cyan-300 font-bold uppercase tracking-wider">
+                    <div className="text-[10px] font-mono text-ui-brand font-bold uppercase tracking-wider">
                       Treinadores Ativos
                     </div>
-                    <div className="text-sm font-bold text-white font-['Chakra_Petch']">
+                    <div className="text-sm font-bold text-ui-text">
                       {coachUsers.length} Treinador{coachUsers.length === 1 ? '' : 'es'}
                     </div>
-                    <div className="text-[10px] font-mono text-cyan-200/70">Equipa Técnica em Campo</div>
+                    <div className="text-[10px] font-mono text-ui-brand/70">Equipa Técnica em Campo</div>
                   </div>
                 </div>
 
-                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
+                <div className="bg-ui-success/10 border border-ui-success/30 rounded-2xl p-3 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-ui-success/20 border border-ui-success/40 flex items-center justify-center text-xl shrink-0">
                     🛡️
                   </div>
                   <div>
-                    <div className="text-[10px] font-mono text-emerald-300 font-bold uppercase tracking-wider">
+                    <div className="text-[10px] font-mono text-ui-success font-bold uppercase tracking-wider">
                       Total de Acessos
                     </div>
-                    <div className="text-sm font-bold text-white font-['Chakra_Petch']">
-                      {approvedUsers.length} Autorizados
-                    </div>
-                    <div className="text-[10px] font-mono text-emerald-200/70">Base Nuvem Partilhada</div>
+                    <div className="text-sm font-bold text-ui-text">{approvedUsers.length} Autorizados</div>
+                    <div className="text-[10px] font-mono text-ui-success/70">Base Nuvem Partilhada</div>
                   </div>
                 </div>
               </div>
 
               {/* Strict Rule Notice */}
-              <div className="ui-inset px-3 py-2 text-[11px] font-mono text-slate-300 flex items-center gap-2">
-                <span className="text-amber-400 font-bold">🔒 Gestão de Permissões:</span>
+              <div className="ui-inset px-3 py-2 text-[11px] font-mono text-ui-text flex items-center gap-2">
+                <span className="text-ui-warning font-bold">🔒 Gestão de Permissões:</span>
                 <span>
                   O Administrador Principal é <strong>inviolável</strong> ({ADMIN_EMAIL}). Podem ser promovidos outros
                   Treinadores a Administrador com acesso total.
@@ -727,7 +729,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
 
               {/* Section 1: Master Administrator Account */}
               <div className="space-y-2">
-                <div className="text-xs font-bold text-amber-300 font-['Chakra_Petch'] uppercase tracking-wider flex items-center gap-1.5">
+                <div className="text-xs font-bold text-ui-warning uppercase tracking-wider flex items-center gap-1.5">
                   <span>👑</span>
                   <span>
                     Administrador{adminUsers.length === 1 ? ' do Clube (1)' : `es do Clube (${adminUsers.length})`}
@@ -741,25 +743,25 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                   return (
                     <div
                       key={user.id}
-                      className="bg-slate-950 border-2 border-amber-500/40 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      className="bg-ui-inset border-2 border-ui-warning/40 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-lg shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-ui-warning/20 border border-ui-warning/50 flex items-center justify-center text-lg shrink-0">
                           👑
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-bold text-white font-['Chakra_Petch']">{user.name}</span>
-                            <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-mono font-black">
+                            <span className="text-sm font-bold text-ui-text">{user.name}</span>
+                            <span className="px-2 py-0.5 rounded-full bg-ui-warning text-ui-brand-ink text-[10px] font-mono font-black">
                               {isMasterAdmin ? 'Administrador Principal' : 'Administrador'}
                             </span>
                             {isCurrentUser && (
-                              <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[9px] font-mono">
+                              <span className="px-1.5 py-0.2 rounded bg-ui-brand/20 text-ui-brand border border-ui-brand/40 text-[9px] font-mono">
                                 A sua Sessão
                               </span>
                             )}
                           </div>
-                          <div className="text-xs font-mono text-cyan-300/80 mt-0.5">
+                          <div className="text-xs font-mono text-ui-brand/80 mt-0.5">
                             {user.email || ADMIN_EMAIL} · Acesso Total e Gestão de Autorizações
                           </div>
                         </div>
@@ -767,7 +769,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
 
                       <div className="flex items-center gap-2 self-end sm:self-center">
                         {isMasterAdmin ? (
-                          <span className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono font-bold flex items-center gap-1">
+                          <span className="px-3 py-1.5 rounded-xl bg-ui-warning/10 border border-ui-warning/30 text-ui-warning text-xs font-mono font-bold flex items-center gap-1">
                             <span>🔒</span>
                             <span>Inviolável</span>
                           </span>
@@ -791,7 +793,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
 
               {isAdmin && coachUsers.length > 0 && (
                 <div className="ui-inset p-3">
-                  <div className="text-xs font-bold text-amber-300 font-['Chakra_Petch'] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <div className="text-xs font-bold text-ui-warning uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <span>👑</span>
                     <span>Promover a Administrador</span>
                   </div>
@@ -813,12 +815,12 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
 
               {/* Section 2: Active Coaches & Technical Staff */}
               <div className="space-y-2 pt-2">
-                <div className="text-xs font-bold text-cyan-300 font-['Chakra_Petch'] uppercase tracking-wider flex items-center justify-between">
+                <div className="text-xs font-bold text-ui-brand uppercase tracking-wider flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span>⚽</span>
                     <span>Equipa Técnica & Treinadores Ativos ({coachUsers.length})</span>
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400 font-normal">
+                  <span className="text-[10px] font-mono text-ui-muted font-normal">
                     {coachUsers.length === 2
                       ? '2 Treinadores Ativos'
                       : `${coachUsers.length} Registado${coachUsers.length === 1 ? '' : 's'}`}
@@ -826,7 +828,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                 </div>
 
                 {coachUsers.length === 0 ? (
-                  <div className="ui-inset p-5 text-center text-xs text-slate-400 font-mono">
+                  <div className="ui-inset p-5 text-center text-xs text-ui-muted font-mono">
                     Ainda não existem treinadores adicionais autorizados. Quando outros treinadores se registarem,
                     aprove-os na aba <strong>Pedidos Pendentes</strong>.
                   </div>
@@ -864,22 +866,22 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                       <div key={user.id} className="ui-inset p-4 flex flex-col gap-3 transition-all">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-lg shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-ui-brand-soft border border-ui-brand/40 flex items-center justify-center text-lg shrink-0">
                               ⚽
                             </div>
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-sm font-bold text-white font-['Chakra_Petch']">{user.name}</span>
+                                <span className="text-sm font-bold text-ui-text">{user.name}</span>
                                 {isCurrentUser && (
-                                  <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[9px] font-mono">
+                                  <span className="px-1.5 py-0.2 rounded bg-ui-brand/20 text-ui-brand border border-ui-brand/40 text-[9px] font-mono">
                                     Você
                                   </span>
                                 )}
-                                <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-mono">
+                                <span className="px-1.5 py-0.2 rounded bg-ui-success/20 text-ui-success border border-ui-success/40 text-[9px] font-mono">
                                   ✓ Treinador Ativo
                                 </span>
                               </div>
-                              <div className="text-xs font-mono text-slate-400 mt-0.5">
+                              <div className="text-xs font-mono text-ui-muted mt-0.5">
                                 @{user.username} {user.email ? `· ${user.email}` : ''}
                               </div>
                             </div>
@@ -924,9 +926,9 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                         </div>
 
                         {/* Team Access Badges / Controls */}
-                        <div className="w-full pt-2.5 border-t border-slate-900 flex flex-col gap-1.5">
+                        <div className="w-full pt-2.5 border-t border-ui-line flex flex-col gap-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-mono text-cyan-300 font-bold">
+                            <span className="text-[11px] font-mono text-ui-brand font-bold">
                               🛡️ Equipas Autorizadas:
                             </span>
                             {isAdmin && hasTeamChanges && (
@@ -948,8 +950,8 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                   onClick={() => toggleCoachTeam('all')}
                                   className={`px-2 py-0.5 rounded-lg text-[10px] font-mono transition-all border cursor-pointer ${
                                     isAllTeams
-                                      ? 'bg-cyan-500 text-slate-950 font-bold border-cyan-400 shadow-[0_0_8px_rgba(0,210,255,0.4)]'
-                                      : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-600'
+                                      ? 'bg-ui-brand text-ui-brand-ink font-bold border-ui-brand shadow-[0_0_8px_rgba(0,210,255,0.4)]'
+                                      : 'bg-ui-inset text-ui-muted border-ui-line hover:border-ui-line-strong'
                                   }`}
                                 >
                                   {isAllTeams ? '✓ Todas as Equipas (Acesso Total)' : 'Todas as Equipas'}
@@ -963,8 +965,8 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                       onClick={() => toggleCoachTeam(t.id)}
                                       className={`px-2 py-0.5 rounded-lg text-[10px] font-mono transition-all border cursor-pointer ${
                                         isSelected
-                                          ? 'bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
-                                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'
+                                          ? 'bg-ui-success text-ui-brand-ink font-bold border-ui-success shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+                                          : 'bg-ui-inset text-ui-text border-ui-line hover:border-ui-line-strong'
                                       }`}
                                     >
                                       {isSelected ? `✓ ${t.category || t.clubName}` : t.category || t.clubName}
@@ -973,9 +975,9 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                 })}
                               </>
                             ) : userTeams.length === 0 ? (
-                              <span className="text-[11px] text-amber-400 font-mono">⚠️ Nenhuma equipa atribuída</span>
+                              <span className="text-[11px] text-ui-warning font-mono">⚠️ Nenhuma equipa atribuída</span>
                             ) : isAllTeams ? (
-                              <span className="px-2 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono">
+                              <span className="px-2 py-0.5 rounded-md bg-ui-brand-soft border border-ui-brand/40 text-ui-brand text-[10px] font-mono">
                                 Todas as Equipas (Acesso Total)
                               </span>
                             ) : (
@@ -984,7 +986,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                                 return (
                                   <span
                                     key={tid}
-                                    className="px-2 py-0.5 rounded-md bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-[10px] font-mono"
+                                    className="px-2 py-0.5 rounded-md bg-ui-success-soft border border-ui-success/40 text-ui-success text-[10px] font-mono"
                                   >
                                     {t ? t.category || t.clubName : tid}
                                   </span>
@@ -1000,16 +1002,16 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
               </div>
 
               {rejectedUsers.length > 0 && (
-                <div className="pt-4 border-t border-slate-800">
-                  <div className="text-xs font-bold text-slate-400 font-['Chakra_Petch'] uppercase mb-2">
+                <div className="pt-4 border-t border-ui-line">
+                  <div className="text-xs font-bold text-ui-muted uppercase mb-2">
                     Contas Suspensas / Recusadas ({rejectedUsers.length})
                   </div>
                   <div className="space-y-2">
                     {rejectedUsers.map((user) => (
                       <div key={user.id} className="ui-inset p-2.5 flex items-center justify-between text-xs">
                         <div>
-                          <span className="font-bold text-slate-300">{user.name}</span>
-                          <span className="text-slate-500 font-mono ml-2">(@{user.username})</span>
+                          <span className="font-bold text-ui-text">{user.name}</span>
+                          <span className="text-ui-muted font-mono ml-2">(@{user.username})</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -1036,10 +1038,10 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
           {/* TAB 3: CREATE NEW COACH DIRECTLY */}
           {activeTab === 'new_user' && (
             <form onSubmit={handleDirectCreateUser} className="space-y-4">
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3.5 text-xs text-emerald-200 flex items-start gap-2.5">
+              <div className="bg-ui-success/10 border border-ui-success/30 rounded-2xl p-3.5 text-xs text-ui-success flex items-start gap-2.5">
                 <span className="text-base shrink-0">🛡️</span>
                 <div>
-                  <span className="font-bold text-emerald-300">Criação Direta de Conta pelo Administrador:</span> Pode
+                  <span className="font-bold text-ui-success">Criação Direta de Conta pelo Administrador:</span> Pode
                   criar imediatamente o acesso de um treinador ou adjunto com palavra-passe definitiva. O utilizador
                   fica <strong>automaticamente autorizado</strong> e a sua sessão de Administrador permanece 100% ativa.
                 </div>
@@ -1047,7 +1049,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
 
               <div className="ui-inset p-4 space-y-3.5">
                 <div>
-                  <label className="block text-xs font-mono text-cyan-300 font-bold mb-1">
+                  <label className="block text-xs font-mono text-ui-brand font-bold mb-1">
                     Nome Completo do Treinador: *
                   </label>
                   <input
@@ -1062,7 +1064,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-mono text-cyan-300 font-bold mb-1">
+                    <label className="block text-xs font-mono text-ui-brand font-bold mb-1">
                       Email ou Utilizador: *
                     </label>
                     <input
@@ -1076,7 +1078,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-cyan-300 font-bold mb-1">
+                    <label className="block text-xs font-mono text-ui-brand font-bold mb-1">
                       Palavra-passe Inicial: *
                     </label>
                     <input
@@ -1092,7 +1094,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-cyan-300 font-bold mb-1">
+                  <label className="block text-xs font-mono text-ui-brand font-bold mb-1">
                     Função Técnica / Cargo:
                   </label>
                   <select
@@ -1109,7 +1111,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-cyan-300 font-bold mb-1.5">
+                  <label className="block text-xs font-mono text-ui-brand font-bold mb-1.5">
                     Equipas e Escalões com Permissão:
                   </label>
                   <div className="flex flex-wrap gap-1.5">
@@ -1118,8 +1120,8 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                       onClick={() => toggleNewUserTeam('all')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all border cursor-pointer ${
                         newAssignedTeams.includes('all')
-                          ? 'bg-cyan-500 text-slate-950 font-bold border-cyan-400 shadow-[0_0_8px_rgba(0,210,255,0.4)]'
-                          : 'bg-slate-900 text-slate-400 border-slate-700 hover:border-slate-500'
+                          ? 'bg-ui-brand text-ui-brand-ink font-bold border-ui-brand shadow-[0_0_8px_rgba(0,210,255,0.4)]'
+                          : 'bg-ui-surface text-ui-muted border-ui-line-strong hover:border-ui-line-strong'
                       }`}
                     >
                       {newAssignedTeams.includes('all') ? '✓ Todas as Equipas' : 'Todas as Equipas'}
@@ -1134,8 +1136,8 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                           onClick={() => toggleNewUserTeam(t.id)}
                           className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all border cursor-pointer ${
                             isSel
-                              ? 'bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
-                              : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
+                              ? 'bg-ui-success text-ui-brand-ink font-bold border-ui-success shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+                              : 'bg-ui-surface text-ui-text border-ui-line-strong hover:border-ui-line-strong'
                           }`}
                         >
                           {isSel ? `✓ ${t.category || t.clubName}` : t.category || t.clubName}
@@ -1149,7 +1151,7 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
                   <button
                     type="submit"
                     disabled={isCreatingUser}
-                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-ui-success to-ui-success hover:from-ui-success hover:to-ui-success text-ui-brand-ink font-black text-sm uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {isCreatingUser ? (
                       <>
@@ -1172,37 +1174,37 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
           {activeTab === 'cloud' && (
             <div className="space-y-4 text-xs">
               <div className="ui-inset p-4 space-y-3">
-                <div className="flex items-center gap-2 text-sm font-bold text-white font-['Chakra_Petch']">
+                <div className="flex items-center gap-2 text-sm font-bold text-ui-text">
                   <span>☁️ Base de Dados Partilhada do Clube</span>
                 </div>
-                <p className="text-slate-300 leading-relaxed">
+                <p className="text-ui-text leading-relaxed">
                   Todos os treinadores autorizados trabalham na mesma base de dados centralizada do clube. As alterações
                   feitas em qualquer dispositivo (plantel, convocatórias, treinos, presenças, relatórios de jogos e
                   prancha tática) são sincronizadas em tempo real.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800 font-mono text-[11px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-ui-line font-mono text-[11px]">
                   <div className="ui-card p-2.5">
-                    <span className="text-slate-400 block">Segurança:</span>
-                    <span className="text-emerald-400 font-bold">✓ Autorização Obrigatória por {ADMIN_EMAIL}</span>
+                    <span className="text-ui-muted block">Segurança:</span>
+                    <span className="text-ui-success font-bold">✓ Autorização Obrigatória por {ADMIN_EMAIL}</span>
                   </div>
                   <div className="ui-card p-2.5">
-                    <span className="text-slate-400 block">Sincronização:</span>
-                    <span className="text-cyan-300 font-bold">✓ Firestore Cloud em Tempo Real</span>
+                    <span className="text-ui-muted block">Sincronização:</span>
+                    <span className="text-ui-brand font-bold">✓ Firestore Cloud em Tempo Real</span>
                   </div>
                 </div>
               </div>
 
               <div className="ui-inset p-4 flex items-center justify-between gap-3">
                 <div>
-                  <div className="font-bold text-white font-['Chakra_Petch']">Forçar Sincronização Master</div>
-                  <p className="text-[11px] text-slate-400 font-mono">
+                  <div className="font-bold text-ui-text">Forçar Sincronização Master</div>
+                  <p className="text-[11px] text-ui-muted font-mono">
                     Garante que todos os escalões locais atuais são salvaguardados como a versão principal na Nuvem.
                   </p>
                 </div>
                 <button
                   onClick={handleForceMasterSync}
                   disabled={processingId === 'sync_master'}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold uppercase text-xs hover:brightness-110 active:scale-95 transition-all shrink-0 disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand text-ui-brand-ink font-extrabold uppercase text-xs hover:brightness-110 active:scale-95 transition-all shrink-0 disabled:opacity-50 cursor-pointer"
                 >
                   {processingId === 'sync_master' ? 'A Sincronizar...' : 'Forçar Sync Master 🚀'}
                 </button>
@@ -1212,9 +1214,9 @@ export const AdminUsersModal: React.FC<AdminUsersModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 sm:p-4 border-t border-cyan-500/20 bg-slate-950/95 flex items-center justify-between text-[11px] font-mono text-slate-400 shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_16px_rgba(0,0,0,0.4)]">
+        <div className="p-3.5 sm:p-4 border-t border-ui-brand/20 bg-ui-inset/95 flex items-center justify-between text-[11px] font-mono text-ui-muted shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_16px_rgba(0,0,0,0.4)]">
           <div>
-            Administrador Autorizado: <strong className="text-cyan-300">{ADMIN_EMAIL}</strong>
+            Administrador Autorizado: <strong className="text-ui-brand">{ADMIN_EMAIL}</strong>
           </div>
           <button
             onClick={onClose}

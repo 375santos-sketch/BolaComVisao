@@ -15,7 +15,8 @@ export type TabType =
   | 'jogos'
   | 'stats'
   | 'analise_jogos'
-  | 'plantel';
+  | 'plantel'
+  | 'clube';
 
 export type MainCategory = 'home' | 'equipa' | 'planeamento' | 'performance' | 'mais';
 
@@ -23,7 +24,6 @@ interface NavbarProps {
   currentTab: TabType;
   lang: Language;
   onNavigate: (tab: TabType) => void;
-  onOpenMore: () => void;
   /** Definições (on the computer menu, under Clube). */
   onOpenSettings?: () => void;
   hasActiveMatch: boolean;
@@ -33,7 +33,6 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   currentTab,
   onNavigate,
-  onOpenMore,
   onOpenSettings,
   hasActiveMatch,
   pendingCount = 0
@@ -48,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { key: 'planeamento', label: 'Planeamento', icon: 'calendar', go: () => onNavigate('calendario') },
     // Pré-jogo, jogo ao vivo e estatísticas
     { key: 'performance', label: 'Jogo', icon: 'ball', go: () => onNavigate(hasActiveMatch ? 'jogo' : 'prejogo') },
-    { key: 'mais', label: 'Clube', icon: 'more', go: onOpenMore }
+    { key: 'mais', label: 'Clube', icon: 'more', go: () => onNavigate('clube') }
   ];
 
   return (
@@ -56,7 +55,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       <SideMenu
         currentTab={currentTab}
         onNavigate={onNavigate}
-        onOpenMore={onOpenMore}
         onOpenSettings={onOpenSettings}
         hasActiveMatch={hasActiveMatch}
         pendingCount={pendingCount}
@@ -67,7 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         aria-label="Navegação Principal"
       >
         {items.map((item) => {
-          const active = item.key !== 'mais' && activeCategory === item.key;
+          const active = activeCategory === item.key && (item.key !== 'mais' || currentTab === 'clube');
           return (
             <button
               key={item.key}
@@ -111,7 +109,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 const SideMenu: React.FC<Omit<NavbarProps, 'lang'>> = ({
   currentTab,
   onNavigate,
-  onOpenMore,
   onOpenSettings,
   hasActiveMatch,
   pendingCount = 0
@@ -207,7 +204,12 @@ const SideMenu: React.FC<Omit<NavbarProps, 'lang'>> = ({
         ))}
       </nav>
       <div className="space-y-0.5 border-t border-ui-line px-3 pt-3">
-        <button type="button" onClick={onOpenMore} className={row(false)}>
+        <button
+          type="button"
+          onClick={() => onNavigate('clube')}
+          aria-current={currentTab === 'clube' ? 'page' : undefined}
+          className={row(currentTab === 'clube')}
+        >
           <Icon name="more" className="h-[18px] w-[18px]" />
           <span className="flex-1">Clube</span>
           {pendingCount > 0 && (

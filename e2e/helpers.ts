@@ -41,10 +41,17 @@ export async function newCoachPage(context: BrowserContext, email: string) {
 
 export const navTo = (page: Page, name: RegExp) => page.locator('#navbar').getByRole('button', { name }).click();
 
-/** Opens an item of the "Mais" drawer. */
-export async function openMore(page: Page, item: RegExp) {
+/** Opens the "Mais" menu (team tools and «A minha conta») from the Clube page. */
+export async function openMoreMenu(page: Page) {
   await navTo(page, /clube/i);
-  await page.getByRole('button', { name: item }).first().click();
+  await page.getByRole('button', { name: 'Mais opções' }).click();
+  return page.getByRole('dialog', { name: 'Mais' });
+}
+
+/** Opens an item of the "Mais" menu. */
+export async function openMore(page: Page, item: RegExp) {
+  const more = await openMoreMenu(page);
+  await more.getByRole('button', { name: item }).first().click();
 }
 
 /** The cloud save indicator in the header (data-status: synced, saving, pending, offline, error, local). */
