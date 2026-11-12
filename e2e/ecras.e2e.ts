@@ -1169,6 +1169,7 @@ test('comunicação e assistente: aviso de alteração para os pais e as ferrame
 test('painel: equipa e atleta por época, jogo, confronto e período; exportar para Power BI', async ({ page }) => {
   await signedIn(page);
   await openFromResults(page, 'Estatísticas');
+  await page.getByRole('group', { name: 'Partes da análise' }).getByRole('button', { name: 'Relatórios' }).click();
   await page.getByRole('button', { name: /Abrir painel/ }).click();
   const panel = page.getByRole('dialog', { name: 'Painel de estatísticas' });
   const team = panel.getByRole('region', { name: 'Números da equipa' });
