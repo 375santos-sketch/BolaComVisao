@@ -118,12 +118,36 @@ const CurrentMonth: React.FC<{
   onEditObjectives?: () => void;
 }> = ({ month, objectives, summary, onEditObjectives }) => (
   <section aria-label="Mês atual" className="ui-card p-4">
-    <div className="flex items-baseline justify-between gap-2">
-      <h2 className="text-ui-lead font-extrabold text-ui-text">{longMonth(month)}</h2>
-      <span className="text-ui-caption text-ui-muted">
-        {summary.realized.count} realizados · {summary.scheduled.count} agendados
-        {summary.unclosed.count ? ` · ${summary.unclosed.count} por fechar` : ''}
-      </span>
+    <div className="flex items-center gap-4">
+      {/* Minutes of the month already done, out of all the minutes marked in it (the same rule as everywhere) */}
+      {(() => {
+        const marked = summary.realized.minutes + summary.scheduled.minutes + summary.unclosed.minutes;
+        const share = marked ? Math.round((summary.realized.minutes / marked) * 100) : 0;
+        return (
+          <div
+            className="dash-ring !h-24 !w-24"
+            style={{ '--share': `${share}%` } as React.CSSProperties}
+            role="img"
+            aria-label={`${share}% dos minutos de treino marcados este mês já feitos`}
+          >
+            <div className="!h-[76px] !w-[76px]">
+              <b className="!text-[20px]">{share}%</b>
+              <small>min. feitos</small>
+            </div>
+          </div>
+        );
+      })()}
+      <div className="min-w-0">
+        <h2 className="text-ui-lead font-extrabold text-ui-text">{longMonth(month)}</h2>
+        <p className="text-ui-caption text-ui-muted">
+          Realizados <strong className="text-ui-text">{summary.realized.minutes}&apos;</strong> de{' '}
+          {summary.realized.minutes + summary.scheduled.minutes + summary.unclosed.minutes}&apos; marcados
+        </p>
+        <p className="text-ui-caption text-ui-muted">
+          {summary.realized.count} realizados · {summary.scheduled.count} agendados
+          {summary.unclosed.count ? ` · ${summary.unclosed.count} por fechar` : ''}
+        </p>
+      </div>
     </div>
     <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
       <div className="ui-inset p-3">

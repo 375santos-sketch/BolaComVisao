@@ -2507,3 +2507,27 @@ html.sol .live-head {
     grid-row: auto;
   }
 }
+
+/* ---------- Planeamento: a small pitch (lines only) when a training has no drawing ---------- */
+.mini-pitch {
+  position: relative;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: repeating-linear-gradient(90deg, #1c6b3f 0 12px, #1a6139 12px 24px);
+}
+.mini-pitch::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1.5px solid rgb(255 255 255 / 0.55);
+  border-radius: 2px;
+}
+.mini-pitch::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 50%;
+  border-left: 1.5px solid rgb(255 255 255 / 0.55);
+}

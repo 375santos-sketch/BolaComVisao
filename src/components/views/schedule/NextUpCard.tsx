@@ -1,5 +1,7 @@
 import React from 'react';
-import { ScheduledMatch, Training } from '../../../types';
+import { Exercise, ScheduledMatch, Training } from '../../../types';
+import { MiniPitch } from '../trainings/PlanningCards';
+import { trainingImage } from '../../../lib/trainingImage';
 import { dayLabel, trainingMinutes } from '../../../lib/planningSummary';
 import { Icon, IconName } from '../../ui/Icon';
 
@@ -12,7 +14,9 @@ const Item: React.FC<{
   detail: string;
   onOpen?: () => void;
   empty?: { text: string; action: string; onClick: () => void };
-}> = ({ kicker, icon, tone, title, when, detail, onOpen, empty }) => {
+  /** In place of the icon: the training's pitch (its drawing, or the lines of a pitch). */
+  thumb?: React.ReactNode;
+}> = ({ kicker, icon, tone, title, when, detail, onOpen, empty, thumb }) => {
   const look = tone === 'success' ? 'bg-ui-success-soft text-ui-success' : 'bg-ui-brand-soft text-ui-brand';
   if (empty) {
     return (
@@ -40,9 +44,11 @@ const Item: React.FC<{
       onClick={onOpen}
       className="ui-inset flex w-full items-center gap-3 p-3 text-left transition-colors hover:border-ui-line-strong"
     >
-      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-ui ${look}`} aria-hidden>
-        <Icon name={icon} className="h-5 w-5" />
-      </span>
+      {thumb || (
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-ui ${look}`} aria-hidden>
+          <Icon name={icon} className="h-5 w-5" />
+        </span>
+      )}
       <span className="min-w-0 flex-1">
         <span className="ui-kicker block">{kicker}</span>
         <span className="block truncate text-ui-body font-extrabold text-ui-text">{title}</span>
@@ -65,7 +71,8 @@ export const NextUpCard: React.FC<{
   onOpenGame: (g: ScheduledMatch) => void;
   onNewTraining: () => void;
   onNewGame: () => void;
-}> = ({ training, game, onOpenTraining, onOpenGame, onNewTraining, onNewGame }) => (
+  library?: Exercise[];
+}> = ({ training, game, onOpenTraining, onOpenGame, onNewTraining, onNewGame, library = [] }) => (
   <section aria-label="Próximo" className="grid grid-cols-1 gap-2 md:grid-cols-2">
     {training ? (
       <Item
@@ -84,6 +91,7 @@ export const NextUpCard: React.FC<{
           .filter(Boolean)
           .join(' · ')}
         onOpen={() => onOpenTraining(training)}
+        thumb={<MiniPitch image={trainingImage(training, library)} className="h-12 w-[72px]" />}
       />
     ) : (
       <Item
