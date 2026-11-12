@@ -60,7 +60,7 @@ export const LiveScoreboard: React.FC<{
             {paused ? 'Em pausa' : PHASE[phase] || ''}
           </span>
           <span className="ui-figure text-ui-body text-ui-text">
-            {formatMatchTime(getMatchElapsedMs(match))}
+            <span data-testid="match-clock">{formatMatchTime(getMatchElapsedMs(match))}</span>
             <span className="ml-1 text-ui-caption font-normal text-ui-muted">{minute ? `${minute}'` : ''}</span>
           </span>
         </span>

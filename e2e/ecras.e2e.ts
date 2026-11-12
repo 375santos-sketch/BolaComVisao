@@ -1422,7 +1422,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await page.getByRole('button', { name: 'Confirmar Cartão' }).click();
 
   // ⏸️ The game stops (injury): the clock stops too, and carries on from the same second
-  const clock = page.locator('span.tracking-wider').first();
+  const clock = page.getByTestId('match-clock');
   await page.getByRole('button', { name: '⏸️ Pausa' }).click();
   await expect(page.getByText('Jogo em pausa: o tempo está parado.', { exact: false })).toBeVisible();
   const stopped = await clock.textContent();
