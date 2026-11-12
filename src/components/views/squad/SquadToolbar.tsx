@@ -40,8 +40,12 @@ const MENU_ICONS: Record<string, IconName> = {
   'Limpar o plantel': 'x'
 };
 
-// Available, injured and suspended are the tiles at the top; inactive athletes (rare) keep a small filter here
-const STATUSES: [string, string, string][] = [['inativo', '⏸️', 'inativos']];
+// Available, injured and suspended are the tiles at the top; here the ones who cannot play today (injured or
+// suspended, return dates counted) together, and the inactive athletes (rare)
+const STATUSES: [string, string, string, string][] = [
+  ['indisponivel', '⛔', 'indisponíveis hoje', 'indisponível hoje'],
+  ['inativo', '⏸️', 'inativos', 'inativo']
+];
 
 /**
  * Equipa → Plantel, above the athletes: search, "+ Novo" and the less used actions under "⋯" (PDF, end of season,
@@ -285,7 +289,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
       )}
       <div className="flex items-center gap-1.5 text-xs">
         <div role="group" aria-label="Filtrar por estado" className="flex items-center gap-1 overflow-x-auto">
-          {STATUSES.map(([key, mark, label]) => {
+          {STATUSES.map(([key, mark, label, one]) => {
             const count = statusCounts[key] || 0;
             const on = statusFilter === key;
             if (key !== 'disponivel' && count === 0 && !on) return null;
@@ -300,7 +304,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
                   on ? 'border-ui-line-strong bg-ui-surface-2 text-ui-text' : 'border-transparent text-ui-text'
                 }`}
               >
-                {mark} <strong className="text-ui-text">{count}</strong> {label}
+                {mark} <strong className="text-ui-text">{count}</strong> {count === 1 ? one : label}
               </button>
             );
           })}

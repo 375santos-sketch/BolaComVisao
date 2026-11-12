@@ -801,7 +801,7 @@ export default function App() {
         <InstallPwaBanner />
 
         {/* Main Content Area */}
-        <div className="flex-1 w-full max-w-7xl mx-auto px-2.5 sm:px-6 pt-2 sm:pt-6 overflow-x-hidden">
+        <div className="flex-1 w-full max-w-7xl 2xl:max-w-[1560px] mx-auto px-2.5 sm:px-6 pt-2 sm:pt-6 overflow-x-hidden">
           {cloudSessionLost && state.currentUser && (
             <SessionExpiredBanner user={state.currentUser} onRestored={() => setCloudSaveError(undefined)} />
           )}

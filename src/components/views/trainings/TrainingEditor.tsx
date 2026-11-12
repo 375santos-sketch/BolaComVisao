@@ -192,7 +192,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
 
   return (
     <>
-      <div className="pb-44 max-w-4xl xl:max-w-6xl mx-auto text-left relative">
+      <div className="pb-44 max-w-4xl xl:max-w-6xl 2xl:max-w-none mx-auto text-left relative">
         <Header
           title="Treinos"
           lang={state.lang}
@@ -301,8 +301,9 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
           />
         ) : (
           <>
-            {/* Computer: the session's data and attendance on the left; phases, exercises and pitch on the right */}
-            <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] xl:items-start xl:gap-x-5">
+            {/* Computer: the session's data and attendance on the left; phases, exercises and pitch on the right. On a wide
+                screen, three columns: the session, the plan in the middle, the pitch and attendance on the right */}
+            <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] xl:items-start xl:gap-x-5 2xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.25fr)_minmax(0,1fr)]">
               {/* The session at a glance: when, where and the time of each part */}
               <section
                 aria-label="Resumo da sessão"
@@ -462,7 +463,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
               <section
                 id="sessao-plano"
                 aria-label="Fases e exercícios"
-                className="scroll-mt-36 xl:col-start-2 xl:row-span-2 xl:row-start-1"
+                className="scroll-mt-36 xl:col-start-2 xl:row-span-2 xl:row-start-1 2xl:row-span-3"
               >
                 <TrainingTemplates
                   state={state}
@@ -780,7 +781,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
               <section
                 id="sessao-campo"
                 aria-label="Campo e material"
-                className="scroll-mt-36 mb-4 space-y-3 xl:col-start-2 xl:row-start-3"
+                className="scroll-mt-36 mb-4 space-y-3 xl:col-start-2 xl:row-start-3 2xl:col-start-3 2xl:row-start-1"
               >
                 <div className="ui-card flex flex-wrap items-center justify-between gap-3 p-4">
                   <div>
@@ -817,7 +818,7 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
               <section
                 id="sessao-presencas"
                 aria-label="Presenças"
-                className="scroll-mt-36 xl:col-start-1 xl:row-start-3"
+                className="scroll-mt-36 xl:col-start-1 xl:row-start-3 2xl:col-start-3 2xl:row-start-2"
               >
                 {/* Attendance & Absences Selection Card */}
                 <div className="card mb-4">
@@ -836,37 +837,39 @@ export const TrainingEditor: React.FC<TrainingEditorProps> = ({
                   </div>
 
                   {eligiblePlayers.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                      {eligiblePlayers.map((p) => {
-                        const isAbsent = trainingForm.absences.includes(p.id);
-                        return (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => handleToggleAbsence(p.id)}
-                            className={`p-2.5 rounded-xl border text-left flex items-center justify-between gap-2 transition-all ${
-                              isAbsent
-                                ? 'bg-ui-danger-soft border-ui-danger text-ui-danger shadow-[0_0_10px_rgba(239,68,68,0.2)]'
-                                : 'bg-ui-inset/80 border-ui-brand/30 text-ui-text hover:border-ui-brand'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span
-                                className={`w-5 h-5 rounded-md font-mono font-bold text-[10px] flex items-center justify-center shrink-0 ${
-                                  isAbsent
-                                    ? 'bg-ui-danger-soft text-ui-danger'
-                                    : 'bg-ui-brand-soft text-ui-brand border border-ui-brand/40'
-                                }`}
-                              >
-                                {p.number !== null ? p.number : '—'}
-                              </span>
-                              <span className="text-xs font-['Chakra_Petch'] font-bold truncate">{p.name}</span>
-                            </div>
+                    <div className="@container">
+                      <div className="grid grid-cols-2 gap-2 @lg:grid-cols-3 @3xl:grid-cols-4">
+                        {eligiblePlayers.map((p) => {
+                          const isAbsent = trainingForm.absences.includes(p.id);
+                          return (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => handleToggleAbsence(p.id)}
+                              className={`p-2.5 rounded-xl border text-left flex items-center justify-between gap-2 transition-all ${
+                                isAbsent
+                                  ? 'bg-ui-danger-soft border-ui-danger text-ui-danger shadow-[0_0_10px_rgba(239,68,68,0.2)]'
+                                  : 'bg-ui-inset/80 border-ui-brand/30 text-ui-text hover:border-ui-brand'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span
+                                  className={`w-5 h-5 rounded-md font-mono font-bold text-[10px] flex items-center justify-center shrink-0 ${
+                                    isAbsent
+                                      ? 'bg-ui-danger-soft text-ui-danger'
+                                      : 'bg-ui-brand-soft text-ui-brand border border-ui-brand/40'
+                                  }`}
+                                >
+                                  {p.number !== null ? p.number : '—'}
+                                </span>
+                                <span className="text-xs font-['Chakra_Petch'] font-bold truncate">{p.name}</span>
+                              </div>
 
-                            <span className="text-xs shrink-0 font-bold">{isAbsent ? '❌ Falta' : '🟢 Pres.'}</span>
-                          </button>
-                        );
-                      })}
+                              <span className="text-xs shrink-0 font-bold">{isAbsent ? '❌ Falta' : '🟢 Pres.'}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   ) : (
                     <div className="empty">{t(state.lang, 'pl_none')}</div>
