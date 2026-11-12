@@ -283,15 +283,15 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
   return (
     <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
       <div
-        className={`modal card ${activeTab === 'team_database' ? 'max-w-5xl' : 'max-w-lg'} w-full max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto bg-slate-950 border-t sm:border border-cyan-500/40 rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 text-left pb-[max(1.5rem,env(safe-area-inset-bottom))] scrollbar-thin transition-all`}
+        className={`modal card ${activeTab === 'team_database' ? 'max-w-5xl' : 'max-w-lg'} w-full max-h-[92dvh] sm:max-h-[88dvh] overflow-y-auto bg-ui-inset border-t sm:border border-ui-brand/40 rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 text-left pb-[max(1.5rem,env(safe-area-inset-bottom))] scrollbar-thin transition-all`}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-cyan-500/20">
-          <div className="font-['Chakra_Petch'] font-bold text-base text-cyan-300 uppercase tracking-wider flex items-center gap-2">
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-ui-brand/20">
+          <div className="font-bold text-base text-ui-brand flex items-center gap-2">
             <span>🗃️</span>
             <span>Base de Dados & Equipas</span>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1 text-lg transition-colors">
+          <button onClick={onClose} className="text-ui-muted hover:text-ui-text p-1 text-lg transition-colors">
             ✕
           </button>
         </div>
@@ -301,10 +301,10 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('team_database')}
-            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
               activeTab === 'team_database'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                ? 'bg-ui-brand text-ui-brand-ink shadow-md shadow-ui-brand/20'
+                : 'text-ui-muted hover:text-ui-text hover:bg-ui-surface-2/50'
             }`}
           >
             <span>📊</span>
@@ -313,10 +313,10 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('teams')}
-            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
               activeTab === 'teams'
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                ? 'bg-ui-brand text-ui-brand-ink shadow-md shadow-ui-brand/20'
+                : 'text-ui-muted hover:text-ui-text hover:bg-ui-surface-2/50'
             }`}
           >
             <span>👥</span>
@@ -329,11 +329,11 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
         ) : !isCreating ? (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-slate-300">
+              <span className="text-xs text-ui-text">
                 {teams.length} {teams.length === 1 ? 'Equipa Registada' : 'Equipas / Épocas Registadas'}
               </span>
               <button
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase transition-all hover:brightness-110 active:scale-95"
+                className="px-3 py-1.5 rounded-xl bg-ui-brand text-ui-brand-ink font-bold text-xs transition-all hover:brightness-110 active:scale-95"
                 onClick={() => setIsCreating(true)}
               >
                 + Nova Equipa / Época
@@ -350,10 +350,10 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-base">👥</span>
                   <div>
-                    <div className="text-[11px] font-bold text-white font-['Chakra_Petch'] uppercase group-hover:text-cyan-300 transition-colors">
+                    <div className="text-[11px] font-bold text-ui-text uppercase group-hover:text-ui-brand transition-colors">
                       Importar Plantel Excel
                     </div>
-                    <div className="text-[9px] text-slate-400 font-mono">Ficheiro .xlsx com atletas</div>
+                    <div className="text-[9px] text-ui-muted tabular-nums">Ficheiro .xlsx com atletas</div>
                   </div>
                 </div>
               </button>
@@ -366,10 +366,10 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-base">⚽</span>
                   <div>
-                    <div className="text-[11px] font-bold text-white font-['Chakra_Petch'] uppercase group-hover:text-cyan-300 transition-colors">
+                    <div className="text-[11px] font-bold text-ui-text uppercase group-hover:text-ui-brand transition-colors">
                       Importar Jogos Excel
                     </div>
-                    <div className="text-[9px] text-slate-400 font-mono">Resultados e jornadas</div>
+                    <div className="text-[9px] text-ui-muted tabular-nums">Resultados e jornadas</div>
                   </div>
                 </div>
               </button>
@@ -377,17 +377,17 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
 
             {/* Old list-style Excel imports with invented scorers/starters: offer to clean them */}
             {inventedImports.length > 0 && (
-              <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/40 text-xs text-amber-100 space-y-2">
+              <div className="p-3 rounded-xl bg-ui-warning-soft border border-ui-warning/40 text-xs text-ui-warning space-y-2">
                 <div className="font-bold">
                   ⚠️ {inventedImports.length}{' '}
                   {inventedImports.length === 1 ? 'jogo importado tem' : 'jogos importados têm'} marcadores e titulares
                   inventados
                 </div>
-                <div className="text-[11px] text-amber-200/80">
+                <div className="text-[11px] text-ui-warning/80">
                   Uma versão antiga da importação por Excel inventava marcadores, minutos e titulares. A limpeza mantém
                   o resultado e retira só esses dados.
                 </div>
-                <ul className="text-[11px] font-mono text-amber-200/90">
+                <ul className="text-[11px] tabular-nums text-ui-warning/90">
                   {inventedImports.map((m) => (
                     <li key={m.id}>
                       {datePT(m.date)} · vs {m.opponent}
@@ -499,9 +499,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                 if (isEditing) {
                   return (
                     <div key={team.id} className="ui-card p-3 space-y-2">
-                      <div className="text-xs font-bold font-['Chakra_Petch'] text-cyan-300 uppercase">
-                        Editar Dados da Equipa
-                      </div>
+                      <div className="text-xs font-bold text-ui-brand uppercase">Editar Dados da Equipa</div>
                       <input
                         type="text"
                         placeholder="Nome do Clube"
@@ -556,39 +554,35 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                     key={team.id}
                     className={`p-3 rounded-xl border transition-all ${
                       isActive
-                        ? 'bg-slate-900/90 border-cyan-400 shadow-[0_0_15px_rgba(0,210,255,0.2)]'
-                        : 'bg-slate-950/80 border-slate-800 hover:border-slate-700'
+                        ? 'bg-ui-surface/90 border-ui-brand'
+                        : 'bg-ui-inset/80 border-ui-line hover:border-ui-line-strong'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold font-['Chakra_Petch'] text-sm text-white uppercase">
-                            {currentClubName}
-                          </span>
+                          <span className="font-bold text-sm text-ui-text ">{currentClubName}</span>
                           {isActive && (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-emerald-400 text-[10px] font-mono uppercase">
+                            <span className="px-2 py-0.5 rounded-full bg-ui-success/20 border border-ui-success/50 text-ui-success text-[10px] tabular-nums uppercase">
                               ✓ Ativa no momento
                             </span>
                           )}
                         </div>
 
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-ui-brand-soft border border-ui-brand/30 text-ui-brand text-[10px] tabular-nums">
                             {currentCategory || 'Sub-19'}
                           </span>
-                          <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-300 text-[10px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-ui-surface border border-ui-line-strong text-ui-text text-[10px] tabular-nums">
                             Época {currentSeason || defaultSeason()}
                           </span>
                         </div>
 
-                        <div className="text-[11px] font-mono text-slate-400 mt-2 flex gap-3 flex-wrap items-center">
+                        <div className="text-[11px] tabular-nums text-ui-muted mt-2 flex gap-3 flex-wrap items-center">
                           <span className="flex items-center gap-1">
                             <span>👥</span>
                             <strong
-                              className={
-                                currentRosterLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'
-                              }
+                              className={currentRosterLen > 0 ? 'text-ui-brand font-bold' : 'text-ui-muted font-normal'}
                             >
                               {currentRosterLen}
                             </strong>
@@ -599,7 +593,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                               <span>⚽</span>
                               <strong
                                 className={
-                                  totalMatchesLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'
+                                  totalMatchesLen > 0 ? 'text-ui-brand font-bold' : 'text-ui-muted font-normal'
                                 }
                               >
                                 {totalMatchesLen}
@@ -608,7 +602,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                             </span>
                             {scheduledMatchesCount > 0 && (
                               <span
-                                className="text-[10px] px-1.5 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono font-medium"
+                                className="text-[10px] px-1.5 py-0.5 rounded-md bg-ui-brand-soft border border-ui-brand/40 text-ui-brand tabular-nums font-medium"
                                 title={`${scheduledMatchesCount} ${scheduledMatchesCount === 1 ? 'jogo agendado' : 'jogos agendados'}${playedMatchesCount > 0 ? `, ${playedMatchesCount} já realizados` : ''}`}
                               >
                                 {scheduledMatchesCount} {scheduledMatchesCount === 1 ? 'agendado' : 'agendados'}
@@ -619,7 +613,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                             <span>🏃</span>
                             <strong
                               className={
-                                currentTrainingsLen > 0 ? 'text-cyan-300 font-bold' : 'text-slate-500 font-normal'
+                                currentTrainingsLen > 0 ? 'text-ui-brand font-bold' : 'text-ui-muted font-normal'
                               }
                             >
                               {currentTrainingsLen}
@@ -638,7 +632,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
                             Ativar ➔
                           </button>
                         ) : (
-                          <span className="text-[10px] font-mono text-cyan-400/80">(Em Utilização)</span>
+                          <span className="text-[10px] tabular-nums text-ui-brand/80">(Em Utilização)</span>
                         )}
 
                         <div className="flex gap-1 justify-end mt-1">
@@ -674,12 +668,12 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
         ) : (
           /* Create New Team Form */
           <form onSubmit={handleCreateTeam} className="space-y-3">
-            <div className="font-['Chakra_Petch'] font-bold text-sm text-cyan-300 uppercase pb-1 border-b border-cyan-500/20">
+            <div className="font-bold text-sm text-ui-brand pb-1 border-b border-ui-brand/20">
               ➕ Registar Nova Equipa ou Época
             </div>
 
             <div>
-              <label className="block text-xs text-slate-300 mb-1 font-mono">Nome da Equipa / Clube *</label>
+              <label className="block text-xs text-ui-text mb-1 tabular-nums">Nome da Equipa / Clube *</label>
               <input
                 type="text"
                 required
@@ -692,7 +686,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs text-slate-300 mb-1 font-mono">Categoria / Escalão</label>
+                <label className="block text-xs text-ui-text mb-1 tabular-nums">Categoria / Escalão</label>
                 <input
                   type="text"
                   placeholder="Ex: Sub-19, Seniores, Sub-17..."
@@ -703,7 +697,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs text-slate-300 mb-1 font-mono">Época Desportiva</label>
+                <label className="block text-xs text-ui-text mb-1 tabular-nums">Época Desportiva</label>
                 <input
                   type="text"
                   placeholder="Ex: 2025/2026"
@@ -715,7 +709,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs text-slate-300 mb-1 font-mono">URL do Logo / Emblema (Opcional)</label>
+              <label className="block text-xs text-ui-text mb-1 tabular-nums">URL do Logo / Emblema (Opcional)</label>
               <input
                 type="url"
                 placeholder="https://..."
@@ -726,7 +720,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs text-slate-300 mb-1 font-mono">Início de Plantel</label>
+              <label className="block text-xs text-ui-text mb-1 tabular-nums">Início de Plantel</label>
               <select
                 value={copyFromTeamId}
                 onChange={(e) => setCopyFromTeamId(e.target.value)}
@@ -744,7 +738,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
             <div className="flex gap-2 pt-2">
               <button
                 type="submit"
-                className="flex-1 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase hover:brightness-110 active:scale-95"
+                className="flex-1 py-2 rounded-xl bg-ui-brand text-ui-brand-ink font-bold text-xs hover:brightness-110 active:scale-95"
               >
                 Criar e Ativar Equipa 🚀
               </button>

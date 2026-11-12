@@ -16,6 +16,14 @@ import {
 import { MASTER_ADMIN_EMAIL } from '../../lib/constants';
 import { loadBrand } from '../../lib/clubBrand';
 
+/* Google asks for its sign-in button on white, and the logo sits on a white disc: brand colours, not the app palette. */
+/* eslint-disable no-restricted-syntax */
+const LOGO_ON_WHITE =
+  'w-20 h-20 sm:w-24 sm:h-24 rounded-full object-contain bg-white/95 p-1.5 border-4 border-cyan-400 shadow-lg';
+const GOOGLE_BUTTON =
+  'w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold font-sans text-xs transition-all flex items-center justify-center gap-2.5 border border-slate-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer';
+/* eslint-enable no-restricted-syntax */
+
 interface AuthViewProps {
   state: AppState;
   onUpdateState: (updates: Partial<AppState>) => void;
@@ -44,25 +52,25 @@ const AuthErrorBanner: React.FC<{
 
   if (isUnauthorizedDomain) {
     return (
-      <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-red-950/80 border-2 border-amber-500/60 text-xs font-mono space-y-2.5 my-2 animate-in fade-in">
+      <div className="p-3.5 rounded-2xl bg-ui-warning/90 border-2 border-ui-warning/60 text-xs tabular-nums space-y-2.5 my-2 animate-in fade-in">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 text-amber-300 font-bold font-['Chakra_Petch'] uppercase tracking-wider text-xs">
+          <div className="flex items-center gap-2 text-ui-warning font-bold uppercase tracking-wider text-xs">
             <span className="text-base">⚠️</span>
             <span>Domínio Não Autorizado no Google Auth</span>
           </div>
           <button
             type="button"
             onClick={onClear}
-            className="text-slate-400 hover:text-white text-sm px-1 cursor-pointer"
+            className="text-ui-muted hover:text-ui-text text-sm px-1 cursor-pointer"
             title="Fechar"
           >
             ✕
           </button>
         </div>
 
-        <p className="text-[11px] text-slate-200 leading-relaxed font-sans">
+        <p className="text-[11px] text-ui-text leading-relaxed font-sans">
           O Google Sign-In requer que o domínio atual (
-          <code className="text-cyan-300 bg-slate-950 px-1.5 py-0.5 rounded border border-cyan-500/30">
+          <code className="text-ui-brand bg-ui-inset px-1.5 py-0.5 rounded border border-ui-brand/30">
             {currentHostname || 'domínio da app'}
           </code>
           ) esteja adicionado aos <strong>Domínios Autorizados</strong> no Firebase Console.
@@ -95,9 +103,9 @@ const AuthErrorBanner: React.FC<{
           )}
         </div>
 
-        <div className="ui-inset p-2 text-[10px] text-slate-400 leading-normal">
-          💡 <span className="text-slate-300">Como resolver no Firebase:</span> Aceda a{' '}
-          <strong className="text-slate-200">
+        <div className="ui-inset p-2 text-[10px] text-ui-muted leading-normal">
+          💡 <span className="text-ui-text">Como resolver no Firebase:</span> Aceda a{' '}
+          <strong className="text-ui-text">
             Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains
           </strong>{' '}
           e adicione o domínio copiado. Em alternativa, use as credenciais de clube abaixo.
@@ -107,7 +115,7 @@ const AuthErrorBanner: React.FC<{
   }
 
   return (
-    <div className="p-3 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 text-xs font-mono flex items-start justify-between gap-2 shadow-inner my-1.5 animate-in fade-in">
+    <div className="p-3 rounded-xl bg-ui-danger-soft border border-ui-danger/50 text-ui-danger text-xs tabular-nums flex items-start justify-between gap-2 shadow-inner my-1.5 animate-in fade-in">
       <div className="flex items-start gap-2">
         <span className="text-base shrink-0">⚠️</span>
         <span className="leading-snug">{error}</span>
@@ -115,7 +123,7 @@ const AuthErrorBanner: React.FC<{
       <button
         type="button"
         onClick={onClear}
-        className="text-red-400 hover:text-white text-xs px-1 cursor-pointer shrink-0"
+        className="text-ui-danger hover:text-ui-text text-xs px-1 cursor-pointer shrink-0"
         title="Fechar"
       >
         ✕
@@ -463,14 +471,14 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
   return (
     <div className="w-full min-h-full flex flex-col items-center justify-start p-3 sm:p-6 pb-36 font-sans relative">
       {/* Background visual accents */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-ui-brand/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-80 h-80 bg-ui-brand/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Main Auth Container */}
       <div className="ui-card w-full max-w-md p-4 sm:p-7 relative z-10 text-left my-2">
         {/* Glow corner decorations */}
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-20 -left-20 w-40 h-40 bg-ui-brand/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-ui-brand/20 rounded-full blur-3xl pointer-events-none" />
 
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-4 relative text-center">
@@ -480,33 +488,27 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                 <img
                   src={brand.logo}
                   alt={brand.name ? `Símbolo do ${brand.name}` : 'Símbolo do clube'}
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-contain bg-white/95 p-1.5 border-4 border-cyan-400 shadow-lg"
+                  className={LOGO_ON_WHITE}
                 />
               )}
-              {brand.name && (
-                <div className="mt-2 text-lg sm:text-xl font-extrabold font-['Chakra_Petch'] uppercase tracking-wider text-cyan-300">
-                  {brand.name}
-                </div>
-              )}
+              {brand.name && <div className="mt-2 text-lg sm:text-xl font-extrabold text-ui-brand">{brand.name}</div>}
             </div>
           )}
           <div className={`relative group mb-2.5 ${brand.logo || brand.name ? 'scale-75 -mt-1 -mb-1' : ''}`}>
-            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300 animate-pulse"></div>
+            <div className="absolute -inset-1 bg-ui-brand rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
             <img
               src={logoImg}
               alt="BolaComVisão Logo"
-              className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-cyan-400"
+              className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-ui-brand"
               referrerPolicy="no-referrer"
             />
           </div>
-          <h1 className="text-xl sm:text-2xl font-extrabold font-['Chakra_Petch'] uppercase tracking-widest text-white">
-            BolaComVisão
-          </h1>
-          <p className="text-[11px] font-mono text-cyan-300/80 mt-0.5 uppercase tracking-widest">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-ui-text">BolaComVisão</h1>
+          <p className="text-[11px] tabular-nums text-ui-brand/80 mt-0.5 uppercase tracking-widest">
             Gestão Tática & Desportiva
           </p>
 
-          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[10px] font-mono text-cyan-300">
+          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ui-brand/10 border border-ui-brand/30 text-[10px] tabular-nums text-ui-brand">
             <span>🛡️ Base de Dados Partilhada com Aprovação</span>
           </div>
         </div>
@@ -514,55 +516,53 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
         {/* PENDING APPROVAL SCREEN */}
         {mode === 'pending' && (
           <div className="text-center space-y-4 py-2 animate-in fade-in duration-300">
-            <div className="w-16 h-16 rounded-3xl bg-amber-500/20 border-2 border-amber-500/50 flex items-center justify-center text-3xl mx-auto animate-pulse">
+            <div className="w-16 h-16 rounded-3xl bg-ui-warning/20 border-2 border-ui-warning/50 flex items-center justify-center text-3xl mx-auto">
               ⏳
             </div>
 
             <div>
-              <h2 className="text-lg font-bold font-['Chakra_Petch'] uppercase tracking-wider text-amber-300">
-                Registo a Aguardar Aprovação
-              </h2>
-              <p className="text-xs text-slate-300 font-mono mt-1.5 leading-relaxed">
+              <h2 className="text-lg font-bold text-ui-warning">Registo a Aguardar Aprovação</h2>
+              <p className="text-xs text-ui-text tabular-nums mt-1.5 leading-relaxed">
                 A conta foi registada na Nuvem. Para aceder à base de dados do clube, o{' '}
-                <strong className="text-cyan-300">Administrador</strong> tem de autorizar o perfil.
+                <strong className="text-ui-brand">Administrador</strong> tem de autorizar o perfil.
               </p>
             </div>
 
             {pendingAccount && (
-              <div className="ui-inset p-3.5 text-left text-xs font-mono space-y-1.5">
-                <div className="text-slate-400">
-                  Nome: <span className="text-white font-bold">{pendingAccount.name}</span>
+              <div className="ui-inset p-3.5 text-left text-xs tabular-nums space-y-1.5">
+                <div className="text-ui-muted">
+                  Nome: <span className="text-ui-text font-bold">{pendingAccount.name}</span>
                 </div>
-                <div className="text-slate-400">
-                  Utilizador: <span className="text-cyan-300">@{pendingAccount.username}</span>
+                <div className="text-ui-muted">
+                  Utilizador: <span className="text-ui-brand">@{pendingAccount.username}</span>
                 </div>
-                <div className="text-slate-400">
-                  Função Solicitada: <span className="text-amber-300 font-bold">{pendingAccount.role}</span>
+                <div className="text-ui-muted">
+                  Função Solicitada: <span className="text-ui-warning font-bold">{pendingAccount.role}</span>
                 </div>
-                <div className="text-slate-400">
-                  Estado: <span className="text-amber-400 font-bold">⏳ Aguarda Aprovação</span>
+                <div className="text-ui-muted">
+                  Estado: <span className="text-ui-warning font-bold">⏳ Aguarda Aprovação</span>
                 </div>
               </div>
             )}
 
             {/* SEÇÃO 1: NOTIFICAR ADMINISTRADOR (WHATSAPP / EMAIL) */}
             {pendingAccount && (
-              <div className="bg-slate-950/90 border-2 border-emerald-500/40 rounded-2xl p-4 text-left space-y-2.5">
-                <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+              <div className="bg-ui-inset/90 border-2 border-ui-success/40 rounded-2xl p-4 text-left space-y-2.5">
+                <div className="flex items-center justify-between border-b border-ui-success/20 pb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-base">📲</span>
-                    <span className="text-xs font-['Chakra_Petch'] font-bold uppercase tracking-wider text-white">
+                    <span className="text-xs font-bold uppercase tracking-wider text-ui-text">
                       Notificar o Administrador
                     </span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono">
+                  <span className="px-2 py-0.5 rounded-full bg-ui-success/20 text-ui-success text-[10px] tabular-nums">
                     WhatsApp & E-mail
                   </span>
                 </div>
 
-                <p className="text-[11px] font-mono text-slate-300 leading-relaxed">
+                <p className="text-[11px] tabular-nums text-ui-text leading-relaxed">
                   Envie o pedido com 1 toque diretamente para o WhatsApp ou E-mail do Administrador (
-                  <strong className="text-cyan-300">
+                  <strong className="text-ui-brand">
                     {state.notificationSettings?.adminContactEmail || MASTER_ADMIN_EMAIL}
                   </strong>
                   ) para autorização rápida:
@@ -579,7 +579,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       );
                       onShowToast('A abrir WhatsApp com o pedido de aprovação... 💬');
                     }}
-                    className="py-3 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
+                    className="py-3 px-3 rounded-xl bg-ui-success hover:from-ui-success hover:to-ui-success text-ui-text font-black text-xs transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
                   >
                     <span>💬</span>
                     <span>Enviar por WhatsApp</span>
@@ -595,7 +595,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       );
                       onShowToast('A abrir cliente de e-mail... 📧');
                     }}
-                    className="py-3 px-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
+                    className="py-3 px-3 rounded-xl bg-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-text font-black text-xs transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
                   >
                     <span>📧</span>
                     <span>Enviar por E-mail</span>
@@ -619,11 +619,11 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
             {/* AVISO INFORMATIVO DE SEGURANÇA E ACESSO */}
             <div className="ui-inset p-4 text-left space-y-2">
-              <div className="flex items-center gap-2 text-cyan-300 font-['Chakra_Petch'] font-bold text-xs uppercase tracking-wider">
+              <div className="flex items-center gap-2 text-ui-brand font-bold text-xs uppercase tracking-wider">
                 <span>🛡️</span>
                 <span>Processo de Autorização</span>
               </div>
-              <p className="text-[11px] font-mono text-slate-300 leading-relaxed">
+              <p className="text-[11px] tabular-nums text-ui-text leading-relaxed">
                 Após notificar o Administrador, o seu perfil será revisto e a função atribuída no painel de controlo.
                 Assim que for aprovado, poderá entrar imediatamente na aplicação e aceder à base de dados da equipa.
               </p>
@@ -634,7 +634,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                 type="button"
                 onClick={handleCheckPendingStatus}
                 disabled={isLoading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 rounded-xl bg-ui-warning hover:from-ui-warning hover:to-ui-warning text-ui-brand-ink font-black text-xs active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -652,7 +652,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   setMode('login');
                   setPendingAccount(null);
                 }}
-                className="text-xs font-mono text-cyan-400 hover:text-cyan-300 underline cursor-pointer py-1.5"
+                className="text-xs tabular-nums text-ui-brand hover:text-ui-brand underline cursor-pointer py-1.5"
               >
                 ← Voltar ao Início de Sessão
               </button>
@@ -667,10 +667,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             <div className="ui-inset flex p-1 mb-4">
               <button
                 type="button"
-                className={`flex-1 py-2.5 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all cursor-pointer ${
-                  mode === 'login'
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.4)]'
-                    : 'text-slate-400 hover:text-cyan-300'
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  mode === 'login' ? 'bg-ui-brand text-ui-brand-ink' : 'text-ui-muted hover:text-ui-brand'
                 }`}
                 onClick={() => {
                   setMode('login');
@@ -681,10 +679,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2.5 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase transition-all cursor-pointer ${
-                  mode === 'register'
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.4)]'
-                    : 'text-slate-400 hover:text-cyan-300'
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  mode === 'register' ? 'bg-ui-brand text-ui-brand-ink' : 'text-ui-muted hover:text-ui-brand'
                 }`}
                 onClick={() => {
                   setMode('register');
@@ -699,12 +695,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             {mode === 'login' && (
               <div className="space-y-3.5">
                 {/* Google Login */}
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold font-sans text-xs transition-all flex items-center justify-center gap-2.5 border border-slate-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-                >
+                <button type="button" onClick={handleGoogleLogin} disabled={isLoading} className={GOOGLE_BUTTON}>
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -728,10 +719,10 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
                 <div className="relative my-2">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-800"></div>
+                    <div className="w-full border-t border-ui-line"></div>
                   </div>
-                  <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-mono">
-                    <span className="bg-slate-900 px-3 text-slate-400">ou com credenciais do clube</span>
+                  <div className="relative flex justify-center text-[10px] uppercase tracking-widest tabular-nums">
+                    <span className="bg-ui-surface px-3 text-ui-muted">ou com credenciais do clube</span>
                   </div>
                 </div>
 
@@ -747,7 +738,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   )}
 
                   <div>
-                    <label className="block text-xs text-cyan-300 font-mono mb-1">Utilizador ou Email</label>
+                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Utilizador ou Email</label>
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-sm">👤</span>
                       <input
@@ -762,7 +753,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </div>
 
                   <div>
-                    <label className="block text-xs text-cyan-300 font-mono mb-1">Palavra-passe</label>
+                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Palavra-passe</label>
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-sm">🔒</span>
                       <input
@@ -779,7 +770,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs uppercase tracking-wider hover:brightness-110 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    className="w-full py-3.5 rounded-xl bg-ui-brand text-ui-brand-ink font-extrabold text-xs hover:brightness-110 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {isLoading ? (
                       <>
@@ -792,12 +783,12 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </button>
 
                   <div className="text-center pt-1">
-                    <span className="text-xs text-slate-400 font-mono">
+                    <span className="text-xs text-ui-muted tabular-nums">
                       Não tem conta?{' '}
                       <button
                         type="button"
                         onClick={() => setMode('register')}
-                        className="text-cyan-400 font-bold hover:underline cursor-pointer"
+                        className="text-ui-brand font-bold hover:underline cursor-pointer"
                       >
                         Registe-se aqui
                       </button>
@@ -811,12 +802,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             {mode === 'register' && (
               <div className="space-y-3">
                 {/* Google Sign up */}
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold font-sans text-xs transition-all flex items-center justify-center gap-2.5 border border-slate-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-                >
+                <button type="button" onClick={handleGoogleLogin} disabled={isLoading} className={GOOGLE_BUTTON}>
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -840,14 +826,14 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
                 <div className="relative my-2">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-800"></div>
+                    <div className="w-full border-t border-ui-line"></div>
                   </div>
-                  <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-mono">
-                    <span className="bg-slate-900 px-3 text-slate-400">ou preencha os dados do perfil</span>
+                  <div className="relative flex justify-center text-[10px] uppercase tracking-widest tabular-nums">
+                    <span className="bg-ui-surface px-3 text-ui-muted">ou preencha os dados do perfil</span>
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-[11px] font-mono text-cyan-300">
+                <div className="p-2.5 rounded-xl bg-ui-brand/10 border border-ui-brand/20 text-[11px] tabular-nums text-ui-brand">
                   ℹ️ Os novos membros são integrados na base de dados centralizada após aprovação do Administrador.
                 </div>
 
@@ -862,7 +848,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
                 <form onSubmit={handleRegister} className="space-y-2.5">
                   <div className="ui-card p-2.5 space-y-1.5">
-                    <label className="block text-xs text-cyan-300 font-mono">🎟️ Código de Convite (opcional)</label>
+                    <label className="block text-xs text-ui-brand tabular-nums">🎟️ Código de Convite (opcional)</label>
                     <div className="flex gap-1.5">
                       <input
                         type="text"
@@ -885,21 +871,21 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       </button>
                     </div>
                     {resolvedInvite && (
-                      <p className="text-[11px] text-emerald-300">
+                      <p className="text-[11px] text-ui-success">
                         ✓ Convite válido! Vais juntar-te a <strong>{resolvedInvite.teamName}</strong> como{' '}
                         <strong>{resolvedInvite.role}</strong>, já aprovado.
                       </p>
                     )}
-                    {inviteCheckError && <p className="text-[11px] text-red-300">❌ {inviteCheckError}</p>}
+                    {inviteCheckError && <p className="text-[11px] text-ui-danger">❌ {inviteCheckError}</p>}
                     {!resolvedInvite && !inviteCheckError && (
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-ui-muted">
                         Sem código, vais criar o teu próprio clube novo (ficas Administrador dele automaticamente).
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-xs text-cyan-300 font-mono mb-1">Nome Completo *</label>
+                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Nome Completo *</label>
                     <input
                       type="text"
                       required
@@ -911,7 +897,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </div>
 
                   <div>
-                    <label className="block text-xs text-cyan-300 font-mono mb-1">Nome de Utilizador *</label>
+                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Nome de Utilizador *</label>
                     <input
                       type="text"
                       required
@@ -926,7 +912,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </div>
 
                   <div>
-                    <label className="block text-xs text-cyan-300 font-mono mb-1">
+                    <label className="block text-xs text-ui-brand tabular-nums mb-1">
                       E-mail Pessoal / Notificação (Opcional)
                     </label>
                     <input
@@ -942,7 +928,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </div>
 
                   <div>
-                    <label className="block text-xs text-cyan-300 font-mono mb-1">Função na Equipa Técnica *</label>
+                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Função na Equipa Técnica *</label>
                     <select
                       value={regRole}
                       onChange={(e) => setRegRole(e.target.value)}
@@ -960,7 +946,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs text-cyan-300 font-mono mb-1">Palavra-passe (min 6) *</label>
+                      <label className="block text-xs text-ui-brand tabular-nums mb-1">Palavra-passe (min 6) *</label>
                       <input
                         type="password"
                         required
@@ -971,7 +957,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-cyan-300 font-mono mb-1">Confirmar *</label>
+                      <label className="block text-xs text-ui-brand tabular-nums mb-1">Confirmar *</label>
                       <input
                         type="password"
                         required
@@ -988,7 +974,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-['Chakra_Petch'] font-extrabold text-xs sm:text-sm uppercase tracking-wider active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer border border-cyan-300/40"
+                      className="w-full py-3.5 px-4 rounded-xl bg-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-brand-ink font-extrabold text-xs sm:text-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer border border-ui-brand/40"
                     >
                       {isLoading ? (
                         <>
@@ -1005,12 +991,12 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </div>
 
                   <div className="text-center pt-1">
-                    <span className="text-xs text-slate-400 font-mono">
+                    <span className="text-xs text-ui-muted tabular-nums">
                       Já tem conta?{' '}
                       <button
                         type="button"
                         onClick={() => setMode('login')}
-                        className="text-cyan-400 font-bold hover:underline cursor-pointer"
+                        className="text-ui-brand font-bold hover:underline cursor-pointer"
                       >
                         Iniciar Sessão aqui
                       </button>
@@ -1023,10 +1009,10 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             {/* Guest Demo Divider */}
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-800"></div>
+                <div className="w-full border-t border-ui-line"></div>
               </div>
-              <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-mono">
-                <span className="bg-slate-900 px-3 text-slate-500">ou acesso rápido</span>
+              <div className="relative flex justify-center text-[10px] uppercase tracking-widest tabular-nums">
+                <span className="bg-ui-surface px-3 text-ui-muted">ou acesso rápido</span>
               </div>
             </div>
 
@@ -1043,7 +1029,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
         )}
 
         {/* Hint footer */}
-        <div className="mt-4 text-[10px] font-mono text-slate-500 text-center">
+        <div className="mt-4 text-[10px] tabular-nums text-ui-muted text-center">
           BolaComVisão © 2026 · Base de Dados Partilhada do Clube
         </div>
       </div>
