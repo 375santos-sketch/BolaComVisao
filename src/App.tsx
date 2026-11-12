@@ -54,7 +54,7 @@ const TrainingsView = lazyWithRetry(() => import('./components/views/TrainingsVi
 const ResultsView = lazyWithRetry(() => import('./components/views/ResultsView'), 'ResultsView');
 // Loaded when opened: it bundles the Excel library used by the team spreadsheets.
 const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 'DatabaseModal');
-const MonthlyReportModal = lazyWithRetry(() => import('./components/MonthlyReportModal'));
+const MonthlyReportView = lazyWithRetry(() => import('./components/report/MonthlyReportView'));
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
 const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsModal'));
@@ -1036,6 +1036,7 @@ export default function App() {
                 onOpenSync={() => showSyncStatus()}
                 onShowToast={showToast}
                 onUpdateState={updateState}
+                onOpenMonthlyReport={() => setShowMonthlyReport(true)}
               />
             )}
 
@@ -1227,7 +1228,16 @@ export default function App() {
         )}
         {showMonthlyReport && (
           <Suspense fallback={<ViewLoadingFallback />}>
-            <MonthlyReportModal state={state} onShowToast={showToast} onClose={() => setShowMonthlyReport(false)} />
+            <MonthlyReportView
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onSwitchTeam={() => {
+                setShowMonthlyReport(false);
+                handleNavigate('teams');
+              }}
+              onClose={() => setShowMonthlyReport(false)}
+            />
           </Suspense>
         )}
         {/* Database Modal */}

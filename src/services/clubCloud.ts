@@ -43,7 +43,8 @@ const RECORD_KINDS: RecordKind[] = [
   'exercise',
   'setpiece',
   'tacticplay',
-  'teamphoto'
+  'teamphoto',
+  'report'
 ];
 const MAX_BATCH_WRITES = 400;
 const MAX_BATCH_BYTES = 4_000_000;

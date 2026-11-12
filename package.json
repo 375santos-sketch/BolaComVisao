@@ -26,6 +26,7 @@
     "express": "^4.21.2",
     "fflate": "^0.8.2",
     "firebase": "^12.17.1",
+    "html2canvas-pro": "^1.6.7",
     "jspdf": "^4.2.1",
     "pdfjs-dist": "^6.2.108",
     "react": "^19.0.1",

@@ -751,6 +751,45 @@ export interface SquadProfile {
   tacticPlays?: TacticPlay[];
   /** 📸 Team photos (start and end of each season), each its own cloud record. */
   teamPhotos?: TeamPhoto[];
+  /** 📑 Monthly activity reports (the coach's text and the report's state), one per month, each its own cloud record. */
+  monthlyReports?: MonthlyReportRecord[];
+}
+
+/**
+ * 📑 Relatório mensal: what the coach writes for one month of one team (the numbers are always worked out from the
+ * trainings, games and athletes, never stored here), and where the report stands.
+ */
+export interface MonthlyReportRecord {
+  /** "relatorio-2026-10" */
+  id: string;
+  /** "2026-10" */
+  month: string;
+  status: 'rascunho' | 'validado' | 'entregue';
+  texts?: {
+    evolucao?: string;
+    positivos?: string;
+    dificuldades?: string;
+    consolidados?: string;
+    melhorar?: string;
+    acompanhamento?: string;
+    observacoes?: string;
+  };
+  /** Dimension → level (0 Em desenvolvimento · 1 Satisfatório · 2 Bom · 3 Muito bom); missing = not assessed. */
+  dims?: Record<string, number>;
+  dimNotes?: Record<string, string>;
+  next?: {
+    tecnicos?: string;
+    taticos?: string;
+    fisicos?: string;
+    comportamentais?: string;
+    prioritarios?: string;
+    coordenacao?: string;
+  };
+  coordinatorNotes?: string;
+  validatedAt?: string;
+  validatedBy?: string;
+  deliveredAt?: string;
+  updatedAt?: string;
 }
 
 /** 📸 A photo of the whole team, at the start or at the end of a season (compressed JPEG data URL). */
@@ -1086,6 +1125,8 @@ export interface AppState {
   tacticPlays?: TacticPlay[];
   /** Copy of the active team's photos (the teams hold them; see SquadProfile.teamPhotos). */
   teamPhotos?: TeamPhoto[];
+  /** Copy of the active team's monthly reports (the teams hold them; see SquadProfile.monthlyReports). */
+  monthlyReports?: MonthlyReportRecord[];
   exerciseLibrary?: Exercise[];
   subscription?: ClubSubscription;
   updatedAt?: number;

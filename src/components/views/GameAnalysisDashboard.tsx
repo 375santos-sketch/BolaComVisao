@@ -50,6 +50,8 @@ interface GameAnalysisDashboardProps {
   onUpdateState?: (updates: Partial<AppState>) => void;
   /** Which part opens first: Equipa, Atletas (from "Estatísticas") or Jogos. */
   initialSection?: 'equipa' | 'atletas' | 'jogos';
+  /** 📑 Relatórios → Relatório mensal for the coordinator. */
+  onOpenMonthlyReport?: () => void;
 }
 
 export type AnalysisTab =
@@ -63,7 +65,8 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
   onOpenSync,
   onShowToast,
   onUpdateState,
-  initialSection = 'equipa'
+  initialSection = 'equipa',
+  onOpenMonthlyReport
 }) => {
   // One Análise: Equipa · Atletas · Jogos, with the same filters for all
   const [section, setSection] = useState<'equipa' | 'atletas' | 'jogos' | 'relatorios'>(initialSection);
@@ -448,6 +451,16 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                   '«Quem marcou mais fora?» · respostas com os jogos guardados',
                   () => setShowAsk((v) => !v)
                 ],
+                ...(onOpenMonthlyReport
+                  ? ([
+                      [
+                        '📑',
+                        'Relatório mensal',
+                        'Atividade e desenvolvimento do mês, para o coordenador · PDF A4',
+                        onOpenMonthlyReport
+                      ]
+                    ] as const)
+                  : []),
                 ['📋', 'Relatório do treinador', 'Conclusões da época em texto', () => setShowCoachReportModal(true)],
                 [
                   '▦',

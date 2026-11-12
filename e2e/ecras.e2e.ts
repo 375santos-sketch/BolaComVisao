@@ -1532,19 +1532,45 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await expect(syncBadge(page)).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
 });
 
-test('relatório mensal: resumo do mês e PDF para o coordenador', async ({ page }) => {
+test('relatórios: relatório mensal com os dados do mês, avaliação guardada, estado e PDF', async ({ page }) => {
   await signedIn(page);
-  await openMore(page, /Relatório mensal/);
-  const dialog = page.getByRole('dialog', { name: 'Relatório mensal' });
+  await openMore(page, /Relatórios/);
+  const dialog = page.getByRole('dialog', { name: 'Relatórios' });
   await dialog.getByLabel('Mês', { exact: true }).selectOption('2026-10');
-  const summary = dialog.getByLabel('Resumo do mês');
-  await expect(summary).toContainText('Jogos');
-  await expect(summary).toContainText('Treinos');
-  await dialog.getByLabel('Notas para o coordenador (opcional)').fill('Mês de boa evolução.');
-  const download = page.waitForEvent('download');
-  await dialog.getByRole('button', { name: '📄 Gerar PDF' }).click();
+  // Collected from the app: trainings, games, athletes; what is missing is listed, never filled in
+  await expect(dialog.getByRole('region', { name: 'Dados recolhidos' })).toContainText('treinos realizados');
+  await expect(dialog.getByRole('region', { name: 'Informação em falta' })).toBeVisible();
+  // The coach's analysis and the state are saved with the team
+  await dialog.getByRole('button', { name: 'Avaliação', exact: true }).click();
+  await dialog.getByLabel('Evolução geral da equipa').fill('Mês de boa evolução na saída de bola.');
+  await dialog
+    .getByRole('radiogroup', { name: 'Espírito de equipa' })
+    .getByRole('radio', { name: 'Muito bom' })
+    .click();
+  await dialog.getByRole('button', { name: 'Validado pelo treinador' }).click();
+  await expect(page.getByText('Relatório: Validado pelo treinador')).toBeVisible();
+  await expect
+    .poll(async () => [...(await cloudRecords()).values()].find((r) => r.kind === 'report' && r.month === '2026-10'), {
+      timeout: 30_000,
+      message: 'relatório na nuvem'
+    })
+    .toMatchObject({ status: 'validado', deleted: false });
+  // Preview with the cover and the coach's text; the PDF file for the coordinator
+  await dialog.getByRole('button', { name: 'Pré-visualização' }).click();
+  await expect(dialog.getByRole('region', { name: 'Página 1: Capa e resumo executivo' })).toContainText(
+    'Mês de boa evolução na saída de bola.'
+  );
+  const download = page.waitForEvent('download', { timeout: 60_000 });
+  await dialog.getByRole('button', { name: 'Gerar PDF' }).click();
   expect((await download).suggestedFilename()).toBe('Relatorio_Mensal_Dragoes_2026-10.pdf');
   await expect(page.getByText('Relatório mensal criado 📄')).toBeVisible();
+  // Closed and opened again: the text and the state are there
+  await dialog.getByRole('button', { name: 'Fechar relatórios' }).click();
+  await openMore(page, /Relatórios/);
+  await dialog.getByLabel('Mês', { exact: true }).selectOption('2026-10');
+  await expect(dialog.getByRole('button', { name: 'Validado pelo treinador' })).toHaveAttribute('aria-pressed', 'true');
+  await dialog.getByRole('button', { name: 'Avaliação', exact: true }).click();
+  await expect(dialog.getByLabel('Evolução geral da equipa')).toHaveValue('Mês de boa evolução na saída de bola.');
 });
 
 test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo', async ({ page }) => {

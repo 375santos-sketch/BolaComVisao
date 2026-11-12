@@ -23,7 +23,8 @@ export type EntityKind =
   | 'exercise'
   | 'setpiece'
   | 'tacticplay'
-  | 'teamphoto';
+  | 'teamphoto'
+  | 'report';
 export type RecordKind = EntityKind | 'club';
 
 /** Team array that holds each kind of record. */
@@ -41,7 +42,9 @@ const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppState> = {
   // Plays of the former tactics board (removed from the app): kept so stored plays are not lost
   tacticplay: 'tacticPlays',
   // Team photos (start and end of the season) are big: each one is its own document
-  teamphoto: 'teamPhotos'
+  teamphoto: 'teamPhotos',
+  // 📑 Monthly reports: the coach's text for each month (the numbers are always worked out, never stored)
+  report: 'monthlyReports'
 };
 const ENTITY_KINDS = Object.keys(ENTITY_FIELDS) as EntityKind[];
 
