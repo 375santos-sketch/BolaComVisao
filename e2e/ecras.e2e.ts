@@ -814,7 +814,10 @@ test('treinos: treino de hoje com faltas e motivo, repetir, faltas por atleta', 
   await today.getByRole('button', { name: 'Fechar' }).click();
 
   // Repeat today's training next week: planned, shown first (what's coming).
-  await page.getByRole('button', { name: /Treino 3/ }).last().click();
+  await page
+    .getByRole('button', { name: /Treino 3/ })
+    .last()
+    .click();
   await page.getByRole('button', { name: /Repetir/ }).click();
   await expect(page.getByText(/Treino repetido para/)).toBeVisible();
   await expect(page.getByRole('button', { name: /Treino 4.*Por fazer/ })).toBeVisible();
