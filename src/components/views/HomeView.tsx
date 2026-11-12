@@ -5,6 +5,12 @@ import { TabType } from '../Navbar';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { UnifiedEvent } from '../dashboard/DashboardNextEvent';
 import { TodayFocusCard } from '../dashboard/TodayFocusCard';
+import {
+  DashboardHighlights,
+  MonthObjectivesCard,
+  QuoteCard,
+  RecentActivityCard
+} from '../dashboard/DashboardHighlights';
 import { LiveFollowModal, LiveMatchCard } from '../live/LiveFollow';
 import { Icon, IconName } from '../ui/Icon';
 import {
@@ -244,18 +250,40 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {followLive && <LiveFollowModal state={state} onClose={() => setFollowLive(false)} />}
 
       <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-flow-dense lg:grid-cols-12">
-        {/* Today: the game, the training or the meeting, with the one or two things to do now */}
-        <div className="order-1 lg:order-1 lg:col-span-8">
-          <TodayFocusCard
-            unifiedEvents={unifiedEvents}
-            scheduledMatches={scheduledMatches}
-            activeMatch={activeMatch}
+        {/* Today (only when there is something today or a game being recorded): what to do now */}
+        {(activeMatch || unifiedEvents.some((e) => e.isToday)) && (
+          <div className="order-1 lg:order-1 lg:col-span-12">
+            <TodayFocusCard
+              unifiedEvents={unifiedEvents}
+              scheduledMatches={scheduledMatches}
+              activeMatch={activeMatch}
+              onNavigate={onNavigate}
+            />
+          </div>
+        )}
+
+        {/* Next training, next game and this week's minutes */}
+        <div className="order-1 lg:order-2 lg:col-span-12">
+          <DashboardHighlights
+            state={state}
             onNavigate={onNavigate}
+            callupOpenFor={notices.find((n) => n.id === 'convocatoria')?.targetId}
           />
         </div>
 
+        {/* The month's objectives, what happened lately and a line for the day */}
+        <div className="order-2 lg:order-3 lg:col-span-4">
+          <MonthObjectivesCard state={state} onNavigate={onNavigate} />
+        </div>
+        <div className="order-3 lg:order-3 lg:col-span-4">
+          <RecentActivityCard state={state} onNavigate={onNavigate} />
+        </div>
+        <div className="hidden lg:order-3 lg:col-span-4 lg:block">
+          <QuoteCard />
+        </div>
+
         {/* The next 7 days: beside today on a computer, at the end on the phone */}
-        <section aria-label="Próximos 7 dias" className="order-8 space-y-2 lg:order-2 lg:col-span-4">
+        <section aria-label="Próximos 7 dias" className="order-10 space-y-2 lg:order-4 lg:col-span-4">
           <SectionHeader
             title="Próximos 7 dias"
             action={{ label: 'Ver a agenda', onClick: () => onNavigate('calendario') }}
@@ -306,13 +334,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </section>
 
         {/* The season in four figures */}
-        <div className="order-2 lg:order-3 lg:col-span-8">
+        <div className="order-5 lg:order-5 lg:col-span-8">
           <SeasonTiles season={state.season} summary={summary} onOpenStats={() => onNavigate('stats')} />
         </div>
 
         {/* What needs attention (only when there is something) */}
         {notices.length > 0 && (
-          <section aria-label="Avisos" className="order-3 space-y-2 lg:order-5 lg:col-span-8">
+          <section aria-label="Avisos" className="order-4 space-y-2 lg:order-4 lg:col-span-8">
             <SectionHeader title="Para fazer" />
             <ul className="ui-card divide-y divide-ui-line overflow-hidden">
               {notices.map((n) => {
@@ -350,22 +378,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {/* The last games and the minutes, side by side on a computer */}
         {form.length >= 2 && (
-          <div className="order-4 lg:order-7 lg:col-span-12">
+          <div className="order-6 lg:order-6 lg:col-span-8">
             <FormCard form={form} onOpenStats={() => onNavigate('stats')} />
           </div>
         )}
         {form.length >= 2 && (
-          <div className="order-5 lg:order-4 lg:col-span-4">
+          <div className="order-7 lg:order-5 lg:col-span-4">
             <MinutesCard minutes={minutesBehind(state)} onOpenStats={() => onNavigate('stats')} />
           </div>
         )}
 
-        <div className="order-6 empty:hidden lg:order-8 lg:col-span-12">
+        <div className="order-8 empty:hidden lg:order-7 lg:col-span-12">
           <WeeklyFocusCard matches={seasonMatches(state)} onOpenAnalysis={() => onNavigate('analise_jogos')} />
         </div>
 
         {/* Shortcuts */}
-        <nav aria-label="Atalhos" className="order-7 space-y-2 lg:order-6 lg:col-span-4">
+        <nav aria-label="Atalhos" className="order-9 space-y-2 lg:order-6 lg:col-span-4">
           <SectionHeader title="Atalhos" className="hidden lg:flex" />
           <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
             {shortcuts.map((sc) => (
@@ -388,7 +416,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {birthdaysToday.length > 0 && (
           <section
             aria-label="Aniversários de hoje"
-            className="ui-card order-9 space-y-2 p-4 lg:order-9 lg:col-span-12"
+            className="ui-card order-11 space-y-2 p-4 lg:order-8 lg:col-span-12"
           >
             <div className="ui-kicker">🎂 Hoje faz anos</div>
             {birthdaysToday.map((b) => (
@@ -409,9 +437,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
         )}
 
         {/* Questions about the team, answered from the app's data */}
-        <div className="order-10 lg:order-10 lg:col-span-12">
+        <div className="order-12 lg:order-9 lg:col-span-12">
           <AssistantCard state={state} />
         </div>
+      </div>
+      <div className="dash-foot" aria-hidden>
+        <span />
+        PLANEAR • TRABALHAR • EVOLUIR
+        <span />
       </div>
       {birthdayImage && (
         <BirthdayImageModal

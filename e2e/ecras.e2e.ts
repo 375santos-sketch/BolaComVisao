@@ -1052,7 +1052,7 @@ test('quadro tático: sistema, atletas nos lugares, arrastar, setas e estratégi
     await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
   };
   // The welcome message sits over the bottom of the pitch for a moment
-  await expect(page.getByText(/Bem-vindo/)).toBeHidden({ timeout: 10_000 });
+  await expect(page.getByText(/Bem-vindo, (?!Mister)/)).toBeHidden({ timeout: 10_000 });
   await tap('Lugar 1: vazio');
   await board
     .getByRole('region', { name: 'Escolher atleta' })

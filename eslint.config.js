@@ -88,6 +88,8 @@ export default tseslint.config(
       'src/components/views/coach/**/*.tsx',
       'src/components/views/stats/**/*.tsx',
       'src/components/stats/**/*.tsx',
+      // Dashboard
+      'src/components/dashboard/DashboardHighlights.tsx',
       // Clube e Definições
       'src/components/MoreDrawer.tsx',
       'src/components/SettingsModal.tsx',

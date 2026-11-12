@@ -2125,3 +2125,193 @@ html.sol .bcv-cta {
     transition: none;
   }
 }
+
+/* ---------- Dashboard (Início): welcome over the night stadium, and the cards of the day ---------- */
+.dash-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 22px;
+  border: 1px solid rgb(147 167 191 / 0.18);
+  padding: 16px 16px 26px;
+  min-height: 210px;
+  background:
+    radial-gradient(50% 70% at 82% 0%, rgb(120 200 255 / 0.42), transparent 60%),
+    radial-gradient(40% 50% at 100% 0%, rgb(120 200 255 / 0.3), transparent 60%),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.035) 0 2px, transparent 2px 9px) 0 30% / 100% 26% no-repeat,
+    linear-gradient(180deg, #0e2846 0%, #0b1220 100%);
+}
+.dash-hero .bcv-beam {
+  z-index: 0;
+}
+.dash-hero-pitch {
+  position: absolute;
+  left: -20%;
+  right: -20%;
+  bottom: -10px;
+  height: 46%;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.04) 0 60px, rgb(0 0 0 / 0.05) 60px 120px),
+    linear-gradient(180deg, #0b3b2a, #0b1220);
+  transform: perspective(500px) rotateX(50deg);
+  transform-origin: bottom;
+  opacity: 0.75;
+}
+.dash-crest {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1;
+  display: flex;
+  height: 98px;
+  width: 86px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 30px;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #1e88e5, #0d47a1);
+  clip-path: polygon(50% 0, 100% 14%, 100% 58%, 50% 100%, 0 58%, 0 14%);
+  filter: drop-shadow(0 20px 40px rgb(0 0 0 / 0.6));
+}
+.dash-crest:has(img) {
+  background: rgb(255 255 255 / 0.92);
+}
+@media (min-width: 640px) {
+  .dash-hero {
+    padding: 22px 26px 34px;
+    min-height: 260px;
+  }
+  .dash-crest {
+    top: 82px;
+    right: 48px;
+    bottom: auto;
+    height: 150px;
+    width: 130px;
+    font-size: 50px;
+  }
+}
+.dash-card {
+  height: 100%;
+  border-radius: 18px;
+  border: 1px solid var(--color-ui-line);
+  padding: 16px;
+  background: linear-gradient(180deg, var(--color-ui-surface), var(--color-ui-surface-2));
+  box-shadow: 0 14px 30px rgb(0 0 0 / 0.28);
+}
+.dash-day {
+  display: flex;
+  width: 66px;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 12px;
+  border: 1px solid var(--color-ui-line);
+  background: var(--color-ui-bg);
+  padding: 6px 0;
+  align-self: flex-start;
+}
+.dash-day small {
+  font-size: 12px;
+  color: var(--color-ui-muted);
+}
+.dash-day b {
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--color-ui-text);
+}
+.dash-big {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-ui-text);
+  font-variant-numeric: tabular-nums;
+}
+.dash-line {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--color-ui-muted);
+}
+.dash-ring {
+  display: flex;
+  height: 110px;
+  width: 110px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: conic-gradient(var(--color-ui-success) 0 var(--share), var(--color-ui-line) var(--share) 100%);
+}
+.dash-ring > div {
+  display: flex;
+  height: 86px;
+  width: 86px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-ui-surface);
+}
+.dash-ring b {
+  font-size: 24px;
+  color: var(--color-ui-text);
+}
+.dash-ring small {
+  font-size: 11px;
+  color: var(--color-ui-muted);
+}
+.dash-quote {
+  display: flex;
+  min-height: 170px;
+  flex-direction: column;
+  justify-content: flex-end;
+  background:
+    radial-gradient(60% 80% at 80% 0%, rgb(120 200 255 / 0.32), transparent 60%),
+    linear-gradient(180deg, #0e2846, #0b3b2a);
+}
+.dash-foot {
+  display: none;
+  align-items: center;
+  gap: 18px;
+  justify-content: center;
+  margin-top: 6px;
+  color: var(--color-ui-muted);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+}
+.dash-foot span {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-ui-brand));
+}
+.dash-foot span:last-child {
+  background: linear-gradient(90deg, var(--color-ui-brand), transparent);
+}
+@media (min-width: 1024px) {
+  .dash-foot {
+    display: flex;
+  }
+}
+html.sol .dash-hero {
+  background:
+    radial-gradient(50% 70% at 82% 0%, rgb(255 255 255 / 0.9), transparent 60%),
+    linear-gradient(180deg, #e3f0f9 0%, #f4f6fa 100%);
+  border-color: #c9d8e6;
+}
+html.sol .dash-hero-pitch {
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.18) 0 60px, rgb(0 0 0 / 0.03) 60px 120px),
+    linear-gradient(180deg, #5aa66f, #f4f6fa);
+}
+html.sol .dash-hero .bcv-beam {
+  display: none;
+}
+html.sol .dash-card {
+  box-shadow: 0 8px 20px rgb(15 40 70 / 0.1);
+}
+html.sol .dash-quote {
+  background:
+    radial-gradient(60% 80% at 80% 0%, rgb(255 255 255 / 0.8), transparent 60%),
+    linear-gradient(180deg, #dbeefa, #cfe8d6);
+}

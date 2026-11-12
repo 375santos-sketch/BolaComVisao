@@ -6,7 +6,7 @@ import { enterPanel, login, navTo } from './helpers';
 test('Época: semanas da época e objetivos do mês guardados', async ({ page }) => {
   await login(page, COACH_A);
   await enterPanel(page);
-  await expect(page.getByText(/Bem-vindo/)).toBeHidden({ timeout: 15_000 });
+  await expect(page.getByText(/Bem-vindo, (?!Mister)/)).toBeHidden({ timeout: 15_000 });
   const openSeason = async () => {
     await navTo(page, /Planeamento/);
     await page
@@ -44,7 +44,7 @@ test('Época: semanas da época e objetivos do mês guardados', async ({ page })
 test('Planeamento: semana, próximo treino, datas em português e minutos realizados', async ({ page }) => {
   await login(page, COACH_A);
   await enterPanel(page);
-  await expect(page.getByText(/Bem-vindo/)).toBeHidden({ timeout: 15_000 });
+  await expect(page.getByText(/Bem-vindo, (?!Mister)/)).toBeHidden({ timeout: 15_000 });
   await navTo(page, /Planeamento/);
   const planning = page.getByRole('navigation', { name: 'Planeamento' });
 
