@@ -554,9 +554,9 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
 
   if (accessibleTeams.length === 0) {
     return (
-      <div className="p-6 text-center text-slate-400">
+      <div className="p-6 text-center text-ui-muted">
         <div className="text-3xl mb-2">🔒</div>
-        <div className="font-bold text-white mb-1">Sem Acesso a Equipas</div>
+        <div className="font-bold text-ui-text mb-1">Sem Acesso a Equipas</div>
         <p className="text-xs">Não tens permissões atribuídas para aceder a nenhuma equipa deste clube.</p>
       </div>
     );
@@ -567,7 +567,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       {/* Team Selector & Header Bar */}
       <div className="ui-card flex flex-wrap items-center justify-between gap-2 p-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <label className="text-xs font-['Chakra_Petch'] font-bold uppercase text-cyan-300">Equipa:</label>
+          <label className="text-xs font-bold uppercase text-ui-brand">Equipa:</label>
           <select
             value={selectedTeamId}
             onChange={(e) => setSelectedTeamId(e.target.value)}
@@ -596,10 +596,10 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
           )}
 
           <span
-            className={`text-[10px] px-2 py-0.5 rounded-full font-mono uppercase ${
+            className={`text-[10px] px-2 py-0.5 rounded-full tabular-nums uppercase ${
               canEdit
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                ? 'bg-ui-success/20 text-ui-success border border-ui-success/30'
+                : 'bg-ui-warning/20 text-ui-warning border border-ui-warning/30'
             }`}
           >
             {canEdit ? `Editor (${userRoleOnTeam})` : `Modo Leitura (${userRoleOnTeam})`}
@@ -609,7 +609,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
         {/* Action Buttons */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {canEdit && (
-            <label className="cursor-pointer px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 hover:text-white rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase border border-cyan-500/30 transition-all flex items-center gap-1">
+            <label className="cursor-pointer px-2.5 py-1.5 bg-ui-surface-2 hover:bg-ui-surface-3 text-ui-brand hover:text-ui-text rounded-lg text-xs font-bold uppercase border border-ui-brand/30 transition-all flex items-center gap-1">
               <span>📥</span>
               <span>Importar Excel</span>
               <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} className="hidden" />
@@ -641,12 +641,12 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
             <button
               onClick={handleSave}
               disabled={saveStatus === 'saving'}
-              className={`px-3 py-1.5 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
                 saveStatus === 'saving'
-                  ? 'bg-amber-600 text-white animate-pulse'
+                  ? 'bg-ui-warning text-ui-text'
                   : hasUnsavedChanges
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-[0_0_12px_rgba(0,210,255,0.4)] hover:brightness-110'
-                    : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
+                    ? 'bg-ui-brand text-ui-brand-ink hover:brightness-110'
+                    : 'bg-ui-surface-2 text-ui-success border border-ui-success/30'
               }`}
             >
               {saveStatus === 'saving' ? (
@@ -676,12 +676,12 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       </div>
 
       {/* Warning Notice about Excel uppercase & symbols */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-cyan-950/40 border border-cyan-500/20 rounded-lg text-[11px] text-cyan-300">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-ui-brand-soft border border-ui-brand/20 rounded-lg text-[11px] text-ui-brand">
         <div className="flex items-center gap-1.5">
           <span>ℹ️</span>
           <span>Texto convertido para maiúsculas e sem acentos/símbolos</span>
         </div>
-        <div className="text-[10px] text-slate-400 font-mono">
+        <div className="text-[10px] text-ui-muted tabular-nums">
           {displayedRows.length} de {rows.length} linhas | {columns.length} colunas
         </div>
       </div>
@@ -697,11 +697,11 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
             placeholder="Pesquisar em todas as colunas..."
             className="ui-input w-full text-xs"
           />
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs">🔍</span>
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ui-muted text-xs">🔍</span>
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ui-muted hover:text-ui-text text-xs"
             >
               ✕
             </button>
@@ -732,21 +732,21 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       {/* Data Table Container */}
       <div className="ui-inset flex-1 min-h-[350px] max-h-[550px] overflow-auto scrollbar-thin">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+          <div className="flex flex-col items-center justify-center h-64 text-ui-muted">
             <div className="text-2xl animate-spin mb-2">🔄</div>
             <div className="text-xs">A carregar base de dados da equipa...</div>
           </div>
         ) : columns.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-slate-400 p-6 text-center">
+          <div className="flex flex-col items-center justify-center h-64 text-ui-muted p-6 text-center">
             <div className="text-4xl mb-3">📊</div>
-            <div className="font-bold text-white text-sm mb-1 font-['Chakra_Petch'] uppercase">Base de Dados Vazia</div>
-            <p className="text-xs text-slate-400 max-w-sm mb-4">
+            <div className="font-bold text-ui-text text-sm mb-1 ">Base de Dados Vazia</div>
+            <p className="text-xs text-ui-muted max-w-sm mb-4">
               Esta equipa ainda não tem nenhuma base de dados configurada. Importa um ficheiro Excel (.xlsx/.xls/.csv)
               ou cria uma nova coluna.
             </p>
             {canEdit && (
               <div className="flex items-center gap-2">
-                <label className="cursor-pointer px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 rounded-xl text-xs font-['Chakra_Petch'] font-bold uppercase shadow-lg hover:brightness-110 transition-all flex items-center gap-2">
+                <label className="cursor-pointer px-4 py-2 bg-ui-brand text-ui-brand-ink rounded-xl text-xs font-bold uppercase shadow-lg hover:brightness-110 transition-all flex items-center gap-2">
                   <span>📥</span>
                   <span>Importar Excel</span>
                   <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} className="hidden" />
@@ -762,24 +762,24 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
           </div>
         ) : (
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-sm border-b border-cyan-500/30 shadow-md">
+            <thead className="sticky top-0 z-10 bg-ui-surface/95 backdrop-blur-sm border-b border-ui-brand/30 shadow-md">
               <tr>
-                <th className="p-2 w-12 text-center text-[10px] font-mono text-slate-500 border-r border-slate-800">
+                <th className="p-2 w-12 text-center text-[10px] tabular-nums text-ui-muted border-r border-ui-line">
                   #
                 </th>
                 {columns.map((col) => (
                   <th
                     key={col}
-                    className="p-2.5 text-xs font-['Chakra_Petch'] font-bold uppercase text-cyan-300 border-r border-slate-800 select-none whitespace-nowrap min-w-[140px]"
+                    className="p-2.5 text-xs font-bold uppercase text-ui-brand border-r border-ui-line select-none whitespace-nowrap min-w-[140px]"
                   >
                     <div className="flex items-center justify-between gap-1 group">
                       <span
                         onClick={() => toggleSort(col)}
-                        className="cursor-pointer hover:text-white flex items-center gap-1"
+                        className="cursor-pointer hover:text-ui-text flex items-center gap-1"
                       >
                         <span>{col}</span>
                         {sortColumn === col && (
-                          <span className="text-[10px] text-cyan-400">{sortDirection === 'asc' ? '▲' : '▼'}</span>
+                          <span className="text-[10px] text-ui-brand">{sortDirection === 'asc' ? '▲' : '▼'}</span>
                         )}
                       </span>
 
@@ -787,14 +787,14 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => setColModal({ mode: 'rename', oldCol: col, newColName: col })}
-                            className="p-1 hover:text-cyan-300 text-slate-400 text-[10px]"
+                            className="p-1 hover:text-ui-brand text-ui-muted text-[10px]"
                             title="Renomear coluna"
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDeleteColumn(col)}
-                            className="p-1 hover:text-rose-400 text-slate-400 text-[10px]"
+                            className="p-1 hover:text-ui-danger text-ui-muted text-[10px]"
                             title="Apagar coluna"
                           >
                             🗑️
@@ -804,22 +804,20 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                     </div>
                   </th>
                 ))}
-                {canEdit && <th className="p-2 w-12 text-center text-slate-500 font-mono text-[10px]">Ações</th>}
+                {canEdit && <th className="p-2 w-12 text-center text-ui-muted tabular-nums text-[10px]">Ações</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono">
+            <tbody className="divide-y divide-ui-line/60 tabular-nums">
               {displayedRows.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length + (canEdit ? 2 : 1)} className="p-6 text-center text-slate-500 text-xs">
+                  <td colSpan={columns.length + (canEdit ? 2 : 1)} className="p-6 text-center text-ui-muted text-xs">
                     Nenhum registo encontrado com o filtro atual.
                   </td>
                 </tr>
               ) : (
                 displayedRows.map((row, idx) => (
-                  <tr key={row.id} className="hover:bg-slate-900/60 transition-colors group">
-                    <td className="p-2 text-center text-[10px] text-slate-600 border-r border-slate-800/80">
-                      {idx + 1}
-                    </td>
+                  <tr key={row.id} className="hover:bg-ui-surface/60 transition-colors group">
+                    <td className="p-2 text-center text-[10px] text-ui-muted border-r border-ui-line/80">{idx + 1}</td>
 
                     {columns.map((col) => {
                       const isEditing = editingCell?.rowId === row.id && editingCell?.col === col;
@@ -828,8 +826,8 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                       return (
                         <td
                           key={col}
-                          className={`p-2 border-r border-slate-800/60 text-slate-200 transition-colors ${
-                            canEdit ? 'cursor-text hover:bg-cyan-950/30' : ''
+                          className={`p-2 border-r border-ui-line/60 text-ui-text transition-colors ${
+                            canEdit ? 'cursor-text hover:bg-ui-brand-soft' : ''
                           }`}
                           onDoubleClick={() => startEditingCell(row.id, col, cellVal)}
                         >
@@ -852,7 +850,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                               className="min-h-[20px] truncate max-w-xs select-text"
                               title={String(cellVal)}
                             >
-                              {cellVal !== '' ? String(cellVal) : <span className="text-slate-700 italic">—</span>}
+                              {cellVal !== '' ? String(cellVal) : <span className="text-ui-muted italic">—</span>}
                             </div>
                           )}
                         </td>
@@ -863,7 +861,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                       <td className="p-2 text-center">
                         <button
                           onClick={() => handleDeleteRow(row.id)}
-                          className="opacity-0 group-hover:opacity-100 hover:text-rose-400 text-slate-500 text-xs p-1 transition-all"
+                          className="opacity-0 group-hover:opacity-100 hover:text-ui-danger text-ui-muted text-xs p-1 transition-all"
                           title="Apagar linha"
                         >
                           🗑️
@@ -882,13 +880,13 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       {colModal && (
         <div className="ui-overlay fixed inset-0 z-[100000] flex items-center justify-center p-4 animate-fade-in">
           <div className="ui-inset p-5 max-w-sm w-full text-left">
-            <h3 className="font-['Chakra_Petch'] font-bold text-sm text-cyan-300 uppercase mb-3">
+            <h3 className="font-bold text-sm text-ui-brand mb-3">
               {colModal.mode === 'add' ? 'Adicionar Nova Coluna' : `Renomear Coluna: ${colModal.oldCol}`}
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-slate-300 block mb-1">Nome da Coluna:</label>
+                <label className="text-xs text-ui-text block mb-1">Nome da Coluna:</label>
                 <input
                   type="text"
                   autoFocus
@@ -933,12 +931,12 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       {importModal && (
         <div className="ui-overlay fixed inset-0 z-[100000] flex items-center justify-center p-4 animate-fade-in">
           <div className="ui-inset p-5 max-w-2xl w-full max-h-[85vh] flex flex-col text-left">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="font-['Chakra_Petch'] font-bold text-base text-cyan-300 uppercase flex items-center gap-2">
+            <div className="flex items-center justify-between pb-3 border-b border-ui-line">
+              <div className="font-bold text-base text-ui-brand flex items-center gap-2">
                 <span>📊</span>
                 <span>Pré-visualização do Ficheiro Excel</span>
               </div>
-              <button onClick={() => setImportModal(null)} className="text-slate-400 hover:text-white text-lg p-1">
+              <button onClick={() => setImportModal(null)} className="text-ui-muted hover:text-ui-text text-lg p-1">
                 ✕
               </button>
             </div>
@@ -946,13 +944,13 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
             <div className="py-3 space-y-3 flex-1 overflow-y-auto">
               <div className="ui-card flex flex-wrap items-center justify-between gap-2 p-2.5 text-xs">
                 <div>
-                  <span className="text-slate-400">Ficheiro: </span>
-                  <span className="font-bold text-white">{importModal.fileName}</span>
+                  <span className="text-ui-muted">Ficheiro: </span>
+                  <span className="font-bold text-ui-text">{importModal.fileName}</span>
                 </div>
 
                 {importModal.sheetNames.length > 1 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-400">Folha: </span>
+                    <span className="text-ui-muted">Folha: </span>
                     <select
                       value={importModal.selectedSheet}
                       onChange={(e) => setImportModal({ ...importModal, selectedSheet: e.target.value })}
@@ -969,7 +967,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
               </div>
 
               {/* Requirement 6 discrete notice */}
-              <div className="p-2.5 bg-cyan-950/30 border border-cyan-500/30 rounded-xl text-xs text-cyan-300 flex items-center gap-2">
+              <div className="p-2.5 bg-ui-brand-soft border border-ui-brand/30 rounded-xl text-xs text-ui-brand flex items-center gap-2">
                 <span>✨</span>
                 <span>Texto convertido para maiúsculas e sem acentos/símbolos</span>
               </div>
@@ -979,7 +977,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                 const sheet = importModal.parsedSheets[importModal.selectedSheet];
                 if (!sheet || sheet.columns.length === 0) {
                   return (
-                    <div className="p-6 text-center text-slate-500 text-xs">
+                    <div className="p-6 text-center text-ui-muted text-xs">
                       Esta folha está vazia ou não tem cabeçalhos reconhecíveis.
                     </div>
                   );
@@ -987,30 +985,30 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
 
                 return (
                   <div className="space-y-2">
-                    <div className="text-[11px] text-slate-400">
+                    <div className="text-[11px] text-ui-muted">
                       A mostrar as primeiras 10 linhas de um total de {sheet.totalRows} linhas e {sheet.columns.length}{' '}
                       colunas:
                     </div>
-                    <div className="max-h-64 overflow-auto border border-slate-800 rounded-xl scrollbar-thin">
-                      <table className="w-full text-left text-[11px] border-collapse font-mono">
-                        <thead className="bg-slate-900 sticky top-0 border-b border-slate-800 text-cyan-300">
+                    <div className="max-h-64 overflow-auto border border-ui-line rounded-xl scrollbar-thin">
+                      <table className="w-full text-left text-[11px] border-collapse tabular-nums">
+                        <thead className="bg-ui-surface sticky top-0 border-b border-ui-line text-ui-brand">
                           <tr>
-                            <th className="p-1.5 w-8 text-center text-slate-600">#</th>
+                            <th className="p-1.5 w-8 text-center text-ui-muted">#</th>
                             {sheet.columns.map((c) => (
-                              <th key={c} className="p-1.5 border-r border-slate-800 whitespace-nowrap">
+                              <th key={c} className="p-1.5 border-r border-ui-line whitespace-nowrap">
                                 {c}
                               </th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-800/60">
+                        <tbody className="divide-y divide-ui-line/60">
                           {sheet.rows.slice(0, 10).map((r, rIdx) => (
-                            <tr key={rIdx} className="hover:bg-slate-900/50">
-                              <td className="p-1.5 text-center text-slate-600">{rIdx + 1}</td>
+                            <tr key={rIdx} className="hover:bg-ui-surface/50">
+                              <td className="p-1.5 text-center text-ui-muted">{rIdx + 1}</td>
                               {sheet.columns.map((c) => (
                                 <td
                                   key={c}
-                                  className="p-1.5 border-r border-slate-800 whitespace-nowrap max-w-[160px] truncate text-slate-300"
+                                  className="p-1.5 border-r border-ui-line whitespace-nowrap max-w-[160px] truncate text-ui-text"
                                 >
                                   {r[c] || '—'}
                                 </td>
@@ -1025,8 +1023,8 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
               })()}
             </div>
 
-            <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-              <div className="text-[11px] text-slate-400">
+            <div className="pt-3 border-t border-ui-line flex items-center justify-between">
+              <div className="text-[11px] text-ui-muted">
                 Os dados serão associados exclusivamente à equipa <strong>{activeTeam.clubName}</strong>.
               </div>
               <div className="flex items-center gap-2">
@@ -1040,7 +1038,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
                 <button
                   type="button"
                   onClick={handleConfirmImport}
-                  className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-bold text-xs uppercase shadow-md hover:brightness-110"
+                  className="px-4 py-1.5 rounded-lg bg-ui-brand text-ui-brand-ink font-bold text-xs shadow-md hover:brightness-110"
                 >
                   Confirmar Importação
                 </button>

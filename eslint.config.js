@@ -97,7 +97,16 @@ export default tseslint.config(
       'src/components/AppearanceSheet.tsx',
       'src/components/PushSettingsModal.tsx',
       'src/components/views/ClubView.tsx',
-      'src/components/AdminUsersModal.tsx'
+      'src/components/AdminUsersModal.tsx',
+      // Acabamento M1
+      'src/components/NotificationModal.tsx',
+      'src/components/views/AuthView.tsx',
+      'src/components/DatabaseModal.tsx',
+      'src/components/TeamDatabaseView.tsx',
+      'src/components/views/coach/CoachDashboardView.tsx',
+      'src/components/SquadGoalsAndAssistsModal.tsx',
+      'src/components/views/trainings/BatchTrainingSection.tsx',
+      'src/components/TeamInviteModal.tsx'
     ],
     rules: {
       'no-restricted-syntax': [
