@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useRef, useState } from 'react';
 import { Player, AppState } from '../../../types';
 import { computeAge } from '../../../lib/utils';
 import { calculatePlayerEvolution } from '../../../lib/intelligenceEngine';
@@ -22,17 +22,18 @@ import { Portal } from '../../ui/Portal';
 
 const PlayerCardModal = lazy(() => import('./PlayerCardModal'));
 
-/** The sections of the sheet, in the order the coach needs them; the bar at the top jumps to each one. */
-const SECTIONS = [
-  { id: 'resumo', label: 'Resumo' },
-  { id: 'avaliacao', label: 'Avaliação' },
-  { id: 'objetivos', label: 'Objetivos' },
-  { id: 'estatisticas', label: 'Estatísticas' },
-  { id: 'historico', label: 'Histórico' },
-  { id: 'fisico', label: 'Físico' },
-  { id: 'disponibilidade', label: 'Disponibilidade' },
-  { id: 'dados', label: 'Dados pessoais' }
+/**
+ * The sheet in five parts (tabs), each showing its own sections: the coach finds things where they expect them,
+ * without scrolling through everything.
+ */
+const TABS = [
+  { id: 'perfil', label: 'Perfil', sections: ['resumo', 'dados'] },
+  { id: 'avaliacao', label: 'Avaliação', sections: ['avaliacao', 'objetivos'] },
+  { id: 'presencas', label: 'Presenças', sections: ['disponibilidade'] },
+  { id: 'estatisticas', label: 'Estatísticas', short: 'Estatíst.', sections: ['estatisticas', 'fisico'] },
+  { id: 'historico', label: 'Histórico', sections: ['historico'] }
 ];
+const tabOf = (section: string) => TABS.find((t) => t.sections.includes(section))?.id || 'perfil';
 
 const ddmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
 
@@ -74,7 +75,8 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
     null
   );
   const [evaluateNow, setEvaluateNow] = useState(0);
-  const [active, setActive] = useState('resumo');
+  const [active, setActive] = useState('perfil');
+  const show = (section: string) => TABS.find((t) => t.id === active)?.sections.includes(section) ?? false;
   const [seasonMessage, setSeasonMessage] = useState<string>(
     (state.season && player.seasonMessages?.[state.season]) || ''
   );
@@ -88,28 +90,10 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
   const [last, before] = evaluations;
   const age = computeAge(player.birthDate);
 
-  // The section in view is marked in the bar
-  useEffect(() => {
-    const els = SECTIONS.map((s) => root.current?.querySelector(`#ficha-${s.id}`)).filter(Boolean) as Element[];
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible[0]) setActive(visible[0].target.id.replace('ficha-', ''));
-      },
-      { root: root.current, rootMargin: `-${(head.current?.offsetHeight || 200) + 8}px 0px -50% 0px` }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-  // Only the sheet scrolls (never the page behind), and the section starts just under the sticky header
+  // A tab shows its sections from the top (only the sheet scrolls, never the page behind)
   const jump = (id: string) => {
-    setActive(id);
-    const el = root.current?.querySelector<HTMLElement>(`#ficha-${id}`);
-    if (!el || !root.current) return;
-    const top = el.getBoundingClientRect().top - root.current.getBoundingClientRect().top + root.current.scrollTop;
-    root.current.scrollTo({ top: top - (head.current?.offsetHeight || 0) - 8, behavior: 'smooth' });
+    setActive(TABS.some((t) => t.id === id) ? id : tabOf(id));
+    root.current?.scrollTo({ top: 0 });
   };
 
   const saveRoster = (updatedRoster: Player[]) => {
@@ -241,7 +225,8 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
         </div>
         <SectionNav
           label="Secções da ficha"
-          sections={SECTIONS}
+          sections={TABS}
+          fill
           active={active}
           onJump={jump}
           className="border-t border-ui-line px-3"
@@ -250,7 +235,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
 
       <div className="space-y-6 px-4 py-4 lg:rounded-b-[var(--radius-ui-lg)] lg:border lg:border-t-0 lg:border-ui-line lg:bg-ui-surface/40">
         {/* Resumo */}
-        <section id="ficha-resumo" aria-label="Resumo" className="space-y-2">
+        <section id="ficha-resumo" hidden={!show('resumo')} aria-label="Resumo" className="space-y-2">
           <SectionHeader title={`Resumo · Época ${state.season || ''}`} />
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatTile
@@ -293,6 +278,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
         {/* Avaliação: strengths and points to improve of the last evaluation, then the evaluations */}
         <section
           id="ficha-avaliacao"
+          hidden={!show('avaliacao')}
           aria-label="Avaliação"
           className="space-y-2 [&_svg[role=img]]:mx-auto [&_svg[role=img]]:max-w-sm"
         >
@@ -345,7 +331,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
         </section>
 
         {/* Objetivos */}
-        <section id="ficha-objetivos" aria-label="Objetivos" className="space-y-2">
+        <section id="ficha-objetivos" hidden={!show('objetivos')} aria-label="Objetivos" className="space-y-2">
           <SectionHeader title="Objetivos" />
           <PlayerEvolutionSection
             part="objetivos"
@@ -356,7 +342,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
         </section>
 
         {/* Estatísticas: minutes game by game, training months, latest games; the full panel inside the page */}
-        <section id="ficha-estatisticas" aria-label="Estatísticas" className="space-y-2">
+        <section id="ficha-estatisticas" hidden={!show('estatisticas')} aria-label="Estatísticas" className="space-y-2">
           <SectionHeader
             title="Estatísticas e evolução"
             action={{
@@ -380,7 +366,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
         </section>
 
         {/* Histórico: the coach's notes and the end-of-season message (the evaluations list is in Avaliação) */}
-        <section id="ficha-historico" aria-label="Histórico" className="space-y-2">
+        <section id="ficha-historico" hidden={!show('historico')} aria-label="Histórico" className="space-y-2">
           <SectionHeader title="Histórico e notas" />
           <div className="ui-card space-y-2 p-4">
             <div className="flex items-center justify-between gap-2">
@@ -442,7 +428,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
         </section>
 
         {/* Físico: the fitness tests already recorded (Equipa → Testes), as they are */}
-        <section id="ficha-fisico" aria-label="Físico" className="space-y-2">
+        <section id="ficha-fisico" hidden={!show('fisico')} aria-label="Físico" className="space-y-2">
           <SectionHeader title="Físico · testes" />
           <div className="ui-card p-4">
             <PlayerTestsSection player={player} season={state.season || ''} clubName={state.myClubName || ''} />
@@ -450,9 +436,19 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
         </section>
 
         {/* Disponibilidade */}
-        <section id="ficha-disponibilidade" aria-label="Disponibilidade" className="space-y-2">
-          <SectionHeader title="Disponibilidade" />
+        <section
+          id="ficha-disponibilidade"
+          hidden={!show('disponibilidade')}
+          aria-label="Disponibilidade"
+          className="space-y-2"
+        >
+          <SectionHeader title="Presenças e disponibilidade" />
           <div className="ui-card space-y-2 p-4">
+            {indicator.attendance !== null && (
+              <p className="text-ui-body text-ui-text">
+                Presenças nos treinos desta época: <b>{pctLabel(indicator.attendance)}</b>
+              </p>
+            )}
             <div className="flex flex-wrap items-center gap-2">
               <AvailabilityPill player={player} withNote />
               {(player.status || 'disponivel') === 'disponivel' && (
@@ -480,7 +476,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
         </section>
 
         {/* Dados pessoais e contactos (only for the staff, as before) */}
-        <section id="ficha-dados" aria-label="Dados pessoais" className="space-y-2">
+        <section id="ficha-dados" hidden={!show('dados')} aria-label="Dados pessoais" className="space-y-2">
           <SectionHeader title="Dados pessoais e contactos" />
           <dl className="ui-card grid grid-cols-2 gap-x-4 gap-y-3 p-4 text-ui-caption sm:grid-cols-3">
             {[

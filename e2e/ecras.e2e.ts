@@ -2015,7 +2015,7 @@ test('testes: resultados por momento com cronómetro e evolução só na ficha d
   // The athlete's own evolution, in the athlete's sheet
   await page.getByRole('button', { name: 'Plantel', exact: false }).first().click();
   await page.getByRole('heading', { name: 'Rui Silva' }).click();
-  await page.getByRole('navigation', { name: 'Secções da ficha' }).getByRole('button', { name: 'Físico' }).click();
+  await page.getByRole('navigation', { name: 'Secções da ficha' }).getByRole('button', { name: 'Estatísticas' }).click();
   const own = page.getByRole('region', { name: 'Testes da época' });
   await expect(own).toContainText(/Sprint 20 m.*4,10 s → 2,\d\d s 🚀/);
   await expect(own).toContainText('Melhorou em 1 de 1 teste 💪');
