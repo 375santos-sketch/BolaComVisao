@@ -472,7 +472,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
                 type="button"
                 aria-pressed={liveTab === id}
                 onClick={() => setLiveTab(id)}
-                className={`-mb-px flex-1 border-b-2 px-2 py-2.5 text-ui-body font-bold transition-colors ${
+                className={`-mb-px flex-1 whitespace-nowrap border-b-2 px-1 py-2.5 text-ui-caption font-bold transition-colors sm:text-ui-body ${
                   liveTab === id
                     ? 'border-ui-brand text-ui-text'
                     : 'border-transparent text-ui-muted hover:text-ui-text'
@@ -593,6 +593,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
                 onEditCard={openEditCardModal}
                 onEditSub={openEditSubModal}
                 players={state.roster}
+                live
               />
             </div>
             <div className="ui-card space-y-2 p-3">
