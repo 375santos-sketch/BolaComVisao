@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppState, Match } from '../../types';
 import { t } from '../../i18n/dict';
 import { calculateMatchScore } from '../../lib/utils';
@@ -152,6 +152,15 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 
   const myClub = state.myClubName && state.myClubName.trim() !== '' ? state.myClubName : t(state.lang, 'def_club');
 
+  // While the clock runs, the minutes of each athlete are counted again every 15 seconds (not only after an action)
+  const [, setMinuteTick] = useState(0);
+  const clockRunning = Boolean(match?.timer?.isRunning);
+  useEffect(() => {
+    if (!clockRunning) return;
+    const id = setInterval(() => setMinuteTick((n) => n + 1), 15000);
+    return () => clearInterval(id);
+  }, [clockRunning]);
+
   if (!match) {
     return (
       <div className="pb-28 animate-fadeIn">
@@ -296,7 +305,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   const isLineup1stHalfReady = starting1stHalfCount === lineupSize;
 
   return (
-    <div className="modo-jogo pb-36 animate-fadeIn max-w-4xl mx-auto px-2 sm:px-4 space-y-3">
+    <div className="modo-jogo pb-36 animate-fadeIn max-w-4xl lg:max-w-none mx-auto px-2 sm:px-4 space-y-3">
       <Header
         title={t(state.lang, 'match_curr')}
         lang={state.lang}
@@ -311,285 +320,301 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         hasActiveMatch={true}
       />
 
-      {/* The scoreboard stays on top: score, clock, part of the game, pause */}
-      <LiveScoreboard
-        match={match}
-        myClubName={myClub}
-        onTogglePause={matchPhase === 'parte1' || matchPhase === 'parte2' ? handleTogglePause : undefined}
-        onEndFirstHalf={
-          matchPhase === 'parte1'
-            ? () => onShowConfirm('Terminar a 1.ª parte e começar o intervalo?', handleGoToHalftime)
-            : undefined
-        }
-        onEndGame={matchPhase !== 'nao_iniciado' ? () => setShowChecklistModal(true) : undefined}
-      />
-
-      {/* Before kick-off and at half time: the line-up and the next step */}
-      {(matchPhase === 'nao_iniciado' || matchPhase === 'intervalo') && (
-        <section aria-label="Parte do jogo" className="ui-card space-y-3 p-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowLineupFirstHalfModal(true)}
-              className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
-              title={`Gerir ${lineupSize} Titulares da 1.ª Parte`}
-            >
-              Titulares 1.ª parte{' '}
-              <strong className={isLineup1stHalfReady ? 'text-ui-success' : 'text-ui-warning'}>
-                {starting1stHalfCount}/{lineupSize}
-              </strong>
-            </button>
-            {hasFewConvocados && (
-              <span className="ui-badge ui-badge-warning">
-                Poucos convocados ({convocadosIds.length}/{lineupSize})
-              </span>
-            )}
-          </div>
-
-          {matchPhase === 'nao_iniciado' && (
-            <>
-              <button
-                type="button"
-                onClick={() => (isLineup1stHalfReady ? handleStartFirstHalf() : setShowLineupFirstHalfModal(true))}
-                className={`ui-btn w-full py-4 text-ui-lead font-extrabold ${
-                  isLineup1stHalfReady ? 'ui-btn-success' : 'ui-btn-primary'
-                }`}
-              >
-                {isLineup1stHalfReady
-                  ? 'Iniciar 1.ª parte'
-                  : `Selecionar ${lineupSize} Titulares (${starting1stHalfCount}/${lineupSize}) para Iniciar`}
-              </button>
-              {!isLineup1stHalfReady && (
-                <p className="text-center text-ui-caption text-ui-muted">
-                  Escolhe os {lineupSize} titulares para poder iniciar a 1.ª parte.
-                </p>
-              )}
-            </>
-          )}
-
-          {matchPhase === 'intervalo' && (
-            <>
-              <p className="text-ui-caption text-ui-muted">
-                No intervalo só se registam substituições. Golos e cartões ficam para a 2.ª parte.
-              </p>
-              <HalftimePlanPanel
-                match={match}
-                matches={state.matches || []}
-                roster={state.roster || []}
-                category={state.category}
-                onUseSuggestion={(ids) => {
-                  setSecondHalfPreset(ids);
-                  setShowLineupSecondHalfModal(true);
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  setSecondHalfPreset(null);
-                  setShowLineupSecondHalfModal(true);
-                }}
-                className="ui-btn ui-btn-success w-full py-4 text-ui-lead font-extrabold"
-              >
-                Iniciar 2.ª parte
-              </button>
-            </>
-          )}
-        </section>
-      )}
-
-      {/* Goals, substitution and card: the four big buttons */}
-      {matchPhase !== 'nao_iniciado' && (
-        <QuickBenchMode
-          section="pad"
-          match={match}
-          myClubName={myClub}
-          roster={state.roster || []}
-          onQuickGoalScored={openAddGoalModal}
-          onQuickGoalConceded={openAddConcededModal}
-          onQuickSub={openAddSubModal}
-          onQuickCard={openAddCardModal}
-          onAddCorner={handleQuickAddCorner}
-          onAddFoul={handleQuickAddFoul}
-          onAddOpponentCorner={handleQuickAddOpponentCorner}
-          onAddOpponentFoul={handleQuickAddOpponentFoul}
-          onAddShotInBoxFor={handleQuickAddShotInBoxFor}
-          onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
-          onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
-          onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
-        />
-      )}
-
-      {/* Em campo · Números · Cronologia */}
-      <div role="group" aria-label="Partes do jogo ao vivo" className="flex gap-1 border-b border-ui-line">
-        {(
-          [
-            ['campo', 'Em campo'],
-            ['numeros', 'Números'],
-            ['cronologia', 'Cronologia']
-          ] as const
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={liveTab === id}
-            onClick={() => setLiveTab(id)}
-            className={`-mb-px flex-1 border-b-2 px-2 py-2.5 text-ui-body font-bold transition-colors ${
-              liveTab === id ? 'border-ui-brand text-ui-text' : 'border-transparent text-ui-muted hover:text-ui-text'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {liveTab === 'campo' && (
-        <div className="space-y-3">
-          <LivePlayingTimePanel match={match} roster={state.roster || []} category={state.category} defaultExpanded />
-          {matchPhase === 'nao_iniciado' && (
-            <p className="ui-inset p-3 text-ui-caption text-ui-muted">
-              Os minutos de cada atleta aparecem aqui quando o jogo começar.
-            </p>
-          )}
-          <div className="flex flex-wrap gap-2">
-            {matchPhase !== 'nao_iniciado' && (
-              <button
-                type="button"
-                onClick={() => setShowLineupFirstHalfModal(true)}
-                className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
-              >
-                Titulares 1.ª parte {starting1stHalfCount}/{lineupSize}
-              </button>
-            )}
-            {(match.lineupSecondHalf?.length || 0) > 0 && (
-              <button
-                type="button"
-                onClick={() => setShowLineupSecondHalfModal(true)}
-                className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
-                title={`Ver ${lineupSize} Titulares da 2.ª Parte`}
-              >
-                Titulares 2.ª parte {match.lineupSecondHalf?.length}/{lineupSize}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setShowCaptainModal(true)}
-              className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
-            >
-              Capitão: {captainName || 'escolher'}
-            </button>
-          </div>
-          <div className="ui-card space-y-2 p-3">
-            <div className="flex items-center justify-between">
-              <h3 className="ui-kicker">Substituições ({match.subs?.length || 0})</h3>
-              <button type="button" onClick={openAddSubModal} className="text-ui-caption font-bold text-ui-brand">
-                + Adicionar
-              </button>
-            </div>
-            <SubstitutionEventsList
-              subs={match.subs || []}
-              roster={state.roster || []}
-              onEditSub={openEditSubModal}
-              onDeleteSub={handleDeleteSub}
-            />
-          </div>
-          <div className="ui-card space-y-2 p-3">
-            <div className="flex items-center justify-between">
-              <h3 className="ui-kicker">Cartões ({match.cards?.length || 0})</h3>
-              <button type="button" onClick={openAddCardModal} className="text-ui-caption font-bold text-ui-brand">
-                + Adicionar
-              </button>
-            </div>
-            <CardEventsList
-              cards={match.cards || []}
-              roster={state.roster || []}
-              onEditCard={openEditCardModal}
-              onDeleteCard={handleDeleteCard}
-            />
-          </div>
-        </div>
-      )}
-
-      {liveTab === 'numeros' && (
-        <div className="space-y-3">
-          <QuickBenchMode
-            section="numbers"
+      <div className="live-layout">
+        <div className="live-left space-y-3">
+          {/* The scoreboard stays on top: score, clock, part of the game, pause */}
+          <LiveScoreboard
             match={match}
             myClubName={myClub}
-            roster={state.roster || []}
-            onQuickGoalScored={openAddGoalModal}
-            onQuickGoalConceded={openAddConcededModal}
-            onQuickSub={openAddSubModal}
-            onQuickCard={openAddCardModal}
-            onAddCorner={handleQuickAddCorner}
-            onRemoveCorner={handleQuickRemoveCorner}
-            onAddFoul={handleQuickAddFoul}
-            onRemoveFoul={handleQuickRemoveFoul}
-            onAddOpponentCorner={handleQuickAddOpponentCorner}
-            onRemoveOpponentCorner={handleQuickRemoveOpponentCorner}
-            onAddOpponentFoul={handleQuickAddOpponentFoul}
-            onRemoveOpponentFoul={handleQuickRemoveOpponentFoul}
-            onAddShotInBoxFor={handleQuickAddShotInBoxFor}
-            onRemoveShotInBoxFor={handleQuickRemoveShotInBoxFor}
-            onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
-            onRemoveShotOutBoxFor={handleQuickRemoveShotOutBoxFor}
-            onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
-            onRemoveShotInBoxAgainst={handleQuickRemoveShotInBoxAgainst}
-            onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
-            onRemoveShotOutBoxAgainst={handleQuickRemoveShotOutBoxAgainst}
+            onTogglePause={matchPhase === 'parte1' || matchPhase === 'parte2' ? handleTogglePause : undefined}
+            onEndFirstHalf={
+              matchPhase === 'parte1'
+                ? () => onShowConfirm('Terminar a 1.ª parte e começar o intervalo?', handleGoToHalftime)
+                : undefined
+            }
+            onEndGame={matchPhase !== 'nao_iniciado' ? () => setShowChecklistModal(true) : undefined}
           />
-          <MatchStatsSection match={match} onUpdateMatch={updateMatchInState} />
-        </div>
-      )}
 
-      {liveTab === 'cronologia' && (
-        <div className="space-y-3">
-          <div className="ui-card p-4">
-            <MatchTimeline
-              match={match}
-              onEditGoal={(g) => (g.type === 'scored' ? openEditGoalModal(g) : openEditConcededModal(g))}
-              onEditCard={openEditCardModal}
-              onEditSub={openEditSubModal}
-              players={state.roster}
-            />
-          </div>
-          <div className="ui-card space-y-2 p-3">
-            <h3 className="ui-kicker">Golos marcados</h3>
-            <GoalEventsList
-              goals={match.goals || []}
-              roster={state.roster || []}
-              onEditGoal={openEditGoalModal}
-              onDeleteGoal={handleDeleteGoal}
-            />
-            <h3 className="ui-kicker pt-2">Golos sofridos</h3>
-            <ConcededGoalEventsList
-              goals={match.goals || []}
-              opponentName={match.opponent}
-              onEditGoal={openEditConcededModal}
-              onDeleteGoal={handleDeleteConcededGoal}
-            />
-          </div>
-        </div>
-      )}
+          {/* Before kick-off and at half time: the line-up and the next step */}
+          {(matchPhase === 'nao_iniciado' || matchPhase === 'intervalo') && (
+            <section aria-label="Parte do jogo" className="ui-card space-y-3 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLineupFirstHalfModal(true)}
+                  className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
+                  title={`Gerir ${lineupSize} Titulares da 1.ª Parte`}
+                >
+                  Titulares 1.ª parte{' '}
+                  <strong className={isLineup1stHalfReady ? 'text-ui-success' : 'text-ui-warning'}>
+                    {starting1stHalfCount}/{lineupSize}
+                  </strong>
+                </button>
+                {hasFewConvocados && (
+                  <span className="ui-badge ui-badge-warning">
+                    Poucos convocados ({convocadosIds.length}/{lineupSize})
+                  </span>
+                )}
+              </div>
 
-      {/* ↩︎ Desfazer: the last action, in a small bar above the menu */}
-      {lastAction && (
-        <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-30 mx-auto flex max-w-md justify-center px-3 lg:bottom-6 lg:pl-60">
-          <div className="ui-card flex items-center gap-3 px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
-            <span className="truncate text-ui-caption text-ui-muted">Último: {lastAction.label}</span>
-            <button
-              type="button"
-              aria-label={`↩︎ Desfazer: ${lastAction.label}`}
-              onClick={() => {
-                const undone = undoLastAction();
-                if (undone) onShowToast(`Desfeito: ${undone}`);
-              }}
-              className="ui-btn ui-btn-soft px-3 py-1 text-ui-caption font-bold"
+              {matchPhase === 'nao_iniciado' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => (isLineup1stHalfReady ? handleStartFirstHalf() : setShowLineupFirstHalfModal(true))}
+                    className={`ui-btn w-full py-4 text-ui-lead font-extrabold ${
+                      isLineup1stHalfReady ? 'ui-btn-success' : 'ui-btn-primary'
+                    }`}
+                  >
+                    {isLineup1stHalfReady
+                      ? 'Iniciar 1.ª parte'
+                      : `Selecionar ${lineupSize} Titulares (${starting1stHalfCount}/${lineupSize}) para Iniciar`}
+                  </button>
+                  {!isLineup1stHalfReady && (
+                    <p className="text-center text-ui-caption text-ui-muted">
+                      Escolhe os {lineupSize} titulares para poder iniciar a 1.ª parte.
+                    </p>
+                  )}
+                </>
+              )}
+
+              {matchPhase === 'intervalo' && (
+                <>
+                  <p className="text-ui-caption text-ui-muted">
+                    No intervalo só se registam substituições. Golos e cartões ficam para a 2.ª parte.
+                  </p>
+                  <HalftimePlanPanel
+                    match={match}
+                    matches={state.matches || []}
+                    roster={state.roster || []}
+                    category={state.category}
+                    onUseSuggestion={(ids) => {
+                      setSecondHalfPreset(ids);
+                      setShowLineupSecondHalfModal(true);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSecondHalfPreset(null);
+                      setShowLineupSecondHalfModal(true);
+                    }}
+                    className="ui-btn ui-btn-success w-full py-4 text-ui-lead font-extrabold"
+                  >
+                    Iniciar 2.ª parte
+                  </button>
+                </>
+              )}
+            </section>
+          )}
+
+          {/* Goals, corners and shots, then substitution, card and fouls */}
+          {matchPhase !== 'nao_iniciado' && (
+            <>
+              <QuickBenchMode
+                section="pad"
+                match={match}
+                myClubName={myClub}
+                roster={state.roster || []}
+                onQuickGoalScored={openAddGoalModal}
+                onQuickGoalConceded={openAddConcededModal}
+                onQuickSub={openAddSubModal}
+                onQuickCard={openAddCardModal}
+                onAddCorner={handleQuickAddCorner}
+                onAddFoul={handleQuickAddFoul}
+                onAddOpponentCorner={handleQuickAddOpponentCorner}
+                onAddOpponentFoul={handleQuickAddOpponentFoul}
+                onAddShotInBoxFor={handleQuickAddShotInBoxFor}
+                onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
+                onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
+                onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
+              />
+            </>
+          )}
+          {/* ↩︎ The last action, with Desfazer (takes back only that one) */}
+          {lastAction && (
+            <div
+              role="status"
+              className="flex items-center gap-2 rounded-ui-sm border border-ui-success bg-ui-success-soft px-3 py-2"
             >
-              Desfazer
-            </button>
+              <span aria-hidden className="text-ui-success">
+                ✓
+              </span>
+              <span className="min-w-0 flex-1 truncate text-ui-caption text-ui-text">Último: {lastAction.label}</span>
+              <button
+                type="button"
+                aria-label={`↩︎ Desfazer: ${lastAction.label}`}
+                onClick={() => {
+                  const undone = undoLastAction();
+                  if (undone) onShowToast(`Desfeito: ${undone}`);
+                }}
+                className="ui-btn ui-btn-secondary shrink-0 px-3 py-1 text-ui-caption font-bold"
+              >
+                ↩︎ Desfazer
+              </button>
+            </div>
+          )}
+          {/* Em campo · Números · Cronologia */}
+          <div
+            role="group"
+            aria-label="Partes do jogo ao vivo"
+            className="flex gap-1 border-b border-ui-line lg:hidden"
+          >
+            {(
+              [
+                ['campo', 'Em campo'],
+                ['cronologia', 'Cronologia'],
+                ['numeros', 'Mais números']
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={liveTab === id}
+                onClick={() => setLiveTab(id)}
+                className={`-mb-px flex-1 whitespace-nowrap border-b-2 px-1 py-2.5 text-ui-caption font-bold transition-colors sm:text-ui-body ${
+                  liveTab === id
+                    ? 'border-ui-brand text-ui-text'
+                    : 'border-transparent text-ui-muted hover:text-ui-text'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
+
+          <section aria-label="Mais números" className={`${liveTab === 'numeros' ? '' : 'hidden'} space-y-3 lg:block`}>
+            <h2 className="live-kicker hidden lg:flex">Mais números</h2>
+            {matchPhase !== 'nao_iniciado' && (
+              <QuickBenchMode
+                section="numbers"
+                match={match}
+                myClubName={myClub}
+                roster={state.roster || []}
+                onQuickGoalScored={openAddGoalModal}
+                onQuickGoalConceded={openAddConcededModal}
+                onQuickSub={openAddSubModal}
+                onQuickCard={openAddCardModal}
+                onAddCorner={handleQuickAddCorner}
+                onRemoveCorner={handleQuickRemoveCorner}
+                onAddFoul={handleQuickAddFoul}
+                onRemoveFoul={handleQuickRemoveFoul}
+                onAddOpponentCorner={handleQuickAddOpponentCorner}
+                onRemoveOpponentCorner={handleQuickRemoveOpponentCorner}
+                onAddOpponentFoul={handleQuickAddOpponentFoul}
+                onRemoveOpponentFoul={handleQuickRemoveOpponentFoul}
+                onAddShotInBoxFor={handleQuickAddShotInBoxFor}
+                onRemoveShotInBoxFor={handleQuickRemoveShotInBoxFor}
+                onAddShotOutBoxFor={handleQuickAddShotOutBoxFor}
+                onRemoveShotOutBoxFor={handleQuickRemoveShotOutBoxFor}
+                onAddShotInBoxAgainst={handleQuickAddShotInBoxAgainst}
+                onRemoveShotInBoxAgainst={handleQuickRemoveShotInBoxAgainst}
+                onAddShotOutBoxAgainst={handleQuickAddShotOutBoxAgainst}
+                onRemoveShotOutBoxAgainst={handleQuickRemoveShotOutBoxAgainst}
+              />
+            )}
+            <MatchStatsSection match={match} onUpdateMatch={updateMatchInState} />
+          </section>
         </div>
-      )}
+        <section aria-label="Em campo" className={`${liveTab === 'campo' ? '' : 'hidden'} lg:block`}>
+          <h2 className="live-kicker mb-2 hidden lg:flex">Em campo</h2>
+          <div className="space-y-3">
+            <LivePlayingTimePanel match={match} roster={state.roster || []} category={state.category} defaultExpanded />
+            {matchPhase === 'nao_iniciado' && (
+              <p className="ui-inset p-3 text-ui-caption text-ui-muted">
+                Os minutos de cada atleta aparecem aqui quando o jogo começar.
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {matchPhase !== 'nao_iniciado' && (
+                <button
+                  type="button"
+                  onClick={() => setShowLineupFirstHalfModal(true)}
+                  className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
+                >
+                  Titulares 1.ª parte {starting1stHalfCount}/{lineupSize}
+                </button>
+              )}
+              {(match.lineupSecondHalf?.length || 0) > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowLineupSecondHalfModal(true)}
+                  className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
+                  title={`Ver ${lineupSize} Titulares da 2.ª Parte`}
+                >
+                  Titulares 2.ª parte {match.lineupSecondHalf?.length}/{lineupSize}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowCaptainModal(true)}
+                className="ui-btn ui-btn-secondary px-3 py-1.5 text-ui-caption"
+              >
+                Capitão: {captainName || 'escolher'}
+              </button>
+            </div>
+            <div className="ui-card space-y-2 p-3">
+              <div className="flex items-center justify-between">
+                <h3 className="ui-kicker">Substituições ({match.subs?.length || 0})</h3>
+                <button type="button" onClick={openAddSubModal} className="text-ui-caption font-bold text-ui-brand">
+                  + Adicionar
+                </button>
+              </div>
+              <SubstitutionEventsList
+                subs={match.subs || []}
+                roster={state.roster || []}
+                onEditSub={openEditSubModal}
+                onDeleteSub={handleDeleteSub}
+              />
+            </div>
+            <div className="ui-card space-y-2 p-3">
+              <div className="flex items-center justify-between">
+                <h3 className="ui-kicker">Cartões ({match.cards?.length || 0})</h3>
+                <button type="button" onClick={openAddCardModal} className="text-ui-caption font-bold text-ui-brand">
+                  + Adicionar
+                </button>
+              </div>
+              <CardEventsList
+                cards={match.cards || []}
+                roster={state.roster || []}
+                onEditCard={openEditCardModal}
+                onDeleteCard={handleDeleteCard}
+              />
+            </div>
+          </div>
+        </section>
+        <section aria-label="Cronologia" className={`${liveTab === 'cronologia' ? '' : 'hidden'} lg:block`}>
+          <h2 className="live-kicker mb-2 hidden lg:flex">Cronologia</h2>
+          <div className="space-y-3">
+            <div className="ui-card p-4">
+              <MatchTimeline
+                match={match}
+                onEditGoal={(g) => (g.type === 'scored' ? openEditGoalModal(g) : openEditConcededModal(g))}
+                onEditCard={openEditCardModal}
+                onEditSub={openEditSubModal}
+                players={state.roster}
+                live
+              />
+            </div>
+            <div className="ui-card space-y-2 p-3">
+              <h3 className="ui-kicker">Golos marcados</h3>
+              <GoalEventsList
+                goals={match.goals || []}
+                roster={state.roster || []}
+                onEditGoal={openEditGoalModal}
+                onDeleteGoal={handleDeleteGoal}
+              />
+              <h3 className="ui-kicker pt-2">Golos sofridos</h3>
+              <ConcededGoalEventsList
+                goals={match.goals || []}
+                opponentName={match.opponent}
+                onEditGoal={openEditConcededModal}
+                onDeleteGoal={handleDeleteConcededGoal}
+              />
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* Modals */}
       <GoalModal

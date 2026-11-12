@@ -44,6 +44,12 @@ export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({
     })
     .sort((a, b) => a.minutes - b.minutes || a.label.localeCompare(b.label, 'pt-PT'));
 
+  // Only what the game already holds: goals scored and the card (red over yellow) of each athlete
+  const goalsBy = (id: string) => (match.goals || []).filter((g) => g.type === 'scored' && g.scorerId === id).length;
+  const cardOf = (id: string) => {
+    const cards = (match.cards || []).filter((c) => c.playerId === id);
+    return cards.some((c) => c.color === 'Vermelho') ? 'Vermelho' : cards.length ? 'Amarelo' : null;
+  };
   // A warning only: the bench players with the fewest minutes in this game, so the coach can decide
   const fewest = rows.filter((r) => !r.isOnPitch).slice(0, FEWEST_MINUTES_COUNT);
   const notPlayedYet = rows.filter((r) => r.minutes === 0 && !r.isOnPitch);
@@ -80,7 +86,22 @@ export const LivePlayingTimePanel: React.FC<LivePlayingTimePanelProps> = ({
                   className={`w-2 h-2 rounded-full shrink-0 ${r.isOnPitch ? 'bg-ui-success' : 'bg-ui-surface-3'}`}
                   title={r.isOnPitch ? 'Em campo' : 'No banco'}
                 />
-                <span className="flex-1 truncate text-ui-text">{r.label}</span>
+                <span className="flex-1 truncate text-ui-text">
+                  {r.label}
+                  {goalsBy(r.id) > 0 && (
+                    <span className="ml-1" title={`${goalsBy(r.id)} golo(s)`}>
+                      {'⚽'.repeat(Math.min(3, goalsBy(r.id)))}
+                    </span>
+                  )}
+                  {cardOf(r.id) && (
+                    <span
+                      aria-label={`Cartão ${cardOf(r.id)!.toLowerCase()}`}
+                      className={`ml-1 inline-block h-2.5 w-2 rounded-[2px] align-middle ${
+                        cardOf(r.id) === 'Vermelho' ? 'bg-ui-danger' : 'bg-ui-warning'
+                      }`}
+                    />
+                  )}
+                </span>
                 <span className="w-20 h-1.5 rounded-full bg-ui-surface-2 overflow-hidden">
                   <span
                     className={`block h-full ${r.isOnPitch ? 'bg-ui-success' : 'bg-ui-line-strong'}`}

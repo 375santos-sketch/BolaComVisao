@@ -42,28 +42,31 @@ export const LiveScoreboard: React.FC<{
 
   return (
     <div className="sticky top-0 z-30 -mx-2 px-2 pt-1 pb-2 sm:-mx-4 sm:px-4 bg-ui-bg/95 backdrop-blur">
-      <section
-        aria-label="Placar"
-        className={`ui-card grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2.5 ${
-          paused ? 'border-ui-warning' : ''
-        }`}
-      >
-        <div className="min-w-0 text-center">
-          <p className="truncate text-ui-caption font-bold text-ui-muted">{myClubName}</p>
-          <p className="ui-figure text-ui-display leading-none text-ui-brand">{ours}</p>
+      <section aria-label="Placar" className={`live-head ${paused ? '!border-ui-warning' : ''}`}>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <span className="truncate text-right text-ui-caption font-extrabold text-ui-muted">{myClubName}</span>
+          <span className="live-score">
+            <span className="text-ui-brand">{ours}</span>
+            <span className="mx-1.5 font-semibold text-ui-muted">–</span>
+            <span className="text-ui-text">{theirs}</span>
+          </span>
+          <span className="truncate text-ui-caption font-extrabold text-ui-muted">
+            {match.opponent || 'Adversário'}
+          </span>
         </div>
-        <div className="flex flex-col items-center gap-1">
-          <span className={`ui-badge ${phase === 'intervalo' ? 'ui-badge-brand' : paused ? 'ui-badge-warning' : ''}`}>
+        <div className="mt-1.5 flex items-center justify-center gap-2 text-ui-caption text-ui-muted">
+          <span
+            className={`ui-badge ${phase === 'intervalo' ? 'ui-badge-brand' : paused ? 'ui-badge-warning' : 'ui-badge-brand'}`}
+          >
             {paused ? 'Em pausa' : PHASE[phase] || ''}
           </span>
-          <span className="ui-figure tracking-wider text-ui-title text-ui-text">
-            {formatMatchTime(getMatchElapsedMs(match))}
+          <span className="flex items-center gap-1 font-extrabold text-ui-text">
+            {isRunning && <span aria-hidden className="h-2 w-2 rounded-full bg-ui-success" />}
+            <span data-testid="match-clock" className="ui-figure">
+              {formatMatchTime(getMatchElapsedMs(match))}
+            </span>
           </span>
-          <span className="text-ui-caption text-ui-muted">{minute ? `minuto ${minute}'` : '—'}</span>
-        </div>
-        <div className="min-w-0 text-center">
-          <p className="truncate text-ui-caption font-bold text-ui-muted">{match.opponent || 'Adversário'}</p>
-          <p className="ui-figure text-ui-display leading-none text-ui-text">{theirs}</p>
+          {minute ? <span>· minuto {minute}&apos;</span> : null}
         </div>
       </section>
       {(onTogglePause || onEndFirstHalf || onEndGame) && (
@@ -74,7 +77,7 @@ export const LiveScoreboard: React.FC<{
               onClick={onTogglePause}
               aria-pressed={paused}
               aria-label={paused ? '▶️ Retomar o jogo' : '⏸️ Pausa'}
-              className={`ui-btn flex-1 px-2 py-2 text-ui-caption font-bold ${
+              className={`ui-btn flex-1 px-2 py-1.5 text-ui-caption font-bold ${
                 paused ? 'ui-btn-success' : 'ui-btn-secondary'
               }`}
             >
@@ -85,7 +88,7 @@ export const LiveScoreboard: React.FC<{
             <button
               type="button"
               onClick={onEndFirstHalf}
-              className="ui-btn ui-btn-secondary flex-1 px-2 py-2 text-ui-caption font-bold"
+              className="ui-btn ui-btn-secondary flex-1 px-2 py-1.5 text-ui-caption font-bold"
             >
               Terminar 1.ª parte
             </button>
@@ -94,8 +97,8 @@ export const LiveScoreboard: React.FC<{
             <button
               type="button"
               onClick={onEndGame}
-              className={`ui-btn flex-1 px-2 py-2 text-ui-caption font-bold ${
-                phase === 'parte2' ? 'ui-btn-primary' : 'ui-btn-secondary'
+              className={`ui-btn flex-1 px-2 py-1.5 text-ui-caption font-bold ${
+                phase === 'parte2' ? 'ui-btn-soft-danger' : 'ui-btn-secondary !text-ui-danger'
               }`}
             >
               Terminar jogo

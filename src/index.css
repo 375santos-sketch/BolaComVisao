@@ -2367,3 +2367,143 @@ html.sol .squad-hero {
     transition: none;
   }
 }
+
+/* ---------- Jogo ao vivo: the scoreboard and the buttons used under pressure ---------- */
+.live-head {
+  border-radius: 16px;
+  border: 1px solid var(--color-ui-line);
+  padding: 10px 12px;
+  background:
+    radial-gradient(60% 120% at 50% 0%, rgb(32 197 232 / 0.2), transparent 70%),
+    linear-gradient(180deg, var(--color-ui-surface-2), var(--color-ui-surface));
+}
+html.sol .live-head {
+  background: linear-gradient(180deg, #e3f0f9, var(--color-ui-surface));
+}
+.live-score {
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 1024px) {
+  .live-score {
+    font-size: 48px;
+  }
+}
+.live-goal {
+  display: flex;
+  min-height: 70px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  font-size: 17px;
+  font-weight: 900;
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.18);
+  transition: transform 0.12s ease;
+}
+.live-goal small {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+.live-kicker {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ui-muted);
+}
+.live-kicker b {
+  letter-spacing: 0;
+  color: var(--color-ui-text);
+}
+.live-count {
+  position: relative;
+  display: flex;
+  min-height: 54px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--color-ui-line);
+  background: var(--color-ui-surface);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-ui-text);
+  transition: transform 0.12s ease;
+}
+.live-count small {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--color-ui-muted);
+}
+.live-count b {
+  position: absolute;
+  top: 4px;
+  right: 7px;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--color-ui-brand);
+}
+.live-count.is-theirs {
+  background: linear-gradient(180deg, var(--color-ui-surface), var(--color-ui-danger-soft));
+}
+.live-count.is-theirs b {
+  color: var(--color-ui-danger);
+}
+.live-small {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 12px;
+  border: 1px solid var(--color-ui-line);
+  background: var(--color-ui-surface);
+  padding: 0 4px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--color-ui-text);
+  transition: transform 0.12s ease;
+}
+.live-goal.is-pressed,
+.live-count.is-pressed,
+.live-small.is-pressed {
+  transform: scale(0.96);
+  outline: 2px solid var(--color-ui-brand);
+  outline-offset: 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-goal,
+  .live-count,
+  .live-small {
+    transition: none;
+  }
+}
+/* Phone: one column. Tablet (landscape): the scoreboard and the buttons on the left, the athletes and the timeline on
+   the right. Computer: three columns (buttons · athletes · timeline), nothing blown up. */
+@media (min-width: 1024px) {
+  .live-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .live-left {
+    grid-row: span 2;
+  }
+}
+@media (min-width: 1360px) {
+  .live-layout {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.9fr) minmax(0, 1fr);
+  }
+  .live-left {
+    grid-row: auto;
+  }
+}
