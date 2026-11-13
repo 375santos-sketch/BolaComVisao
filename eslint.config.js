@@ -108,7 +108,8 @@ export default tseslint.config(
       'src/components/views/trainings/BatchTrainingSection.tsx',
       'src/components/TeamInviteModal.tsx',
       // F1.1a
-      'src/components/admin/InventoryModal.tsx'
+      'src/components/admin/InventoryModal.tsx',
+      'src/components/admin/EncryptedBackupModal.tsx'
     ],
     rules: {
       'no-restricted-syntax': [
@@ -126,9 +127,17 @@ export default tseslint.config(
       ]
     }
   },
-  // F1.1a: the platform inventory ONLY READS. The Firestore write functions are forbidden in its files.
+  // F1.1a/F1.1b: the platform inventory and the encrypted copy ONLY READ. The Firestore write functions are forbidden in its files.
   {
-    files: ['src/lib/inventory.ts', 'src/services/inventoryReader.ts', 'src/components/admin/InventoryModal.tsx'],
+    files: [
+      'src/lib/inventory.ts',
+      'src/services/inventoryReader.ts',
+      'src/components/admin/InventoryModal.tsx',
+      // F1.1b: the encrypted copy also only reads
+      'src/lib/encryptedBackup.ts',
+      'src/services/backupReader.ts',
+      'src/components/admin/EncryptedBackupModal.tsx'
+    ],
     rules: {
       'no-restricted-imports': [
         'error',

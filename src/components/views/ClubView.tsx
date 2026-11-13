@@ -24,6 +24,8 @@ interface ClubViewProps {
   onOpenClubReports?: () => void;
   /** F1.1a: platform inventory (read only), for the platform Administrator. */
   onOpenInventory?: () => void;
+  /** F1.1b: encrypted copy of the platform (read only), for the platform Administrator. */
+  onOpenEncryptedBackup?: () => void;
   pendingUsersCount?: number;
 }
 
@@ -47,6 +49,7 @@ export const ClubView: React.FC<ClubViewProps> = ({
   onOpenTour,
   onOpenClubReports,
   onOpenInventory,
+  onOpenEncryptedBackup,
   pendingUsersCount = 0
 }) => {
   const isAdmin = isAppAdmin(state.currentUser);
@@ -137,6 +140,16 @@ export const ClubView: React.FC<ClubViewProps> = ({
                 title: 'Inventário da plataforma',
                 detail: 'Só leitura · contas, convites e contagens de registos',
                 run: onOpenInventory
+              }
+            ]
+          : []),
+        ...(isAdmin && onOpenEncryptedBackup
+          ? [
+              {
+                icon: 'database' as IconName,
+                title: 'Cópia cifrada da plataforma',
+                detail: 'Só leitura · criar e verificar uma cópia completa protegida por frase-passe',
+                run: onOpenEncryptedBackup
               }
             ]
           : [])
