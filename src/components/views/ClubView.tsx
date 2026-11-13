@@ -22,6 +22,8 @@ interface ClubViewProps {
   onOpenTour: () => void;
   /** 🧭 Relatórios do clube (coordinator and Administrador only). */
   onOpenClubReports?: () => void;
+  /** F1.1a: platform inventory (read only), for the platform Administrator. */
+  onOpenInventory?: () => void;
   pendingUsersCount?: number;
 }
 
@@ -44,6 +46,7 @@ export const ClubView: React.FC<ClubViewProps> = ({
   onOpenAdminUsers,
   onOpenTour,
   onOpenClubReports,
+  onOpenInventory,
   pendingUsersCount = 0
 }) => {
   const isAdmin = isAppAdmin(state.currentUser);
@@ -126,7 +129,17 @@ export const ClubView: React.FC<ClubViewProps> = ({
           detail: lastBackup ? `Última: ${lastBackup}` : 'Guardar e repor os dados',
           run: onOpenDatabase
         },
-        { icon: 'zap', title: 'Sincronização', detail: 'Estado da gravação na nuvem', run: onOpenSync }
+        { icon: 'zap', title: 'Sincronização', detail: 'Estado da gravação na nuvem', run: onOpenSync },
+        ...(isAdmin && onOpenInventory
+          ? [
+              {
+                icon: 'search' as IconName,
+                title: 'Inventário da plataforma',
+                detail: 'Só leitura · contas, convites e contagens de registos',
+                run: onOpenInventory
+              }
+            ]
+          : [])
       ]
     },
     {
