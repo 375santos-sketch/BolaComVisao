@@ -55,6 +55,13 @@ export async function readBackupDocuments(
     }
   }
 
+  // F1.3+: organizations, their members and their audit (the source of truth of access after the migration)
+  onProgress?.('A ler as organizações…');
+  for (const orgId of await readCollection('organizations')) {
+    await readCollection(`organizations/${orgId}/members`);
+    await readCollection(`organizations/${orgId}/audit`);
+  }
+
   onProgress?.('A ler as bases de dados das equipas…');
   for (const teamId of await readCollection('team_databases')) {
     for (const datasetId of await readCollection(`team_databases/${teamId}/datasets`)) {
