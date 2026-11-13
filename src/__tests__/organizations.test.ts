@@ -206,3 +206,47 @@ describe('F1.2 — serviço das organizações (Firestore simulado)', () => {
     expect(JSON.stringify(writes)).not.toContain('undefined');
   });
 });
+
+describe('F1.5 — escolher a organização pelos membros (Firestore simulado)', () => {
+  const docs = new Map<string, unknown>();
+  beforeEach(async () => {
+    docs.clear();
+    const firestore = await import('firebase/firestore');
+    vi.mocked(firestore.getDoc).mockImplementation((async (ref: { path: string }) => {
+      if (ref.path.startsWith('organizations/recusada'))
+        throw Object.assign(new Error('no'), { code: 'permission-denied' });
+      const data = docs.get(ref.path);
+      return { exists: () => data !== undefined, data: () => data, id: ref.path.split('/').pop() };
+    }) as never);
+  });
+  const org = (id: string, status: string) => docs.set(`organizations/${id}`, { id, status });
+  const memberOf = (id: string, status = 'active') =>
+    docs.set(`organizations/${id}/members/u1`, member({ uid: 'u1', status: status as never }));
+
+  it('an active member of an approved organization: that organization', async () => {
+    const { resolveOrganizationForAccount } = await import('../services/organizations');
+    org('clubeA', 'active');
+    memberOf('clubeA');
+    expect(await resolveOrganizationForAccount('u1', [undefined, 'clubeA'])).toBe('clubeA');
+  });
+
+  it('none (the app keeps the old rule): no candidates, pending org, revoked member, refused read', async () => {
+    const { resolveOrganizationForAccount } = await import('../services/organizations');
+    expect(await resolveOrganizationForAccount('u1', [undefined, null, ''])).toBeNull();
+    org('pendente', 'pending');
+    memberOf('pendente');
+    org('clubeR', 'active');
+    memberOf('clubeR', 'revoked');
+    expect(await resolveOrganizationForAccount('u1', ['pendente', 'clubeR', 'recusada', 'naoExiste'])).toBeNull();
+  });
+
+  it('keeps the one in use on this device while it is still valid', async () => {
+    const { resolveOrganizationForAccount } = await import('../services/organizations');
+    org('a', 'active');
+    memberOf('a');
+    org('b', 'active');
+    memberOf('b');
+    expect(await resolveOrganizationForAccount('u1', ['b', 'a'], 'b')).toBe('b');
+    expect(await resolveOrganizationForAccount('u1', ['b', 'a'], null)).toBe('a');
+  });
+});
