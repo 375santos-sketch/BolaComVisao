@@ -12,7 +12,37 @@ import { saveToIndexedDB, defaultSyncState } from './syncEngine';
 import { normalizeAndMigrateTrainings } from './trainingNumbering';
 import { buildDefaultSeasons, defaultSeason, seasonFromDate, normalizeSeasonString } from './utils';
 
-const STORAGE_KEY = 'coach-app-data-v1';
+import { ACTIVE_STATE_POINTER, LEGACY_STATE_KEY, stateKeyFor } from './deviceCache';
+
+// F1.4: the club data lives under one key per account and organization (deviceCache.ts); the old single key only
+// holds the signed-out state, and an old device moves from it to the new key the first time it saves.
+
+/** Writes the state under its account's key and marks it as the one to open next time. */
+function writeStateToDevice(state: AppState) {
+  const key = stateKeyFor(state.currentUser);
+  localStorage.setItem(key, JSON.stringify(state));
+  if (key === LEGACY_STATE_KEY) {
+    localStorage.removeItem(ACTIVE_STATE_POINTER);
+    return;
+  }
+  localStorage.setItem(ACTIVE_STATE_POINTER, key);
+  // Moved: the old shared copy of THIS account is no longer needed (another account's copy is left alone)
+  try {
+    const legacy = localStorage.getItem(LEGACY_STATE_KEY);
+    if (legacy && (JSON.parse(legacy) as Partial<AppState>)?.currentUser?.id === state.currentUser?.id) {
+      localStorage.removeItem(LEGACY_STATE_KEY);
+    }
+  } catch {
+    // An unreadable old copy is simply left as it was
+  }
+}
+
+/** The state to open: the last account and organization used, or the old single key on an old device. */
+function readStateFromDevice(): string | null {
+  const key = localStorage.getItem(ACTIVE_STATE_POINTER);
+  const data = key ? localStorage.getItem(key) : null;
+  return data ?? localStorage.getItem(LEGACY_STATE_KEY);
+}
 
 // Placeholder matches injected by older versions that must never be shown or synced again.
 const REMOVED_PLACEHOLDER_MATCH_IDS = ['match_tramagal_20261017', 'match_ouriense_20261010'];
@@ -460,7 +490,7 @@ export function clearAllAppState(keepUser: UserAccount | null = null): AppState 
     lang: 'pt'
   };
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanState));
+    writeStateToDevice(cleanState);
     saveToIndexedDB('coach_active_state', cleanState).catch(() => {});
   } catch (e) {
     console.error('Failed to clear app state in storage', e);
@@ -470,7 +500,7 @@ export function clearAllAppState(keepUser: UserAccount | null = null): AppState 
 
 export function loadAppState(): AppState {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const data = readStateFromDevice();
     if (data) {
       const parsed = JSON.parse(data);
       return normalizeClubState(parsed);
@@ -487,7 +517,7 @@ export function saveAppState(state: AppState): boolean {
   try {
     const normalized = normalizeClubState(state);
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    writeStateToDevice(normalized);
 
     // Dual offline persistence layer in IndexedDB (non-blocking)
     saveToIndexedDB('coach_active_state', normalized).catch(() => {});

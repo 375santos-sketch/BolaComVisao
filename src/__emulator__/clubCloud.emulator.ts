@@ -427,7 +427,9 @@ describe('Migração e utilização', () => {
   it('a second device entering records mode for the first time does not bring back its stale data', async () => {
     // Cloud: m2 was edited after the migration. This device still has the old (pre-migration) data and never
     // synced in records mode (no synced hashes on this device).
-    localStorage.removeItem(`bcv-synced-records-${CLUB}`);
+    // (F1.4: the markers are per account and club; remove the old per-club key too)
+    for (const k of [...storage.keys()].filter((key) => key.startsWith('bcv-synced-records-')))
+      localStorage.removeItem(k);
     const m2Id = recordDocId('match', 'sub11', 'm2');
     await fs.setDoc(fs.doc(recordsCol(), m2Id), {
       kind: 'match',

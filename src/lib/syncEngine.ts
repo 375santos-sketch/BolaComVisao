@@ -1,5 +1,6 @@
 import { AppState, SyncState, OfflineMutation } from '../types';
 import { uid } from './utils';
+import { isClubDataKey } from './deviceCache';
 import { saveMasterClubState } from '../services/firebase';
 
 const IDB_NAME = 'BolaComVisao_DB';
@@ -80,7 +81,7 @@ export async function clearDeviceClubData(): Promise<void> {
     const keys: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && (key.startsWith('bolacomvisao_') || key.startsWith('bcv-'))) keys.push(key);
+      if (key && (key.startsWith('bolacomvisao_') || isClubDataKey(key))) keys.push(key);
     }
     keys.forEach((k) => localStorage.removeItem(k));
   } catch {
