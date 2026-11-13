@@ -341,7 +341,10 @@ export default function App() {
         const isWiping = !updated.teams || updated.teams.length === 0;
         cloudSyncDebounceTimerRef.current = setTimeout(
           () => {
-            pushStateToCloud(updated, isWiping);
+            // The state as it is NOW, not the copy taken when the change was made: a change from another phone
+            // may have arrived in the meantime (e.g. a goal), and the old copy would put the old version back in
+            // the cloud for a moment. The latest state already holds this change and the one that arrived.
+            pushStateToCloud(isWiping ? updated : latestStateRef.current, isWiping);
           },
           // 📡 During a game, changes go out fast so the coaches following it see them live
           isWiping ? 200 : updates.matches !== undefined && liveMatchOf(updated.matches) ? 800 : 3500
