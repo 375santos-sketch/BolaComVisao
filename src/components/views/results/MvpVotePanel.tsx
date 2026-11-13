@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { workspaceIdOf } from '../../../lib/deviceCache';
 import { AppState, Match } from '../../../types';
 import { MvpLine } from '../../../lib/mvpCard';
 import {
@@ -79,7 +80,7 @@ export const MvpVotePanel: React.FC<MvpVotePanelProps> = ({
 
   const open = async () => {
     // Same club workspace as the cloud sync (accounts without a club code use the default "main" club)
-    const clubId = state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined;
+    const clubId = state.currentUser?.id ? workspaceIdOf(state.currentUser) : undefined;
     if (!clubId || !state.activeTeamId) {
       onShowToast('Precisa de ter sessão iniciada na nuvem para abrir a votação.');
       return;

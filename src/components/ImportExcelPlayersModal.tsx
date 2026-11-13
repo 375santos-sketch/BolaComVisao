@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { workspaceIdOf } from '../lib/deviceCache';
 import { Player, AppState, SquadProfile } from '../types';
 import {
   readExcelFile,
@@ -392,7 +393,7 @@ export const ImportExcelPlayersModal: React.FC<ImportExcelPlayersModalProps> = (
           teams: updatedTeams.length > 0 ? updatedTeams : state.teams || []
         };
         await saveMasterClubState(
-          state.currentUser.clubId || 'main',
+          workspaceIdOf(state.currentUser),
           fullNextState,
           state.currentUser.id,
           state.currentUser.name

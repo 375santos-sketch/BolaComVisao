@@ -936,6 +936,13 @@ export interface UserAccount {
   /** Invitation used to register (lets the security rules verify an invited, pre-approved account). */
   inviteCode?: string;
   createdAt: string;
+  /** F1.5: the organization this account belongs to by default (written by the migration M2, read at sign-in). */
+  defaultOrgId?: string;
+  /**
+   * F1.5: the organization in use on THIS device, confirmed through organizations/{orgId}/members/{uid}. When set,
+   * the club data comes from it; when not (no organization yet), the old rule applies (clubId or "main").
+   */
+  orgId?: string;
 }
 
 export interface TeamInvitation {

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { workspaceIdOf } from '../lib/deviceCache';
 import { AppState } from '../types';
 import { buildCalendarEvents, buildStaffEvents, newCalendarToken } from '../lib/calendarFeed';
 import { hashData } from '../lib/recordSync';
@@ -37,7 +38,7 @@ const TOKEN_FIELD = { pais: 'calendarToken', treinador: 'coachCalendarToken' } a
 const eventsFor = (which: Which, state: AppState) =>
   which === 'pais' ? calendarEventsOf(state) : coachCalendarEventsOf(state);
 /** Same club workspace as the cloud sync (accounts without a club code use the default "main" club). */
-const clubOf = (state: AppState) => (state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined);
+const clubOf = (state: AppState) => (state.currentUser?.id ? workspaceIdOf(state.currentUser) : undefined);
 
 /**
  * Creates a calendar link of the team: the parents' one (games and trainings) or the coaches' own (everything in the

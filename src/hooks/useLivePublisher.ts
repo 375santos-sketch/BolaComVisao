@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { workspaceIdOf } from '../lib/deviceCache';
 import { AppState } from '../types';
 import { hashData } from '../lib/recordSync';
 import { liveMatchOf } from '../lib/liveFollow';
@@ -24,7 +25,7 @@ export function livePayloadOf(state: AppState, today = localDateISO()) {
  */
 export function useLivePublisher(state: AppState): void {
   const token = (state.teams || []).find((t) => t.id === state.activeTeamId)?.liveToken;
-  const clubId = state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined;
+  const clubId = state.currentUser?.id ? workspaceIdOf(state.currentUser) : undefined;
   const live = liveMatchOf(state.matches);
   const recordingElsewhere = Boolean(live?.liveBy && live.liveBy !== state.currentUser?.name);
   const payload = token && !recordingElsewhere ? livePayloadOf(state) : null;

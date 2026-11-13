@@ -1,4 +1,5 @@
 import { AppState, SyncState, OfflineMutation } from '../types';
+import { workspaceIdOf } from './deviceCache';
 import { uid } from './utils';
 import { isClubDataKey } from './deviceCache';
 import { saveMasterClubState } from '../services/firebase';
@@ -143,7 +144,7 @@ export async function syncStateWithCloud(
     // 2. Direct write to official Firestore database
     const authorId = state.currentUser?.id;
     const authorName = state.currentUser?.name || state.currentUser?.username || 'Treinador';
-    const workspaceId = state.currentUser?.clubId || 'main';
+    const workspaceId = workspaceIdOf(state.currentUser);
     const result = await saveMasterClubState(workspaceId, state, authorId, authorName);
 
     if (result.success) {

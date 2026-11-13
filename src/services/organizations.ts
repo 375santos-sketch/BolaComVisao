@@ -13,6 +13,7 @@ import {
   OrgMember,
   OrgRole,
   Organization,
+  chooseActiveOrg,
   memberProblems,
   organizationProblems,
   withMemberStatus
@@ -140,4 +141,31 @@ export async function setMemberStatus(
   );
   await batch.commit();
   return next;
+}
+
+/**
+ * F1.5 — The organization this account works in, confirmed by its membership (active member of an approved
+ * organization). Candidates: the one in use on this device and the account's default one. Returns null when there
+ * is none (e.g. before the migration of "main"): the app then keeps the old rule. Never throws: a refused or failed
+ * read (rules not published yet, offline) just means "no organization confirmed".
+ */
+export async function resolveOrganizationForAccount(
+  uid: string,
+  candidates: Array<string | null | undefined>,
+  savedOrgId?: string | null
+): Promise<string | null> {
+  const ids = [...new Set(candidates.filter((c): c is string => typeof c === 'string' && c.trim().length > 0))];
+  const memberships: Array<{ orgId: string; member: OrgMember; org?: Pick<Organization, 'status'> }> = [];
+  for (const orgId of ids) {
+    try {
+      const member = await getMember(orgId, uid);
+      if (!member) continue;
+      const org = await getOrganization(orgId);
+      if (!org || org.status !== 'active') continue;
+      memberships.push({ orgId, member, org });
+    } catch {
+      // Not readable (not a member, rules not published, offline): not a confirmed organization
+    }
+  }
+  return chooseActiveOrg(memberships, savedOrgId);
 }

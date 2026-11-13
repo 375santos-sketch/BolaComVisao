@@ -1,4 +1,5 @@
 import { AppState } from '../types';
+import { workspaceIdOf } from './deviceCache';
 import { sendNotice } from '../services/push';
 
 /**
@@ -14,7 +15,7 @@ export async function notifyReport(
   month: string
 ): Promise<{ ok: boolean; sent: number; error?: string }> {
   try {
-    const r = await sendNotice(state.currentUser?.clubId || 'main', teamId, {
+    const r = await sendNotice(workspaceIdOf(state.currentUser), teamId, {
       kind: 'relatorio',
       title,
       body,
