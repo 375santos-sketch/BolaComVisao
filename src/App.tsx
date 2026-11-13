@@ -56,6 +56,7 @@ const ResultsView = lazyWithRetry(() => import('./components/views/ResultsView')
 const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 'DatabaseModal');
 const MonthlyReportView = lazyWithRetry(() => import('./components/report/MonthlyReportView'));
 const ClubReportsView = lazyWithRetry(() => import('./components/report/ClubReportsView'));
+const InventoryModal = lazyWithRetry(() => import('./components/admin/InventoryModal'));
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
 const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsModal'));
@@ -163,6 +164,7 @@ export default function App() {
   const [showAppearance, setShowAppearance] = useState<boolean>(false);
   const [showMonthlyReport, setShowMonthlyReport] = useState<boolean>(false);
   const [showClubReports, setShowClubReports] = useState<boolean>(false);
+  const [showInventory, setShowInventory] = useState<boolean>(false);
   const [showCareer, setShowCareer] = useState<boolean>(false);
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
   const [showPushSettings, setShowPushSettings] = useState<boolean>(false);
@@ -1059,6 +1061,7 @@ export default function App() {
                   setTourOpen(true);
                 }}
                 onOpenClubReports={() => setShowClubReports(true)}
+                onOpenInventory={() => setShowInventory(true)}
                 pendingUsersCount={pendingUsersCount}
               />
             )}
@@ -1227,6 +1230,11 @@ export default function App() {
               onShowToast={showToast}
               onClose={() => setShowCareer(false)}
             />
+          </Suspense>
+        )}
+        {showInventory && isAppAdmin(state.currentUser) && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <InventoryModal onClose={() => setShowInventory(false)} />
           </Suspense>
         )}
         {showClubReports && (

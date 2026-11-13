@@ -106,7 +106,9 @@ export default tseslint.config(
       'src/components/views/coach/CoachDashboardView.tsx',
       'src/components/SquadGoalsAndAssistsModal.tsx',
       'src/components/views/trainings/BatchTrainingSection.tsx',
-      'src/components/TeamInviteModal.tsx'
+      'src/components/TeamInviteModal.tsx',
+      // F1.1a
+      'src/components/admin/InventoryModal.tsx'
     ],
     rules: {
       'no-restricted-syntax': [
@@ -120,6 +122,41 @@ export default tseslint.config(
           selector:
             'TemplateElement[value.raw=/(^|[\\s:])(bg|text|border|ring|fill|stroke|outline|divide)-(slate|gray|zinc|red|orange|amber|yellow|green|emerald|cyan|sky|blue|violet|purple|fuchsia|pink|rose|white|black)(-\\d|\\/|\\s|$)/]',
           message: 'Use as cores do Design System (ui-brand, ui-text, ui-muted, ui-success…), não a paleta do Tailwind.'
+        }
+      ]
+    }
+  },
+  // F1.1a: the platform inventory ONLY READS. The Firestore write functions are forbidden in its files.
+  {
+    files: ['src/lib/inventory.ts', 'src/services/inventoryReader.ts', 'src/components/admin/InventoryModal.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'firebase/firestore',
+              importNames: [
+                'setDoc',
+                'updateDoc',
+                'deleteDoc',
+                'addDoc',
+                'writeBatch',
+                'runTransaction',
+                'deleteField',
+                'increment',
+                'arrayUnion',
+                'arrayRemove'
+              ],
+              message: 'O inventário é só de leitura: nada de escritas no Firestore.'
+            }
+          ],
+          patterns: [
+            {
+              group: ['**/clubCloud', '**/cloudAuthService', '**/storage'],
+              message: 'O inventário é só de leitura: não usa os serviços que gravam.'
+            }
+          ]
         }
       ]
     }

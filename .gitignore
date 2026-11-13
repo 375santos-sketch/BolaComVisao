@@ -13,3 +13,8 @@ coverage/
 # Testes de ecrã (Playwright)
 /test-results/
 /playwright-report/
+
+# Inventário e cópias da plataforma (F1.1): nunca no repositório
+bcv-inventario-*
+*.bcvbak
+bcv-backup-*
