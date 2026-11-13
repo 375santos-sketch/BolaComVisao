@@ -18,6 +18,7 @@ import {
   setSynced,
   isRecordKey
 } from '../lib/recordSync';
+import { legacySyncedKey, syncedKeyFor } from '../lib/deviceCache';
 
 /**
  * Cloud storage of a club, one Firestore document per record (club_workspace/{club}/records/{docId}).
@@ -63,11 +64,13 @@ export function getCloudMode(workspaceId?: string | null): CloudMode {
 
 // ---------- Synced hashes (per device, per club) ----------
 
-const syncedKey = (ws: string) => `bcv-synced-records-${ws}`;
+// F1.4: per account AND club (two accounts on the same device never share what they know to be in the cloud).
+// An old device reads the old per-club key once and moves it.
+const syncedKey = (ws: string) => syncedKeyFor(auth.currentUser?.uid || 'sem-sessao', ws);
 
 function loadSyncedHashes(ws: string): SyncedHashes | null {
   try {
-    const raw = localStorage.getItem(syncedKey(ws));
+    const raw = localStorage.getItem(syncedKey(ws)) ?? localStorage.getItem(legacySyncedKey(ws));
     return raw ? (JSON.parse(raw) as SyncedHashes) : null;
   } catch {
     return null;
@@ -77,6 +80,7 @@ function loadSyncedHashes(ws: string): SyncedHashes | null {
 function saveSyncedHashes(ws: string, hashes: SyncedHashes) {
   try {
     localStorage.setItem(syncedKey(ws), JSON.stringify(hashes));
+    localStorage.removeItem(legacySyncedKey(ws));
   } catch {
     // Storage full/unavailable: the next merge simply re-derives the baseline.
   }
