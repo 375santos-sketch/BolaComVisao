@@ -113,7 +113,12 @@ describe('F1.3 — dados do clube por membros da organização', () => {
     await signInAs('treinador');
     await expect(canRead(['club_workspace', 'orgX', 'records', 'player__sub11__p1'])).resolves.toBeTruthy();
     await expect(canWrite(['club_workspace', 'orgX', 'records', 'player__sub11__p2'])).resolves.toBeUndefined();
-    await expect(fs.getDocs(fs.collection(fb.db, 'club_workspace/orgX/records'))).resolves.toBeTruthy();
+    // (F2.3: a coach with some teams reads them through a query by team, as the app does since F2.2)
+    await expect(
+      fs.getDocs(
+        fs.query(fs.collection(fb.db, 'club_workspace/orgX/records'), fs.where('teamId', 'in', ['sub11', '_club']))
+      )
+    ).resolves.toBeTruthy();
   });
 
   it('suspended, revoked and non-members get nothing', async () => {

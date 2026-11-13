@@ -237,11 +237,55 @@ service cloud.firestore {
         isValidId(data.addedBy) && data.addedAt is number;
     }
 
+    // ---- F2.3: per team and per role (rules v3a) ----
+    // A person with a membership in the organization (any status) is governed ONLY by it: their teams and role.
+    // Who has no membership yet keeps the old access (club or "main") until the strict rules v3 (F1.10).
+
+    function hasOrgMembership(orgId) {
+      return isAuthenticated() && exists(orgMemberPath(orgId, request.auth.uid));
+    }
+
+    function myOrgTeams(orgId) {
+      return get(orgMemberPath(orgId, request.auth.uid)).data.teamIds;
+    }
+
+    /** An active member sees the club record ('_club') and the teams of their membership ('*' = every team). */
+    function memberSeesTeam(orgId, teamId) {
+      return isActiveOrgMember(orgId) &&
+        (teamId == '_club' || myOrgTeams(orgId).hasAny(['*']) || teamId in myOrgTeams(orgId));
+    }
+
+    /** Staff only reads; the club record is written only by who manages the club (owner, admin). */
+    function memberWritesTeam(orgId, teamId) {
+      return memberSeesTeam(orgId, teamId) &&
+        myOrgRole(orgId) != 'staff' &&
+        (teamId != '_club' || isOrgManager(orgId));
+    }
+
+    /** Invitations (D3): managers invite any role (not Administrador); a coordinator invites coaches and assistants;
+     *  a coach invites assistants and staff; always for a team they see. */
+    function memberInvites(orgId, role, teamId) {
+      return isActiveOrgMember(orgId) && teamId != '_club' && memberSeesTeam(orgId, teamId) && (
+        myOrgRole(orgId) in ['owner', 'admin'] ||
+        (myOrgRole(orgId) == 'coordenador' && role in ['Treinador Principal', 'Treinador Adjunto']) ||
+        (myOrgRole(orgId) == 'treinador' &&
+          role in ['Treinador Adjunto', 'Treinador de Guarda-Redes', 'Preparador Físico', 'Analista', 'Fisioterapeuta'])
+      );
+    }
+
     function canAccessClubWorkspace(workspaceId) {
       return isAuthenticated() && (
-        isMasterAdmin() || 
+        isMasterAdmin() ||
         // F1.3: an active member of the organization (its data lives in club_workspace/{orgId})
         isActiveOrgMember(workspaceId) ||
+        // F2.3: the old access only for who has NO membership there (a suspended or revoked member has none)
+        (!hasOrgMembership(workspaceId) && legacyClubAccess(workspaceId))
+      );
+    }
+
+    /** The access before organizations (club in the account, or "main"): kept until the strict rules v3. */
+    function legacyClubAccess(workspaceId) {
+      return isAuthenticated() && (
         (isApprovedUser() && (
           // Exact match with user's assigned clubId
           (getUserClubId() != null && workspaceId == getUserClubId()) ||
@@ -537,19 +581,32 @@ service cloud.firestore {
 
     // Shared Master Club Database (tactics, squad, matches, trainings, schedule)
     match /club_workspace/{workspaceId} {
-      allow get, list: if canAccessClubWorkspace(workspaceId);
+      // F2.3: the old single document holds EVERY team's data: only who manages the club (and who has no
+      // membership yet, with the old access)
+      allow get, list: if isMasterAdmin() || isOrgManager(workspaceId) ||
+        (!hasOrgMembership(workspaceId) && legacyClubAccess(workspaceId));
       
-      allow create, update: if canAccessClubWorkspace(workspaceId) && 
+      allow create, update: if (isMasterAdmin() || isOrgManager(workspaceId) ||
+          (!hasOrgMembership(workspaceId) && legacyClubAccess(workspaceId))) &&
         isValidId(workspaceId) && 
         isValidClubWorkspace(incoming());
       
       allow delete: if isMasterAdmin();
 
       match /records/{recordId} {
-        allow get, list: if canAccessClubWorkspace(workspaceId);
-        allow create, update: if canAccessClubWorkspace(workspaceId) &&
-          isValidId(recordId) &&
-          isValidClubRecord(incoming());
+        // F2.3: a member reads only the club record and the records of their teams
+        allow get, list: if isMasterAdmin() ||
+          memberSeesTeam(workspaceId, resource.data.teamId) ||
+          (!hasOrgMembership(workspaceId) && legacyClubAccess(workspaceId));
+        // …and writes only their teams (staff never; the club record only who manages the club). A record never
+        // moves to another team.
+        allow create, update: if isValidId(recordId) &&
+          isValidClubRecord(incoming()) && (
+            isMasterAdmin() ||
+            (memberWritesTeam(workspaceId, incoming().teamId) &&
+              (resource == null || resource.data.teamId == incoming().teamId)) ||
+            (!hasOrgMembership(workspaceId) && legacyClubAccess(workspaceId))
+          );
         // Records are deleted with tombstones (deleted: true); hard deletes only by the Administrator.
         allow delete: if isMasterAdmin();
       }
@@ -634,11 +691,16 @@ service cloud.firestore {
       allow list: if isMasterAdmin();
 
       // Created by an approved member, for their own club, as themselves, never for the Administrador role.
-      allow create: if isApprovedUser() && isValidId(invitationId) &&
+      allow create: if isValidId(invitationId) &&
         incoming().status == 'pending' &&
         incoming().role != 'Administrador' &&
-        incoming().invitedBy == request.auth.uid &&
-        (isMasterAdmin() || isOwnClub(incoming().clubId));
+        incoming().invitedBy == request.auth.uid && (
+          isMasterAdmin() ||
+          // F2.3: a member of the organization invites by role and only for their teams (D3)
+          (hasOrgMembership(incoming().clubId) &&
+            memberInvites(incoming().clubId, incoming().role, incoming().teamId)) ||
+          (!hasOrgMembership(incoming().clubId) && isApprovedUser() && isOwnClub(incoming().clubId))
+        );
 
       // Revoked by the Administrador or a member of the same club; accepted once by the invited new account.
       allow update: if isMasterAdmin() ||
