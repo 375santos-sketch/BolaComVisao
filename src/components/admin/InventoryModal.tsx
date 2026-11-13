@@ -3,7 +3,7 @@
  * adult accounts, and downloads them as a JSON file with a checksum. It writes nothing to the cloud (no state
  * update is passed to it, and the lint configuration forbids the Firestore write functions here).
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sheet } from '../ui/Sheet';
 import { StatTile } from '../ui/StatTile';
 import { Inventory, InventoryWorkspace, buildInventory, inventoryFile } from '../../lib/inventory';
@@ -142,9 +142,17 @@ const InventoryModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [inventory, setInventory] = useState<Inventory | null>(null);
   const [checksum, setChecksum] = useState('');
   const [failure, setFailure] = useState('');
+  // Seconds since the reading started: shows that the app is working (and for how long)
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    if (!busy) return;
+    const t = setInterval(() => setSeconds((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [busy]);
 
   const run = async () => {
     setBusy(true);
+    setSeconds(0);
     setFailure('');
     try {
       const source = await readInventorySource(setProgress);
@@ -205,7 +213,7 @@ const InventoryModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </p>
         {busy && (
           <p role="status" className="text-ui-caption text-ui-muted">
-            {progress || 'A ler…'}
+            {progress || 'A ler…'} ({seconds} s)
           </p>
         )}
         {failure && (

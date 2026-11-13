@@ -376,3 +376,40 @@ export async function inventoryFile(inventory: Inventory): Promise<InventoryFile
 export async function verifyInventoryFile(file: InventoryFile): Promise<boolean> {
   return file?.format === INVENTORY_FORMAT && (await inventoryChecksum(file.inventory)) === file.sha256;
 }
+
+// ---------- Time limit of each reading ----------
+
+/** A reading of the cloud that does not answer within this time is given up (it never hangs the screen). */
+export const READ_TIMEOUT_MS = 60_000;
+
+export class ReadTimeoutError extends Error {
+  code = 'timeout';
+  constructor(label: string, ms: number) {
+    super(`${label}: sem resposta do servidor ao fim de ${Math.round(ms / 1000)} s`);
+  }
+}
+
+/** The promise, or a ReadTimeoutError when it takes longer than `ms`. */
+export function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const limit = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new ReadTimeoutError(label, ms)), ms);
+  });
+  return Promise.race([promise, limit]).finally(() => clearTimeout(timer));
+}
+
+/** Plain words for why the cloud could not be read at all. */
+export function serverProblemMessage(err: unknown): string {
+  const e = err as { code?: string; message?: string };
+  const text = `${e?.code || ''} ${e?.message || ''}`;
+  if (/resource-exhausted|quota/i.test(text)) {
+    return 'A quota diária gratuita do Firestore está esgotada. Tente de novo amanhã (a quota renova-se às 8h00 em Portugal).';
+  }
+  if (/permission-denied/i.test(text)) {
+    return 'A nuvem recusou a leitura: esta conta não está registada como Administrador da plataforma (coleção admins).';
+  }
+  if (e?.code === 'timeout') {
+    return 'O servidor não respondeu. Causas prováveis: a quota diária gratuita do Firestore esgotada, ou a ligação à internet fraca. Tente de novo mais tarde, de preferência em Wi-Fi.';
+  }
+  return `Não foi possível ler a nuvem (${e?.code || e?.message || String(err)}).`;
+}
