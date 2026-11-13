@@ -261,8 +261,19 @@ const InventoryModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               </p>
               <Table
                 label="Lista de contas"
-                head={['Nome', 'Email', 'Papel', 'Estado', 'Clube', 'Equipas', 'Desde']}
+                head={['Conta', 'Nome', 'Email', 'Papel', 'Estado', 'Clube', 'Equipas', 'Desde']}
                 rows={a.list.map((u) => [
+                  <span key="c" className="font-mono">
+                    {u.uid.slice(0, 8)}
+                    {u.format === 'account' ? (
+                      ''
+                    ) : (
+                      <span className="block font-sans text-ui-warning">
+                        {u.format === 'antigo' ? 'formato antigo' : 'sem dados de conta'}
+                        {u.fields.length ? ` · campos: ${u.fields.join(', ')}` : ' · documento vazio'}
+                      </span>
+                    )}
+                  </span>,
                   <span key="n">
                     {u.name || '—'}
                     {u.platformAdmin ? ' ★' : ''}
@@ -275,6 +286,16 @@ const InventoryModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   u.createdAt ? u.createdAt.slice(0, 10) : '—'
                 ])}
               />
+              {(a.byFormat['antigo'] || 0) + (a.byFormat['sem dados'] || 0) > 0 && (
+                <p className="ui-inset p-2.5 text-ui-caption text-ui-warning">
+                  {a.byFormat['sem dados'] || 0} documento(s) sem dados de conta e {a.byFormat['antigo'] || 0} no
+                  formato antigo. Campos encontrados neles (só os nomes):{' '}
+                  {Object.entries(a.fieldsWithoutAccount)
+                    .map(([k, n]) => `${k} (${n})`)
+                    .join(', ') || 'nenhum'}
+                  . «Conta» é o início do identificador do documento em users/ na consola do Firebase.
+                </p>
+              )}
               <p className="text-ui-caption text-ui-muted">★ Administrador da plataforma. Sem telefones.</p>
             </Section>
 
