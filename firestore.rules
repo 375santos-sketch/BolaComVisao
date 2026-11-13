@@ -174,9 +174,74 @@ service cloud.firestore {
      * Enforces strict multi-club tenant isolation:
      * A coach or staff user can ONLY read and write data belonging to their own club workspace.
      */
+    // ---- F1.3: organizations and members (rules v2 "compatible") ----
+    // organizations/{orgId}/members/{uid} becomes the source of truth of access. These rules ADD access for active
+    // members of an approved (active) organization, and KEEP the old access (clubId and the "main" fallback)
+    // until the migration of "main" is done and checked (the strict rules v3 come later, in F1.10).
+
+    function orgMemberPath(orgId, uid) {
+      return /databases/$(database)/documents/organizations/$(orgId)/members/$(uid);
+    }
+
+    function orgPath(orgId) {
+      return /databases/$(database)/documents/organizations/$(orgId);
+    }
+
+    function isActiveOrgMember(orgId) {
+      return isAuthenticated() &&
+        exists(orgMemberPath(orgId, request.auth.uid)) &&
+        get(orgMemberPath(orgId, request.auth.uid)).data.status == 'active' &&
+        exists(orgPath(orgId)) &&
+        // Only APPROVED organizations give access: a pending one (waiting for the platform's manual approval) or a
+        // suspended one gives none, so nobody gets in by creating an organization themselves
+        get(orgPath(orgId)).data.status == 'active';
+    }
+
+    function myOrgRole(orgId) {
+      return get(orgMemberPath(orgId, request.auth.uid)).data.role;
+    }
+
+    function roleRank(role) {
+      return {'owner': 7, 'admin': 6, 'diretor': 5, 'coordenador': 4, 'treinador': 3, 'adjunto': 2, 'staff': 1}[role];
+    }
+
+    /** Owner or admin of the organization: they manage the members. */
+    function isOrgManager(orgId) {
+      return isActiveOrgMember(orgId) && myOrgRole(orgId) in ['owner', 'admin'];
+    }
+
+    function isValidOrganization(orgId, data) {
+      return data is map &&
+        data.keys().hasAll(['id', 'type', 'name', 'status', 'ownerUid', 'createdAt', 'createdBy', 'plan']) &&
+        data.keys().hasOnly(['id', 'type', 'name', 'shortName', 'logoUrl', 'status', 'ownerUid', 'createdAt', 'createdBy', 'plan']) &&
+        data.id == orgId && isValidId(orgId) &&
+        data.type in ['individual', 'club'] &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+        (!data.keys().hasAny(['shortName']) || (data.shortName is string && data.shortName.size() <= 40)) &&
+        (!data.keys().hasAny(['logoUrl']) || (data.logoUrl is string && data.logoUrl.size() <= 2048)) &&
+        data.status in ['pending', 'active', 'suspended'] &&
+        isValidId(data.ownerUid) && isValidId(data.createdBy) &&
+        data.createdAt is number && data.plan == null;
+    }
+
+    function isValidOrgMember(uid, data) {
+      return data is map &&
+        data.keys().hasAll(['uid', 'displayName', 'email', 'role', 'teamIds', 'status', 'addedBy', 'addedAt']) &&
+        data.keys().hasOnly(['uid', 'displayName', 'email', 'role', 'teamIds', 'status', 'addedBy', 'addedAt', 'revokedAt', 'revokedBy']) &&
+        data.uid == uid &&
+        data.displayName is string && data.displayName.size() <= 120 &&
+        data.email is string && data.email.size() <= 254 &&
+        data.role in ['owner', 'admin', 'diretor', 'coordenador', 'treinador', 'adjunto', 'staff'] &&
+        data.teamIds is list && data.teamIds.size() > 0 && data.teamIds.size() <= 50 &&
+        data.status in ['active', 'suspended', 'revoked'] &&
+        isValidId(data.addedBy) && data.addedAt is number;
+    }
+
     function canAccessClubWorkspace(workspaceId) {
       return isAuthenticated() && (
         isMasterAdmin() || 
+        // F1.3: an active member of the organization (its data lives in club_workspace/{orgId})
+        isActiveOrgMember(workspaceId) ||
         (isApprovedUser() && (
           // Exact match with user's assigned clubId
           (getUserClubId() != null && workspaceId == getUserClubId()) ||
@@ -587,6 +652,84 @@ service cloud.firestore {
           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'usedBy', 'acceptedAt']) &&
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.account.get('inviteCode', '') == invitationId);
       allow delete: if isMasterAdmin();
+    }
+
+    // ---- F1.3: organizations, their members and their audit ----
+    match /organizations/{orgId} {
+      // Its members, its owner (also while pending) and the platform Administrator read it; only the Administrator lists
+      allow get: if isMasterAdmin() || isActiveOrgMember(orgId) ||
+        (isAuthenticated() && resource.data.ownerUid == request.auth.uid);
+      allow list: if isMasterAdmin();
+      // Anyone signed in creates their OWN organization, waiting for approval (manual approval during the pilot)
+      allow create: if isValidOrganization(orgId, incoming()) && (
+        isMasterAdmin() ||
+        (isAuthenticated() &&
+          incoming().ownerUid == request.auth.uid &&
+          incoming().createdBy == request.auth.uid &&
+          incoming().status == 'pending' &&
+          // Never the id of a club that already has data (e.g. "main"): that would hand its data to a stranger
+          // once approved by mistake
+          !exists(/databases/$(database)/documents/club_workspace/$(orgId)) &&
+          orgId != 'main' && orgId != 'default')
+      );
+      // The Administrator approves or suspends; the owner/admin change only the name and the logo
+      allow update: if isValidOrganization(orgId, incoming()) && (
+        isMasterAdmin() ||
+        (isOrgManager(orgId) &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['name', 'shortName', 'logoUrl']))
+      );
+      allow delete: if false;
+
+      match /members/{memberUid} {
+        allow get: if isMasterAdmin() || (isAuthenticated() && request.auth.uid == memberUid) || isActiveOrgMember(orgId);
+        allow list: if isMasterAdmin() || isActiveOrgMember(orgId);
+        allow create: if isValidOrgMember(memberUid, incoming()) && incoming().addedBy == request.auth.uid && (
+          isMasterAdmin() ||
+          // The owner as first member, in the same write that creates their pending organization
+          (isAuthenticated() &&
+            memberUid == request.auth.uid &&
+            incoming().role == 'owner' &&
+            incoming().status == 'active' &&
+            !exists(orgPath(orgId)) &&
+            getAfter(orgPath(orgId)).data.ownerUid == request.auth.uid &&
+            getAfter(orgPath(orgId)).data.status == 'pending') ||
+          // An owner/admin adds a member: never an owner, never above their own role
+          (isOrgManager(orgId) &&
+            incoming().role != 'owner' &&
+            roleRank(incoming().role) <= roleRank(myOrgRole(orgId)))
+        );
+        // Owner/admin change role, teams or status of the others (never the owner, never to owner or above them)
+        allow update: if isValidOrgMember(memberUid, incoming()) && (
+          isMasterAdmin() ||
+          (isOrgManager(orgId) &&
+            memberUid != request.auth.uid &&
+            existing().role != 'owner' &&
+            incoming().role != 'owner' &&
+            roleRank(existing().role) <= roleRank(myOrgRole(orgId)) &&
+            roleRank(incoming().role) <= roleRank(myOrgRole(orgId)) &&
+            incoming().addedBy == existing().addedBy &&
+            incoming().addedAt == existing().addedAt)
+        );
+        // Access is taken away with status "revoked" (kept for the record), never by deleting
+        allow delete: if false;
+      }
+
+      // Audit: only appended, by an active member (or the owner creating the organization), in their own name
+      match /audit/{entryId} {
+        allow get, list: if isMasterAdmin() || isOrgManager(orgId);
+        allow create: if isAuthenticated() &&
+          isValidId(entryId) &&
+          incoming().keys().hasAll(['action', 'actorUid', 'at']) &&
+          incoming().keys().hasOnly(['action', 'actorUid', 'targetUid', 'teamId', 'at', 'details']) &&
+          incoming().actorUid == request.auth.uid &&
+          incoming().action is string && incoming().action.size() <= 40 &&
+          incoming().at is number &&
+          (!incoming().keys().hasAny(['details']) || (incoming().details is map && incoming().details.size() <= 10)) &&
+          (isMasterAdmin() ||
+            (existsAfter(orgMemberPath(orgId, request.auth.uid)) &&
+              getAfter(orgMemberPath(orgId, request.auth.uid)).data.status == 'active'));
+        allow update, delete: if false;
+      }
     }
 
     // System configurations & metadata
