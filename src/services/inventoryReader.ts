@@ -7,7 +7,15 @@
  */
 import { collection, doc, getCountFromServer, getDocFromServer, getDocsFromServer } from 'firebase/firestore';
 import { db } from './firebase';
-import { InventorySource, RawDoc, RawWorkspace, workspaceIdsToRead } from '../lib/inventory';
+import {
+  InventorySource,
+  READ_TIMEOUT_MS,
+  RawDoc,
+  RawWorkspace,
+  serverProblemMessage,
+  withTimeout,
+  workspaceIdsToRead
+} from '../lib/inventory';
 
 /** Collections that are only counted (their content is not needed for the inventory). */
 const COUNTED_COLLECTIONS = ['team_workspaces', 'team_databases', 'clubs', 'audit_logs', 'system'];
@@ -19,14 +27,18 @@ const reason = (err: unknown) => {
 
 async function readAll(path: string[]): Promise<RawDoc[]> {
   const [first, ...rest] = path;
-  const snap = await getDocsFromServer(collection(db, first, ...rest));
+  const snap = await withTimeout(getDocsFromServer(collection(db, first, ...rest)), READ_TIMEOUT_MS, path.join('/'));
   return snap.docs.map((d) => ({ id: d.id, data: d.data() as Record<string, unknown> }));
 }
 
 async function readWorkspace(id: string): Promise<RawWorkspace> {
   const ws: RawWorkspace = { id, legacy: null, records: [], pushSubscriptions: [], errors: [] };
   try {
-    const snap = await getDocFromServer(doc(db, 'club_workspace', id));
+    const snap = await withTimeout(
+      getDocFromServer(doc(db, 'club_workspace', id)),
+      READ_TIMEOUT_MS,
+      `club_workspace/${id}`
+    );
     ws.legacy = snap.exists() ? (snap.data() as Record<string, unknown>) : null;
   } catch (err) {
     ws.errors.push(`documento do clube: ${reason(err)}`);
@@ -57,7 +69,14 @@ export async function readInventorySource(onProgress?: (text: string) => void): 
   };
 
   onProgress?.('A ler as contas…');
-  const users = await safe('contas (users)', () => readAll(['users']), []);
+  // The first reading tells whether the cloud answers at all: if not, stop with a clear reason instead of
+  // waiting for every other reading to give up too
+  let users: RawDoc[];
+  try {
+    users = await readAll(['users']);
+  } catch (err) {
+    throw new Error(serverProblemMessage(err), { cause: err });
+  }
   const admins = await safe('administradores (admins)', async () => (await readAll(['admins'])).map((d) => d.id), []);
   onProgress?.('A ler os convites…');
   const invitations = await safe('convites (invitations)', () => readAll(['invitations']), []);
@@ -79,7 +98,7 @@ export async function readInventorySource(onProgress?: (text: string) => void): 
   for (const name of COUNTED_COLLECTIONS) {
     collectionCounts[name] = await safe(
       `contagem de ${name}`,
-      async () => (await getCountFromServer(collection(db, name))).data().count,
+      async () => (await withTimeout(getCountFromServer(collection(db, name)), READ_TIMEOUT_MS, name)).data().count,
       null
     );
   }

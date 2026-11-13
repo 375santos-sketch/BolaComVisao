@@ -196,3 +196,15 @@ describe('F1.1a — inventário da plataforma (só leitura)', () => {
     });
   });
 });
+
+describe('F1.1a — leitura que não responde', () => {
+  it('gives up after the time limit instead of hanging, and says why in plain words', async () => {
+    const { withTimeout, serverProblemMessage } = await import('../lib/inventory');
+    const never = new Promise<string>(() => {});
+    await expect(withTimeout(never, 20, 'users')).rejects.toMatchObject({ code: 'timeout' });
+    await expect(withTimeout(Promise.resolve('ok'), 1000, 'users')).resolves.toBe('ok');
+    expect(serverProblemMessage({ code: 'timeout' })).toMatch(/não respondeu.*quota/);
+    expect(serverProblemMessage({ code: 'resource-exhausted' })).toMatch(/quota diária gratuita/);
+    expect(serverProblemMessage({ code: 'permission-denied' })).toMatch(/Administrador da plataforma/);
+  });
+});
