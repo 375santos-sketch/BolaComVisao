@@ -13,6 +13,8 @@ const AUTH = 'http://127.0.0.1:9099';
 export const PASSWORD = 'segredo123';
 export const COACH_A = 'coach.a@clube.pt';
 export const COACH_B = 'coach.b@clube.pt';
+/** 🧭 The club's technical coordinator (no team assigned: sees every team through the role). */
+export const COORD = 'coord@clube.pt';
 
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json | undefined };
 
@@ -62,10 +64,11 @@ export default async function seed() {
   });
   await fetch(`${AUTH}/emulator/v1/projects/${PROJECT}/accounts`, { method: 'DELETE' });
 
-  for (const [email, name] of [
-    [COACH_A, 'Treinador A'],
-    [COACH_B, 'Treinador B']
-  ]) {
+  for (const [email, name, role, teams] of [
+    [COACH_A, 'Treinador A', 'Treinador Principal', ['all']],
+    [COACH_B, 'Treinador B', 'Treinador Principal', ['all']],
+    [COORD, 'Coordenador C', 'Coordenador Técnico', []]
+  ] as [string, string, string, string[]][]) {
     const uid = await signUp(email);
     await put(`users/${uid}`, {
       account: {
@@ -73,10 +76,10 @@ export default async function seed() {
         username: email.split('@')[0],
         email,
         name,
-        role: 'Treinador Principal',
+        role,
         status: 'approved',
         clubId: 'clubA',
-        assignedTeams: ['all'],
+        assignedTeams: teams,
         createdAt: '2026-10-01T00:00:00Z'
       },
       createdAt: 1,

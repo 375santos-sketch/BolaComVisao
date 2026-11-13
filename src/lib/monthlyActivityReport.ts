@@ -1,4 +1,13 @@
-import { AbsenceReason, AppState, Match, MonthlyReportRecord, Player, ScheduledMatch, Training } from '../types';
+import {
+  AbsenceReason,
+  AppState,
+  Match,
+  MonthlyReportRecord,
+  Player,
+  ScheduledMatch,
+  SquadProfile,
+  Training
+} from '../types';
 import { withRosterIds } from './eventPlayers';
 import { getCalledUpPlayers, gamesMissingStarters, withPlayableDurations } from './playingTime';
 import { buildPlayerSeason } from './playerSeason';
@@ -60,8 +69,55 @@ export type MonthlyReportNext = NonNullable<MonthlyReportRecord['next']>;
 export const REPORT_STATUS_LABEL: Record<MonthlyReportRecord['status'], string> = {
   rascunho: 'Rascunho',
   validado: 'Validado pelo treinador',
-  entregue: 'Entregue ao coordenador'
+  entregue: 'Entregue ao coordenador',
+  revisto: 'Revisto pelo coordenador',
+  devolvido: 'Devolvido ao treinador'
 };
+
+/** The states the coach sets (the coordinator sets «revisto» and «devolvido»). */
+export const COACH_STATUSES: MonthlyReportRecord['status'][] = ['rascunho', 'validado', 'entregue'];
+
+/** What happened to the report, oldest first (Estado in the coordinator's view). */
+export function reportTimeline(r: MonthlyReportRecord): { at: string; text: string }[] {
+  const out: { at: string; text: string }[] = [];
+  if (r.createdAt) out.push({ at: r.createdAt, text: 'Rascunho criado' });
+  if (r.validatedAt)
+    out.push({ at: r.validatedAt, text: `Validado pelo treinador${r.validatedBy ? ` (${r.validatedBy})` : ''}` });
+  if (r.deliveredAt) out.push({ at: r.deliveredAt, text: 'Entregue ao coordenador' });
+  if (r.returnedAt)
+    out.push({ at: r.returnedAt, text: `Devolvido ao treinador${r.returnedBy ? ` por ${r.returnedBy}` : ''}` });
+  if (r.reviewedAt) out.push({ at: r.reviewedAt, text: `Revisto${r.reviewedBy ? ` por ${r.reviewedBy}` : ''}` });
+  return out.sort((a, b) => a.at.localeCompare(b.at));
+}
+
+/** The season's months, September to June ("2026/2027" → "2026-09" … "2027-06"). */
+export function seasonMonths(season: string): string[] {
+  const y = Number((season || '').slice(0, 4));
+  if (!y) return [];
+  return [9, 10, 11, 12, 1, 2, 3, 4, 5, 6].map((m) => `${m >= 9 ? y : y + 1}-${String(m).padStart(2, '0')}`);
+}
+
+/** One team's data in the shape the report reads (each team keeps its own trainings, games and athletes). */
+export function teamReportState(team: SquadProfile, teams: SquadProfile[]) {
+  return {
+    matches: team.matches || [],
+    trainings: team.trainings || [],
+    roster: team.roster || [],
+    schedule: team.schedule || [],
+    category: team.category,
+    season: team.season,
+    myClubName: team.clubName,
+    teams,
+    activeTeamId: team.id
+  };
+}
+
+/** The team's head coach as written in the team's staff (else the first coach, else nothing). */
+export function teamCoachName(team: SquadProfile): string {
+  const staff = team.staffMembers || [];
+  const head = staff.find((s) => /principal/i.test(s.role || '')) || staff.find((s) => /treinador/i.test(s.role || ''));
+  return head?.name || '';
+}
 
 /** The record of a team's month ("2026-10"): one per team and month. */
 export const reportRecordId = (month: string) => `relatorio-${month}`;

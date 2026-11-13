@@ -170,3 +170,26 @@ describe('testResult', () => {
     );
   });
 });
+
+describe('avisos dos relatórios mensais', () => {
+  it("a report notice is accepted and goes to the team's phones whatever the game preferences", () => {
+    const req = cleanNoticeRequest({
+      clubId: 'c1',
+      teamId: 't1',
+      kind: 'relatorio',
+      title: 'Relatório de outubro',
+      body: 'Pedido pelo coordenador'
+    });
+    expect(req?.kind).toBe('relatorio');
+    const sub = (id: string, uid: string, teamIds: string[]) =>
+      cleanSubscription(id, {
+        uid,
+        endpoint: 'https://push.example/x',
+        keys: { p256dh: 'a', auth: 'b' },
+        prefs: { inicio: false, golo: false, fim: false },
+        teamIds
+      })!;
+    const subs = [sub('s1', 'coach', ['t1']), sub('s2', 'other', ['t2']), sub('s3', 'coord', [])];
+    expect(subscriptionsToNotify(subs, 'coord', { kind: 'relatorio', teamId: 't1' }).map((s) => s.id)).toEqual(['s1']);
+  });
+});

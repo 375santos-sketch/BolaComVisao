@@ -2,7 +2,7 @@ import React from 'react';
 import { AppState } from '../../types';
 import { Icon, IconName } from '../ui/Icon';
 import { isAppAdmin } from '../../services/cloudAuthService';
-import { getUserAccessibleTeams } from '../../lib/permissionsEngine';
+import { canReviewReports, getUserAccessibleTeams } from '../../lib/permissionsEngine';
 import { defaultSeason } from '../../lib/utils';
 import { datePT } from '../../lib/planningSummary';
 import { SyncStatusBadge } from '../ui/SyncStatusBadge';
@@ -20,6 +20,8 @@ interface ClubViewProps {
   onOpenInviteStaff: () => void;
   onOpenAdminUsers: () => void;
   onOpenTour: () => void;
+  /** 🧭 Relatórios do clube (coordinator and Administrador only). */
+  onOpenClubReports?: () => void;
   pendingUsersCount?: number;
 }
 
@@ -41,6 +43,7 @@ export const ClubView: React.FC<ClubViewProps> = ({
   onOpenInviteStaff,
   onOpenAdminUsers,
   onOpenTour,
+  onOpenClubReports,
   pendingUsersCount = 0
 }) => {
   const isAdmin = isAppAdmin(state.currentUser);
@@ -58,6 +61,21 @@ export const ClubView: React.FC<ClubViewProps> = ({
   const lastBackup = state.lastBackupDate ? datePT(new Date(state.lastBackupDate).toISOString()) : '';
 
   const groups: { title: string; rows: Row[] }[] = [
+    ...(onOpenClubReports && canReviewReports(state.currentUser)
+      ? [
+          {
+            title: 'Coordenação',
+            rows: [
+              {
+                icon: 'clipboard' as IconName,
+                title: 'Relatórios do clube',
+                detail: 'Relatórios mensais de todas as equipas · rever, devolver, pedir',
+                run: onOpenClubReports
+              }
+            ]
+          }
+        ]
+      : []),
     {
       title: 'Clube',
       rows: [

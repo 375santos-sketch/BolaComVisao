@@ -55,6 +55,7 @@ const ResultsView = lazyWithRetry(() => import('./components/views/ResultsView')
 // Loaded when opened: it bundles the Excel library used by the team spreadsheets.
 const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 'DatabaseModal');
 const MonthlyReportView = lazyWithRetry(() => import('./components/report/MonthlyReportView'));
+const ClubReportsView = lazyWithRetry(() => import('./components/report/ClubReportsView'));
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
 const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsModal'));
@@ -161,6 +162,7 @@ export default function App() {
   const [showDatabase, setShowDatabase] = useState<boolean>(false);
   const [showAppearance, setShowAppearance] = useState<boolean>(false);
   const [showMonthlyReport, setShowMonthlyReport] = useState<boolean>(false);
+  const [showClubReports, setShowClubReports] = useState<boolean>(false);
   const [showCareer, setShowCareer] = useState<boolean>(false);
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
   const [showPushSettings, setShowPushSettings] = useState<boolean>(false);
@@ -1056,6 +1058,7 @@ export default function App() {
                   handleNavigate('home');
                   setTourOpen(true);
                 }}
+                onOpenClubReports={() => setShowClubReports(true)}
                 pendingUsersCount={pendingUsersCount}
               />
             )}
@@ -1223,6 +1226,16 @@ export default function App() {
               onUpdateState={updateState}
               onShowToast={showToast}
               onClose={() => setShowCareer(false)}
+            />
+          </Suspense>
+        )}
+        {showClubReports && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <ClubReportsView
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onClose={() => setShowClubReports(false)}
             />
           </Suspense>
         )}

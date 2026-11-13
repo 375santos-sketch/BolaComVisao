@@ -764,7 +764,9 @@ export interface MonthlyReportRecord {
   id: string;
   /** "2026-10" */
   month: string;
-  status: 'rascunho' | 'validado' | 'entregue';
+  /** Coach: rascunho → validado → entregue. Coordinator: revisto, or devolvido (back to the coach to correct). */
+  status: 'rascunho' | 'validado' | 'entregue' | 'revisto' | 'devolvido';
+  createdAt?: string;
   texts?: {
     evolucao?: string;
     positivos?: string;
@@ -789,6 +791,10 @@ export interface MonthlyReportRecord {
   validatedAt?: string;
   validatedBy?: string;
   deliveredAt?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  returnedAt?: string;
+  returnedBy?: string;
   updatedAt?: string;
 }
 
@@ -898,6 +904,8 @@ export type UserStatus = 'approved' | 'pending' | 'rejected';
 export type UserClubRole =
   | 'Administrador'
   | 'Diretor'
+  /** 🧭 Coordenador técnico: sees every team of the club and reviews the monthly reports. */
+  | 'Coordenador Técnico'
   | 'Treinador Principal'
   | 'Treinador Adjunto'
   | 'Treinador de Guarda-Redes'
