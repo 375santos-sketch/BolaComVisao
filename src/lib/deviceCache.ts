@@ -44,3 +44,12 @@ export const legacySyncedKey = (workspaceId: string) => `bcv-synced-records-${wo
 /** Every device key that holds club data (all are wiped when signing out). */
 export const isClubDataKey = (key: string) =>
   key === LEGACY_STATE_KEY || key === ACTIVE_STATE_POINTER || key.startsWith(STATE_PREFIX) || key.startsWith('bcv-');
+
+/**
+ * F2.2 — The teams this account works with in its organization: null = all of them (no organization yet, or a
+ * membership with '*'), otherwise the team ids of its membership.
+ */
+export function teamScopeOf(user: { orgId?: string; orgTeamIds?: string[] } | null | undefined): string[] | null {
+  if (!user?.orgId || !user.orgTeamIds || user.orgTeamIds.length === 0 || user.orgTeamIds.includes('*')) return null;
+  return [...user.orgTeamIds].sort();
+}

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
-import { workspaceIdOf } from './lib/deviceCache';
+import { teamScopeOf, workspaceIdOf } from './lib/deviceCache';
 import { withInactiveAbsences } from './lib/inactiveAbsences';
 import { liveMatchOf } from './lib/liveFollow';
 import { localDateISO } from './lib/trainingQuick';
 import { AppState, UserAccount, AppNotification } from './types';
 import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
-import { subscribeToClubCloud, migrateClubToRecords, getCloudMode } from './services/clubCloud';
+import { subscribeToClubCloud, migrateClubToRecords, getCloudMode, setTeamScope } from './services/clubCloud';
 import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
 import { applyClubColor } from './lib/clubColors';
@@ -19,7 +19,7 @@ import { evaluateSystemNotifications } from './lib/notificationEngine';
 import { syncStateWithCloud, processOfflineMutationsQueue, clearDeviceClubData } from './lib/syncEngine';
 import { recordAuditLog } from './lib/auditEngine';
 import { subscribeToLegacyClubDocument, auth, onAuthStateChanged, loadMasterClubState } from './services/firebase';
-import { resolveOrganizationForAccount } from './services/organizations';
+import { resolveMembershipForAccount } from './services/organizations';
 import {
   logoutCoachUser,
   subscribeToAllClubUsers,
@@ -449,9 +449,13 @@ export default function App() {
     authReady && !authUid && Boolean(state.currentUser?.id) && !state.currentUser?.id.startsWith('guest-');
 
   // Real-time cloud sync for multi-device use: the legacy single document or per-record storage (see clubCloud.ts)
+  const syncWorkspaceId = workspaceIdOf(state.currentUser);
+  const syncTeamScopeKey = (teamScopeOf(state.currentUser) || []).join(',');
   useEffect(() => {
     if (!state.currentUser || !state.currentUser.id || !authUid) return;
     const workspaceId = workspaceIdOf(state.currentUser);
+    // F2.2: only the teams of this person's membership (all of them when there is no organization or '*')
+    setTeamScope(workspaceId, teamScopeOf(state.currentUser));
 
     const applyRemote = (incoming: AppState) => {
       isRemoteSyncRef.current = true;
@@ -515,7 +519,7 @@ export default function App() {
     };
     // Resubscribe only when the signed-in user/club changes, not on every currentUser object update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentUser?.id, workspaceIdOf(state.currentUser), authUid]);
+  }, [state.currentUser?.id, syncWorkspaceId, syncTeamScopeKey, authUid]);
 
   // 🏢 F1.5: the organization comes from the members list (an active member of an approved organization). Until an
   // account has one (before the migration of "main"), nothing changes: the old rule (club or "main") applies.
@@ -530,12 +534,25 @@ export default function App() {
     orgCheckRef.current = check;
     let cancelled = false;
     (async () => {
-      const orgId = await resolveOrganizationForAccount(user.id, [user.orgId, user.defaultOrgId], user.orgId);
+      const membership = await resolveMembershipForAccount(user.id, [user.orgId, user.defaultOrgId], user.orgId);
       const current = latestStateRef.current.currentUser;
       if (cancelled || !current || current.id !== user.id) return;
-      if ((orgId || undefined) === (current.orgId || undefined)) return;
-      const nextUser = { ...current, orgId: orgId || undefined };
-      const sameData = workspaceIdOf(nextUser) === workspaceIdOf(current);
+      const orgId = membership?.orgId;
+      const orgTeamIds = membership ? [...membership.member.teamIds].sort() : undefined;
+      const orgRole = membership?.member.role;
+      if (
+        (orgId || undefined) === (current.orgId || undefined) &&
+        (orgTeamIds || []).join(',') === (current.orgTeamIds || []).join(',') &&
+        (orgRole || undefined) === (current.orgRole || undefined)
+      ) {
+        return;
+      }
+      const nextUser = { ...current, orgId, orgTeamIds, orgRole };
+      // F2.2: the data changes when the organization OR the teams this person works with change
+      const sameData =
+        workspaceIdOf(nextUser) === workspaceIdOf(current) &&
+        (teamScopeOf(nextUser) || []).join(',') === (teamScopeOf(current) || []).join(',');
+      if (!sameData) setTeamScope(workspaceIdOf(nextUser), teamScopeOf(nextUser));
       const cloud = sameData ? null : await loadMasterClubState(workspaceIdOf(nextUser)).catch(() => null);
       if (cancelled || latestStateRef.current.currentUser?.id !== user.id) return;
       orgCheckRef.current = `${user.id}|${user.defaultOrgId || ''}|${nextUser.orgId || ''}`;

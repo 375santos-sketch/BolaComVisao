@@ -92,3 +92,14 @@ describe('F1.4 — gravar e abrir sem rede', () => {
     expect(JSON.stringify(loadAppState())).not.toContain('Dados do');
   });
 });
+
+describe('F2.2 — âmbito de equipas', () => {
+  it('all teams without an organization or with "*"; otherwise the teams of the membership', async () => {
+    const { teamScopeOf } = await import('../lib/deviceCache');
+    expect(teamScopeOf(null)).toBeNull();
+    expect(teamScopeOf({ orgTeamIds: ['eq1'] })).toBeNull(); // no organization yet: the old rule
+    expect(teamScopeOf({ orgId: 'o', orgTeamIds: ['*'] })).toBeNull();
+    expect(teamScopeOf({ orgId: 'o', orgTeamIds: [] })).toBeNull();
+    expect(teamScopeOf({ orgId: 'o', orgTeamIds: ['eq2', 'eq1'] })).toEqual(['eq1', 'eq2']);
+  });
+});
