@@ -1,4 +1,13 @@
-import { AbsenceReason, AppState, Match, MonthlyReportRecord, Player, ScheduledMatch, SquadProfile, Training } from '../types';
+import {
+  AbsenceReason,
+  AppState,
+  Match,
+  MonthlyReportRecord,
+  Player,
+  ScheduledMatch,
+  SquadProfile,
+  Training
+} from '../types';
 import { withRosterIds } from './eventPlayers';
 import { getCalledUpPlayers, gamesMissingStarters, withPlayableDurations } from './playingTime';
 import { buildPlayerSeason } from './playerSeason';
@@ -72,9 +81,11 @@ export const COACH_STATUSES: MonthlyReportRecord['status'][] = ['rascunho', 'val
 export function reportTimeline(r: MonthlyReportRecord): { at: string; text: string }[] {
   const out: { at: string; text: string }[] = [];
   if (r.createdAt) out.push({ at: r.createdAt, text: 'Rascunho criado' });
-  if (r.validatedAt) out.push({ at: r.validatedAt, text: `Validado pelo treinador${r.validatedBy ? ` (${r.validatedBy})` : ''}` });
+  if (r.validatedAt)
+    out.push({ at: r.validatedAt, text: `Validado pelo treinador${r.validatedBy ? ` (${r.validatedBy})` : ''}` });
   if (r.deliveredAt) out.push({ at: r.deliveredAt, text: 'Entregue ao coordenador' });
-  if (r.returnedAt) out.push({ at: r.returnedAt, text: `Devolvido ao treinador${r.returnedBy ? ` por ${r.returnedBy}` : ''}` });
+  if (r.returnedAt)
+    out.push({ at: r.returnedAt, text: `Devolvido ao treinador${r.returnedBy ? ` por ${r.returnedBy}` : ''}` });
   if (r.reviewedAt) out.push({ at: r.reviewedAt, text: `Revisto${r.reviewedBy ? ` por ${r.reviewedBy}` : ''}` });
   return out.sort((a, b) => a.at.localeCompare(b.at));
 }
