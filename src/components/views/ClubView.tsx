@@ -26,6 +26,10 @@ interface ClubViewProps {
   onOpenInventory?: () => void;
   /** F1.1b: encrypted copy of the platform (read only), for the platform Administrator. */
   onOpenEncryptedBackup?: () => void;
+  /** F1.8: migration of "main" (platform Administrator only; blocked in production until F2). */
+  onOpenMainMigration?: () => void;
+  /** F1.6: members of the organization in use (only for accounts that belong to one). */
+  onOpenOrgMembers?: () => void;
   pendingUsersCount?: number;
 }
 
@@ -50,6 +54,8 @@ export const ClubView: React.FC<ClubViewProps> = ({
   onOpenClubReports,
   onOpenInventory,
   onOpenEncryptedBackup,
+  onOpenMainMigration,
+  onOpenOrgMembers,
   pendingUsersCount = 0
 }) => {
   const isAdmin = isAppAdmin(state.currentUser);
@@ -85,6 +91,16 @@ export const ClubView: React.FC<ClubViewProps> = ({
     {
       title: 'Clube',
       rows: [
+        ...(state.currentUser?.orgId && onOpenOrgMembers
+          ? [
+              {
+                icon: 'users' as IconName,
+                title: 'Membros do clube',
+                detail: 'Quem tem acesso, papéis e equipas de cada um',
+                run: onOpenOrgMembers
+              }
+            ]
+          : []),
         {
           icon: 'users',
           title: 'Equipas e escalões',
@@ -150,6 +166,16 @@ export const ClubView: React.FC<ClubViewProps> = ({
                 title: 'Cópia cifrada da plataforma',
                 detail: 'Só leitura · criar e verificar uma cópia completa protegida por frase-passe',
                 run: onOpenEncryptedBackup
+              }
+            ]
+          : []),
+        ...(isAdmin && onOpenMainMigration
+          ? [
+              {
+                icon: 'users' as IconName,
+                title: 'Migração do clube',
+                detail: 'Organização e membros do clube · bloqueada até à F2',
+                run: onOpenMainMigration
               }
             ]
           : [])

@@ -109,7 +109,9 @@ export default tseslint.config(
       'src/components/TeamInviteModal.tsx',
       // F1.1a
       'src/components/admin/InventoryModal.tsx',
-      'src/components/admin/EncryptedBackupModal.tsx'
+      'src/components/admin/EncryptedBackupModal.tsx',
+      'src/components/admin/MainMigrationModal.tsx',
+      'src/components/admin/OrgMembersModal.tsx'
     ],
     rules: {
       'no-restricted-syntax': [
