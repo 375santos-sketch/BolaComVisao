@@ -13,6 +13,7 @@ import {
   isQuotaExceededError,
   markQuotaExhausted
 } from './firebase';
+import { workspaceIdOf } from '../lib/deviceCache';
 import {
   doc,
   getDoc,
@@ -314,7 +315,7 @@ export async function loginWithGoogle(): Promise<{
       console.warn('Aviso de persistência local:', storageErr);
     }
 
-    const masterClubState = await loadMasterClubState(account.clubId || 'main');
+    const masterClubState = await loadMasterClubState(workspaceIdOf(account));
 
     return {
       success: true,
@@ -368,7 +369,7 @@ export async function checkCurrentAuthUser(): Promise<{
               } catch (storageErr) {
                 console.warn('Aviso de persistência local:', storageErr);
               }
-              const masterClubState = await loadMasterClubState(account.clubId || 'main');
+              const masterClubState = await loadMasterClubState(workspaceIdOf(account));
               resolve({ user: account, cloudState: masterClubState || undefined });
               return;
             }
@@ -855,7 +856,7 @@ export async function loginCoachUser(
       console.warn('Aviso de persistência local ao iniciar sessão:', storageErr);
     }
 
-    const masterClubState = await loadMasterClubState(account.clubId || 'main');
+    const masterClubState = await loadMasterClubState(workspaceIdOf(account));
     return {
       success: true,
       user: account,

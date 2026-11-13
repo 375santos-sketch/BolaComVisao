@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { workspaceIdOf } from '../lib/deviceCache';
 import { AppState, TeamInvitation, UserClubRole } from '../types';
 import { uid } from '../lib/utils';
 import { recordAuditLog } from '../lib/auditEngine';
@@ -39,7 +40,7 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
       id: 'inv_' + uid(),
       email: email.trim().toLowerCase(),
       name: name.trim() || undefined,
-      clubId: state.currentUser?.clubId || 'main',
+      clubId: workspaceIdOf(state.currentUser),
       teamId: selectedTeamId,
       teamName: `${selectedTeam?.clubName} (${selectedTeam?.category || 'Geral'})`,
       role: selectedRole,

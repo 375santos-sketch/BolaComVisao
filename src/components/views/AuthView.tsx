@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { workspaceIdOf } from '../../lib/deviceCache';
 import { AppState, UserAccount, TeamInvitation } from '../../types';
 import logoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import {
@@ -184,7 +185,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
       let finalCloudState = res.cloudState;
       if (!finalCloudState) {
         try {
-          finalCloudState = (await loadMasterClubState(res.user.clubId || 'main')) || undefined;
+          finalCloudState = (await loadMasterClubState(workspaceIdOf(res.user))) || undefined;
         } catch (e) {
           console.warn('Erro ao carregar dados da nuvem no login Google:', e);
         }
@@ -259,7 +260,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
         let finalCloudState = cloudResult.cloudState;
         if (!finalCloudState) {
           try {
-            finalCloudState = (await loadMasterClubState(cloudResult.user.clubId || 'main')) || undefined;
+            finalCloudState = (await loadMasterClubState(workspaceIdOf(cloudResult.user))) || undefined;
           } catch (e) {
             console.warn('Erro ao carregar dados da nuvem no login:', e);
           }

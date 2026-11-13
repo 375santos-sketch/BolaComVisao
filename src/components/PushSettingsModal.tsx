@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { workspaceIdOf } from '../lib/deviceCache';
 import { AppState } from '../types';
 import { DEFAULT_PUSH_PREFS, PushPrefs, cleanPrefs, testResult } from '../lib/pushEvents';
 import {
@@ -62,7 +63,7 @@ const OPTIONS: Array<[keyof PushPrefs, string, string]> = [
  */
 const PushSettingsModal: React.FC<PushSettingsModalProps> = ({ state, onUpdateState, onShowToast, onClose }) => {
   const support = pushSupport();
-  const clubId = state.currentUser?.clubId || 'main';
+  const clubId = workspaceIdOf(state.currentUser);
   const teamIds = state.activeTeamId ? [state.activeTeamId] : [];
   const [on, setOn] = useState(() => Boolean(savedSubscriptionId()) && support.permission === 'granted');
   const [prefs, setPrefs] = useState<PushPrefs>(loadPrefs);

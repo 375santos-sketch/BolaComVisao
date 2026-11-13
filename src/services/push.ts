@@ -1,4 +1,5 @@
 import { collection, deleteDoc, doc, getDocs, setDoc } from 'firebase/firestore';
+import { workspaceIdOf } from '../lib/deviceCache';
 import { auth, db } from './firebase';
 import { PushMessage, PushPrefs, VAPID_PUBLIC_KEY, matchPushMessage } from '../lib/pushEvents';
 import { AppState, Match } from '../types';
@@ -217,7 +218,7 @@ export function announceMatchChange(
   };
   const message = matchPushMessage(before, after, state.myClubName || '', names);
   if (!message) return;
-  sendNotice(state.currentUser.clubId || 'main', state.activeTeamId, message).catch((err) =>
+  sendNotice(workspaceIdOf(state.currentUser), state.activeTeamId, message).catch((err) =>
     console.warn('Aviso do jogo não enviado:', (err as Error).message)
   );
 }

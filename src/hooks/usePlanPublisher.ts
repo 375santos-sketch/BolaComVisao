@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { workspaceIdOf } from '../lib/deviceCache';
 import { AppState } from '../types';
 import { hashData } from '../lib/recordSync';
 import { sharedPlanOf } from '../lib/coachPlan';
@@ -22,7 +23,7 @@ export function planPayloadOf(state: AppState, today = localDateISO()) {
  */
 export function usePlanPublisher(state: AppState): void {
   const token = (state.teams || []).find((t) => t.id === state.activeTeamId)?.planToken;
-  const clubId = state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined;
+  const clubId = state.currentUser?.id ? workspaceIdOf(state.currentUser) : undefined;
   const payload = token ? planPayloadOf(state) : null;
   const hash = payload ? hashData(payload) : '';
 

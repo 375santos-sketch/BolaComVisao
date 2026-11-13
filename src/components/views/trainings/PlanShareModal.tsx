@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { workspaceIdOf } from '../../../lib/deviceCache';
 import { AppState } from '../../../types';
 import { newCalendarToken } from '../../../lib/calendarFeed';
 import { planPayloadOf } from '../../../hooks/usePlanPublisher';
@@ -18,7 +19,7 @@ interface PlanShareModalProps {
 export const PlanShareModal: React.FC<PlanShareModalProps> = ({ state, onUpdateState, onShowToast, onClose }) => {
   const team = (state.teams || []).find((t) => t.id === state.activeTeamId);
   const token = team?.planToken;
-  const clubId = state.currentUser?.id ? state.currentUser.clubId || 'main' : undefined;
+  const clubId = state.currentUser?.id ? workspaceIdOf(state.currentUser) : undefined;
   const [busy, setBusy] = useState(false);
   const link = token ? planLink(token) : '';
   const payload = planPayloadOf(state);

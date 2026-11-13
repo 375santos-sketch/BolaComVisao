@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
+import { workspaceIdOf } from './lib/deviceCache';
 import { withInactiveAbsences } from './lib/inactiveAbsences';
 import { liveMatchOf } from './lib/liveFollow';
 import { localDateISO } from './lib/trainingQuick';
@@ -17,7 +18,8 @@ import { exportJSONBackup } from './lib/exportUtils';
 import { evaluateSystemNotifications } from './lib/notificationEngine';
 import { syncStateWithCloud, processOfflineMutationsQueue, clearDeviceClubData } from './lib/syncEngine';
 import { recordAuditLog } from './lib/auditEngine';
-import { subscribeToLegacyClubDocument, auth, onAuthStateChanged } from './services/firebase';
+import { subscribeToLegacyClubDocument, auth, onAuthStateChanged, loadMasterClubState } from './services/firebase';
+import { resolveOrganizationForAccount } from './services/organizations';
 import {
   logoutCoachUser,
   subscribeToAllClubUsers,
@@ -127,7 +129,7 @@ export default function App() {
     setCloudSaving(true);
     try {
       const res = await saveMasterClubState(
-        s.currentUser.clubId || 'main',
+        workspaceIdOf(s.currentUser),
         s,
         s.currentUser.id,
         s.currentUser.name,
@@ -449,7 +451,7 @@ export default function App() {
   // Real-time cloud sync for multi-device use: the legacy single document or per-record storage (see clubCloud.ts)
   useEffect(() => {
     if (!state.currentUser || !state.currentUser.id || !authUid) return;
-    const workspaceId = state.currentUser.clubId || 'main';
+    const workspaceId = workspaceIdOf(state.currentUser);
 
     const applyRemote = (incoming: AppState) => {
       isRemoteSyncRef.current = true;
@@ -488,6 +490,8 @@ export default function App() {
           // Give the legacy snapshot time to be applied, then move the club to per-record storage once.
           setTimeout(async () => {
             const current = latestStateRef.current;
+            // F1.5: never move one organization's data into another (the organization may have changed meanwhile)
+            if (current.currentUser?.id && workspaceIdOf(current.currentUser) !== workspaceId) return;
             if (!current.currentUser?.id || getCloudMode(workspaceId) !== 'legacy') {
               console.warn(
                 `Migração para registos separados não iniciada: utilizador=${current.currentUser?.id ? 'ok' : 'em falta'}, modo=${getCloudMode(workspaceId)}`
@@ -511,7 +515,50 @@ export default function App() {
     };
     // Resubscribe only when the signed-in user/club changes, not on every currentUser object update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentUser?.id, state.currentUser?.clubId, authUid]);
+  }, [state.currentUser?.id, workspaceIdOf(state.currentUser), authUid]);
+
+  // 🏢 F1.5: the organization comes from the members list (an active member of an approved organization). Until an
+  // account has one (before the migration of "main"), nothing changes: the old rule (club or "main") applies.
+  // When the organization differs from the one in use, its data is loaded from the cloud first — the same way as
+  // at sign-in — so one organization's data is never sent to another.
+  const orgCheckRef = useRef('');
+  useEffect(() => {
+    const user = state.currentUser;
+    if (!user?.id || !authUid || user.id.startsWith('guest-')) return;
+    const check = `${user.id}|${user.defaultOrgId || ''}|${user.orgId || ''}`;
+    if (orgCheckRef.current === check) return;
+    orgCheckRef.current = check;
+    let cancelled = false;
+    (async () => {
+      const orgId = await resolveOrganizationForAccount(user.id, [user.orgId, user.defaultOrgId], user.orgId);
+      const current = latestStateRef.current.currentUser;
+      if (cancelled || !current || current.id !== user.id) return;
+      if ((orgId || undefined) === (current.orgId || undefined)) return;
+      const nextUser = { ...current, orgId: orgId || undefined };
+      const sameData = workspaceIdOf(nextUser) === workspaceIdOf(current);
+      const cloud = sameData ? null : await loadMasterClubState(workspaceIdOf(nextUser)).catch(() => null);
+      if (cancelled || latestStateRef.current.currentUser?.id !== user.id) return;
+      orgCheckRef.current = `${user.id}|${user.defaultOrgId || ''}|${nextUser.orgId || ''}`;
+      isRemoteSyncRef.current = true;
+      setState((prev) => {
+        const next: AppState = sameData
+          ? { ...prev, currentUser: nextUser }
+          : cloud
+            ? { ...cloud, currentUser: nextUser, syncInfo: prev.syncInfo }
+            : { ...clearAllAppState(nextUser), syncInfo: prev.syncInfo };
+        saveAppState(next);
+        return next;
+      });
+      setTimeout(() => {
+        isRemoteSyncRef.current = false;
+      }, 500);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Checked again only when the account, its default organization or the one in use change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.currentUser?.id, state.currentUser?.defaultOrgId, state.currentUser?.orgId, authUid]);
 
   // Real-time listener for Coach Registrations requiring Admin Approval (Admin ONLY)
   useEffect(() => {
@@ -529,7 +576,7 @@ export default function App() {
     }
 
     const unsub = subscribeToAllClubUsers(
-      state.currentUser?.clubId || 'main',
+      workspaceIdOf(state.currentUser),
       (allUsers) => {
         const pending = allUsers.filter((u) => u.status === 'pending');
         const prevCount = prevPendingCountRef.current;
