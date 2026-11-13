@@ -208,3 +208,45 @@ describe('F1.1a — leitura que não responde', () => {
     expect(serverProblemMessage({ code: 'permission-denied' })).toMatch(/Administrador da plataforma/);
   });
 });
+
+describe('F1.1a — contas noutro formato', () => {
+  it('reads accounts kept at the top of the document and lists only the field names of empty ones', async () => {
+    const { buildInventory } = await import('../lib/inventory');
+    const inv = buildInventory(
+      {
+        users: [
+          {
+            id: 'novo1234x',
+            data: { account: { name: 'Adulto Novo', role: 'Treinador Principal', status: 'approved' } }
+          },
+          {
+            id: 'antigo12x',
+            data: {
+              name: 'Adulto Antigo',
+              email: 'antigo@teste.pt',
+              role: 'Treinador Adjunto',
+              status: 'approved',
+              createdAt: 1700000000000
+            }
+          },
+          { id: 'vazio123x', data: { lastActiveAt: 1, updatedAt: 2, fcmToken: 'segredo-do-token' } }
+        ],
+        admins: [],
+        invitations: [],
+        workspaces: [],
+        collectionCounts: {},
+        errors: []
+      },
+      new Date('2026-11-13T10:00:00Z')
+    );
+    expect(inv.accounts.byFormat).toEqual({ account: 1, antigo: 1, 'sem dados': 1 });
+    const old = inv.accounts.list.find((a) => a.uid === 'antigo12x')!;
+    expect(old).toMatchObject({ name: 'Adulto Antigo', role: 'Treinador Adjunto', format: 'antigo' });
+    expect(old.createdAt).toBe('2023-11-14T22:13:20.000Z');
+    const empty = inv.accounts.list.find((a) => a.uid === 'vazio123x')!;
+    expect(empty).toMatchObject({ format: 'sem dados', fields: ['fcmToken', 'lastActiveAt', 'updatedAt'] });
+    expect(inv.accounts.fieldsWithoutAccount).toMatchObject({ fcmToken: 1, lastActiveAt: 1, updatedAt: 1 });
+    // Field names only, never the values
+    expect(JSON.stringify(inv)).not.toContain('segredo-do-token');
+  });
+});

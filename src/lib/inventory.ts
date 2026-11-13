@@ -60,6 +60,13 @@ export interface InventoryAccount {
   /** Registered with an invitation. */
   invited: boolean;
   createdAt: string;
+  /**
+   * How the document stores the account: in "account" (today's format), at the top of the document (an old
+   * format), or nowhere (a document without account data). For the last two, `fields` lists the names of the
+   * fields the document has (never their values), so the Administrator can find it in the Firebase console.
+   */
+  format: 'account' | 'antigo' | 'sem dados';
+  fields: string[];
 }
 
 /** Users kept INSIDE a shared club document: how many and which fields they carry (names only, no values). */
@@ -119,6 +126,9 @@ export interface Inventory {
     byWorkspace: Record<string, number>;
     withoutClub: number;
     platformAdmins: number;
+    /** Documents in users/ by format, and the field names found in those without "account" (never values). */
+    byFormat: Record<string, number>;
+    fieldsWithoutAccount: Record<string, number>;
     list: InventoryAccount[];
   };
   invitations: {
@@ -150,8 +160,18 @@ export const workspaceOfClub = (clubId: string | null | undefined): string =>
   clubId && clubId.trim() ? clubId.trim() : DEFAULT_WORKSPACE;
 
 /** The account fields of a users/{uid} document (they live in "account"). */
+const ACCOUNT_FIELDS = ['name', 'email', 'role', 'status', 'username'];
+
+/** A date from a string or from milliseconds ("" when there is none). */
+const dateOf = (v: unknown): string =>
+  typeof v === 'string' ? v : typeof v === 'number' && v > 0 ? new Date(v).toISOString() : '';
+
 function accountOf(doc: RawDoc, admins: Set<string>): InventoryAccount {
-  const account = asMap(doc.data.account);
+  const nested = asMap(doc.data.account);
+  const hasNested = Object.keys(nested).length > 0;
+  // An old format kept the account fields at the top of the document
+  const flat = !hasNested && ACCOUNT_FIELDS.some((k) => typeof doc.data[k] === 'string');
+  const account = hasNested ? nested : flat ? doc.data : {};
   const clubId = str(account.clubId) || null;
   return {
     uid: doc.id,
@@ -165,7 +185,9 @@ function accountOf(doc: RawDoc, admins: Set<string>): InventoryAccount {
     teamRoles: asList(account.teamRoles).length,
     platformAdmin: admins.has(doc.id),
     invited: Boolean(str(account.inviteCode)),
-    createdAt: str(account.createdAt)
+    createdAt: dateOf(account.createdAt) || dateOf(doc.data.createdAt),
+    format: hasNested ? 'account' : flat ? 'antigo' : 'sem dados',
+    fields: hasNested ? [] : Object.keys(doc.data).sort()
   };
 }
 
@@ -318,6 +340,20 @@ export function buildInventory(source: InventorySource, now: Date): Inventory {
       byWorkspace: sortedObject(byWorkspace),
       withoutClub: list.filter((a) => !a.clubId).length,
       platformAdmins: source.admins.length,
+      byFormat: sortedObject(
+        list.reduce<Record<string, number>>((m, a) => {
+          bump(m, a.format);
+          return m;
+        }, {})
+      ),
+      fieldsWithoutAccount: sortedObject(
+        list
+          .filter((a) => a.format !== 'account')
+          .reduce<Record<string, number>>((m, a) => {
+            a.fields.forEach((f) => bump(m, f));
+            return m;
+          }, {})
+      ),
       list
     },
     invitations: {
