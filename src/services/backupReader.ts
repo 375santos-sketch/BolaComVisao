@@ -6,7 +6,7 @@
 import { collection, doc, getDocFromServer, getDocsFromServer } from 'firebase/firestore';
 import { db } from './firebase';
 import { BackupDoc, toPlainValue } from '../lib/encryptedBackup';
-import { workspaceIdsToRead } from '../lib/inventory';
+import { READ_TIMEOUT_MS, serverProblemMessage, withTimeout, workspaceIdsToRead } from '../lib/inventory';
 
 const reason = (err: unknown) => {
   const e = err as { code?: string; message?: string };
@@ -27,7 +27,7 @@ export async function readBackupDocuments(
   const readCollection = async (path: string): Promise<string[]> => {
     try {
       const [first, ...rest] = path.split('/');
-      const snap = await getDocsFromServer(collection(db, first, ...rest));
+      const snap = await withTimeout(getDocsFromServer(collection(db, first, ...rest)), READ_TIMEOUT_MS, path);
       snap.docs.forEach((d) => add(`${path}/${d.id}`, d.data()));
       return snap.docs.map((d) => d.id);
     } catch (err) {
@@ -36,7 +36,15 @@ export async function readBackupDocuments(
     }
   };
 
-  for (const name of TOP_COLLECTIONS) {
+  // The first reading tells whether the cloud answers at all: if not, stop with a clear reason (an incomplete copy
+  // must never look complete)
+  try {
+    const snap = await withTimeout(getDocsFromServer(collection(db, 'users')), READ_TIMEOUT_MS, 'users');
+    snap.docs.forEach((d) => add(`users/${d.id}`, d.data()));
+  } catch (err) {
+    throw new Error(serverProblemMessage(err), { cause: err });
+  }
+  for (const name of TOP_COLLECTIONS.filter((c) => c !== 'users')) {
     onProgress?.(`A ler ${name}…`);
     const ids = await readCollection(name);
     if (name === 'clubs' && ids.length > 0) {
@@ -64,7 +72,11 @@ export async function readBackupDocuments(
     onProgress?.(`A ler o espaço «${ws}»…`);
     if (!listed.includes(ws)) {
       try {
-        const snap = await getDocFromServer(doc(db, 'club_workspace', ws));
+        const snap = await withTimeout(
+          getDocFromServer(doc(db, 'club_workspace', ws)),
+          READ_TIMEOUT_MS,
+          `club_workspace/${ws}`
+        );
         if (snap.exists()) add(`club_workspace/${ws}`, snap.data());
       } catch (err) {
         errors.push(`club_workspace/${ws}: ${reason(err)}`);
