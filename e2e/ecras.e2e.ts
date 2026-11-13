@@ -14,7 +14,8 @@ import {
   openMoreMenu,
   resetToLegacyFormat,
   syncBadge,
-  watchPageErrors
+  watchPageErrors,
+  clubSettingsText
 } from './helpers';
 
 // One club, used in order: each test builds on the data left by the previous ones.
@@ -551,8 +552,7 @@ test('classificação: resultados colados da série, jogos da app e posição da
   await expect
     .poll(
       async () => {
-        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
-        const raw = JSON.stringify(await res.json());
+        const raw = await clubSettingsText();
         return raw.includes('leagues') && raw.includes('Esparteiros') && raw.includes('Mação');
       },
       { timeout: 30_000, message: 'classificação guardada na nuvem' }
@@ -614,8 +614,7 @@ test('classificação: print da jornada (sem o nosso jogo) e nova fase sem perde
   await expect
     .poll(
       async () => {
-        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
-        const raw = JSON.stringify(await res.json());
+        const raw = await clubSettingsText();
         return raw.includes('Fase de apuramento') && raw.includes('2099-01-10') && raw.includes('Mação');
       },
       { timeout: 30_000, message: 'fases guardadas na nuvem' }
@@ -918,8 +917,7 @@ test('exercícios: biblioteca com desenho importado, usada no plano do treino', 
   await expect
     .poll(
       async () => {
-        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
-        return JSON.stringify(await res.json()).includes('Rondo semanal');
+        return (await clubSettingsText()).includes('Rondo semanal');
       },
       { timeout: 30_000, message: 'modelo guardado na nuvem' }
     )
@@ -1134,8 +1132,7 @@ test('adversários: resultados, próximo jogo e ficha da equipa técnica que apa
   await expect
     .poll(
       async () => {
-        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
-        return JSON.stringify(await res.json()).includes('Pressionar a saída curta');
+        return (await clubSettingsText()).includes('Pressionar a saída curta');
       },
       { timeout: 30_000, message: 'ficha guardada na nuvem' }
     )
@@ -1700,8 +1697,7 @@ test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo',
   await expect
     .poll(
       async () => {
-        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
-        const raw = JSON.stringify(await res.json());
+        const raw = await clubSettingsText();
         return raw.includes('#e23b3b') && raw.includes('Abrantes') && raw.includes('yellowsForBan');
       },
       { timeout: 30_000, message: 'definições do clube na nuvem' }

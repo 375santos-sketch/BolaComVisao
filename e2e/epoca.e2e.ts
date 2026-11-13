@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { COACH_A, FIRESTORE, owner } from './seed';
-import { enterPanel, login, navTo } from './helpers';
+import { COACH_A } from './seed';
+import { enterPanel, login, navTo, clubSettingsText } from './helpers';
 
 // Treinos → Época: the season week by week, and the objectives of a month saved with the team (they stay after a reload)
 test('Época: semanas da época e objetivos do mês guardados', async ({ page }) => {
@@ -31,8 +31,7 @@ test('Época: semanas da época e objetivos do mês guardados', async ({ page })
   await expect
     .poll(
       async () => {
-        const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
-        return JSON.stringify(await res.json()).includes('Saída de bola a 3');
+        return (await clubSettingsText()).includes('Saída de bola a 3');
       },
       { timeout: 30_000, message: 'objetivos do mês na nuvem' }
     )
