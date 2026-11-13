@@ -57,6 +57,7 @@ const DatabaseModal = lazyWithRetry(() => import('./components/DatabaseModal'), 
 const MonthlyReportView = lazyWithRetry(() => import('./components/report/MonthlyReportView'));
 const ClubReportsView = lazyWithRetry(() => import('./components/report/ClubReportsView'));
 const InventoryModal = lazyWithRetry(() => import('./components/admin/InventoryModal'));
+const EncryptedBackupModal = lazyWithRetry(() => import('./components/admin/EncryptedBackupModal'));
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
 const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsModal'));
@@ -165,6 +166,7 @@ export default function App() {
   const [showMonthlyReport, setShowMonthlyReport] = useState<boolean>(false);
   const [showClubReports, setShowClubReports] = useState<boolean>(false);
   const [showInventory, setShowInventory] = useState<boolean>(false);
+  const [showEncryptedBackup, setShowEncryptedBackup] = useState<boolean>(false);
   const [showCareer, setShowCareer] = useState<boolean>(false);
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
   const [showPushSettings, setShowPushSettings] = useState<boolean>(false);
@@ -1062,6 +1064,7 @@ export default function App() {
                 }}
                 onOpenClubReports={() => setShowClubReports(true)}
                 onOpenInventory={() => setShowInventory(true)}
+                onOpenEncryptedBackup={() => setShowEncryptedBackup(true)}
                 pendingUsersCount={pendingUsersCount}
               />
             )}
@@ -1230,6 +1233,11 @@ export default function App() {
               onShowToast={showToast}
               onClose={() => setShowCareer(false)}
             />
+          </Suspense>
+        )}
+        {showEncryptedBackup && isAppAdmin(state.currentUser) && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <EncryptedBackupModal onClose={() => setShowEncryptedBackup(false)} />
           </Suspense>
         )}
         {showInventory && isAppAdmin(state.currentUser) && (
