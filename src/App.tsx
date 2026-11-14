@@ -61,6 +61,8 @@ const MonthlyReportView = lazyWithRetry(() => import('./components/report/Monthl
 const ClubReportsView = lazyWithRetry(() => import('./components/report/ClubReportsView'));
 const InventoryModal = lazyWithRetry(() => import('./components/admin/InventoryModal'));
 const EncryptedBackupModal = lazyWithRetry(() => import('./components/admin/EncryptedBackupModal'));
+const MainMigrationModal = lazyWithRetry(() => import('./components/admin/MainMigrationModal'));
+const OrgMembersModal = lazyWithRetry(() => import('./components/admin/OrgMembersModal'));
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
 const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsModal'));
@@ -186,6 +188,8 @@ export default function App() {
   const [showClubReports, setShowClubReports] = useState<boolean>(false);
   const [showInventory, setShowInventory] = useState<boolean>(false);
   const [showEncryptedBackup, setShowEncryptedBackup] = useState<boolean>(false);
+  const [showMainMigration, setShowMainMigration] = useState<boolean>(false);
+  const [showOrgMembers, setShowOrgMembers] = useState<boolean>(false);
   const [showCareer, setShowCareer] = useState<boolean>(false);
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
   const [showPushSettings, setShowPushSettings] = useState<boolean>(false);
@@ -1202,6 +1206,8 @@ export default function App() {
                 onOpenClubReports={() => setShowClubReports(true)}
                 onOpenInventory={() => setShowInventory(true)}
                 onOpenEncryptedBackup={() => setShowEncryptedBackup(true)}
+                onOpenMainMigration={() => setShowMainMigration(true)}
+                onOpenOrgMembers={() => setShowOrgMembers(true)}
                 pendingUsersCount={pendingUsersCount}
               />
             )}
@@ -1369,6 +1375,30 @@ export default function App() {
               onUpdateState={updateState}
               onShowToast={showToast}
               onClose={() => setShowCareer(false)}
+            />
+          </Suspense>
+        )}
+        {showOrgMembers && state.currentUser?.orgId && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <OrgMembersModal
+              orgId={state.currentUser.orgId}
+              myUid={state.currentUser.id}
+              orgName={state.myClubName || 'Clube'}
+              teams={(state.teams || []).map((t) => ({
+                id: t.id,
+                label: [t.clubName, t.category, t.season].filter(Boolean).join(' · ') || t.id
+              }))}
+              onShowToast={showToast}
+              onClose={() => setShowOrgMembers(false)}
+            />
+          </Suspense>
+        )}
+        {showMainMigration && isAppAdmin(state.currentUser) && state.currentUser && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <MainMigrationModal
+              ownerUid={state.currentUser.id}
+              clubName={state.myClubName || 'Clube'}
+              onClose={() => setShowMainMigration(false)}
             />
           </Suspense>
         )}
