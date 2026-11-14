@@ -107,6 +107,30 @@ async function personInOrg(email: string, role: string): Promise<string> {
   return uid;
 }
 
+/** Everything the browser's databases hold on this device (Firestore keeps its copy of the club there). */
+const inDatabases = (page: Page) =>
+  page.evaluate(async () => {
+    const out: string[] = [];
+    for (const { name } of (await indexedDB.databases?.()) || []) {
+      if (!name) continue;
+      const db = await new Promise<IDBDatabase>((ok, ko) => {
+        const req = indexedDB.open(name);
+        req.onsuccess = () => ok(req.result);
+        req.onerror = () => ko(req.error);
+      });
+      for (const store of Array.from(db.objectStoreNames)) {
+        const all = await new Promise<unknown[]>((ok) => {
+          const req = db.transaction(store).objectStore(store).getAll();
+          req.onsuccess = () => ok(req.result);
+          req.onerror = () => ok([]);
+        });
+        out.push(JSON.stringify(all));
+      }
+      db.close();
+    }
+    return out.join('\n');
+  });
+
 async function signIn(page: Page, email: string) {
   await page.addInitScript(() => {
     try {
@@ -158,6 +182,8 @@ test('acesso retirado: os dados do clube saem do aparelho', async ({ page }) => 
   await expect
     .poll(() => page.evaluate(() => Object.keys(localStorage).join('|')))
     .toContain(`bcv-state:${uid}:${ORG}`);
+  // The copy of the club on the device (Firestore's cache) is there while the access lasts
+  await expect.poll(() => inDatabases(page)).toContain('Atleta Permissões');
   // The club takes the access away
   await put(`organizations/${ORG}/members/${uid}`, {
     uid,
@@ -176,6 +202,8 @@ test('acesso retirado: os dados do clube saem do aparelho', async ({ page }) => 
   const keys = await page.evaluate(() => Object.keys(localStorage).join('|'));
   expect(keys).not.toContain(`bcv-state:${uid}:${ORG}`);
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain('Atleta Permissões');
+  // Nor in the browser's databases (Firestore's copy of the club on the device)
+  await expect.poll(() => inDatabases(page)).not.toContain('Atleta Permissões');
   // …and the cloud refuses it too (the rules, F2.3)
   const direct = await fetch(`${FIRESTORE}/club_workspace/${ORG}/records/player__eqP__p1`, { headers: owner });
   expect(direct.ok).toBe(true); // (the emulator's admin still reads it: the data stays in the club)

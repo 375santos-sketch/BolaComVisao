@@ -1,6 +1,11 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import {
-  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  memoryLocalCache,
+  terminate,
+  clearIndexedDbPersistence,
   Firestore,
   doc,
   setDoc,
@@ -44,7 +49,62 @@ try {
   console.warn('Firebase persistence init error:', e);
 }
 
-export const db: Firestore = getFirestore(app, config.firestoreDatabaseId);
+// A copy of the club on the device (Firestore's own cache): opening the app again only reads from the server what
+// changed (within 30 minutes) and works better without network. It holds club data, so it leaves the device when the
+// person signs out, when their access is taken away, and when another account signs in on this device
+// (wipeFirestoreDeviceCache, cacheOwnerChanged). Without IndexedDB (tests in Node) it stays in memory.
+const DEVICE_CACHE_OWNER_KEY = 'bcv-firestore-cache-owner';
+export const db: Firestore = initializeFirestore(
+  app,
+  {
+    localCache:
+      typeof indexedDB !== 'undefined'
+        ? persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+        : memoryLocalCache()
+  },
+  config.firestoreDatabaseId
+);
+
+/** Deletes Firestore's copy of the club on this device. Firestore stops working: the app must reload after it. */
+export async function wipeFirestoreDeviceCache(): Promise<void> {
+  try {
+    localStorage.removeItem(DEVICE_CACHE_OWNER_KEY);
+  } catch {
+    // Storage unavailable
+  }
+  try {
+    await terminate(db);
+    await clearIndexedDbPersistence(db);
+    return;
+  } catch (err) {
+    console.warn('Cópia do Firestore no aparelho: limpeza normal falhou, a apagar a base diretamente', err);
+  }
+  // Another tab still holds it: delete Firestore's databases (completes as soon as the other tabs close)
+  try {
+    const list = (await indexedDB.databases?.()) || [];
+    list
+      .map((d) => d.name || '')
+      .filter((name) => name.startsWith('firestore/'))
+      .forEach((name) => indexedDB.deleteDatabase(name));
+  } catch {
+    // Nothing more can be done here; the next start checks the owner again
+  }
+}
+
+/**
+ * Whether the copy on this device was made by ANOTHER account (then it must be wiped before this account uses the
+ * app). Records the account as the owner when the copy is its own or new.
+ */
+export function cacheOwnerChanged(uid: string): boolean {
+  try {
+    const owner = localStorage.getItem(DEVICE_CACHE_OWNER_KEY);
+    if (owner && owner !== uid) return true;
+    localStorage.setItem(DEVICE_CACHE_OWNER_KEY, uid);
+  } catch {
+    // Storage unavailable
+  }
+  return false;
+}
 
 // Local development against the Firebase emulators (npm run dev with VITE_FIREBASE_EMULATORS=true).
 if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_EMULATORS === 'true') {

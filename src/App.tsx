@@ -19,7 +19,15 @@ import { exportJSONBackup } from './lib/exportUtils';
 import { evaluateSystemNotifications } from './lib/notificationEngine';
 import { syncStateWithCloud, processOfflineMutationsQueue, clearDeviceClubData } from './lib/syncEngine';
 import { recordAuditLog } from './lib/auditEngine';
-import { subscribeToLegacyClubDocument, auth, onAuthStateChanged, loadMasterClubState } from './services/firebase';
+import {
+  subscribeToLegacyClubDocument,
+  auth,
+  onAuthStateChanged,
+  loadMasterClubState,
+  wipeFirestoreDeviceCache,
+  cacheOwnerChanged
+} from './services/firebase';
+import { toastAfterReload, takeToastAfterReload } from './lib/toastAfterReload';
 import { checkMembershipForAccount } from './services/organizations';
 import {
   logoutCoachUser,
@@ -205,7 +213,8 @@ export default function App() {
   const [latestPendingUser, setLatestPendingUser] = useState<UserAccount | null>(null);
   const prevPendingCountRef = useRef<number>(-1);
   const [confirmModalConfig, setConfirmModalConfig] = useState<{ message: string; onConfirm: () => void } | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  // A message kept for after the app starts again (signing out and losing access reload the app)
+  const [toastMessage, setToastMessage] = useState<string | null>(takeToastAfterReload);
 
   const isRemoteSyncRef = useRef<boolean>(false);
   const cloudSyncDebounceTimerRef = useRef<any>(null);
@@ -452,6 +461,12 @@ export default function App() {
   // Each message stays 3 s: a new one restarts the count (before, the timer of an earlier message could hide it
   // straight away)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The message kept from before the app started again goes away on its own, like the others
+  useEffect(() => {
+    const t = setTimeout(() => setToastMessage((m) => (toastTimerRef.current ? m : null)), 4000);
+    return () => clearTimeout(t);
+  }, []);
+
   const showToast = (msg: string) => {
     if (Date.now() - readOnlyBlockedAtRef.current < 1000) return;
     setToastMessage(msg);
@@ -472,6 +487,11 @@ export default function App() {
   useEffect(
     () =>
       onAuthStateChanged(auth, (user) => {
+        // The copy of the club on this device was made by another account: it leaves before this one uses it
+        if (user && cacheOwnerChanged(user.uid)) {
+          void wipeFirestoreDeviceCache().then(() => window.location.reload());
+          return;
+        }
         setAuthUid(user?.uid ?? null);
         setAuthReady(true);
       }),
@@ -604,7 +624,11 @@ export default function App() {
       const accessLost = Boolean(current.orgId) && membership?.orgId !== current.orgId;
       if (accessLost) {
         forgetClubOnDevice(current);
-        showToast('O seu acesso a este clube foi retirado. Os dados do clube foram apagados deste aparelho.');
+        // Firestore's copy of the club on the device leaves too (the app starts again without it)
+        toastAfterReload('O seu acesso a este clube foi retirado. Os dados do clube foram apagados deste aparelho.');
+        await wipeFirestoreDeviceCache();
+        window.location.reload();
+        return;
       }
       const orgId = membership?.orgId;
       const orgTeamIds = membership ? [...membership.member.teamIds].sort() : undefined;
@@ -898,7 +922,10 @@ export default function App() {
     await clearDeviceClubData();
     const cleanState = clearAllAppState(null);
     setState(cleanState);
-    showToast(`Sessão terminada. Até breve, ${userName}! 👋`);
+    // Firestore's copy of the club on the device leaves too (the app starts again without it)
+    toastAfterReload(`Sessão terminada. Até breve, ${userName}! 👋`);
+    await wipeFirestoreDeviceCache();
+    window.location.reload();
   };
 
   // If user is not logged in, render AuthView
