@@ -383,6 +383,33 @@ service cloud.firestore {
     }
 
     // Who invites must belong to the club the invitation is for (the Administrator can invite to any club).
+    /** The organization role of an invitation's role (as the app's orgRoleFromLegacy; never owner or admin). */
+    function orgRoleOfInvite(role) {
+      return {
+        'Diretor': 'diretor',
+        'Diretor Desportivo': 'diretor',
+        'Coordenador Técnico': 'coordenador',
+        'Treinador Principal': 'treinador',
+        'Treinador Adjunto': 'adjunto'
+      }.get(role, 'staff');
+    }
+
+    /** F1.7a: the membership matches the still-pending invitation this account registered with. */
+    function isInvitedMember(orgId, m) {
+      let acc = getUserAccount();
+      let code = acc == null ? '' : acc.get('inviteCode', '');
+      let inv = get(invitationDoc(code)).data;
+      return acc != null && isUsableInvitation(code) &&
+        inv.clubId == orgId &&
+        exists(orgPath(orgId)) && get(orgPath(orgId)).data.status == 'active' &&
+        inv.role != 'Administrador' &&
+        m.role == orgRoleOfInvite(inv.role) &&
+        m.teamIds == [inv.teamId] &&
+        m.status == 'active' &&
+        m.uid == request.auth.uid &&
+        (inv.get('email', '') == '' || request.auth.token.email == inv.email);
+    }
+
     function isOwnClub(clubId) {
       return clubId == getUserClubId() || (getUserClubId() == null && clubId == 'main');
     }
@@ -822,6 +849,8 @@ service cloud.firestore {
             !exists(orgPath(orgId)) &&
             getAfter(orgPath(orgId)).data.ownerUid == request.auth.uid &&
             getAfter(orgPath(orgId)).data.status == 'pending') ||
+          // F1.7a: who accepts an invitation joins the club, with exactly the invitation's team and role
+          (isAuthenticated() && memberUid == request.auth.uid && isInvitedMember(orgId, incoming())) ||
           // An owner/admin adds a member: never an owner, never above their own role
           (isOrgManager(orgId) &&
             incoming().role != 'owner' &&

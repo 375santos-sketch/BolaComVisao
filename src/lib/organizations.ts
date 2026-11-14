@@ -183,6 +183,27 @@ export function withMemberStatus(m: OrgMember, status: MemberStatus, actorUid: s
   return next;
 }
 
+/** F1.7a: the membership of who registers with an invitation: the invitation's club, team and role (the rules check
+ *  the same against the invitation). */
+export function memberFromInvitation(input: {
+  uid: string;
+  name: string;
+  email: string;
+  invitation: { role: string; teamId: string };
+  now: number;
+}): OrgMember {
+  return {
+    uid: input.uid,
+    displayName: (input.name || input.email || input.uid).slice(0, 120),
+    email: (input.email || '').slice(0, 254),
+    role: orgRoleFromLegacy(input.invitation.role),
+    teamIds: [input.invitation.teamId],
+    status: 'active',
+    addedBy: input.uid,
+    addedAt: input.now
+  };
+}
+
 /** A member made from today's account (for the migration of "main", M2): the legacy teams and role. */
 export function memberFromLegacyAccount(
   account: { id: string; name?: string; email?: string; role?: string; assignedTeams?: string[] },
