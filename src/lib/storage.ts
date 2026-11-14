@@ -8,11 +8,11 @@ import {
   ClubSeason,
   OpponentScouting
 } from '../types';
-import { saveToIndexedDB, defaultSyncState } from './syncEngine';
+import { saveToIndexedDB, loadFromIndexedDB, defaultSyncState } from './syncEngine';
 import { normalizeAndMigrateTrainings } from './trainingNumbering';
 import { buildDefaultSeasons, defaultSeason, seasonFromDate, normalizeSeasonString } from './utils';
 
-import { ACTIVE_STATE_POINTER, LEGACY_STATE_KEY, stateKeyFor } from './deviceCache';
+import { ACTIVE_STATE_POINTER, LEGACY_STATE_KEY, isClubDataKey, stateKeyFor } from './deviceCache';
 
 // F1.4: the club data lives under one key per account and organization (deviceCache.ts); the old single key only
 // holds the signed-out state, and an old device moves from it to the new key the first time it saves.
@@ -40,6 +40,8 @@ function writeStateToDevice(state: AppState) {
 /** The state to open: the last account and organization used, or the old single key on an old device. */
 function readStateFromDevice(): string | null {
   const key = localStorage.getItem(ACTIVE_STATE_POINTER);
+  // The copy is in IndexedDB (the small storage was full): the app reads it from there right after opening
+  if (key && localStorage.getItem('bcv-state-in-idb') === key) return null;
   const data = key ? localStorage.getItem(key) : null;
   return data ?? localStorage.getItem(LEGACY_STATE_KEY);
 }
@@ -511,35 +513,89 @@ export function loadAppState(): AppState {
   return initialDefaultState;
 }
 
+// ---------- When the browser's small storage (about 5 MB on an iPhone) is full ----------
+// The club's copy then goes to IndexedDB (much larger), and the app reads it from there when it opens. The club's
+// data is in the cloud either way: this copy only lets the app open fast and work without network.
+
+/** Marker: the copy of the club for this state key is in IndexedDB, not in localStorage. */
+export const STATE_IN_IDB_KEY = 'bcv-state-in-idb';
+/** Window event the app shows a short message for (once per session). */
+export const STORAGE_FULL_EVENT = 'bcv-storage-full';
+const idbStateKey = (key: string) => `state:${key}`;
+
+const isQuotaError = (e: any) =>
+  e?.name === 'QuotaExceededError' ||
+  e?.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+  (typeof e?.message === 'string' && e.message.toLowerCase().includes('quota'));
+
+/** Frees room: other accounts' and clubs' copies (they are in the cloud) and caches that are rebuilt by themselves. */
+function freeDeviceSpace(keep: string) {
+  const drop: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k || k === keep || k === LEGACY_STATE_KEY || k === ACTIVE_STATE_POINTER) continue;
+    if (
+      (isClubDataKey(k) && k.startsWith('bcv-state:')) ||
+      k.startsWith('bcv_team_db_v1_') ||
+      k === 'bcv_weather_cache_v1'
+    )
+      drop.push(k);
+  }
+  drop.forEach((k) => localStorage.removeItem(k));
+}
+
 let quotaWarned = false;
 
 export function saveAppState(state: AppState): boolean {
+  const normalized = normalizeClubState(state);
+  const key = stateKeyFor(normalized.currentUser);
+  // The larger copy first (non-blocking): it is the one used when the small storage is full
+  saveToIndexedDB(idbStateKey(key), normalized).catch(() => {});
   try {
-    const normalized = normalizeClubState(state);
-
     writeStateToDevice(normalized);
-
-    // Dual offline persistence layer in IndexedDB (non-blocking)
-    saveToIndexedDB('coach_active_state', normalized).catch(() => {});
-
+    if (localStorage.getItem(STATE_IN_IDB_KEY) === key) localStorage.removeItem(STATE_IN_IDB_KEY);
     return true;
   } catch (e: any) {
-    if (
-      e.name === 'QuotaExceededError' ||
-      e.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
-      (e.message && e.message.includes('quota'))
-    ) {
-      // Once per session: the alert used to pop up again on every change while the storage stayed full.
-      if (!quotaWarned) {
-        quotaWarned = true;
-        alert(
-          '⚠️ Espaço Esgotado! O teu dispositivo não tem mais memória alocada para a app. Exporta os dados (JSON) e limpa o armazenamento.'
-        );
-      }
-    } else {
+    if (!isQuotaError(e)) {
       console.error('Error saving state:', e);
+      return false;
     }
-    return false;
+  }
+  try {
+    freeDeviceSpace(key);
+    writeStateToDevice(normalized);
+    if (localStorage.getItem(STATE_IN_IDB_KEY) === key) localStorage.removeItem(STATE_IN_IDB_KEY);
+    return true;
+  } catch {
+    // Still too big: keep only the small marker here; the copy is in IndexedDB (an old copy here would be stale)
+    try {
+      localStorage.removeItem(key);
+      if (key !== LEGACY_STATE_KEY) localStorage.setItem(ACTIVE_STATE_POINTER, key);
+      localStorage.setItem(STATE_IN_IDB_KEY, key);
+    } catch {
+      // Nothing more fits: IndexedDB and the cloud still have the club
+    }
+    if (!quotaWarned) {
+      quotaWarned = true;
+      try {
+        window.dispatchEvent(new Event(STORAGE_FULL_EVENT));
+      } catch {
+        // No window (tests)
+      }
+    }
+    return true;
+  }
+}
+
+/** When the copy of the club is in IndexedDB (the small storage was full), the state to open; otherwise null. */
+export async function loadAppStateFromLargeStorage(): Promise<AppState | null> {
+  try {
+    const key = localStorage.getItem(STATE_IN_IDB_KEY);
+    if (!key || localStorage.getItem(ACTIVE_STATE_POINTER) !== key) return null;
+    const data = await loadFromIndexedDB<AppState>(idbStateKey(key));
+    return data ? normalizeClubState(data) : null;
+  } catch {
+    return null;
   }
 }
 

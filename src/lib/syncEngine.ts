@@ -56,6 +56,20 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
+/** Reads what saveToIndexedDB kept under `key` (null when there is nothing, or IndexedDB is unavailable). */
+export async function loadFromIndexedDB<T = unknown>(key: string): Promise<T | null> {
+  try {
+    const db = await openDB();
+    return await new Promise((resolve) => {
+      const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(key);
+      req.onsuccess = () => resolve((req.result?.data as T) ?? null);
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function saveToIndexedDB(key: string, data: any): Promise<boolean> {
   try {
     const db = await openDB();
