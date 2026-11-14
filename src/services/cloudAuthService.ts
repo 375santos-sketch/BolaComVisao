@@ -1,5 +1,13 @@
-import { putMember } from './organizations';
-import { memberFromInvitation } from '../lib/organizations';
+import { createOrganization, putMember } from './organizations';
+import { MAIN_ORG_ID } from '../lib/mainMigration';
+import {
+  OrganizationType,
+  memberFromInvitation,
+  memberFromLegacyAccount,
+  newMember,
+  newOrganization,
+  ownSpaceIdOf
+} from '../lib/organizations';
 import {
   db,
   auth,
@@ -465,7 +473,9 @@ export async function registerCoachUser(
   fullName: string,
   role: string,
   userEmail?: string,
-  resolvedInvite?: TeamInvitation
+  resolvedInvite?: TeamInvitation,
+  /** F1.7: without an invitation, the person's own space (a coach on their own, or a club), pending approval. */
+  ownSpace?: { type: OrganizationType; name: string }
 ): Promise<{ success: boolean; user?: UserAccount; isPending?: boolean; error?: string }> {
   try {
     const rawUsername = username.trim().toLowerCase();
@@ -533,6 +543,8 @@ export async function registerCoachUser(
             ]
           : undefined,
         inviteCode: withInvite ? withInvite.inviteCode.toUpperCase() : undefined,
+        // F1.7: without an invitation the account gets its own space (never the shared "main")
+        defaultOrgId: !withInvite && !isAdmin && ownSpace ? ownSpaceIdOf(uid) : undefined,
         createdAt: new Date().toISOString()
       };
       if (isAdmin) {
@@ -561,6 +573,27 @@ export async function registerCoachUser(
       await saveAccount(account);
     }
     const initialStatus: UserStatus = account.status;
+
+    // F1.7: the own space, waiting for the platform Administrator's approval (approving the account approves it)
+    if (account.defaultOrgId && ownSpace) {
+      const now = Date.now();
+      try {
+        await createOrganization(
+          newOrganization({ id: account.defaultOrgId, type: ownSpace.type, name: ownSpace.name, ownerUid: uid, now }),
+          newMember({
+            uid,
+            displayName: cleanName,
+            email: account.email || email,
+            role: 'owner',
+            teamIds: ['*'],
+            addedBy: uid,
+            now
+          })
+        );
+      } catch (e) {
+        console.warn('Espaço próprio não criado (pode ser criado depois pelo Administrador):', e);
+      }
+    }
 
     // F1.7a: the invitation also makes this person a member of the club (its team and role), while it is still
     // pending. Without it, the old access would be the only way in, and that ends with the strict rules (F1.10).
@@ -1011,7 +1044,9 @@ export async function approveCoachUser(
       role: safeRole,
       approvedBy: adminName,
       approvedAt: Date.now(),
-      assignedTeams: assignedTeams !== undefined ? assignedTeams : currentAccount.assignedTeams || []
+      assignedTeams: assignedTeams !== undefined ? assignedTeams : currentAccount.assignedTeams || [],
+      // F1.7: an account with its own space belongs to it (never to the shared "main" through the old access)
+      ...(currentAccount.defaultOrgId === ownSpaceIdOf(userId) ? { clubId: ownSpaceIdOf(userId) } : {})
     };
 
     await setDoc(
@@ -1022,6 +1057,32 @@ export async function approveCoachUser(
       }),
       { merge: true }
     );
+
+    // F1.7: approving the account also approves its own space (only a pending one that it owns)
+    if (currentAccount.defaultOrgId === ownSpaceIdOf(userId)) {
+      const orgDoc = doc(db, 'organizations', ownSpaceIdOf(userId));
+      const org = await getDoc(orgDoc);
+      if (org.exists() && org.data().status === 'pending' && org.data().ownerUid === userId) {
+        await setDoc(orgDoc, { status: 'active' }, { merge: true });
+      }
+    } else if (!currentAccount.clubId || currentAccount.clubId === MAIN_ORG_ID) {
+      // An account without its own space (e.g. Google sign-in) goes to the shared club "main", as before; now also
+      // as a member of it (with the chosen role and teams), so it keeps its access after the strict rules (F1.10)
+      const mainOrg = await getDoc(doc(db, 'organizations', MAIN_ORG_ID));
+      const existing = await getDoc(doc(db, 'organizations', MAIN_ORG_ID, 'members', userId));
+      if (mainOrg.exists() && !existing.exists()) {
+        const now = Date.now();
+        await putMember(
+          MAIN_ORG_ID,
+          memberFromLegacyAccount(
+            { ...updatedAccount, id: userId },
+            { ownerUid: String(mainOrg.data().ownerUid || ''), addedBy: auth.currentUser?.uid || userId, now }
+          ),
+          auth.currentUser?.uid || userId,
+          now
+        );
+      }
+    }
 
     return {
       success: true,

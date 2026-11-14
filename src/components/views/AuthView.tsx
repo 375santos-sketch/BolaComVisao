@@ -152,6 +152,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regRole, setRegRole] = useState('Treinador Principal');
+  // F1.7: without an invitation, the person's own space: a coach on their own, or a club
+  const [regSpaceType, setRegSpaceType] = useState<'individual' | 'club'>('individual');
+  const [regSpaceName, setRegSpaceName] = useState('');
   const [regError, setRegError] = useState<string | null>(null);
   // Código de convite: se preenchido e válido, o registo junta-se ao clube do convite já aprovado
   const [regInviteCode, setRegInviteCode] = useState('');
@@ -343,6 +346,11 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
       return;
     }
 
+    if (!resolvedInvite && regSpaceType === 'club' && !regSpaceName.trim()) {
+      setRegError('Escreva o nome do clube.');
+      return;
+    }
+
     if (regPassword.length < 6) {
       setRegError('A palavra-passe deve ter pelo menos 6 caracteres.');
       return;
@@ -362,7 +370,13 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
         regName,
         regRole,
         regEmail,
-        resolvedInvite || undefined
+        resolvedInvite || undefined,
+        resolvedInvite
+          ? undefined
+          : {
+              type: regSpaceType,
+              name: (regSpaceType === 'club' ? regSpaceName : `Equipas de ${regName}`).trim().slice(0, 120)
+            }
       );
 
       if (cloudRes.success && cloudRes.user) {
@@ -880,10 +894,51 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                     {inviteCheckError && <p className="text-[11px] text-ui-danger">❌ {inviteCheckError}</p>}
                     {!resolvedInvite && !inviteCheckError && (
                       <p className="text-[11px] text-ui-muted">
-                        Sem código, vais criar o teu próprio clube novo (ficas Administrador dele automaticamente).
+                        Sem código, crias o teu próprio espaço (ficas dono dele quando o Administrador aprovar).
                       </p>
                     )}
                   </div>
+
+                  {!resolvedInvite && (
+                    <fieldset className="space-y-1.5" aria-label="O meu espaço">
+                      <legend className="block text-xs text-ui-brand tabular-nums mb-1">O meu espaço *</legend>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(
+                          [
+                            ['individual', '🧢 Sou treinador', 'As minhas equipas'],
+                            ['club', '🏟️ Sou um clube', 'Várias equipas e pessoas']
+                          ] as const
+                        ).map(([value, title, sub]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={regSpaceType === value}
+                            onClick={() => setRegSpaceType(value)}
+                            className={`rounded-ui border p-2 text-left text-xs ${
+                              regSpaceType === value
+                                ? 'border-ui-brand bg-ui-brand/10 text-ui-text'
+                                : 'border-ui-line text-ui-muted'
+                            }`}
+                          >
+                            <span className="block font-bold">{title}</span>
+                            <span className="block text-[10px]">{sub}</span>
+                          </button>
+                        ))}
+                      </div>
+                      {regSpaceType === 'club' && (
+                        <input
+                          type="text"
+                          required
+                          maxLength={120}
+                          aria-label="Nome do clube"
+                          placeholder="Nome do clube (ex: Clube Desportivo da Vila)"
+                          value={regSpaceName}
+                          onChange={(e) => setRegSpaceName(e.target.value)}
+                          className="ui-input w-full text-xs"
+                        />
+                      )}
+                    </fieldset>
+                  )}
 
                   <div>
                     <label className="block text-xs text-ui-brand tabular-nums mb-1">Nome Completo *</label>
