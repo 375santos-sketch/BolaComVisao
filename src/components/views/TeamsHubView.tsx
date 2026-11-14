@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { copyForNewTeam } from '../../lib/athleteIdentity';
 import { AppState, SquadProfile, Player } from '../../types';
 import { uid, defaultSeason } from '../../lib/utils';
 import logoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
@@ -83,10 +84,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
     if (copyFromTeamId !== 'none') {
       const sourceTeam = teams.find((t) => t.id === copyFromTeamId);
       if (sourceTeam) {
-        initialRoster = sourceTeam.roster.map((p) => ({
-          ...p,
-          id: uid()
-        }));
+        initialRoster = sourceTeam.roster.map((p) => copyForNewTeam(p, uid())); // F4: the same athlete
         initialStaff = (sourceTeam.staffMembers || []).map((s) => ({
           ...s,
           id: uid()
