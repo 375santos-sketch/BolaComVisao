@@ -10,7 +10,7 @@ import { canViewTeamDatabase, canManageTeamDatabase, hasPermission } from '../li
 import { UserAccount } from '../types';
 
 describe('Team Database - Import Pipeline & Sanitization', () => {
-  it('should sanitize column headers to uppercase, no accents, and deduplicate duplicate names', () => {
+  it('column names in capitals, accents and symbols kept, duplicates numbered', () => {
     const rawHeaders = [
       '  Nome do Atleta  ',
       'Posição (Campo)',
@@ -23,18 +23,18 @@ describe('Team Database - Import Pipeline & Sanitization', () => {
     const cleaned = sanitizeAndDeduplicateHeaders(rawHeaders);
 
     expect(cleaned[0]).toBe('NOME DO ATLETA');
-    expect(cleaned[1]).toBe('POSICAO CAMPO');
-    expect(cleaned[2]).toBe('N CAMISOLA');
-    expect(cleaned[3]).toBe('POSICAO CAMPO (2)');
+    expect(cleaned[1]).toBe('POSIÇÃO (CAMPO)');
+    expect(cleaned[2]).toBe('Nº CAMISOLA');
+    expect(cleaned[3]).toBe('POSIÇÃO (CAMPO) (2)');
     expect(cleaned[4]).toBe('COLUNA 5');
-    expect(cleaned[5]).toBe('EMAIL');
+    expect(cleaned[5]).toBe('EMAIL @');
   });
 
   it('should strictly enforce max 40 columns limit', () => {
     const manyHeaders = Array.from({ length: 55 }, (_, i) => `COL_${i + 1}`);
     const cleaned = sanitizeAndDeduplicateHeaders(manyHeaders);
     expect(cleaned.length).toBe(MAX_COLUMNS_LIMIT);
-    expect(cleaned[39]).toBe('COL40');
+    expect(cleaned[39]).toBe('COL_40');
   });
 
   it('should reject files exceeding the 2 MB limit', () => {
@@ -42,7 +42,7 @@ describe('Team Database - Import Pipeline & Sanitization', () => {
     expect(() => inspectExcelBuffer(fakeLargeBuffer, 'huge.xlsx')).toThrow(/limite máximo permitido de 2 MB/i);
   });
 
-  it('should ignore empty rows and sanitize text cells in workbook inspection', () => {
+  it('ignores empty rows and keeps the text of the cells as in the file', () => {
     // Generate a simple in-memory workbook with XLSX
     const data = [
       ['Jogador', 'Posição', 'Golos', 'Email'],
@@ -61,19 +61,30 @@ describe('Team Database - Import Pipeline & Sanitization', () => {
 
     expect(inspection.sheetNames).toContain('Folha1');
     const sheet = inspection.sheets['Folha1'];
-    expect(sheet.columns).toEqual(['JOGADOR', 'POSICAO', 'GOLOS', 'EMAIL']);
+    expect(sheet.columns).toEqual(['JOGADOR', 'POSIÇÃO', 'GOLOS', 'EMAIL']);
     expect(sheet.rows.length).toBe(2); // 2 non-empty rows
 
     // Row 1
-    expect(sheet.rows[0]['JOGADOR']).toBe('JOAO DALMEIDASILVA');
-    expect(sheet.rows[0]['POSICAO']).toBe('AVANCADOEXTREMO');
+    expect(sheet.rows[0]['JOGADOR']).toBe("João d'Almeida-Silva");
+    expect(sheet.rows[0]['POSIÇÃO']).toBe('Avançado/Extremo');
     expect(sheet.rows[0]['GOLOS']).toBe('12');
     expect(sheet.rows[0]['EMAIL']).toBe('joao@clube.pt'); // email lowercase exception
 
     // Row 2
-    expect(sheet.rows[1]['JOGADOR']).toBe('JOSE MARIO');
-    expect(sheet.rows[1]['POSICAO']).toBe('MEDIOCENTRO');
+    expect(sheet.rows[1]['JOGADOR']).toBe('José Mário');
+    expect(sheet.rows[1]['POSIÇÃO']).toBe('Médio-Centro');
     expect(sheet.rows[1]['EMAIL']).toBe('jose.mario@clube.pt');
+  });
+
+  it('CSV files: accents read right (UTF-8, or the old Windows encoding) and "18/20" stays "18/20"', () => {
+    const text = 'NOME,POSIÇÃO,PRESENÇAS\nGonçalo Exemplo,Guarda-redes,18/20\n';
+    const utf8 = new TextEncoder().encode('\uFEFF' + text);
+    const sheetOf = (bytes: Uint8Array) => Object.values(inspectExcelBuffer(bytes, 'plantel.csv').sheets)[0];
+    for (const bytes of [utf8, Uint8Array.from(text, (c) => ({ Ç: 0xc7, Ã: 0xc3, ç: 0xe7 })[c] ?? c.charCodeAt(0))]) {
+      const sheet = sheetOf(bytes);
+      expect(sheet.columns).toEqual(['NOME', 'POSIÇÃO', 'PRESENÇAS']);
+      expect(sheet.rows[0]).toEqual({ NOME: 'Gonçalo Exemplo', POSIÇÃO: 'Guarda-redes', PRESENÇAS: '18/20' });
+    }
   });
 
   it('should handle workbook with multiple sheets and allow selection', () => {
