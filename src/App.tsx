@@ -5,7 +5,13 @@ import { withInactiveAbsences } from './lib/inactiveAbsences';
 import { liveMatchOf } from './lib/liveFollow';
 import { localDateISO } from './lib/trainingQuick';
 import { AppState, UserAccount, AppNotification } from './types';
-import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
+import {
+  loadAppState,
+  saveAppState,
+  clearAllAppState,
+  loadAppStateFromLargeStorage,
+  STORAGE_FULL_EVENT
+} from './lib/storage';
 import { subscribeToClubCloud, migrateClubToRecords, getCloudMode, setTeamScope } from './services/clubCloud';
 import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
@@ -456,6 +462,25 @@ export default function App() {
   // Each message stays 3 s: a new one restarts the count (before, the timer of an earlier message could hide it
   // straight away)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The phone's small storage was full: the copy of the club is in the larger one (IndexedDB); open it from there
+  useEffect(() => {
+    let cancelled = false;
+    void loadAppStateFromLargeStorage().then((saved) => {
+      if (!cancelled && saved) setState((prev) => (prev.currentUser ? prev : saved));
+    });
+    const onFull = () => {
+      setToastMessage(
+        'O telemóvel tem pouco espaço para a app: a cópia do clube passou para outra memória do telemóvel. Os dados continuam guardados na nuvem.'
+      );
+      setTimeout(() => setToastMessage(null), 6000);
+    };
+    window.addEventListener(STORAGE_FULL_EVENT, onFull);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(STORAGE_FULL_EVENT, onFull);
+    };
+  }, []);
+
   const showToast = (msg: string) => {
     if (Date.now() - readOnlyBlockedAtRef.current < 1000) return;
     setToastMessage(msg);
