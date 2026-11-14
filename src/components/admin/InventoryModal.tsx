@@ -21,7 +21,8 @@ const KIND_LABELS: Record<string, string> = {
   setpiece: 'Bolas paradas',
   tacticplay: 'Jogadas (quadro antigo)',
   teamphoto: 'Fotos da equipa',
-  report: 'Relatórios mensais'
+  report: 'Relatórios mensais',
+  teamconfig: 'Definições da equipa'
 };
 const STATUS_LABELS: Record<string, string> = {
   approved: 'Aprovada',
