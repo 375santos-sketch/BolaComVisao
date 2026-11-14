@@ -57,7 +57,8 @@ export async function readBackupDocuments(
 
   // F1.3+: organizations, their members and their audit (the source of truth of access after the migration)
   onProgress?.('A ler as organizações…');
-  for (const orgId of await readCollection('organizations')) {
+  const orgIds = await readCollection('organizations');
+  for (const orgId of orgIds) {
     await readCollection(`organizations/${orgId}/members`);
     await readCollection(`organizations/${orgId}/audit`);
   }
@@ -75,7 +76,7 @@ export async function readBackupDocuments(
   const invitations = documents
     .filter((d) => /^invitations\/[^/]+$/.test(d.path))
     .map((d) => ({ id: d.path, data: d.data }));
-  for (const ws of workspaceIdsToRead(listed, users, invitations)) {
+  for (const ws of workspaceIdsToRead(listed, users, invitations, orgIds)) {
     onProgress?.(`A ler o espaço «${ws}»…`);
     if (!listed.includes(ws)) {
       try {

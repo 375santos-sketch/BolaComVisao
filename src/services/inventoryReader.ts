@@ -87,8 +87,14 @@ export async function readInventorySource(onProgress?: (text: string) => void): 
     []
   );
 
+  const orgIds = await safe(
+    'organizações (organizations)',
+    async () => (await readAll(['organizations'])).map((d) => d.id),
+    []
+  );
+
   const workspaces: RawWorkspace[] = [];
-  for (const id of workspaceIdsToRead(listed, users, invitations)) {
+  for (const id of workspaceIdsToRead(listed, users, invitations, orgIds)) {
     onProgress?.(`A contar os registos de «${id}»…`);
     workspaces.push(await readWorkspace(id));
   }
