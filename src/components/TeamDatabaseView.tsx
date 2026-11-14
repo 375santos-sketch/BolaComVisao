@@ -2,6 +2,13 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AppState, UserAccount, TeamDataset, TeamDatabaseRow } from '../types';
 import { uid, sanitizeExcelText } from '../lib/utils';
 import { getUserAccessibleTeams, canManageTeamDatabase, getEffectiveTeamRole } from '../lib/permissionsEngine';
+import { workspaceIdOf } from '../lib/deviceCache';
+
+/** F2.8: the club a sheet belongs to (it was the age group by mistake); the shared space keeps its old name. */
+const teamDbClubOf = (user: Parameters<typeof workspaceIdOf>[0]) => {
+  const ws = workspaceIdOf(user);
+  return ws === 'main' ? 'default' : ws;
+};
 import {
   MAX_COLUMNS_LIMIT,
   MAX_FILE_SIZE_BYTES,
@@ -228,7 +235,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       await saveTeamDatasetWithRows(
         activeTeam.id,
         activeTeam.clubName,
-        activeTeam.category || 'default',
+        teamDbClubOf(currentUser),
         updatedDataset,
         rows,
         currentUser
@@ -484,7 +491,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       await saveTeamDatasetWithRows(
         activeTeam.id,
         activeTeam.clubName,
-        activeTeam.category || 'default',
+        teamDbClubOf(currentUser),
         newDataset,
         newRows,
         currentUser
