@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDocs, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { workspaceIdOf } from '../lib/deviceCache';
 import { auth, db } from './firebase';
 import { PushMessage, PushPrefs, VAPID_PUBLIC_KEY, matchPushMessage } from '../lib/pushEvents';
@@ -176,10 +176,7 @@ export async function sendNotice(
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error('Entre na app com a sua conta.');
   const phones = collection(db, 'club_workspace', clubId, 'push_subscriptions');
-  const snap = await getDocs(phones).catch(() => {
-    throw new Error('Sem acesso aos avisos deste clube: confirme que entrou na app com a conta do clube.');
-  });
-  const subscriptions = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  // F2.4: the server checks who sends and reads the club's phones itself (with this sign-in)
   const resp = await fetch('/api/avisar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -187,7 +184,6 @@ export async function sendNotice(
       clubId,
       teamId,
       ...message,
-      subscriptions,
       // The coach's other phones and tablets too, never this one
       alsoMine: message.kind !== 'teste' && loadAlsoMine(),
       fromSubscriptionId: savedSubscriptionId() || undefined

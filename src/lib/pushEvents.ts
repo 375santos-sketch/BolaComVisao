@@ -186,3 +186,42 @@ export function testResult(r: { sent: number; phones: number; failed: Array<{ st
     return `O serviço de avisos recusou a chave da app (código ${f.status}). Desligue e volte a ligar os avisos neste telemóvel.`;
   return `O serviço de avisos do telemóvel recusou o aviso${f ? ` (código ${f.status || '?'}${f.reason ? `: ${f.reason}` : ''})` : ''}.`;
 }
+
+// ---------- F2.4: who may send a notice, and the phones read by the server ----------
+
+/** A Firestore REST value → plain JSON (enough for push subscriptions and memberships). */
+export function fromRestValue(v: Record<string, any> | undefined): unknown {
+  if (!v) return undefined;
+  if ('nullValue' in v) return null;
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('integerValue' in v) return Number(v.integerValue);
+  if ('doubleValue' in v) return v.doubleValue;
+  if ('stringValue' in v) return v.stringValue;
+  if ('timestampValue' in v) return v.timestampValue;
+  if ('arrayValue' in v) return (v.arrayValue.values || []).map(fromRestValue);
+  if ('mapValue' in v)
+    return Object.fromEntries(Object.entries(v.mapValue.fields || {}).map(([k, x]) => [k, fromRestValue(x as any)]));
+  return undefined;
+}
+
+export const fromRestFields = (fields: Record<string, any> | undefined): Record<string, unknown> =>
+  (fromRestValue({ mapValue: { fields: fields || {} } }) as Record<string, unknown>) || {};
+
+/**
+ * F2.4 — May this person send a notice about this team? With a membership in the organization: only an active
+ * member of that team (or of every team) whose role writes (staff only reads). Without a membership (the old access,
+ * until the strict rules v3): as before — the Firestore rules decide when the server reads the phones.
+ */
+export function noticeAllowed(
+  membership: { status?: unknown; role?: unknown; teamIds?: unknown } | null,
+  teamId: string
+): { ok: true } | { ok: false; reason: string } {
+  if (!membership) return { ok: true };
+  if (membership.status !== 'active') return { ok: false, reason: 'O seu acesso a este clube não está ativo.' };
+  if (membership.role === 'staff') return { ok: false, reason: 'O seu papel no clube não envia avisos.' };
+  const teams = Array.isArray(membership.teamIds) ? (membership.teamIds as unknown[]) : [];
+  if (!teams.includes('*') && !teams.includes(teamId)) {
+    return { ok: false, reason: 'Só envia avisos das suas equipas.' };
+  }
+  return { ok: true };
+}

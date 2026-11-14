@@ -15,7 +15,14 @@ import {
 } from './src/lib/printExercise';
 import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
 import webpush from 'web-push';
-import { VAPID_PUBLIC_KEY, cleanNoticeRequest, cleanSubscription, subscriptionsToNotify } from './src/lib/pushEvents';
+import {
+  VAPID_PUBLIC_KEY,
+  cleanNoticeRequest,
+  cleanSubscription,
+  fromRestFields,
+  noticeAllowed,
+  subscriptionsToNotify
+} from './src/lib/pushEvents';
 import { parentsLiveFromRestDocument, renderParentsLiveContent, renderParentsLivePage } from './src/lib/parentsLive';
 import { ChronicleAudience, chroniclePrompt, cleanChronicle } from './src/lib/matchChronicle';
 import { cleanIdeaRequest, exerciseIdeaPrompt } from './src/lib/exerciseIdea';
@@ -509,10 +516,38 @@ async function startServer() {
             'A chave VAPID_PRIVATE_KEY dos Secrets do AI Studio não está certa: copie de novo só o valor (sem espaços nem aspas) e publique outra vez.'
         });
       }
-      // The phones of the club, read by the app with the sender's own sign-in (the Firestore rules apply there)
-      const listed: unknown[] = Array.isArray(req.body?.subscriptions) ? req.body.subscriptions.slice(0, 300) : [];
-      const subs = listed
-        .map((raw) => cleanSubscription(String((raw as { id?: unknown })?.id || ''), raw))
+      // F2.4: the server checks who sends (membership of the team) and reads the club's phones itself, with the
+      // sender's own sign-in (the Firestore rules apply) — it no longer trusts a list sent by the app.
+      const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+      const base = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents`;
+      const asSender = { headers: { Authorization: `Bearer ${token}` } };
+      const memberRes = await fetch(
+        `${base}/organizations/${notice.clubId}/members/${verification.uid}`,
+        asSender
+      ).catch(() => null);
+      const membership =
+        memberRes && memberRes.ok
+          ? (fromRestFields(((await memberRes.json()) as { fields?: Record<string, any> }).fields) as Record<
+              string,
+              unknown
+            >)
+          : null;
+      const allowed = noticeAllowed(membership, notice.teamId);
+      if (allowed.ok === false) return res.status(403).json({ success: false, error: allowed.reason });
+      const phonesRes = await fetch(
+        `${base}/club_workspace/${notice.clubId}/push_subscriptions?pageSize=300`,
+        asSender
+      ).catch(() => null);
+      if (!phonesRes || !phonesRes.ok) {
+        return res
+          .status(403)
+          .json({ success: false, error: 'Sem acesso aos avisos deste clube: entre na app com a conta do clube.' });
+      }
+      const phonesBody = (await phonesRes.json()) as {
+        documents?: Array<{ name: string; fields?: Record<string, any> }>;
+      };
+      const subs = (phonesBody.documents || [])
+        .map((d) => cleanSubscription(d.name.split('/').pop() || '', fromRestFields(d.fields)))
         .filter((s): s is NonNullable<typeof s> => Boolean(s) && /^[a-zA-Z0-9_-]{1,128}$/.test(s!.id));
       const targets = subscriptionsToNotify(subs, verification.uid, notice).slice(0, notice.kind === 'teste' ? 5 : 300);
       const payload = JSON.stringify({
