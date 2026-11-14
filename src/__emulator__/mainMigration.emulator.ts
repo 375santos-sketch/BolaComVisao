@@ -173,7 +173,10 @@ describe('F1.8 — migração de «main» (emulador)', () => {
   it('a chosen member reads the club through the organization; nobody else can run the migration', async () => {
     await signInAs('treinadorA');
     await expect(fs.getDoc(ref('organizations', 'main', 'members', uids.treinadorA))).resolves.toBeTruthy();
-    await expect(fs.getDocs(fs.collection(fb.db, 'club_workspace/main/records'))).resolves.toBeTruthy();
+    // F2: after the migration the coach reads their team (eq1) and the club record, as the app asks; not the rest
+    const records = fs.collection(fb.db, 'club_workspace/main/records');
+    await expect(fs.getDocs(fs.query(records, fs.where('teamId', 'in', ['eq1', '_club'])))).resolves.toBeTruthy();
+    await expect(fs.getDocs(records)).rejects.toMatchObject({ code: 'permission-denied' });
     // A coach (not the platform Administrator) cannot write the organization nor add members
     await expect(
       fs.setDoc(ref('organizations', 'main', 'members', uids.treinadorB), { uid: uids.treinadorB })
