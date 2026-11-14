@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AppState, UserAccount, TeamDataset, TeamDatabaseRow } from '../types';
-import { uid, sanitizeExcelText } from '../lib/utils';
+import { uid } from '../lib/utils';
 import { getUserAccessibleTeams, canManageTeamDatabase, getEffectiveTeamRole } from '../lib/permissionsEngine';
 import {
   MAX_COLUMNS_LIMIT,
   MAX_FILE_SIZE_BYTES,
   inspectExcelBuffer,
   loadTeamDatasets,
+  cleanSheetText,
+  cleanSheetHeader,
   loadDatasetRows,
   saveTeamDatasetWithRows,
   exportTeamDatabaseToExcel,
@@ -284,7 +286,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
     if (String(currentVal) !== editValue) {
       pushHistory(columns, rows);
       // Clean and sanitize string value
-      const cleaned = sanitizeExcelText(editValue);
+      const cleaned = cleanSheetText(editValue);
       setRows((prev) =>
         prev.map((r) => {
           if (r.id === rowId) {
@@ -313,7 +315,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       return;
     }
 
-    const sanitizedCol = sanitizeExcelText(colModal.newColName);
+    const sanitizedCol = cleanSheetHeader(colModal.newColName);
     if (!sanitizedCol) {
       onShowToast('Nome de coluna inválido.');
       return;
@@ -343,7 +345,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
   // Rename Column
   const handleRenameColumnConfirm = () => {
     if (!colModal || !colModal.oldCol || !colModal.newColName.trim() || !canEdit) return;
-    const sanitizedCol = sanitizeExcelText(colModal.newColName);
+    const sanitizedCol = cleanSheetHeader(colModal.newColName);
     if (!sanitizedCol) {
       onShowToast('Nome de coluna inválido.');
       return;
@@ -679,7 +681,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
       <div className="flex items-center justify-between px-3 py-1.5 bg-ui-brand-soft border border-ui-brand/20 rounded-lg text-[11px] text-ui-brand">
         <div className="flex items-center gap-1.5">
           <span>ℹ️</span>
-          <span>Texto convertido para maiúsculas e sem acentos/símbolos</span>
+          <span>Nomes das colunas em maiúsculas; o resto fica como no ficheiro</span>
         </div>
         <div className="text-[10px] text-ui-muted tabular-nums">
           {displayedRows.length} de {rows.length} linhas | {columns.length} colunas
@@ -969,7 +971,7 @@ export const TeamDatabaseView: React.FC<TeamDatabaseViewProps> = ({ state, onSho
               {/* Requirement 6 discrete notice */}
               <div className="p-2.5 bg-ui-brand-soft border border-ui-brand/30 rounded-xl text-xs text-ui-brand flex items-center gap-2">
                 <span>✨</span>
-                <span>Texto convertido para maiúsculas e sem acentos/símbolos</span>
+                <span>Nomes das colunas em maiúsculas; o resto fica como no ficheiro</span>
               </div>
 
               {/* Preview Table */}

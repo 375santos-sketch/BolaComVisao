@@ -2,7 +2,35 @@ import * as XLSX from 'xlsx';
 import { collection, doc, getDocs, setDoc, writeBatch } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
 import { TeamDataset, TeamDatabaseRow, UserAccount } from '../types';
-import { sanitizeExcelText } from './utils';
+/**
+ * The team sheet keeps the text as it is in the file (accents, "/", "-", "º"…): only control characters and repeated
+ * spaces go. (It used to remove accents and symbols: "18/20" became "1820", "Guarda-redes" "GUARDAREDES".)
+ */
+export function cleanSheetText(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  const str = String(value)
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (str.toUpperCase() === 'UNDEFINED' || str.toUpperCase() === 'NULL') return '';
+  return str;
+}
+
+/** Column names: the same, in capitals (accents kept: "POSIÇÃO"). */
+export const cleanSheetHeader = (value: unknown): string => cleanSheetText(value).toLocaleUpperCase('pt-PT');
+
+/**
+ * CSV files are text: read them as UTF-8 (what Excel, Google Sheets and Numbers write today), or as the old Windows
+ * encoding when they are not valid UTF-8. (Read as bytes, "Posição" became "POSIAAO".)
+ */
+function csvText(bytes: Uint8Array): string {
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes).replace(/^\uFEFF/, '');
+  } catch {
+    return new TextDecoder('windows-1252').decode(bytes);
+  }
+}
 
 export const MAX_COLUMNS_LIMIT = 40;
 const MAX_ROWS_LIMIT = 5000;
@@ -114,7 +142,7 @@ export function sanitizeAndDeduplicateHeaders(rawHeaders: unknown[]): string[] {
   const counts = new Map<string, number>();
 
   rawHeaders.forEach((col, idx) => {
-    let sanitized = sanitizeExcelText(col);
+    let sanitized = cleanSheetHeader(col);
     if (!sanitized) {
       sanitized = `COLUNA ${idx + 1}`;
     }
@@ -138,7 +166,7 @@ export function sanitizeAndDeduplicateHeaders(rawHeaders: unknown[]): string[] {
 /**
  * Parses an Excel or CSV file buffer and applies prompt sanitization rules
  */
-export function inspectExcelBuffer(buffer: ArrayBuffer | Uint8Array, _fileName?: string): ExcelWorkbookInspection {
+export function inspectExcelBuffer(buffer: ArrayBuffer | Uint8Array, fileName?: string): ExcelWorkbookInspection {
   if (!buffer) {
     throw new Error('Buffer do ficheiro inválido ou vazio.');
   }
@@ -153,11 +181,10 @@ export function inspectExcelBuffer(buffer: ArrayBuffer | Uint8Array, _fileName?:
 
   const u8Array = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
 
-  const workbook = XLSX.read(u8Array, {
-    type: 'array',
-    cellDates: true,
-    raw: false
-  });
+  const isCsv = /\.csv$/i.test(fileName || '');
+  const workbook = isCsv
+    ? XLSX.read(csvText(u8Array), { type: 'string', cellDates: true, raw: true })
+    : XLSX.read(u8Array, { type: 'array', cellDates: true, raw: false });
 
   if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
     throw new Error('O ficheiro Excel não contém qualquer folha de cálculo.');
@@ -230,7 +257,7 @@ export function inspectExcelBuffer(buffer: ArrayBuffer | Uint8Array, _fileName?:
         if (cellStr.includes('@') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cellStr.toLowerCase())) {
           rowMap[colName] = cellStr.toLowerCase().slice(0, MAX_STRING_LENGTH);
         } else {
-          let sanitized = sanitizeExcelText(rawCell);
+          let sanitized = cleanSheetText(rawCell);
           if (sanitized.length > MAX_STRING_LENGTH) {
             sanitized = sanitized.slice(0, MAX_STRING_LENGTH);
           }
