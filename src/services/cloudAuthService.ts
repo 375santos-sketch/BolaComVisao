@@ -1,3 +1,5 @@
+import { putMember } from './organizations';
+import { memberFromInvitation } from '../lib/organizations';
 import {
   db,
   auth,
@@ -559,6 +561,22 @@ export async function registerCoachUser(
       await saveAccount(account);
     }
     const initialStatus: UserStatus = account.status;
+
+    // F1.7a: the invitation also makes this person a member of the club (its team and role), while it is still
+    // pending. Without it, the old access would be the only way in, and that ends with the strict rules (F1.10).
+    if (account.inviteCode && invite) {
+      const now = Date.now();
+      try {
+        await putMember(
+          invite.clubId,
+          memberFromInvitation({ uid, name: cleanName, email: account.email || email, invitation: invite, now }),
+          uid,
+          now
+        );
+      } catch (e) {
+        console.warn('Inscrição no clube pelo convite não criada:', e);
+      }
+    }
 
     if (account.inviteCode) {
       try {
