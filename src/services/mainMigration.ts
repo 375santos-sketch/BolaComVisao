@@ -3,17 +3,19 @@
  * it automatically. ONLY ADDS: organizations/main, its members, their audit entries and users/{uid}.account.
  * defaultOrgId. The club data is read before and after to prove it did not change.
  *
- * BLOCKED in production: only runs against the emulator until F2 is done and validated and the empty accounts are
- * decided. Enabling it in production is a separate change that needs the Administrator's explicit authorization.
+ * Enabled in production after F2 was validated (see MAIN_MIGRATION_ENABLED).
  */
 import { collection, doc, getDoc, getDocs, writeBatch } from 'firebase/firestore';
 import { db } from './firebase';
 import { MAIN_ORG_ID, MigrationPlan, recordCountsByKind } from '../lib/mainMigration';
 import { canonicalJson } from '../lib/recordSync';
 
-/** Production stays blocked: only the emulator (tests and local trials) can run the migration. */
-export const MAIN_MIGRATION_ENABLED =
-  import.meta.env.DEV === true && import.meta.env.VITE_FIREBASE_EMULATORS === 'true';
+/**
+ * Enabled in production (authorized by the Administrator on 14/11/2026, after F2 was done and validated in F2.7).
+ * Still guarded: only the platform Administrator (the rules refuse anyone else), a verified encrypted copy made in
+ * the last 24 hours, and a plan without problems. Set to false to block it again.
+ */
+export const MAIN_MIGRATION_ENABLED: boolean = true;
 
 const plain = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 
@@ -33,7 +35,7 @@ export interface MigrationReport {
 
 export async function runMainMigration(plan: MigrationPlan): Promise<MigrationReport> {
   if (!MAIN_MIGRATION_ENABLED) {
-    throw new Error('Migração bloqueada na produção até a F2 estar concluída e validada.');
+    throw new Error('Migração bloqueada.');
   }
   if (plan.problems.length) throw new Error(`Plano com problemas: ${plan.problems.join(' · ')}`);
 

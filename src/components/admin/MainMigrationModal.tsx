@@ -101,11 +101,8 @@ const MainMigrationModal: React.FC<{ ownerUid: string; clubName: string; onClose
             aria-label="Bloqueio"
             className="rounded-ui border border-ui-danger/40 bg-ui-danger-soft p-3 text-ui-caption text-ui-text"
           >
-            <p className="font-extrabold text-ui-danger">🔒 Bloqueada na produção</p>
-            <p>
-              Falta: F2 concluída e validada. Pode preparar as escolhas; o botão de migrar só acende quando tudo estiver
-              cumprido.
-            </p>
+            <p className="font-extrabold text-ui-danger">🔒 Migração bloqueada</p>
+            <p>Pode preparar as escolhas; o botão de migrar está desligado.</p>
           </section>
         )}
         {error && (

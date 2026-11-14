@@ -3,8 +3,7 @@
  * accounts the platform Administrator chooses. It ONLY ADDS documents: the club data (club_workspace/main) is not
  * touched, and running it twice gives the same result (deterministic ids).
  *
- * Pure planning here; writing and checking is in services/mainMigration.ts. BLOCKED in production until F2 is done
- * and validated and the empty accounts are decided (see MAIN_MIGRATION_ENABLED in the service).
+ * Pure planning here; writing and checking is in services/mainMigration.ts (see MAIN_MIGRATION_ENABLED there).
  */
 import {
   OrgAuditEntry,

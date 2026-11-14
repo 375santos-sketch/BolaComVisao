@@ -19,7 +19,7 @@ const uidOf = async (name: string) => {
 /**
  * F1.8 + F1.6 in the emulator (where the migration is allowed): the platform Administrator chooses who stays,
  * migrates, sees the automatic checks; then, as owner of the club, manages the members and takes a coach's
- * access away. In production the migration screen shows "Bloqueada" and the button stays off.
+ * access away.
  */
 test('migração do clube e membros: escolher, migrar com verificação e retirar o acesso a um treinador', async ({
   page
@@ -31,7 +31,7 @@ test('migração do clube e membros: escolher, migrar com verificação e retira
   await navTo(page, /clube/i);
   await page.getByRole('button', { name: /Migração do clube/ }).click();
   const sheet = page.getByRole('dialog', { name: 'Migração do clube' });
-  await expect(sheet).not.toContainText('Bloqueada na produção'); // the emulator allows it
+  await expect(sheet).not.toContainText('Migração bloqueada');
   const who = sheet.getByRole('region', { name: 'Quem fica no clube' });
   await expect(who).toContainText('Treinador A');
   await expect(who).toContainText('Administrador P ★');

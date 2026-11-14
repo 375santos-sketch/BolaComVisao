@@ -180,7 +180,7 @@ export const ClubView: React.FC<ClubViewProps> = ({
               {
                 icon: 'users' as IconName,
                 title: 'Migração do clube',
-                detail: 'Organização e membros do clube · bloqueada até à F2',
+                detail: 'Organização e membros do clube',
                 run: onOpenMainMigration
               }
             ]
