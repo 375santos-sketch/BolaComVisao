@@ -273,6 +273,64 @@ service cloud.firestore {
       );
     }
 
+    // ---------- F2.8: the team's sheet ("Base de dados da equipa") and the phones for notices ----------
+
+    /** The membership that decides a sheet of club `clubId`: that club's, or (old sheets: 'default' or, by an old
+     *  mistake, the team's age group, never a club) the shared space 'main'. Written without "?:" on purpose: the
+     *  rules engine refuses it inside list queries. */
+    function sheetOrgIsClub(clubId) {
+      return clubId is string && exists(orgPath(clubId));
+    }
+
+    function sheetHasMembership(clubId) {
+      return (sheetOrgIsClub(clubId) && hasOrgMembership(clubId)) ||
+        (!sheetOrgIsClub(clubId) && hasOrgMembership('main'));
+    }
+
+    /** Whether the account already has a membership in its own club (then the old access no longer applies). */
+    function hasOwnMembership() {
+      let acc = getUserAccount();
+      return acc != null && hasOrgMembership(acc.get('defaultOrgId', acc.get('clubId', 'main')));
+    }
+
+    /** With a membership in the sheet's club the membership decides (as for the records); otherwise the old access,
+     *  only for accounts that have no membership yet (until F1.10). */
+    function readsTeamDb(teamId, clubId) {
+      return isMasterAdmin() ||
+        (sheetOrgIsClub(clubId) && hasOrgMembership(clubId) && memberSeesTeam(clubId, teamId)) ||
+        (!sheetOrgIsClub(clubId) && hasOrgMembership('main') && memberSeesTeam('main', teamId)) ||
+        (!sheetHasMembership(clubId) && isTeamMember(teamId) && !hasOwnMembership());
+    }
+
+    function writesTeamDb(teamId, clubId) {
+      return isMasterAdmin() ||
+        (sheetOrgIsClub(clubId) && hasOrgMembership(clubId) && memberWritesTeam(clubId, teamId)) ||
+        (!sheetOrgIsClub(clubId) && hasOrgMembership('main') && memberWritesTeam('main', teamId)) ||
+        (!sheetHasMembership(clubId) && canEditTeamDatabase(teamId) && !hasOwnMembership());
+    }
+
+    function teamDbMetaPath(teamId) {
+      return /databases/$(database)/documents/team_databases/$(teamId);
+    }
+
+    /** A sheet's datasets and rows: decided by the club of its top document (none yet: as an old sheet). */
+    function readsTeamDbParts(teamId) {
+      return (exists(teamDbMetaPath(teamId)) && readsTeamDb(teamId, get(teamDbMetaPath(teamId)).data.get('clubId', null))) ||
+        (!exists(teamDbMetaPath(teamId)) && readsTeamDb(teamId, null));
+    }
+
+    function writesTeamDbParts(teamId) {
+      return (exists(teamDbMetaPath(teamId)) && writesTeamDb(teamId, get(teamDbMetaPath(teamId)).data.get('clubId', null))) ||
+        (!exists(teamDbMetaPath(teamId)) && writesTeamDb(teamId, null));
+    }
+
+    /** Everyone's phones: who can send notices (an active member that is not staff), or the old access. */
+    function readsPushSubscriptions(workspaceId) {
+      return isMasterAdmin() ||
+        (isActiveOrgMember(workspaceId) && myOrgRole(workspaceId) != 'staff') ||
+        (!hasOrgMembership(workspaceId) && legacyClubAccess(workspaceId));
+    }
+
     function canAccessClubWorkspace(workspaceId) {
       return isAuthenticated() && (
         isMasterAdmin() ||
@@ -615,14 +673,17 @@ service cloud.firestore {
       // subscription: an address of the phone's push service and its keys, no personal data). Every coach of the club
       // reads them (the app's server sends the notices with the sender's sign-in); each one writes only their own.
       match /push_subscriptions/{subId} {
-        allow get, list: if canAccessClubWorkspace(workspaceId);
+        // F2.8: everyone reads their own phones; the list of everyone's phones only who can send notices (not staff)
+        allow get, list: if readsPushSubscriptions(workspaceId) ||
+          (canAccessClubWorkspace(workspaceId) && resource.data.uid == request.auth.uid);
         allow create, update: if canAccessClubWorkspace(workspaceId) &&
           isValidId(subId) &&
           isValidPushSubscription(incoming()) &&
           incoming().uid == request.auth.uid &&
           (resource == null || resource.data.uid == request.auth.uid);
         // A coach removes their own phone; the server removes phones the push service no longer knows
-        allow delete: if canAccessClubWorkspace(workspaceId);
+        allow delete: if readsPushSubscriptions(workspaceId) ||
+          (canAccessClubWorkspace(workspaceId) && resource.data.uid == request.auth.uid);
       }
     }
 
@@ -639,21 +700,27 @@ service cloud.firestore {
 
     // Team-isolated custom spreadsheet databases (Excel datasets and rows)
     match /team_databases/{teamId} {
-      allow get, list: if isTeamMember(teamId);
-      allow create, update: if canEditTeamDatabase(teamId) && isValidId(teamId) && isValidTeamDbMeta(incoming());
+      allow list: if readsTeamDb(teamId, resource.data.get('clubId', null));
+      allow get: if (resource != null && readsTeamDb(teamId, resource.data.get('clubId', null))) ||
+        (resource == null && readsTeamDb(teamId, null));
+      // The club of a sheet only changes by someone who can write the sheet in its current club too
+      allow create, update: if writesTeamDb(teamId, incoming().clubId) &&
+        (resource == null || resource.data.get('clubId', null) == incoming().clubId ||
+          writesTeamDb(teamId, resource.data.get('clubId', null))) &&
+        isValidId(teamId) && isValidTeamDbMeta(incoming());
       allow delete: if isMasterAdmin();
 
       match /datasets/{datasetId} {
-        allow get, list: if isTeamMember(teamId);
-        allow create, update: if canEditTeamDatabase(teamId) && isValidId(datasetId) && isValidTeamDataset(incoming());
+        allow get, list: if readsTeamDbParts(teamId);
+        allow create, update: if writesTeamDbParts(teamId) && isValidId(datasetId) && isValidTeamDataset(incoming());
         // Elimination of an entire dataset is restricted to Administrator
         allow delete: if isMasterAdmin();
 
         match /rows/{rowId} {
-          allow get, list: if isTeamMember(teamId);
-          allow create, update: if canEditTeamDatabase(teamId) && isValidId(rowId) && isValidTeamDbRow(incoming());
+          allow get, list: if readsTeamDbParts(teamId);
+          allow create, update: if writesTeamDbParts(teamId) && isValidId(rowId) && isValidTeamDbRow(incoming());
           // Elimination of individual rows can be performed by coaches/editors
-          allow delete: if canEditTeamDatabase(teamId);
+          allow delete: if writesTeamDbParts(teamId);
         }
       }
     }
