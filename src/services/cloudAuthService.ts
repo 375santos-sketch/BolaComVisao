@@ -1044,7 +1044,9 @@ export async function approveCoachUser(
       role: safeRole,
       approvedBy: adminName,
       approvedAt: Date.now(),
-      assignedTeams: assignedTeams !== undefined ? assignedTeams : currentAccount.assignedTeams || []
+      assignedTeams: assignedTeams !== undefined ? assignedTeams : currentAccount.assignedTeams || [],
+      // F1.7: an account with its own space belongs to it (never to the shared "main" through the old access)
+      ...(currentAccount.defaultOrgId === ownSpaceIdOf(userId) ? { clubId: ownSpaceIdOf(userId) } : {})
     };
 
     await setDoc(
