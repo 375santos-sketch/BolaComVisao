@@ -453,7 +453,15 @@ export function subscribeToClubCloud(
           legacy = state ? { state, updatedAt } : null;
           evaluate();
         },
-        (err) => h.onError?.(err)
+        (err) => {
+          // F2.3: only who manages the club reads the old single document; for the others it does not exist
+          if (isPermissionDenied(err)) {
+            legacy = null;
+            evaluate();
+            return;
+          }
+          h.onError?.(err);
+        }
       );
 
   // One listener per query (the whole collection, or this device's teams in groups of 30 + the club record); the
