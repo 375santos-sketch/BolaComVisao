@@ -127,6 +127,9 @@ export function memberProblems(m: OrgMember): string[] {
 }
 
 /** A new organization waiting for approval (manual approval during the pilot), owned by whoever creates it. */
+/** F1.7: the id of the own space of who registers without an invitation (one per account; never "main"). */
+export const ownSpaceIdOf = (uid: string): string => `org-${uid}`;
+
 export function newOrganization(input: {
   id: string;
   type: OrganizationType;
