@@ -154,6 +154,15 @@ export async function resolveOrganizationForAccount(
   candidates: Array<string | null | undefined>,
   savedOrgId?: string | null
 ): Promise<string | null> {
+  return (await resolveMembershipForAccount(uid, candidates, savedOrgId))?.orgId ?? null;
+}
+
+/** F2.2 — Like resolveOrganizationForAccount, with the membership (role and teams) of that organization. */
+export async function resolveMembershipForAccount(
+  uid: string,
+  candidates: Array<string | null | undefined>,
+  savedOrgId?: string | null
+): Promise<{ orgId: string; member: OrgMember } | null> {
   const ids = [...new Set(candidates.filter((c): c is string => typeof c === 'string' && c.trim().length > 0))];
   const memberships: Array<{ orgId: string; member: OrgMember; org?: Pick<Organization, 'status'> }> = [];
   for (const orgId of ids) {
@@ -167,5 +176,7 @@ export async function resolveOrganizationForAccount(
       // Not readable (not a member, rules not published, offline): not a confirmed organization
     }
   }
-  return chooseActiveOrg(memberships, savedOrgId);
+  const orgId = chooseActiveOrg(memberships, savedOrgId);
+  const chosen = memberships.find((m) => m.orgId === orgId);
+  return chosen ? { orgId: chosen.orgId, member: chosen.member } : null;
 }

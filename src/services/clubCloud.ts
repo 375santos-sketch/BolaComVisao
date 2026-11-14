@@ -1,4 +1,15 @@
-import { collection, doc, getDoc, getDocs, onSnapshot, writeBatch, Unsubscribe } from 'firebase/firestore';
+import {
+  Query,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  where,
+  writeBatch,
+  Unsubscribe
+} from 'firebase/firestore';
 import { db, auth, isQuotaExceededError, markQuotaExhausted, getFirestoreQuotaState } from './firebase';
 import type { CloudSyncResult } from './firebase';
 import { AppState } from '../types';
@@ -58,6 +69,56 @@ const remoteByWorkspace = new Map<string, Map<string, CloudRecord>>();
 
 const cleanWorkspaceId = (ws?: string | null) => (ws && ws.trim() ? ws.trim() : 'main');
 const recordsCollection = (ws: string) => collection(db, 'club_workspace', ws, 'records');
+
+// ---------- F2.2: team scope ----------
+// A member who only works with some teams (organizations/{org}/members/{uid}.teamIds without '*') reads and
+// writes ONLY those teams' records. The club record is read but never written by them (only who manages the club
+// writes it), and the records of other teams are never touched nor taken for deleted. null = every team (as before).
+
+const CLUB_RECORD_TEAM = '_club';
+const IN_LIMIT = 30; // Firestore "in" queries take at most 30 values
+const scopeByWorkspace = new Map<string, Set<string> | null>();
+
+/** Sets the teams this device works with in a club (null = all teams). Called before subscribing. */
+export function setTeamScope(workspaceId: string | null | undefined, teamIds: string[] | null): void {
+  const ws = cleanWorkspaceId(workspaceId);
+  scopeByWorkspace.set(ws, teamIds ? new Set(teamIds.filter((t) => t && t !== '*')) : null);
+}
+export const getTeamScope = (workspaceId?: string | null): Set<string> | null =>
+  scopeByWorkspace.get(cleanWorkspaceId(workspaceId)) ?? null;
+
+/** The queries that read this device's records: the whole collection, or only its teams plus the club record. */
+function recordQueries(ws: string): Query[] {
+  const scope = getTeamScope(ws);
+  if (!scope) return [recordsCollection(ws)];
+  const ids = [...scope, CLUB_RECORD_TEAM];
+  const out: Query[] = [];
+  for (let i = 0; i < ids.length; i += IN_LIMIT) {
+    out.push(query(recordsCollection(ws), where('teamId', 'in', ids.slice(i, i + IN_LIMIT))));
+  }
+  return out;
+}
+
+/** The team of a record id ("kind__team__entity"), from the cloud copy when known. */
+function teamOfRecordId(id: string, remote: Map<string, CloudRecord>): string {
+  return remote.get(id)?.teamId ?? (id === CLUB_DOC_ID ? CLUB_RECORD_TEAM : id.split('__')[1] || '');
+}
+
+/**
+ * This device's records as they may be written: with a team scope, only its teams' records, and the club record
+ * replaced by the cloud's (so it is never written from here).
+ */
+function writableLocal(ws: string, local: Map<string, LocalRecord>, remote: Map<string, CloudRecord>) {
+  const scope = getTeamScope(ws);
+  if (!scope) return local;
+  const out = new Map<string, LocalRecord>();
+  local.forEach((r, id) => {
+    if (id !== CLUB_DOC_ID && scope.has(r.teamId)) out.set(id, r);
+  });
+  const club = remote.get(CLUB_DOC_ID);
+  if (club) out.set(CLUB_DOC_ID, club);
+  return out;
+}
 
 export function getCloudMode(workspaceId?: string | null): CloudMode {
   return modeByWorkspace.get(cleanWorkspaceId(workspaceId)) || 'unknown';
@@ -134,19 +195,21 @@ export async function resolveCloudMode(workspaceId?: string | null): Promise<Clo
 export async function loadClubStateFromRecords(workspaceId?: string | null): Promise<AppState | null> {
   const ws = cleanWorkspaceId(workspaceId);
   try {
-    const snap = await getDocs(recordsCollection(ws));
     const records = new Map<string, CloudRecord>();
-    snap.forEach((d) => {
-      const r = parseRecord(d.data());
-      if (r) records.set(d.id, r);
-    });
+    for (const q of recordQueries(ws)) {
+      const snap = await getDocs(q);
+      snap.forEach((d) => {
+        const r = parseRecord(d.data());
+        if (r) records.set(d.id, r);
+      });
+    }
     if (!hasClubRecord(records)) {
       modeByWorkspace.set(ws, 'legacy');
       return null;
     }
     modeByWorkspace.set(ws, 'records');
     remoteByWorkspace.set(ws, records);
-    return assembleState(liveRecords(records), { ...initialDefaultState, teams: [] });
+    return assembleState(liveRecords(records), { ...initialDefaultState, teams: [] }, getTeamScope(ws));
   } catch (err) {
     if (isQuotaExceededError(err)) markQuotaExhausted(15);
     return null;
@@ -170,13 +233,20 @@ export async function pushClubRecords(
     return { success: false, isQuotaExceeded: true, message: 'Quota diária gratuita do Firebase atingida.' };
   }
 
-  const local = extractRecords(state);
   const synced = options.migrating ? {} : loadSyncedHashes(ws) || {};
   const remote = options.migrating ? new Map<string, CloudRecord>() : remoteByWorkspace.get(ws) || new Map();
+  // F2.2: with a team scope, only this device's teams are written (never the club record nor other teams)
+  const local = options.migrating ? extractRecords(state) : writableLocal(ws, extractRecords(state), remote);
   const now = Date.now();
   const author = options.authorId || auth.currentUser.uid;
 
   let pending = pendingRecordIds(local, synced);
+  // F2.2: with a team scope, a record of another team is never deleted from here (e.g. after the access was narrowed)
+  const scope = options.migrating ? null : getTeamScope(ws);
+  // …and the club record is never sent from a device with a team scope (only who manages the club writes it)
+  if (scope) {
+    pending = pending.filter((id) => id !== CLUB_DOC_ID && (local.has(id) || scope.has(teamOfRecordId(id, remote))));
+  }
   const deletions = pending.filter((id) => !local.has(id));
   const entityCount = Object.keys(synced).filter((id) => isRecordKey(id) && id !== CLUB_DOC_ID).length;
   if (!options.allowMassDelete && deletions.length > 20 && deletions.length > entityCount * MASS_DELETE_GUARD) {
@@ -345,19 +415,23 @@ export function subscribeToClubCloud(
     }
 
     const club = remote.get(CLUB_DOC_ID);
-    const knownTeamIds = new Set<string>([
-      ...(local.teams || []).map((t) => t.id),
-      ...(((club?.data as Partial<AppState>)?.teams || []) as Array<{ id: string }>).map((t) => t.id)
-    ]);
+    const scope = getTeamScope(ws);
+    // F2.2: with a team scope only its teams are known: records of other teams are left exactly as they are
+    const knownTeamIds = scope
+      ? new Set<string>(scope)
+      : new Set<string>([
+          ...(local.teams || []).map((t) => t.id),
+          ...(((club?.data as Partial<AppState>)?.teams || []) as Array<{ id: string }>).map((t) => t.id)
+        ]);
     const result = mergeRecords({
-      local: extractRecords(local),
+      local: writableLocal(ws, extractRecords(local), remote),
       remote,
       synced,
       knownTeamIds,
       localMutationAt: local.lastLocalMutationAt || 0
     });
     saveSyncedHashes(ws, result.synced);
-    if (result.changedLocally || local !== h.getLocal()) h.applyRemote(assembleState(result.records, local));
+    if (result.changedLocally || local !== h.getLocal()) h.applyRemote(assembleState(result.records, local, scope));
     if (result.toPush.length > 0) h.requestPush();
     else h.onInSync();
   };
@@ -368,49 +442,67 @@ export function subscribeToClubCloud(
     else handleLegacy();
   };
 
-  const unsubLegacy = subscribeLegacy(
-    (state, updatedAt) => {
-      legacy = state ? { state, updatedAt } : null;
-      evaluate();
-    },
-    (err) => h.onError?.(err)
-  );
+  // F2.2: a member with a team scope never reads the old single document (it holds every team's data; only who
+  // manages the club may read it): it counts as "no legacy document"
+  const scoped = Boolean(getTeamScope(ws));
+  if (scoped) legacy = null;
+  const unsubLegacy = scoped
+    ? () => {}
+    : subscribeLegacy(
+        (state, updatedAt) => {
+          legacy = state ? { state, updatedAt } : null;
+          evaluate();
+        },
+        (err) => h.onError?.(err)
+      );
 
-  const unsubRecords = onSnapshot(
-    recordsCollection(ws),
-    // Also notified when a pending write is confirmed by the server (same data, hasPendingWrites → false).
-    { includeMetadataChanges: true },
-    (snap) => {
-      // Writes still waiting for the server (e.g. offline) show up here immediately; they are not in the cloud
-      // yet, so keep the last server version of those documents (otherwise they would look "saved").
-      const previous = remoteByWorkspace.get(ws) || new Map<string, CloudRecord>();
-      const records = new Map<string, CloudRecord>();
-      snap.forEach((d) => {
-        if (d.metadata.hasPendingWrites) {
-          const confirmed = previous.get(d.id);
-          if (confirmed) records.set(d.id, confirmed);
-          return;
-        }
-        const r = parseRecord(d.data());
-        if (r) records.set(d.id, r);
-      });
-      remoteByWorkspace.set(ws, records);
-      modeByWorkspace.set(ws, hasClubRecord(records) ? 'records' : 'legacy');
-      recordsReady = true;
-      evaluate();
-    },
-    (err) => {
-      if (isQuotaExceededError(err)) markQuotaExhausted(30);
-      // Permission denied = rules for the records sub-collection not published yet: keep working as before.
-      console.warn(`Registos separados indisponíveis (${ws}): ${(err as { code?: string }).code || ''} ${err.message}`);
-      recordsBlocked = true;
-      if (modeByWorkspace.get(ws) !== 'records') modeByWorkspace.set(ws, 'legacy');
-      evaluate();
-    }
+  // One listener per query (the whole collection, or this device's teams in groups of 30 + the club record); the
+  // records of all of them form the cloud copy.
+  const queries = recordQueries(ws);
+  const perQuery: Array<Map<string, CloudRecord> | null> = queries.map(() => null);
+  const unsubs = queries.map((q, index) =>
+    onSnapshot(
+      q,
+      // Also notified when a pending write is confirmed by the server (same data, hasPendingWrites → false).
+      { includeMetadataChanges: true },
+      (snap) => {
+        // Writes still waiting for the server (e.g. offline) show up here immediately; they are not in the cloud
+        // yet, so keep the last server version of those documents (otherwise they would look "saved").
+        const previous = remoteByWorkspace.get(ws) || new Map<string, CloudRecord>();
+        const records = new Map<string, CloudRecord>();
+        snap.forEach((d) => {
+          if (d.metadata.hasPendingWrites) {
+            const confirmed = previous.get(d.id);
+            if (confirmed) records.set(d.id, confirmed);
+            return;
+          }
+          const r = parseRecord(d.data());
+          if (r) records.set(d.id, r);
+        });
+        perQuery[index] = records;
+        if (perQuery.some((m) => m === null)) return; // wait until every query has answered once
+        const all = new Map<string, CloudRecord>();
+        perQuery.forEach((m) => m!.forEach((r, id) => all.set(id, r)));
+        remoteByWorkspace.set(ws, all);
+        modeByWorkspace.set(ws, hasClubRecord(all) ? 'records' : 'legacy');
+        recordsReady = true;
+        evaluate();
+      },
+      (err) => {
+        if (isQuotaExceededError(err)) markQuotaExhausted(30);
+        // Permission denied = rules for the records sub-collection not published yet: keep working as before.
+        console.warn(
+          `Registos separados indisponíveis (${ws}): ${(err as { code?: string }).code || ''} ${err.message}`
+        );
+        recordsBlocked = true;
+        if (modeByWorkspace.get(ws) !== 'records') modeByWorkspace.set(ws, 'legacy');
+        evaluate();
+      }
+    )
   );
 
   return () => {
     unsubLegacy();
-    unsubRecords();
+    unsubs.forEach((u) => u());
   };
 }

@@ -545,3 +545,29 @@ describe('F2.1 — definições de cada equipa no seu registo', () => {
     expect(JSON.stringify(again.get(CLUB_DOC_ID)!.data)).not.toContain('segredo-da-equipa-a');
   });
 });
+
+describe('F2.2 — montar só as equipas visíveis', () => {
+  it('keeps only the teams in the scope; without a scope, every team', () => {
+    const state = normalizeClubState({
+      ...baseState(),
+      teams: [
+        { ...(baseState().teams[0] as any) },
+        {
+          id: 'sub9',
+          clubName: 'Clube Teste',
+          category: 'Sub-9',
+          season: '2026/2027',
+          roster: [],
+          matches: [],
+          trainings: [],
+          schedule: [],
+          tactics: [],
+          tacticFormat: 7
+        }
+      ] as any
+    });
+    const records = extractRecords(state);
+    expect(assembleState(records, state, new Set(['sub9'])).teams.map((t) => t.id)).toEqual(['sub9']);
+    expect(assembleState(records, state).teams.map((t) => t.id)).toEqual(['sub11', 'sub9']);
+  });
+});

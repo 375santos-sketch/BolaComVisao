@@ -247,7 +247,12 @@ function clubDataOf(state: AppState): Partial<AppState> {
  * Rebuilds a club state from the club record + entity records, keeping this device's device-only fields and
  * the order of records already on this device (new ones are appended).
  */
-export function assembleState(records: Map<string, LocalRecord>, device: AppState): AppState {
+export function assembleState(
+  records: Map<string, LocalRecord>,
+  device: AppState,
+  /** F2.2: only these teams (null/undefined = every team of the club record). */
+  visibleTeams?: Set<string> | null
+): AppState {
   const club = records.get(CLUB_DOC_ID)?.data as Partial<AppState> | undefined;
   const base: AppState = { ...(device as AppState), ...(club || {}) } as AppState;
   const baseFields = base as unknown as Record<string, unknown>;
@@ -263,25 +268,27 @@ export function assembleState(records: Map<string, LocalRecord>, device: AppStat
   records.forEach((r) => {
     if (r.kind === 'teamconfig') configs.set(r.teamId, r.data);
   });
-  const teams: SquadProfile[] = (base.teams || []).map((team) => {
-    const filled: Record<string, unknown> = { ...team, ...(configs.get(team.id) || {}) };
-    ENTITY_KINDS.forEach((kind) => {
-      const field = ENTITY_FIELDS[kind];
-      const items = new Map<string, Record<string, unknown>>();
-      records.forEach((r) => {
-        if (r.kind === kind && r.teamId === team.id) items.set(r.entityId, r.data);
+  const teams: SquadProfile[] = (base.teams || [])
+    .filter((team) => !visibleTeams || visibleTeams.has(team.id))
+    .map((team) => {
+      const filled: Record<string, unknown> = { ...team, ...(configs.get(team.id) || {}) };
+      ENTITY_KINDS.forEach((kind) => {
+        const field = ENTITY_FIELDS[kind];
+        const items = new Map<string, Record<string, unknown>>();
+        records.forEach((r) => {
+          if (r.kind === kind && r.teamId === team.id) items.set(r.entityId, r.data);
+        });
+        const previousOrder = ((deviceTeams.get(team.id)?.[field] as unknown as Array<{ id: string }>) || []).map(
+          (x) => x && x.id
+        );
+        const ordered = previousOrder.filter((id) => items.has(id)).map((id) => items.get(id)!);
+        const appended = [...items].filter(([id]) => !previousOrder.includes(id)).map(([, data]) => data);
+        appended.sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+        ordered.push(...appended);
+        filled[field] = ordered;
       });
-      const previousOrder = ((deviceTeams.get(team.id)?.[field] as unknown as Array<{ id: string }>) || []).map(
-        (x) => x && x.id
-      );
-      const ordered = previousOrder.filter((id) => items.has(id)).map((id) => items.get(id)!);
-      const appended = [...items].filter(([id]) => !previousOrder.includes(id)).map(([, data]) => data);
-      appended.sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
-      ordered.push(...appended);
-      filled[field] = ordered;
+      return filled as unknown as SquadProfile;
     });
-    return filled as unknown as SquadProfile;
-  });
 
   const active = teams.find((t) => t.id === base.activeTeamId) || teams[0];
   const state: Record<string, unknown> = { ...base, teams };
