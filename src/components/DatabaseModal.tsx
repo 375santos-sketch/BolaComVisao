@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { copyForNewTeam } from '../lib/athleteIdentity';
 import { datePT } from '../lib/planningSummary';
 import { AppState, SquadProfile, Player } from '../types';
 import { uid, defaultSeason } from '../lib/utils';
@@ -105,10 +106,7 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
       const sourceTeam = teams.find((t) => t.id === copyFromTeamId);
       if (sourceTeam) {
         // Clone players and staff with new IDs
-        initialRoster = sourceTeam.roster.map((p) => ({
-          ...p,
-          id: uid()
-        }));
+        initialRoster = sourceTeam.roster.map((p) => copyForNewTeam(p, uid())); // F4: the same athlete
         initialStaff = (sourceTeam.staffMembers || []).map((s) => ({
           ...s,
           id: uid()

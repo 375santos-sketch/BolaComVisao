@@ -8,6 +8,9 @@ export type DominantFoot = 'Direito' | 'Esquerdo' | 'Ambidestro';
 
 export interface Player {
   id: string;
+  /** F4: the same person across seasons and teams (kept when the squad is copied to the next season). Absent on
+   *  athletes from before F4: their own id is then their identity. */
+  athleteId?: string;
   name: string;
   number: number | null;
   positions: string;

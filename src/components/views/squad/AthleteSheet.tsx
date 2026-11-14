@@ -7,6 +7,7 @@ import { squadIndicators, pctLabel } from '../../../lib/squadIndicators';
 import { averageOf, evaluationsOf, formatScore, strengthsOf } from '../../../lib/playerEvolution';
 import { absenceReasonLabel } from '../../../lib/trainingQuick';
 import { PlayerSeasonSection } from './PlayerSeasonSection';
+import { AthleteCareer } from './AthleteCareer';
 import { PlayerTestsSection } from './PlayerTestsSection';
 import { PlayerEvolutionSection } from './PlayerEvolutionSection';
 import { StatsPanel } from '../../stats/StatsPanel';
@@ -387,6 +388,13 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
               className="ui-input w-full resize-none text-ui-caption"
             />
           </div>
+          {/* F4: the same athlete in other seasons and teams */}
+          <AthleteCareer
+            state={state}
+            player={player}
+            onSavePlayer={onUpdateState ? savePlayer : undefined}
+            onShowToast={onShowToast}
+          />
           <section aria-label="Relatório de fim de época" className="ui-card space-y-2 p-4">
             <div className="text-ui-caption font-bold text-ui-muted">
               Relatório de fim de época {state.season ? `· ${state.season}` : ''}
