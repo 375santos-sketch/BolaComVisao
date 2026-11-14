@@ -293,20 +293,26 @@ service cloud.firestore {
       return acc != null && hasOrgMembership(acc.get('defaultOrgId', acc.get('clubId', 'main')));
     }
 
+    /** F1.10: the old access to sheets only for accounts of an old club that is not an organization yet. */
+    function inOldClubOnly() {
+      let acc = getUserAccount();
+      return acc != null && acc.get('clubId', null) is string && !exists(orgPath(acc.get('clubId', 'main')));
+    }
+
     /** With a membership in the sheet's club the membership decides (as for the records); otherwise the old access,
      *  only for accounts that have no membership yet (until F1.10). */
     function readsTeamDb(teamId, clubId) {
       return isMasterAdmin() ||
         (sheetOrgIsClub(clubId) && hasOrgMembership(clubId) && memberSeesTeam(clubId, teamId)) ||
         (!sheetOrgIsClub(clubId) && hasOrgMembership('main') && memberSeesTeam('main', teamId)) ||
-        (!sheetHasMembership(clubId) && isTeamMember(teamId) && !hasOwnMembership());
+        (!sheetHasMembership(clubId) && isTeamMember(teamId) && !hasOwnMembership() && inOldClubOnly());
     }
 
     function writesTeamDb(teamId, clubId) {
       return isMasterAdmin() ||
         (sheetOrgIsClub(clubId) && hasOrgMembership(clubId) && memberWritesTeam(clubId, teamId)) ||
         (!sheetOrgIsClub(clubId) && hasOrgMembership('main') && memberWritesTeam('main', teamId)) ||
-        (!sheetHasMembership(clubId) && canEditTeamDatabase(teamId) && !hasOwnMembership());
+        (!sheetHasMembership(clubId) && canEditTeamDatabase(teamId) && !hasOwnMembership() && inOldClubOnly());
     }
 
     function teamDbMetaPath(teamId) {
@@ -343,7 +349,8 @@ service cloud.firestore {
 
     /** The access before organizations (club in the account, or "main"): kept until the strict rules v3. */
     function legacyClubAccess(workspaceId) {
-      return isAuthenticated() && (
+      // F1.10: a club that is an organization opens only through its memberships (the old access ends there)
+      return isAuthenticated() && workspaceId is string && !exists(orgPath(workspaceId)) && (
         (isApprovedUser() && (
           // Exact match with user's assigned clubId
           (getUserClubId() != null && workspaceId == getUserClubId()) ||
@@ -411,7 +418,9 @@ service cloud.firestore {
     }
 
     function isOwnClub(clubId) {
-      return clubId == getUserClubId() || (getUserClubId() == null && clubId == 'main');
+      // F1.10: only an old club that is not an organization (organizations decide by membership)
+      return clubId is string && !exists(orgPath(clubId)) &&
+        (clubId == getUserClubId() || (getUserClubId() == null && clubId == 'main'));
     }
 
     function isValidUserDoc(data) {
@@ -624,7 +633,9 @@ service cloud.firestore {
       allow get: if isAuthenticated() && (
         isMasterAdmin() ||
         isOwner(userId) ||
-        (isApprovedUser() && resource.data.account.get('clubId', null) == getUserClubId())
+        (isApprovedUser() && getUserClubId() != null && isOwnClub(getUserClubId()) &&
+          resource.data.account.get('clubId', null) == getUserClubId()) ||
+        isActiveOrgMember(resource.data.account.get('defaultOrgId', resource.data.account.get('clubId', 'main')))
       );
 
       // Listing user profiles (approval dashboard) is reserved to the Administrator: it would expose the
@@ -716,9 +727,10 @@ service cloud.firestore {
 
     // Team-isolated workspaces (Enforced per-team access control)
     match /team_workspaces/{workspaceId} {
-      allow get, list: if canAccessTeamWorkspace(workspaceId);
+      // F1.10: old per-team copies (no longer used by the app): only the platform Administrator
+      allow get, list: if isMasterAdmin();
       
-      allow create, update: if canAccessTeamWorkspace(workspaceId) && 
+      allow create, update: if isMasterAdmin() && 
         isValidId(workspaceId) && 
         isValidClubWorkspace(incoming());
       
@@ -781,7 +793,8 @@ service cloud.firestore {
       // Opened by its code, also before having an account (registration form); only while usable.
       allow get: if isMasterAdmin() ||
         (resource.data.status == 'pending' && resource.data.expiresAt > request.time.toMillis()) ||
-        (isApprovedUser() && isOwnClub(resource.data.clubId));
+        (isApprovedUser() && isOwnClub(resource.data.clubId)) ||
+        isActiveOrgMember(resource.data.clubId);
       allow list: if isMasterAdmin();
 
       // Created by an approved member, for their own club, as themselves, never for the Administrador role.
@@ -798,7 +811,8 @@ service cloud.firestore {
 
       // Revoked by the Administrador or a member of the same club; accepted once by the invited new account.
       allow update: if isMasterAdmin() ||
-        (isApprovedUser() && isOwnClub(existing().clubId) &&
+        (((isApprovedUser() && isOwnClub(existing().clubId)) ||
+          memberInvites(existing().clubId, existing().role, existing().teamId)) &&
           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) &&
           incoming().status == 'revoked') ||
         (isAuthenticated() &&
