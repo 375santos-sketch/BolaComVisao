@@ -374,9 +374,19 @@ export function buildInventory(source: InventorySource, now: Date): Inventory {
 }
 
 /** The workspaces to read: those listed, plus the clubs named in accounts and invitations, plus "main". */
-export function workspaceIdsToRead(listed: string[], users: RawDoc[], invitations: RawDoc[]): string[] {
-  const ids = new Set<string>([DEFAULT_WORKSPACE, ...listed]);
-  users.forEach((u) => ids.add(workspaceOfClub(str(asMap(u.data.account).clubId) || null)));
+export function workspaceIdsToRead(
+  listed: string[],
+  users: RawDoc[],
+  invitations: RawDoc[],
+  orgIds: string[] = []
+): string[] {
+  // An organization's space may hold only records (no top document), so listing club_workspace does not show it
+  const ids = new Set<string>([DEFAULT_WORKSPACE, ...listed, ...orgIds]);
+  users.forEach((u) => {
+    const account = asMap(u.data.account);
+    ids.add(workspaceOfClub(str(account.clubId) || null));
+    for (const org of [str(account.orgId), str(account.defaultOrgId)]) if (org) ids.add(org);
+  });
   invitations.forEach((i) => {
     const club = str(i.data.clubId);
     if (club) ids.add(club);

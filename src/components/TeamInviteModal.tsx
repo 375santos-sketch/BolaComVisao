@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { invitableRoles } from '../lib/orgPermissions';
 import { workspaceIdOf } from '../lib/deviceCache';
 import { AppState, TeamInvitation, UserClubRole } from '../types';
 import { uid } from '../lib/utils';
@@ -18,7 +19,11 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
   const [email, setEmail] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>(state.activeTeamId || state.teams[0]?.id || '');
-  const [selectedRole, setSelectedRole] = useState<UserClubRole>('Treinador Adjunto');
+  // F2.5: only the roles this person may invite (the same as the rules, D3)
+  const roles = invitableRoles(state.currentUser);
+  const [selectedRole, setSelectedRole] = useState<UserClubRole>(
+    roles.includes('Treinador Adjunto') ? 'Treinador Adjunto' : roles[0] || 'Treinador Adjunto'
+  );
   const [generatedInvite, setGeneratedInvite] = useState<TeamInvitation | null>(null);
 
   const teams = state.teams || [];
@@ -27,6 +32,10 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
 
   const handleCreateInvite = (e: React.FormEvent) => {
     e.preventDefault();
+    if (roles.length === 0) {
+      if (onShowToast) onShowToast('O seu papel no clube não convida pessoas.');
+      return;
+    }
     if (!email || !email.includes('@')) {
       if (onShowToast) onShowToast('Introduza um email válido.');
       return;
@@ -169,13 +178,11 @@ export const TeamInviteModal: React.FC<TeamInviteModalProps> = ({ state, onUpdat
                   onChange={(e) => setSelectedRole(e.target.value as UserClubRole)}
                   className="ui-input w-full text-xs"
                 >
-                  <option value="Treinador Principal">Treinador Principal</option>
-                  <option value="Treinador Adjunto">Treinador Adjunto</option>
-                  <option value="Treinador de Guarda-Redes">Treinador de Guarda-Redes</option>
-                  <option value="Preparador Físico">Preparador Físico</option>
-                  <option value="Analista">Analista</option>
-                  <option value="Fisioterapeuta">Fisioterapeuta</option>
-                  <option value="Diretor">Diretor / Coordenador</option>
+                  {roles.map((r) => (
+                    <option key={r} value={r}>
+                      {r === 'Diretor' ? 'Diretor / Coordenador' : r}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

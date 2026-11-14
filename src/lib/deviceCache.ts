@@ -53,3 +53,15 @@ export function teamScopeOf(user: { orgId?: string; orgTeamIds?: string[] } | nu
   if (!user?.orgId || !user.orgTeamIds || user.orgTeamIds.length === 0 || user.orgTeamIds.includes('*')) return null;
   return [...user.orgTeamIds].sort();
 }
+
+/** F2.6 — Removes from this device the club data of one account in one organization (when its access was lost). */
+export function forgetClubOnDevice(user: Pick<UserAccount, 'id' | 'clubId'> & { orgId?: string }): void {
+  try {
+    const key = stateKeyFor(user);
+    if (key !== LEGACY_STATE_KEY) localStorage.removeItem(key);
+    if (localStorage.getItem(ACTIVE_STATE_POINTER) === key) localStorage.removeItem(ACTIVE_STATE_POINTER);
+    localStorage.removeItem(syncedKeyFor(user.id, workspaceIdOf(user)));
+  } catch {
+    // Storage unavailable: nothing kept there either
+  }
+}
