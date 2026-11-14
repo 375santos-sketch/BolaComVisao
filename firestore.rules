@@ -275,17 +275,16 @@ service cloud.firestore {
 
     // ---------- F2.8: the team's sheet ("Base de dados da equipa") and the phones for notices ----------
 
-    /** The club a team sheet belongs to (its top document), or null when it has none yet. */
-    function teamDbClub(teamId) {
-      return exists(/databases/$(database)/documents/team_databases/$(teamId))
-        ? get(/databases/$(database)/documents/team_databases/$(teamId)).data.get('clubId', null)
-        : null;
+    /** The membership that decides a sheet of club `clubId`: that club's, or (old sheets: 'default' or, by an old
+     *  mistake, the team's age group, never a club) the shared space 'main'. Written without "?:" on purpose: the
+     *  rules engine refuses it inside list queries. */
+    function sheetOrgIsClub(clubId) {
+      return clubId is string && exists(orgPath(clubId));
     }
 
-    /** The organization of a sheet. Old sheets say 'default' or (by an old mistake) the team's age group, never a
-     *  club: those are the shared space 'main'. */
-    function teamDbOrg(clubId) {
-      return exists(orgPath(clubId)) ? clubId : 'main';
+    function sheetHasMembership(clubId) {
+      return (sheetOrgIsClub(clubId) && hasOrgMembership(clubId)) ||
+        (!sheetOrgIsClub(clubId) && hasOrgMembership('main'));
     }
 
     /** Whether the account already has a membership in its own club (then the old access no longer applies). */
@@ -297,19 +296,32 @@ service cloud.firestore {
     /** With a membership in the sheet's club the membership decides (as for the records); otherwise the old access,
      *  only for accounts that have no membership yet (until F1.10). */
     function readsTeamDb(teamId, clubId) {
-      return isMasterAdmin() || (
-        clubId is string && hasOrgMembership(teamDbOrg(clubId))
-          ? memberSeesTeam(teamDbOrg(clubId), teamId)
-          : isTeamMember(teamId) && !hasOwnMembership()
-      );
+      return isMasterAdmin() ||
+        (sheetOrgIsClub(clubId) && hasOrgMembership(clubId) && memberSeesTeam(clubId, teamId)) ||
+        (!sheetOrgIsClub(clubId) && hasOrgMembership('main') && memberSeesTeam('main', teamId)) ||
+        (!sheetHasMembership(clubId) && isTeamMember(teamId) && !hasOwnMembership());
     }
 
     function writesTeamDb(teamId, clubId) {
-      return isMasterAdmin() || (
-        clubId is string && hasOrgMembership(teamDbOrg(clubId))
-          ? memberWritesTeam(teamDbOrg(clubId), teamId)
-          : canEditTeamDatabase(teamId) && !hasOwnMembership()
-      );
+      return isMasterAdmin() ||
+        (sheetOrgIsClub(clubId) && hasOrgMembership(clubId) && memberWritesTeam(clubId, teamId)) ||
+        (!sheetOrgIsClub(clubId) && hasOrgMembership('main') && memberWritesTeam('main', teamId)) ||
+        (!sheetHasMembership(clubId) && canEditTeamDatabase(teamId) && !hasOwnMembership());
+    }
+
+    function teamDbMetaPath(teamId) {
+      return /databases/$(database)/documents/team_databases/$(teamId);
+    }
+
+    /** A sheet's datasets and rows: decided by the club of its top document (none yet: as an old sheet). */
+    function readsTeamDbParts(teamId) {
+      return (exists(teamDbMetaPath(teamId)) && readsTeamDb(teamId, get(teamDbMetaPath(teamId)).data.get('clubId', null))) ||
+        (!exists(teamDbMetaPath(teamId)) && readsTeamDb(teamId, null));
+    }
+
+    function writesTeamDbParts(teamId) {
+      return (exists(teamDbMetaPath(teamId)) && writesTeamDb(teamId, get(teamDbMetaPath(teamId)).data.get('clubId', null))) ||
+        (!exists(teamDbMetaPath(teamId)) && writesTeamDb(teamId, null));
     }
 
     /** Everyone's phones: who can send notices (an active member that is not staff), or the old access. */
@@ -688,7 +700,9 @@ service cloud.firestore {
 
     // Team-isolated custom spreadsheet databases (Excel datasets and rows)
     match /team_databases/{teamId} {
-      allow get, list: if readsTeamDb(teamId, resource == null ? null : resource.data.get('clubId', null));
+      allow list: if readsTeamDb(teamId, resource.data.get('clubId', null));
+      allow get: if (resource != null && readsTeamDb(teamId, resource.data.get('clubId', null))) ||
+        (resource == null && readsTeamDb(teamId, null));
       // The club of a sheet only changes by someone who can write the sheet in its current club too
       allow create, update: if writesTeamDb(teamId, incoming().clubId) &&
         (resource == null || resource.data.get('clubId', null) == incoming().clubId ||
@@ -697,16 +711,16 @@ service cloud.firestore {
       allow delete: if isMasterAdmin();
 
       match /datasets/{datasetId} {
-        allow get, list: if readsTeamDb(teamId, teamDbClub(teamId));
-        allow create, update: if writesTeamDb(teamId, teamDbClub(teamId)) && isValidId(datasetId) && isValidTeamDataset(incoming());
+        allow get, list: if readsTeamDbParts(teamId);
+        allow create, update: if writesTeamDbParts(teamId) && isValidId(datasetId) && isValidTeamDataset(incoming());
         // Elimination of an entire dataset is restricted to Administrator
         allow delete: if isMasterAdmin();
 
         match /rows/{rowId} {
-          allow get, list: if readsTeamDb(teamId, teamDbClub(teamId));
-          allow create, update: if writesTeamDb(teamId, teamDbClub(teamId)) && isValidId(rowId) && isValidTeamDbRow(incoming());
+          allow get, list: if readsTeamDbParts(teamId);
+          allow create, update: if writesTeamDbParts(teamId) && isValidId(rowId) && isValidTeamDbRow(incoming());
           // Elimination of individual rows can be performed by coaches/editors
-          allow delete: if writesTeamDb(teamId, teamDbClub(teamId));
+          allow delete: if writesTeamDbParts(teamId);
         }
       }
     }
