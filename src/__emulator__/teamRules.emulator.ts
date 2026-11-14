@@ -191,9 +191,13 @@ describe('F2.3 — documento antigo e convites', () => {
   });
 });
 
-describe('F2.3 — quem ainda não tem inscrição (até às regras v3, F1.10)', () => {
-  it('keeps the old access to the whole club (this is why F1.8 and F1.10 must follow)', async () => {
+describe('F1.10 — quem não tem inscrição num clube que já é organização', () => {
+  it('no longer gets in through the old access: nothing of the club, not even the old single document', async () => {
     await signInAs('semInscricao');
-    expect((await fs.getDocs(records())).size).toBeGreaterThanOrEqual(3);
+    await expect(fs.getDocs(records())).rejects.toMatchObject(denied);
+    await expect(read('club')).rejects.toMatchObject(denied);
+    await expect(read('player__eqA__a1')).rejects.toMatchObject(denied);
+    await expect(fs.getDoc(ref('club_workspace', ORG))).rejects.toMatchObject(denied);
+    await expect(write('player__eqA__x9', rec('player', 'eqA', 'x9'))).rejects.toMatchObject(denied);
   });
 });
