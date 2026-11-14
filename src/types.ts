@@ -943,6 +943,10 @@ export interface UserAccount {
    * the club data comes from it; when not (no organization yet), the old rule applies (clubId or "main").
    */
   orgId?: string;
+  /** F2.2: the teams of this account in that organization (['*'] = all), from its membership. */
+  orgTeamIds?: string[];
+  /** F2.2: the role of this account in that organization (owner, admin, diretor, coordenador, treinador…). */
+  orgRole?: string;
 }
 
 export interface TeamInvitation {

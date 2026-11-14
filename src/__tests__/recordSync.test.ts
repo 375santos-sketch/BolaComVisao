@@ -84,7 +84,8 @@ describe('Registos separados — conversão', () => {
         mid('m1'),
         mid('m2'),
         recordDocId('player', 'sub11', 'p1'),
-        recordDocId('player', 'sub11', 'p2')
+        recordDocId('player', 'sub11', 'p2'),
+        recordDocId('teamconfig', 'sub11', 'config')
       ].sort()
     );
     const club = records.get(CLUB_DOC_ID)!.data as any;
@@ -305,7 +306,7 @@ describe('Registos separados — estado completo', () => {
     });
     const records = extractRecords(state);
     expect(new Set([...records.values()].map((r) => r.kind))).toEqual(
-      new Set(['club', 'player', 'match', 'training', 'schedule', 'message'])
+      new Set(['club', 'player', 'match', 'training', 'schedule', 'message', 'teamconfig'])
     );
     const rebuilt = assembleState(records, state);
     expect(pendingRecordIds(extractRecords(rebuilt), syncedFrom(records))).toEqual([]);
@@ -462,5 +463,111 @@ describe('Equipa escolhida — cada treinador na sua', () => {
     expect(rebuilt.activeTeamId).toBe('sub13');
     expect((rebuilt.tactics as any[]).map((t) => t.id)).toEqual(['t13']);
     expect(rebuilt.category).toBe('Sub-13');
+  });
+});
+
+describe('F2.1 — definições de cada equipa no seu registo', () => {
+  // Fictitious data, only for this test
+  const twoTeams = () =>
+    normalizeClubState({
+      ...baseState(),
+      users: [{ id: 'u9', email: 'conta@teste.pt' }] as any,
+      invitations: [{ id: 'i1' }] as any,
+      teams: [
+        {
+          ...(baseState().teams[0] as any),
+          monthObjectives: { '2026-11': ['Objetivo A'] },
+          staffMembers: [{ id: 's1', name: 'Contacto Fictício', phone: '930000000' }],
+          liveToken: 'segredo-da-equipa-a'
+        },
+        {
+          id: 'sub9',
+          clubName: 'Clube Teste',
+          category: 'Sub-9',
+          season: '2026/2027',
+          createdAt: '2026-09-01',
+          roster: [],
+          matches: [],
+          trainings: [],
+          schedule: [],
+          tactics: [],
+          tacticFormat: 7,
+          planToken: 'segredo-da-equipa-b'
+        }
+      ] as any
+    });
+
+  it("the club record has only each team's summary; settings, contacts and links go to the team's record", () => {
+    const records = extractRecords(twoTeams());
+    const club = records.get(CLUB_DOC_ID)!.data as any;
+    const allowed = ['category', 'clubName', 'createdAt', 'id', 'season'];
+    expect(club.teams.map((t: any) => t.id)).toEqual(['sub11', 'sub9']);
+    club.teams.forEach((t: any) => expect(Object.keys(t).every((k) => allowed.includes(k))).toBe(true));
+    const clubText = JSON.stringify(club);
+    ['Contacto Fictício', '930000000', 'segredo-da-equipa', 'Objetivo A', 'conta@teste.pt'].forEach((secret) =>
+      expect(clubText).not.toContain(secret)
+    );
+    const configA = records.get(recordDocId('teamconfig', 'sub11', 'config'))!;
+    expect(configA).toMatchObject({ kind: 'teamconfig', teamId: 'sub11', entityId: 'config' });
+    expect(JSON.stringify(configA.data)).toContain('segredo-da-equipa-a');
+    expect(JSON.stringify(configA.data)).not.toContain('segredo-da-equipa-b');
+    expect((configA.data as any).roster).toBeUndefined();
+  });
+
+  it('accounts and invitations are never in the shared data', () => {
+    const club = extractRecords(twoTeams()).get(CLUB_DOC_ID)!.data as any;
+    expect(club.users).toBeUndefined();
+    expect(club.invitations).toBeUndefined();
+  });
+
+  it('rebuilds every team with its settings, and the round trip is stable', () => {
+    const state = twoTeams();
+    const records = extractRecords(state);
+    const rebuilt = assembleState(records, { ...state, teams: [] } as any);
+    const a = rebuilt.teams.find((t) => t.id === 'sub11') as any;
+    expect(a.monthObjectives).toEqual({ '2026-11': ['Objetivo A'] });
+    expect(a.liveToken).toBe('segredo-da-equipa-a');
+    expect((rebuilt.teams.find((t) => t.id === 'sub9') as any).planToken).toBe('segredo-da-equipa-b');
+    expect(pendingRecordIds(extractRecords(rebuilt), syncedFrom(records))).toEqual([]);
+  });
+
+  it('a club record in the old format (full teams, no team records) still gives every setting', () => {
+    const state = twoTeams();
+    const records = extractRecords(state);
+    const oldClub = { ...(records.get(CLUB_DOC_ID)!.data as any), teams: [...(state.teams as any)] };
+    const onlyOld = new Map([...records].filter(([, r]) => r.kind !== 'teamconfig'));
+    onlyOld.set(CLUB_DOC_ID, { ...records.get(CLUB_DOC_ID)!, data: oldClub });
+    const rebuilt = assembleState(onlyOld, { ...state, teams: [] } as any);
+    expect((rebuilt.teams.find((t) => t.id === 'sub11') as any).liveToken).toBe('segredo-da-equipa-a');
+    // …and saving again moves it to the new format (team record created, club record reduced)
+    const again = extractRecords(rebuilt);
+    expect(again.has(recordDocId('teamconfig', 'sub11', 'config'))).toBe(true);
+    expect(JSON.stringify(again.get(CLUB_DOC_ID)!.data)).not.toContain('segredo-da-equipa-a');
+  });
+});
+
+describe('F2.2 — montar só as equipas visíveis', () => {
+  it('keeps only the teams in the scope; without a scope, every team', () => {
+    const state = normalizeClubState({
+      ...baseState(),
+      teams: [
+        { ...(baseState().teams[0] as any) },
+        {
+          id: 'sub9',
+          clubName: 'Clube Teste',
+          category: 'Sub-9',
+          season: '2026/2027',
+          roster: [],
+          matches: [],
+          trainings: [],
+          schedule: [],
+          tactics: [],
+          tacticFormat: 7
+        }
+      ] as any
+    });
+    const records = extractRecords(state);
+    expect(assembleState(records, state, new Set(['sub9'])).teams.map((t) => t.id)).toEqual(['sub9']);
+    expect(assembleState(records, state).teams.map((t) => t.id)).toEqual(['sub11', 'sub9']);
   });
 });

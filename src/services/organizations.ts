@@ -154,6 +154,29 @@ export async function resolveOrganizationForAccount(
   candidates: Array<string | null | undefined>,
   savedOrgId?: string | null
 ): Promise<string | null> {
+  return (await resolveMembershipForAccount(uid, candidates, savedOrgId))?.orgId ?? null;
+}
+
+/** F2.2 — Like resolveOrganizationForAccount, with the membership (role and teams) of that organization. */
+export async function resolveMembershipForAccount(
+  uid: string,
+  candidates: Array<string | null | undefined>,
+  savedOrgId?: string | null
+): Promise<{ orgId: string; member: OrgMember } | null> {
+  const r = await checkMembershipForAccount(uid, candidates, savedOrgId);
+  return r.uncertain ? null : r.membership;
+}
+
+/**
+ * F2.6 — Like resolveMembershipForAccount, saying when the answer is UNCERTAIN (no network, server unavailable): an
+ * access is only taken as lost when the cloud really answered (membership revoked, suspended or gone).
+ */
+export async function checkMembershipForAccount(
+  uid: string,
+  candidates: Array<string | null | undefined>,
+  savedOrgId?: string | null
+): Promise<{ membership: { orgId: string; member: OrgMember } | null; uncertain: boolean }> {
+  let uncertain = false;
   const ids = [...new Set(candidates.filter((c): c is string => typeof c === 'string' && c.trim().length > 0))];
   const memberships: Array<{ orgId: string; member: OrgMember; org?: Pick<Organization, 'status'> }> = [];
   for (const orgId of ids) {
@@ -163,9 +186,12 @@ export async function resolveOrganizationForAccount(
       const org = await getOrganization(orgId);
       if (!org || org.status !== 'active') continue;
       memberships.push({ orgId, member, org });
-    } catch {
-      // Not readable (not a member, rules not published, offline): not a confirmed organization
+    } catch (err) {
+      // Refused (not a member, rules): a real answer. Anything else (offline…): the answer is not known
+      if ((err as { code?: string })?.code !== 'permission-denied') uncertain = true;
     }
   }
-  return chooseActiveOrg(memberships, savedOrgId);
+  const orgId = chooseActiveOrg(memberships, savedOrgId);
+  const chosen = memberships.find((m) => m.orgId === orgId);
+  return { membership: chosen ? { orgId: chosen.orgId, member: chosen.member } : null, uncertain };
 }

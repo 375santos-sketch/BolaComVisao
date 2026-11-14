@@ -25,7 +25,12 @@ export type EntityKind =
   | 'tacticplay'
   | 'teamphoto'
   | 'report';
-export type RecordKind = EntityKind | 'club';
+/**
+ * 'teamconfig' (F2.1): the settings of ONE team (objectives, staff contacts, public links, leagues…), so that the
+ * rules can give each team's settings only to that team's members. The "club" record keeps only a summary of
+ * each team (id, club name, category, season).
+ */
+export type RecordKind = EntityKind | 'club' | 'teamconfig';
 
 /** Team array that holds each kind of record. */
 const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppState> = {
@@ -53,6 +58,10 @@ const ENTITY_KINDS = Object.keys(ENTITY_FIELDS) as EntityKind[];
  * is each coach's own choice: sharing it switched every other coach's app to that team.
  */
 const DEVICE_ONLY_FIELDS = [
+  // F2.1: the accounts and the invitations are never kept in the shared club data (each member of the club could
+  // read them); they live in users/ and invitations/, with their own rules
+  'users',
+  'invitations',
   'currentUser',
   'syncInfo',
   'notifications',
@@ -176,14 +185,32 @@ export function extractRecords(state: AppState): Map<string, LocalRecord> {
     });
   });
 
+  const club = clubDataOf(normalized);
+  // F2.1: each team's settings in its own record; the club record keeps only the summary of each team
+  ((club.teams || []) as unknown as Array<Record<string, unknown>>).forEach((team) => {
+    const teamId = String(team.id);
+    records.set(recordDocId('teamconfig', teamId, TEAM_CONFIG_ID), {
+      kind: 'teamconfig',
+      teamId,
+      entityId: TEAM_CONFIG_ID,
+      data: toPlainData(team)
+    });
+  });
+  club.teams = ((club.teams || []) as unknown as Array<Record<string, unknown>>).map(teamSummary) as never;
   records.set(CLUB_DOC_ID, {
     kind: 'club',
     teamId: CLUB_TEAM_ID,
     entityId: CLUB_DOC_ID,
-    data: toPlainData(clubDataOf(normalized)) as Record<string, unknown>
+    data: toPlainData(club) as Record<string, unknown>
   });
   return records;
 }
+
+export const TEAM_CONFIG_ID = 'config';
+/** What every member of the club may see of each team (the rest is in the team's own "teamconfig" record). */
+const TEAM_SUMMARY_FIELDS = ['id', 'clubName', 'category', 'season', 'createdAt'] as const;
+const teamSummary = (team: Record<string, unknown>): Record<string, unknown> =>
+  Object.fromEntries(TEAM_SUMMARY_FIELDS.filter((f) => team[f] !== undefined).map((f) => [f, team[f]]));
 
 const TEAM_DEFAULTS = (): Record<string, unknown> => ({
   staffMembers: [],
@@ -220,7 +247,12 @@ function clubDataOf(state: AppState): Partial<AppState> {
  * Rebuilds a club state from the club record + entity records, keeping this device's device-only fields and
  * the order of records already on this device (new ones are appended).
  */
-export function assembleState(records: Map<string, LocalRecord>, device: AppState): AppState {
+export function assembleState(
+  records: Map<string, LocalRecord>,
+  device: AppState,
+  /** F2.2: only these teams (null/undefined = every team of the club record). */
+  visibleTeams?: Set<string> | null
+): AppState {
   const club = records.get(CLUB_DOC_ID)?.data as Partial<AppState> | undefined;
   const base: AppState = { ...(device as AppState), ...(club || {}) } as AppState;
   const baseFields = base as unknown as Record<string, unknown>;
@@ -230,25 +262,33 @@ export function assembleState(records: Map<string, LocalRecord>, device: AppStat
   ACTIVE_TEAM_COPIES.forEach((f) => delete baseFields[f]);
 
   const deviceTeams = new Map((device.teams || []).map((t) => [t.id, t]));
-  const teams: SquadProfile[] = (base.teams || []).map((team) => {
-    const filled: Record<string, unknown> = { ...team };
-    ENTITY_KINDS.forEach((kind) => {
-      const field = ENTITY_FIELDS[kind];
-      const items = new Map<string, Record<string, unknown>>();
-      records.forEach((r) => {
-        if (r.kind === kind && r.teamId === team.id) items.set(r.entityId, r.data);
-      });
-      const previousOrder = ((deviceTeams.get(team.id)?.[field] as unknown as Array<{ id: string }>) || []).map(
-        (x) => x && x.id
-      );
-      const ordered = previousOrder.filter((id) => items.has(id)).map((id) => items.get(id)!);
-      const appended = [...items].filter(([id]) => !previousOrder.includes(id)).map(([, data]) => data);
-      appended.sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
-      ordered.push(...appended);
-      filled[field] = ordered;
-    });
-    return filled as unknown as SquadProfile;
+  // F2.1: a team's settings come from its "teamconfig" record when there is one; a club record written in the
+  // old format (full teams) still works as before
+  const configs = new Map<string, Record<string, unknown>>();
+  records.forEach((r) => {
+    if (r.kind === 'teamconfig') configs.set(r.teamId, r.data);
   });
+  const teams: SquadProfile[] = (base.teams || [])
+    .filter((team) => !visibleTeams || visibleTeams.has(team.id))
+    .map((team) => {
+      const filled: Record<string, unknown> = { ...team, ...(configs.get(team.id) || {}) };
+      ENTITY_KINDS.forEach((kind) => {
+        const field = ENTITY_FIELDS[kind];
+        const items = new Map<string, Record<string, unknown>>();
+        records.forEach((r) => {
+          if (r.kind === kind && r.teamId === team.id) items.set(r.entityId, r.data);
+        });
+        const previousOrder = ((deviceTeams.get(team.id)?.[field] as unknown as Array<{ id: string }>) || []).map(
+          (x) => x && x.id
+        );
+        const ordered = previousOrder.filter((id) => items.has(id)).map((id) => items.get(id)!);
+        const appended = [...items].filter(([id]) => !previousOrder.includes(id)).map(([, data]) => data);
+        appended.sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+        ordered.push(...appended);
+        filled[field] = ordered;
+      });
+      return filled as unknown as SquadProfile;
+    });
 
   const active = teams.find((t) => t.id === base.activeTeamId) || teams[0];
   const state: Record<string, unknown> = { ...base, teams };

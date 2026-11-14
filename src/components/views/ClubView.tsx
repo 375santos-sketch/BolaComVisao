@@ -2,6 +2,7 @@ import React from 'react';
 import { AppState } from '../../types';
 import { Icon, IconName } from '../ui/Icon';
 import { isAppAdmin } from '../../services/cloudAuthService';
+import { canEditClubSettings } from '../../lib/orgPermissions';
 import { canReviewReports, getUserAccessibleTeams } from '../../lib/permissionsEngine';
 import { defaultSeason } from '../../lib/utils';
 import { datePT } from '../../lib/planningSummary';
@@ -131,12 +132,17 @@ export const ClubView: React.FC<ClubViewProps> = ({
           detail: 'Fotos da equipa e números da época numa imagem',
           run: onOpenSeasonGrowth
         },
-        {
-          icon: 'settings',
-          title: 'Definições do clube',
-          detail: 'Nome, emblema, cor, jogos e treinos',
-          run: onOpenSettings
-        }
+        // F2.5: the club's settings only for who manages the club (the rules refuse the others)
+        ...(canEditClubSettings(state.currentUser)
+          ? [
+              {
+                icon: 'settings' as IconName,
+                title: 'Definições do clube',
+                detail: 'Nome, emblema, cor, jogos e treinos',
+                run: onOpenSettings
+              }
+            ]
+          : [])
       ]
     },
     {

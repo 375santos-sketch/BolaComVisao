@@ -44,3 +44,24 @@ export const legacySyncedKey = (workspaceId: string) => `bcv-synced-records-${wo
 /** Every device key that holds club data (all are wiped when signing out). */
 export const isClubDataKey = (key: string) =>
   key === LEGACY_STATE_KEY || key === ACTIVE_STATE_POINTER || key.startsWith(STATE_PREFIX) || key.startsWith('bcv-');
+
+/**
+ * F2.2 — The teams this account works with in its organization: null = all of them (no organization yet, or a
+ * membership with '*'), otherwise the team ids of its membership.
+ */
+export function teamScopeOf(user: { orgId?: string; orgTeamIds?: string[] } | null | undefined): string[] | null {
+  if (!user?.orgId || !user.orgTeamIds || user.orgTeamIds.length === 0 || user.orgTeamIds.includes('*')) return null;
+  return [...user.orgTeamIds].sort();
+}
+
+/** F2.6 — Removes from this device the club data of one account in one organization (when its access was lost). */
+export function forgetClubOnDevice(user: Pick<UserAccount, 'id' | 'clubId'> & { orgId?: string }): void {
+  try {
+    const key = stateKeyFor(user);
+    if (key !== LEGACY_STATE_KEY) localStorage.removeItem(key);
+    if (localStorage.getItem(ACTIVE_STATE_POINTER) === key) localStorage.removeItem(ACTIVE_STATE_POINTER);
+    localStorage.removeItem(syncedKeyFor(user.id, workspaceIdOf(user)));
+  } catch {
+    // Storage unavailable: nothing kept there either
+  }
+}

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { COACH_B, FIRESTORE, owner } from './seed';
-import { enterPanel, login, navTo, syncBadge } from './helpers';
+import { enterPanel, login, navTo, syncBadge, clubSettingsText } from './helpers';
 
 const SCHEDULE = 'club_workspace/clubA/records/schedule__sub11__s1';
 
@@ -59,8 +59,7 @@ test('dois treinadores ao mesmo tempo: guardar uma coisa não apaga o que outro 
   await expect
     .poll(
       async () => {
-        const club = await fetch(`${FIRESTORE}/club_workspace/clubA/records/club`, { headers: owner });
-        return JSON.stringify(await club.json()).includes('Teste de dois telemóveis ao mesmo tempo');
+        return (await clubSettingsText()).includes('Teste de dois telemóveis ao mesmo tempo');
       },
       { timeout: 30_000, message: 'objetivos do treinador B na nuvem' }
     )

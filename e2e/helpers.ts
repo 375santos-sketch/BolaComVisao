@@ -109,3 +109,13 @@ export async function resetToLegacyFormat(workspace = 'clubA') {
     await fetch(`${FIRESTORE}/club_workspace/${workspace}/records/${id}`, { method: 'DELETE', headers: owner });
   }
 }
+
+/**
+ * F2.1: the club's settings are in the "club" record (club-wide) and in one "teamconfig" record per team. The text
+ * of all of them (admin access), to check that something was saved in the cloud.
+ */
+export async function clubSettingsText(workspace = 'clubA'): Promise<string> {
+  const res = await fetch(`${FIRESTORE}/club_workspace/${workspace}/records?pageSize=500`, { headers: owner });
+  const body = (await res.json()) as { documents?: Array<{ name: string }> };
+  return JSON.stringify((body.documents || []).filter((d) => /\/records\/(club|teamconfig__[^/]+)$/.test(d.name)));
+}

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
-import { workspaceIdOf } from './lib/deviceCache';
+import { forgetClubOnDevice, teamScopeOf, workspaceIdOf } from './lib/deviceCache';
+import { isReadOnlyRole } from './lib/orgPermissions';
 import { withInactiveAbsences } from './lib/inactiveAbsences';
 import { liveMatchOf } from './lib/liveFollow';
 import { localDateISO } from './lib/trainingQuick';
 import { AppState, UserAccount, AppNotification } from './types';
 import { loadAppState, saveAppState, clearAllAppState } from './lib/storage';
-import { subscribeToClubCloud, migrateClubToRecords, getCloudMode } from './services/clubCloud';
+import { subscribeToClubCloud, migrateClubToRecords, getCloudMode, setTeamScope } from './services/clubCloud';
 import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
 import { applyClubColor } from './lib/clubColors';
@@ -19,7 +20,7 @@ import { evaluateSystemNotifications } from './lib/notificationEngine';
 import { syncStateWithCloud, processOfflineMutationsQueue, clearDeviceClubData } from './lib/syncEngine';
 import { recordAuditLog } from './lib/auditEngine';
 import { subscribeToLegacyClubDocument, auth, onAuthStateChanged, loadMasterClubState } from './services/firebase';
-import { resolveOrganizationForAccount } from './services/organizations';
+import { checkMembershipForAccount } from './services/organizations';
 import {
   logoutCoachUser,
   subscribeToAllClubUsers,
@@ -86,6 +87,22 @@ import { AppearanceSheet } from './components/AppearanceSheet';
 import { TeamInviteModal } from './components/TeamInviteModal';
 import { SeasonSelectorModal } from './components/SeasonSelectorModal';
 import { NotificationModal } from './components/NotificationModal';
+
+/** F2.5: the data a read-only role (staff) may not change. */
+const READ_ONLY_BLOCKED_FIELDS: Array<keyof AppState> = [
+  'roster',
+  'matches',
+  'trainings',
+  'schedule',
+  'tactics',
+  'opponentScouting',
+  'season',
+  'teams',
+  'staffMessages',
+  'clubEvents',
+  'staffUnavailability',
+  'exerciseLibrary'
+];
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
@@ -259,7 +276,22 @@ export default function App() {
     };
   }, []);
 
+  // F2.5: when a change was refused (read-only role), the screen's own "saved ✓" message must not replace the
+  // refusal right after it
+  const readOnlyBlockedAtRef = useRef(0);
   const updateState = (updates: Partial<AppState>) => {
+    // F2.5: staff only reads (D4) — a change of data is refused here, as the rules would refuse it in the cloud
+    // (switching team, which also sets activeTeamId, stays possible)
+    if (
+      isReadOnlyRole(latestStateRef.current.currentUser) &&
+      updates.activeTeamId === undefined &&
+      READ_ONLY_BLOCKED_FIELDS.some((f) => updates[f] !== undefined)
+    ) {
+      readOnlyBlockedAtRef.current = Date.now();
+      setToastMessage('Só leitura: o seu papel no clube não altera dados.');
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
+    }
     setState((prev) => {
       let syncedTeams = updates.teams !== undefined ? updates.teams : prev.teams;
       const targetTeamId = prev.activeTeamId || (Array.isArray(prev.teams) && prev.teams[0]?.id) || '';
@@ -425,6 +457,7 @@ export default function App() {
   // straight away)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = (msg: string) => {
+    if (Date.now() - readOnlyBlockedAtRef.current < 1000) return;
     setToastMessage(msg);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => {
@@ -453,9 +486,13 @@ export default function App() {
     authReady && !authUid && Boolean(state.currentUser?.id) && !state.currentUser?.id.startsWith('guest-');
 
   // Real-time cloud sync for multi-device use: the legacy single document or per-record storage (see clubCloud.ts)
+  const syncWorkspaceId = workspaceIdOf(state.currentUser);
+  const syncTeamScopeKey = (teamScopeOf(state.currentUser) || []).join(',');
   useEffect(() => {
     if (!state.currentUser || !state.currentUser.id || !authUid) return;
     const workspaceId = workspaceIdOf(state.currentUser);
+    // F2.2: only the teams of this person's membership (all of them when there is no organization or '*')
+    setTeamScope(workspaceId, teamScopeOf(state.currentUser));
 
     const applyRemote = (incoming: AppState) => {
       isRemoteSyncRef.current = true;
@@ -519,13 +556,36 @@ export default function App() {
     };
     // Resubscribe only when the signed-in user/club changes, not on every currentUser object update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentUser?.id, workspaceIdOf(state.currentUser), authUid]);
+  }, [state.currentUser?.id, syncWorkspaceId, syncTeamScopeKey, authUid]);
 
   // 🏢 F1.5: the organization comes from the members list (an active member of an approved organization). Until an
   // account has one (before the migration of "main"), nothing changes: the old rule (club or "main") applies.
   // When the organization differs from the one in use, its data is loaded from the cloud first — the same way as
   // at sign-in — so one organization's data is never sent to another.
   const orgCheckRef = useRef('');
+  // F2.6: the membership is checked again when the app comes back to the screen and every 5 minutes (at most once a
+  // minute), so an access taken away is noticed without signing out
+  const [orgRecheck, setOrgRecheck] = useState(0);
+  const lastOrgRecheckRef = useRef(0);
+  useEffect(() => {
+    const recheck = () => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+      const user = latestStateRef.current.currentUser;
+      if (!user?.orgId && !user?.defaultOrgId) return;
+      if (Date.now() - lastOrgRecheckRef.current < 60_000) return;
+      lastOrgRecheckRef.current = Date.now();
+      orgCheckRef.current = '';
+      setOrgRecheck((n) => n + 1);
+    };
+    window.addEventListener('focus', recheck);
+    document.addEventListener('visibilitychange', recheck);
+    const timer = setInterval(recheck, 5 * 60_000);
+    return () => {
+      window.removeEventListener('focus', recheck);
+      document.removeEventListener('visibilitychange', recheck);
+      clearInterval(timer);
+    };
+  }, []);
   useEffect(() => {
     const user = state.currentUser;
     if (!user?.id || !authUid || user.id.startsWith('guest-')) return;
@@ -534,12 +594,39 @@ export default function App() {
     orgCheckRef.current = check;
     let cancelled = false;
     (async () => {
-      const orgId = await resolveOrganizationForAccount(user.id, [user.orgId, user.defaultOrgId], user.orgId);
+      const checked = await checkMembershipForAccount(user.id, [user.orgId, user.defaultOrgId], user.orgId);
       const current = latestStateRef.current.currentUser;
       if (cancelled || !current || current.id !== user.id) return;
-      if ((orgId || undefined) === (current.orgId || undefined)) return;
-      const nextUser = { ...current, orgId: orgId || undefined };
-      const sameData = workspaceIdOf(nextUser) === workspaceIdOf(current);
+      // F2.6: no network (or server unavailable) is never taken as an access lost: try again later
+      if (checked.uncertain) {
+        orgCheckRef.current = '';
+        return;
+      }
+      const membership = checked.membership;
+      // F2.6: the access to the organization in use was taken away (revoked, suspended, gone): its data leaves
+      // this device at once
+      const accessLost = Boolean(current.orgId) && membership?.orgId !== current.orgId;
+      if (accessLost) {
+        forgetClubOnDevice(current);
+        showToast('O seu acesso a este clube foi retirado. Os dados do clube foram apagados deste aparelho.');
+      }
+      const orgId = membership?.orgId;
+      const orgTeamIds = membership ? [...membership.member.teamIds].sort() : undefined;
+      const orgRole = membership?.member.role;
+      if (
+        (orgId || undefined) === (current.orgId || undefined) &&
+        (orgTeamIds || []).join(',') === (current.orgTeamIds || []).join(',') &&
+        (orgRole || undefined) === (current.orgRole || undefined)
+      ) {
+        return;
+      }
+      const nextUser = { ...current, orgId, orgTeamIds, orgRole };
+      // F2.2: the data changes when the organization OR the teams this person works with change
+      const sameData =
+        !accessLost &&
+        workspaceIdOf(nextUser) === workspaceIdOf(current) &&
+        (teamScopeOf(nextUser) || []).join(',') === (teamScopeOf(current) || []).join(',');
+      if (!sameData) setTeamScope(workspaceIdOf(nextUser), teamScopeOf(nextUser));
       const cloud = sameData ? null : await loadMasterClubState(workspaceIdOf(nextUser)).catch(() => null);
       if (cancelled || latestStateRef.current.currentUser?.id !== user.id) return;
       orgCheckRef.current = `${user.id}|${user.defaultOrgId || ''}|${nextUser.orgId || ''}`;
@@ -562,7 +649,7 @@ export default function App() {
     };
     // Checked again only when the account, its default organization or the one in use change
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.currentUser?.id, state.currentUser?.defaultOrgId, state.currentUser?.orgId, authUid]);
+  }, [state.currentUser?.id, state.currentUser?.defaultOrgId, state.currentUser?.orgId, authUid, orgRecheck]);
 
   // Real-time listener for Coach Registrations requiring Admin Approval (Admin ONLY)
   useEffect(() => {

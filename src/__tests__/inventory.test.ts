@@ -171,6 +171,13 @@ describe('F1.1a — inventário da plataforma (só leitura)', () => {
     ]);
   });
 
+  it("also reads the organizations' spaces, which may hold only records (no top document)", () => {
+    const withOrg = [...source.users, { id: 'uOrg', data: { account: { id: 'uOrg', defaultOrgId: 'orgDaConta' } } }];
+    expect(workspaceIdsToRead([], withOrg, [], ['orgListada'])).toEqual(
+      expect.arrayContaining(['orgListada', 'orgDaConta', 'main'])
+    );
+  });
+
   it('checksum: the same inventory gives the same SHA-256; any change is detected', async () => {
     const sum = await inventoryChecksum(inventory);
     expect(sum).toMatch(/^[0-9a-f]{64}$/);
