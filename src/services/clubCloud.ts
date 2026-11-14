@@ -1,9 +1,9 @@
 import {
   Query,
+  QuerySnapshot,
   collection,
   doc,
   getDoc,
-  getDocs,
   onSnapshot,
   query,
   where,
@@ -120,6 +120,47 @@ function writableLocal(ws: string, local: Map<string, LocalRecord>, remote: Map<
   return out;
 }
 
+// ---------- Reading once ----------
+// Opening the app loads the club (this read) and then listens to it (subscribeToClubCloud). Firestore charges every
+// document a NEW query returns, so loading with getDocs and then listening read everything twice. Loading through a
+// listener that stays open for a little while lets the listener that follows share it: Firestore keeps ONE query for
+// identical queries in the same app, so the documents are read once.
+
+const KEEP_LISTENING_MS = 120_000;
+const FIRST_ANSWER_TIMEOUT_MS = 30_000;
+
+/** The server's answer to a query, through a listener kept open for a while so the next listener reuses it. */
+export function readKeepingListen(q: Query): Promise<QuerySnapshot> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let unsubscribe: Unsubscribe = () => {};
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      unsubscribe();
+      reject(Object.assign(new Error('Sem resposta do servidor.'), { code: 'unavailable' }));
+    }, FIRST_ANSWER_TIMEOUT_MS);
+    unsubscribe = onSnapshot(
+      q,
+      // Also told when the server only confirms what the app already had (otherwise that answer never arrives)
+      { includeMetadataChanges: true },
+      (snap) => {
+        if (settled || snap.metadata.fromCache) return; // wait for the server's answer, as getDocs did
+        settled = true;
+        clearTimeout(timer);
+        resolve(snap);
+        setTimeout(() => unsubscribe(), KEEP_LISTENING_MS);
+      },
+      (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
 export function getCloudMode(workspaceId?: string | null): CloudMode {
   return modeByWorkspace.get(cleanWorkspaceId(workspaceId)) || 'unknown';
 }
@@ -197,7 +238,7 @@ export async function loadClubStateFromRecords(workspaceId?: string | null): Pro
   try {
     const records = new Map<string, CloudRecord>();
     for (const q of recordQueries(ws)) {
-      const snap = await getDocs(q);
+      const snap = await readKeepingListen(q);
       snap.forEach((d) => {
         const r = parseRecord(d.data());
         if (r) records.set(d.id, r);
