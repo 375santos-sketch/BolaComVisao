@@ -989,7 +989,7 @@ test('fim de época: mensagem do treinador guardada na nuvem e PDF para a famíl
   expect((await all).suggestedFilename()).toMatch(/^Fim_de_Epoca_Plantel_/);
 });
 
-test('evolução do atleta: avaliação em 5 áreas com radar e objetivos individuais, só para os treinadores', async ({
+test('evolução do atleta: avaliação por competência e objetivos individuais, só para os treinadores', async ({
   page
 }) => {
   await signedIn(page);
@@ -999,22 +999,25 @@ test('evolução do atleta: avaliação em 5 áreas com radar e objetivos indivi
   const evaluations = page.getByRole('region', { name: 'Avaliações' });
   await expect(evaluations).toContainText('Ainda sem avaliações');
   await evaluations.getByRole('button', { name: '+ Nova avaliação' }).click();
-  const form = page.getByRole('region', { name: 'Nova avaliação' });
-  // Saving needs all five areas
+  // D1: only the competencies chosen, four levels; saving needs at least one level
+  const form = page.getByRole('form', { name: 'Nova avaliação por competência' });
   await expect(form.getByRole('button', { name: 'Guardar avaliação' })).toBeDisabled();
-  for (const [area, v] of [
-    ['Técnica', 4],
-    ['Tática', 3],
-    ['Física', 3],
-    ['Psicológica e comportamental', 4],
-    ['Compreensão do jogo', 3]
-  ] as const)
-    await form.getByRole('button', { name: `${area} ${v}`, exact: true }).click();
-  await form.getByLabel('Observação do treinador').fill('Já procura o passe vertical');
+  await form.getByRole('button', { name: '+ Receção orientada' }).click();
+  await form
+    .getByRole('group', { name: 'Nível em Receção orientada' })
+    .getByRole('button', { name: 'Consolidar' })
+    .click();
+  await form.getByRole('button', { name: '+ Pé não dominante' }).click();
+  await form
+    .getByRole('group', { name: 'Nível em Pé não dominante' })
+    .getByRole('button', { name: 'Praticar' })
+    .click();
+  await form.getByLabel('Observação').fill('Já procura o passe vertical');
   await form.getByRole('button', { name: 'Guardar avaliação' }).click();
   await expect(page.getByText('Avaliação guardada ✓')).toBeVisible();
-  await expect(evaluations.getByRole('img', { name: /Competências: Técnica 4, Tática 3/ })).toBeVisible();
-  await expect(evaluations.getByRole('list', { name: 'Lista de avaliações' })).toContainText('média 3,4');
+  await expect(evaluations).toContainText('Receção orientada');
+  await expect(evaluations).toContainText('Consolidar');
+  await expect(evaluations.getByRole('list', { name: 'Avaliações por competência' })).toContainText('2 competências');
   await expect(evaluations).toContainText('Já procura o passe vertical');
 
   const goals = page.getByRole('region', { name: 'Objetivos individuais' });
