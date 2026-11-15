@@ -5,6 +5,10 @@ import {
   evaluationsOf,
   formatScore,
   goalsOf,
+  isOverdue,
+  reformulatedGoal,
+  statusOf,
+  withGoalNote,
   toggledGoal,
   withEvaluation,
   withGoal,
@@ -56,5 +60,43 @@ describe('Evolução do atleta', () => {
   it('athletes without evaluations or goals', () => {
     expect(evaluationsOf(base)).toEqual([]);
     expect(goalsOf(base)).toEqual([]);
+  });
+
+  it('D2: goals have a state, a deadline (overdue when it passed) and the latest progress note', () => {
+    let p = withGoal(base, { id: 'g1', text: 'Pé esquerdo', createdAt: '2026-10-01', dueDate: '2026-10-31' });
+    p = withGoal(p, { id: 'g2', text: 'Receber orientado', createdAt: '2026-10-10', dueDate: '2026-12-15' });
+    const [g1, g2] = goalsOf(p);
+    expect([g1.id, g2.id]).toEqual(['g1', 'g2']); // nearest deadline first
+    expect(statusOf(g1)).toBe('em_curso');
+    expect(isOverdue(g1, '2026-11-14')).toBe(true);
+    expect(isOverdue(g2, '2026-11-14')).toBe(false);
+    p = withGoalNote(p, 'g2', ' já abre o corpo no rondo ', '2026-11-12');
+    expect(goalsOf(p).find((g) => g.id === 'g2')).toMatchObject({
+      note: 'já abre o corpo no rondo',
+      noteAt: '2026-11-12'
+    });
+    // Reached: no longer overdue, and listed after the open ones
+    p = toggledGoal(p, 'g1', '2026-11-14');
+    expect(statusOf(goalsOf(p)[1])).toBe('alcancado');
+    expect(isOverdue(goalsOf(p)[1], '2026-11-20')).toBe(false);
+  });
+
+  it('D2: reformulating keeps the old goal, linked to the new one; older goals keep working', () => {
+    let p = withGoal(base, { id: 'g1', text: 'Pé esquerdo no passe', createdAt: '2026-10-01' });
+    p = reformulatedGoal(
+      p,
+      'g1',
+      { id: 'g2', text: 'Pé esquerdo no passe, sem pressão', createdAt: '2026-11-14' },
+      '2026-11-14'
+    );
+    const goals = goalsOf(p);
+    expect(goals.map((g) => [g.id, statusOf(g)])).toEqual([
+      ['g2', 'em_curso'],
+      ['g1', 'reformulado']
+    ]);
+    expect(goals[1]).toMatchObject({ replacedBy: 'g2', reformulatedAt: '2026-11-14' });
+    // A goal saved before D2 (only doneAt): reached
+    expect(statusOf({ doneAt: '2026-01-01' })).toBe('alcancado');
+    expect(statusOf({})).toBe('em_curso');
   });
 });
