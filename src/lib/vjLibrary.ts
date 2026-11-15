@@ -104,3 +104,81 @@ export function filterSessions(sessions: VjSession[], f: VjFilter): VjSession[] 
     .filter((s) => !f.favorites || s.favorite)
     .sort((a, b) => Number(!!b.favorite) - Number(!!a.favorite) || b.updatedAt.localeCompare(a.updatedAt));
 }
+
+// ---------- VJ3: the club library ----------
+// A coach proposes a session to the club (draft → review); who publishes (owner, admin, director, an allowed
+// coordinator) approves and publishes it for every team of the club, returns it to the author, or archives it.
+
+export interface ClubLibraryViewer {
+  uid?: string;
+  publishes: boolean;
+}
+
+export const clubSessionsOf = (state: { clubVjSessions?: VjSession[] }): VjSession[] =>
+  (Array.isArray(state.clubVjSessions) ? state.clubVjSessions : []).filter((s) => s && s.id && s.format === 'sessao');
+
+const isAuthor = (s: VjSession, v: ClubLibraryViewer) => !!v.uid && s.authorUid === v.uid;
+
+/** Published sessions for everyone; drafts and reviews for their author and who publishes; archived ones only for
+ *  who publishes. */
+export const canSeeClubSession = (s: VjSession, v: ClubLibraryViewer): boolean =>
+  s.status === 'publicado' || (v.publishes ? true : s.status !== 'arquivado' && isAuthor(s, v));
+
+/** Who may change a session of the club library (the same as the rules). */
+export const canEditClubSession = (s: VjSession, v: ClubLibraryViewer): boolean =>
+  v.publishes || (isAuthor(s, v) && (s.status === 'rascunho' || s.status === 'revisao'));
+
+/** What this person can do with a session of the club library, by its state. */
+export function clubActions(s: VjSession, v: ClubLibraryViewer): Array<{ to: VjStatus; label: string }> {
+  if (v.publishes) {
+    switch (s.status) {
+      case 'rascunho':
+        return [{ to: 'publicado', label: 'Aprovar e publicar' }];
+      case 'revisao':
+        return [
+          { to: 'publicado', label: 'Aprovar e publicar' },
+          { to: 'rascunho', label: 'Devolver ao autor' }
+        ];
+      case 'publicado':
+        return [{ to: 'arquivado', label: 'Arquivar' }];
+      case 'arquivado':
+        return [{ to: 'publicado', label: 'Publicar de novo' }];
+    }
+  }
+  if (!isAuthor(s, v)) return [];
+  if (s.status === 'rascunho') return [{ to: 'revisao', label: 'Enviar para revisão' }];
+  if (s.status === 'revisao') return [{ to: 'rascunho', label: 'Retirar da revisão' }];
+  return [];
+}
+
+/** A session moved to another state: publishing records who approved it. */
+export const withClubStatus = (s: VjSession, to: VjStatus, approverName?: string): VjSession => ({
+  ...s,
+  status: to,
+  ...(to === 'publicado' && approverName ? { approvedBy: approverName } : {})
+});
+
+/** A new proposal to the club, in the name of its author. */
+export const newClubSession = (input: { id: string; authorUid?: string; authorName?: string; now: string }) => ({
+  ...newSession({ id: input.id, title: '', authorName: input.authorName, now: input.now }),
+  ...(input.authorUid ? { authorUid: input.authorUid } : {})
+});
+
+/** «Usar na minha equipa»: the team's own copy, ready to conduct, that remembers where it came from. */
+export const clubSessionForTeam = (s: VjSession, newId: string, now: string): VjSession => {
+  const { approvedBy: _a, authorUid: _u, ...rest } = s;
+  return {
+    ...rest,
+    id: newId,
+    status: 'publicado',
+    favorite: false,
+    copiedFrom: s.id,
+    runs: [],
+    createdAt: now,
+    updatedAt: now
+  };
+};
+
+/** The team's copy of a club session, when the team already uses it. */
+export const teamCopyOf = (teamSessions: VjSession[], clubSessionId: string): VjSession | undefined =>
+  teamSessions.find((t) => t.copiedFrom === clubSessionId && t.status !== 'arquivado');

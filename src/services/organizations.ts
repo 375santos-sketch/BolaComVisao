@@ -80,12 +80,15 @@ export async function putMember(orgId: string, member: OrgMember, actorUid: stri
 export async function updateMemberAccess(
   orgId: string,
   current: OrgMember,
-  change: { role?: OrgRole; teamIds?: string[] },
+  change: { role?: OrgRole; teamIds?: string[]; publishesLibrary?: boolean },
   actorUid: string,
   now: number
 ): Promise<OrgMember> {
   const next: OrgMember = { ...current, ...(change.role ? { role: change.role } : {}) };
   if (change.teamIds) next.teamIds = change.teamIds;
+  if (change.publishesLibrary !== undefined) next.publishesLibrary = change.publishesLibrary;
+  // VJ3: the permission belongs to coordinators; changing the role takes it away
+  if (next.role !== 'coordenador') delete next.publishesLibrary;
   const problems = memberProblems(next);
   if (problems.length) throw new Error(`Membro inválido: ${problems.join(', ')}`);
   const batch = writeBatch(db);
@@ -111,6 +114,18 @@ export async function updateMemberAccess(
         targetUid: next.uid,
         at: now,
         details: { from: current.teamIds.join(','), to: next.teamIds.join(',') }
+      })
+    );
+  }
+  if (Boolean(next.publishesLibrary) !== Boolean(current.publishesLibrary)) {
+    batch.set(
+      newAuditRef(orgId),
+      plain<OrgAuditEntry>({
+        action: 'member.library',
+        actorUid,
+        targetUid: next.uid,
+        at: now,
+        details: { to: Boolean(next.publishesLibrary) }
       })
     );
   }

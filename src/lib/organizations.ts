@@ -41,10 +41,12 @@ export interface OrgMember {
   addedAt: number;
   revokedAt?: number;
   revokedBy?: string;
+  /** VJ3: a coordinator the club allowed to approve and publish in the club library of Visão de Jogo. */
+  publishesLibrary?: boolean;
 }
 
 export type OrgAuditAction =
-  'org.created' | 'org.status' | 'member.added' | 'member.role' | 'member.teams' | 'member.status';
+  'org.created' | 'org.status' | 'member.added' | 'member.role' | 'member.teams' | 'member.status' | 'member.library';
 
 export interface OrgAuditEntry {
   action: OrgAuditAction;

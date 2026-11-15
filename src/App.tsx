@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
 import { forgetClubOnDevice, teamScopeOf, workspaceIdOf } from './lib/deviceCache';
-import { isReadOnlyRole } from './lib/orgPermissions';
+import { canPublishClubLibrary, isReadOnlyRole } from './lib/orgPermissions';
 import { withInactiveAbsences } from './lib/inactiveAbsences';
 import { liveMatchOf } from './lib/liveFollow';
 import { localDateISO } from './lib/trainingQuick';
@@ -12,7 +12,13 @@ import {
   loadAppStateFromLargeStorage,
   STORAGE_FULL_EVENT
 } from './lib/storage';
-import { subscribeToClubCloud, migrateClubToRecords, getCloudMode, setTeamScope } from './services/clubCloud';
+import {
+  subscribeToClubCloud,
+  migrateClubToRecords,
+  getCloudMode,
+  setTeamScope,
+  setLibraryPublisher
+} from './services/clubCloud';
 import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
 import { applyClubColor } from './lib/clubColors';
@@ -108,7 +114,8 @@ const READ_ONLY_BLOCKED_FIELDS: Array<keyof AppState> = [
   'staffMessages',
   'clubEvents',
   'staffUnavailability',
-  'exerciseLibrary'
+  'exerciseLibrary',
+  'clubVjSessions'
 ];
 
 export default function App() {
@@ -363,7 +370,8 @@ export default function App() {
         updates.staffMessages !== undefined ||
         updates.clubEvents !== undefined ||
         updates.staffUnavailability !== undefined ||
-        updates.exerciseLibrary !== undefined;
+        updates.exerciseLibrary !== undefined ||
+        updates.clubVjSessions !== undefined;
 
       // Stamp local edits so an older cloud snapshot can never overwrite them (see the cloud listener below).
       if (hasSubstantiveChanges && !isRemoteSyncRef.current) {
@@ -515,6 +523,11 @@ export default function App() {
   // Real-time cloud sync for multi-device use: the legacy single document or per-record storage (see clubCloud.ts)
   const syncWorkspaceId = workspaceIdOf(state.currentUser);
   const syncTeamScopeKey = (teamScopeOf(state.currentUser) || []).join(',');
+  // VJ3: what this device may write in the club library (before any save)
+  const publishesClubLibrary = canPublishClubLibrary(state.currentUser);
+  useEffect(() => {
+    setLibraryPublisher(syncWorkspaceId, publishesClubLibrary);
+  }, [syncWorkspaceId, publishesClubLibrary]);
   useEffect(() => {
     if (!state.currentUser || !state.currentUser.id || !authUid) return;
     const workspaceId = workspaceIdOf(state.currentUser);
@@ -640,14 +653,16 @@ export default function App() {
       const orgId = membership?.orgId;
       const orgTeamIds = membership ? [...membership.member.teamIds].sort() : undefined;
       const orgRole = membership?.member.role;
+      const orgPublishesLibrary = membership?.member.publishesLibrary === true || undefined;
       if (
         (orgId || undefined) === (current.orgId || undefined) &&
         (orgTeamIds || []).join(',') === (current.orgTeamIds || []).join(',') &&
-        (orgRole || undefined) === (current.orgRole || undefined)
+        (orgRole || undefined) === (current.orgRole || undefined) &&
+        orgPublishesLibrary === (current.orgPublishesLibrary || undefined)
       ) {
         return;
       }
-      const nextUser = { ...current, orgId, orgTeamIds, orgRole };
+      const nextUser = { ...current, orgId, orgTeamIds, orgRole, orgPublishesLibrary };
       // F2.2: the data changes when the organization OR the teams this person works with change
       const sameData =
         !accessLost &&
