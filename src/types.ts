@@ -1248,6 +1248,34 @@ export interface VjItem {
   youtubeId: string;
   /** What the video is ("jogo profissional", "treino de outra equipa"…): never identifiable children (VJ0). */
   label?: string;
+  /** VJ2: where the video stops, each with a question. */
+  pauses?: VjPause[];
+}
+
+/** VJ2: one answer of a choice question; several may be right, each with its own explanation. */
+export interface VjOption {
+  id: string;
+  text: string;
+  correct: boolean;
+  explanation?: string;
+}
+
+/** VJ2: the video stops at `at` seconds and asks; choice (one or more right answers) or open (talked about). */
+export interface VjPause {
+  id: string;
+  at: number;
+  question: string;
+  kind: 'escolha' | 'aberta';
+  options?: VjOption[];
+  /** For an open question: what the coach wants to hear (shown when asked). */
+  explanation?: string;
+}
+
+/** VJ2: a session run with the team: the group's answer at each pause (never athletes' names). */
+export interface VjRun {
+  id: string;
+  date: string;
+  answers: Record<string, string[]>;
 }
 
 export interface VjSession {
@@ -1266,4 +1294,6 @@ export interface VjSession {
   favorite?: boolean;
   /** Copied from another session (kept when duplicating). */
   copiedFrom?: string;
+  /** VJ2: the latest runs with the team (the group's answers), most recent last; at most 10. */
+  runs?: VjRun[];
 }

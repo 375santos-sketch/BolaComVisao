@@ -1,4 +1,5 @@
-import { SquadProfile, VjSession, VjStatus } from '../types';
+import { SquadProfile, VjPause, VjSession, VjStatus } from '../types';
+import { cleanPause } from './vjPauses';
 
 /**
  * 🎬 Visão de Jogo — the team's library of sessions (VJ1). Each session is its own record of the team (kind
@@ -50,7 +51,17 @@ export function cleanSession(s: VjSession, now: string): VjSession {
     title: s.title.trim().slice(0, 120) || 'Sessão sem título',
     objective: (s.objective || '').trim().slice(0, 300) || undefined,
     competencies: [...new Set((s.competencies || []).filter(Boolean))].slice(0, 8),
-    items: (s.items || []).filter((i) => i && i.kind === 'video' && /^[\w-]{11}$/.test(i.youtubeId)).slice(0, 10),
+    items: (s.items || [])
+      .filter((i) => i && i.kind === 'video' && /^[\w-]{11}$/.test(i.youtubeId))
+      .slice(0, 10)
+      .map((i) => ({
+        ...i,
+        pauses: (i.pauses || [])
+          .map(cleanPause)
+          .filter((p): p is VjPause => !!p)
+          .sort((a, b) => a.at - b.at)
+          .slice(0, 12)
+      })),
     updatedAt: now
   };
 }
@@ -74,6 +85,7 @@ export const duplicateSession = (s: VjSession, newId: string, now: string): VjSe
   status: 'rascunho',
   favorite: false,
   copiedFrom: s.id,
+  runs: [],
   createdAt: now,
   updatedAt: now
 });
