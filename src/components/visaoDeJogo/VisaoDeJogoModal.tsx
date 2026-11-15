@@ -31,6 +31,8 @@ import { uid } from '../../lib/utils';
 import { PauseEditor } from './PauseEditor';
 import { ConductSession } from './ConductSession';
 import { pauseCount, withRun } from '../../lib/vjPauses';
+import { defaultPresentIds, runScore } from '../../lib/vjCompetencies';
+import { localDateISO } from '../../lib/trainingQuick';
 
 type Tab = 'equipa' | 'clube' | 'plataforma';
 type Action = { to: VjStatus; label: string };
@@ -127,6 +129,8 @@ const VisaoDeJogoModal: React.FC<{
               }
         }
         onClose={() => setConducting(null)}
+        athletes={(team?.roster || []).filter((p) => p.active !== false).map((p) => ({ id: p.id, name: p.name }))}
+        defaultPresent={defaultPresentIds(team?.roster || [], team?.trainings || [], localDateISO())}
       />
     );
   }
@@ -604,6 +608,25 @@ const SessionEditor: React.FC<{
           )}
         </div>
 
+        {(draft.runs || []).length > 0 && (
+          <section className="space-y-1" aria-label="Vezes conduzida">
+            <span className="text-xs text-ui-muted">Vezes conduzida</span>
+            {[...(draft.runs || [])].reverse().map((run) => {
+              const sc = runScore(draft, run);
+              return (
+                <p key={run.id} className="flex justify-between border-b border-ui-line py-1 text-[11px] text-ui-text">
+                  <span>
+                    {run.date.slice(8, 10)}/{run.date.slice(5, 7)}
+                    {run.presentIds ? ` · ${run.presentIds.length} atletas` : ''}
+                  </span>
+                  <span className={sc.asked && sc.right * 2 >= sc.asked ? 'text-ui-success' : 'text-ui-muted'}>
+                    {sc.asked ? `${sc.right}/${sc.asked} certas` : 'conversada em grupo'}
+                  </span>
+                </p>
+              );
+            })}
+          </section>
+        )}
         {!readOnly && (
           <div className="grid grid-cols-2 gap-2">
             <button

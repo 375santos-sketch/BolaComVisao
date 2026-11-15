@@ -55,6 +55,9 @@ test('visão de jogo: sessão com vídeo e pausa com pergunta, publicar, conduzi
   await conduct.getByRole('button', { name: 'Terminar' }).click();
   const summary = page.getByRole('dialog', { name: 'Resumo da sessão' });
   await expect(summary).toContainText('Grupo: Entre linhas · ✗ ainda não'); // the two right answers were not both chosen
+  // VJ5: who was in the session (ticked with today's attendance), for each athlete's competencies
+  const present = summary.getByRole('group', { name: 'Quem esteve na sessão?' });
+  await expect(present.getByLabel('Rui Silva')).toBeChecked();
   await summary.getByRole('button', { name: 'Guardar e terminar' }).click();
   await expect(page.getByText('Respostas do grupo guardadas ✓')).toBeVisible();
   await expect
@@ -62,11 +65,27 @@ test('visão de jogo: sessão com vídeo e pausa com pergunta, publicar, conduzi
       async () => {
         const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
         const raw = JSON.stringify(await res.json());
-        return raw.includes('"challenge"') && raw.includes('dQw4w9WgXcQ') && raw.includes('"runs"');
+        return (
+          raw.includes('"challenge"') &&
+          raw.includes('dQw4w9WgXcQ') &&
+          raw.includes('"runs"') &&
+          raw.includes('presentIds')
+        );
       },
       { timeout: 30_000, message: 'a sessão no registo da equipa' }
     )
     .toBe(true);
+  // …and the athlete's sheet shows it under the session's competency (beside the coach's evaluation, unchanged)
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('navigation', { name: 'Secções da ficha' }).getByRole('button', { name: 'Avaliação' }).click();
+  const evaluations = page.getByRole('region', { name: 'Avaliações' });
+  await expect(evaluations).toContainText('Só na Visão de Jogo');
+  await expect(evaluations.getByLabel('Visão de Jogo', { exact: true })).toContainText(
+    'esteve em 1 sessão · o grupo acertou 0 de 1 pergunta'
+  );
 });
 
 // 🎬 VJ4: the platform Administrator publishes a session in the BolaComVisão library; a coach of any club uses it

@@ -4,6 +4,7 @@ import { Sheet } from '../ui/Sheet';
 import { embedUrl, useYouTubeFrame } from '../../lib/youtubeFrame';
 import { PAUSE_TOLERANCE, clock, groupGotIt, nextPause, pauseDue, pausesOf } from '../../lib/vjPauses';
 import { uid } from '../../lib/utils';
+import { localDateISO } from '../../lib/trainingQuick';
 
 /**
  * VJ2 — Conduzir no treino: the session's videos one after the other; each stops at its pauses with the question,
@@ -15,7 +16,12 @@ export const ConductSession: React.FC<{
   /** Saves the group's answers (absent: read-only, nothing saved). */
   onFinish?: (run: VjRun) => void;
   onClose: () => void;
-}> = ({ session, onFinish, onClose }) => {
+  /** VJ5: the team's athletes, to tick who was in the session (for the competencies of each one). */
+  athletes?: Array<{ id: string; name: string }>;
+  /** Who comes ticked: the athletes at today's training. */
+  defaultPresent?: string[];
+}> = ({ session, onFinish, onClose, athletes = [], defaultPresent = [] }) => {
+  const [present, setPresent] = useState<string[]>(defaultPresent);
   const [itemIndex, setItemIndex] = useState(0);
   const [done, setDone] = useState<Set<string>>(new Set());
   const [current, setCurrent] = useState<VjPause | null>(null);
@@ -84,18 +90,46 @@ export const ConductSession: React.FC<{
               );
             })}
           </ul>
+          {onFinish && athletes.length > 0 && Object.keys(answers).length > 0 && (
+            <fieldset className="ui-card p-2" aria-label="Quem esteve na sessão?">
+              <legend className="px-1 text-xs font-bold text-ui-text">Quem esteve na sessão?</legend>
+              <p className="text-[11px] text-ui-muted">
+                Vem marcado com as presenças do treino de hoje. Pode corrigir. Conta para as competências de cada
+                atleta.
+              </p>
+              {athletes.map((a) => (
+                <label key={a.id} className="flex items-center gap-2 border-b border-ui-line py-1 text-xs text-ui-text">
+                  <input
+                    type="checkbox"
+                    checked={present.includes(a.id)}
+                    onChange={(e) =>
+                      setPresent((prev) => (e.target.checked ? [...prev, a.id] : prev.filter((x) => x !== a.id)))
+                    }
+                  />
+                  {a.name}
+                </label>
+              ))}
+            </fieldset>
+          )}
           <button
             type="button"
             onClick={() => {
               if (onFinish && Object.keys(answers).length)
-                onFinish({ id: uid(), date: new Date().toISOString().slice(0, 10), answers });
+                onFinish({
+                  id: uid(),
+                  date: localDateISO(),
+                  answers,
+                  ...(athletes.length ? { presentIds: present.filter((id) => athletes.some((a) => a.id === id)) } : {})
+                });
               onClose();
             }}
             className="ui-btn ui-btn-primary w-full text-sm"
           >
             {onFinish && Object.keys(answers).length ? 'Guardar e terminar' : 'Terminar'}
           </button>
-          <p className="text-[11px] text-ui-muted">Fica guardada a resposta do grupo, nunca nomes de atletas.</p>
+          <p className="text-[11px] text-ui-muted">
+            Fica guardada a resposta do grupo e quem esteve, nunca uma resposta de cada criança.
+          </p>
         </div>
       </Sheet>
     );

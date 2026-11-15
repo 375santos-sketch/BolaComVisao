@@ -1280,6 +1280,8 @@ export interface VjRun {
   id: string;
   date: string;
   answers: Record<string, string[]>;
+  /** VJ5: the athletes who were in the session (ids of the roster), for the competencies of each one. */
+  presentIds?: string[];
 }
 
 export interface VjSession {

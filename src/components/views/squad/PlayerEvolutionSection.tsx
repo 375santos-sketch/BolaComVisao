@@ -17,6 +17,7 @@ import {
 } from '../../../lib/playerEvolution';
 import { DateTimePT } from '../../ui/DateTimePT';
 import { CompetencyCard } from './CompetencyCard';
+import { VjCompetencyStat } from '../../../lib/vjCompetencies';
 import { localDateISO } from '../../../lib/trainingQuick';
 import { uid } from '../../../lib/utils';
 
@@ -108,7 +109,9 @@ export const PlayerEvolutionSection: React.FC<{
   startEvaluating?: boolean;
   /** D1: who is evaluating (recorded in each evaluation). */
   evaluator?: { uid?: string; name?: string };
-}> = ({ player, onSavePlayer, onShowToast, part, startEvaluating = false, evaluator }) => {
+  /** VJ5: the Visão de Jogo sessions this athlete was in, by competency. */
+  vjStats?: Record<string, VjCompetencyStat>;
+}> = ({ player, onSavePlayer, onShowToast, part, startEvaluating = false, evaluator, vjStats }) => {
   const evaluations = evaluationsOf(player);
   const goals = goalsOf(player);
   const [last, before] = evaluations;
@@ -126,6 +129,7 @@ export const PlayerEvolutionSection: React.FC<{
           evaluator={evaluator}
           startEvaluating={startEvaluating}
           onSave={onSavePlayer ? save : undefined}
+          vjStats={vjStats}
         />
       )}
       {part !== 'objetivos' && last && (
