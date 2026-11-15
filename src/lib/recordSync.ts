@@ -24,7 +24,8 @@ export type EntityKind =
   | 'setpiece'
   | 'tacticplay'
   | 'teamphoto'
-  | 'report';
+  | 'report'
+  | 'challenge';
 /**
  * 'teamconfig' (F2.1): the settings of ONE team (objectives, staff contacts, public links, leagues…), so that the
  * rules can give each team's settings only to that team's members. The "club" record keeps only a summary of
@@ -49,7 +50,9 @@ const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppState> = {
   // Team photos (start and end of the season) are big: each one is its own document
   teamphoto: 'teamPhotos',
   // 📑 Monthly reports: the coach's text for each month (the numbers are always worked out, never stored)
-  report: 'monthlyReports'
+  report: 'monthlyReports',
+  // 🎬 Visão de Jogo sessions (the common "challenge" model, format «sessão»)
+  challenge: 'vjSessions'
 };
 const ENTITY_KINDS = Object.keys(ENTITY_FIELDS) as EntityKind[];
 
