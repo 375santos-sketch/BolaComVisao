@@ -180,3 +180,59 @@ test('acesso retirado: os dados do clube saem do aparelho', async ({ page }) => 
   const direct = await fetch(`${FIRESTORE}/club_workspace/${ORG}/records/player__eqP__p1`, { headers: owner });
   expect(direct.ok).toBe(true); // (the emulator's admin still reads it: the data stays in the club)
 });
+
+// VJ3: a coach proposes a session to the club library; only the coordinator the club allowed approves and publishes
+test('biblioteca do clube: o treinador propõe, o coordenador autorizado aprova e publica', async ({
+  page,
+  browser
+}) => {
+  await personInOrg('treinador.vj@clube.pt', 'treinador');
+  await signIn(page, 'treinador.vj@clube.pt');
+  await enterPanel(page);
+  await navTo(page, /clube/i);
+  await page.getByRole('button', { name: /Visão de Jogo/ }).click();
+  const library = page.getByRole('dialog', { name: 'Visão de Jogo' });
+  await library.getByRole('tab', { name: 'Do clube' }).click();
+  await expect(library).toContainText('A biblioteca do clube ainda está vazia.');
+  await library.getByRole('button', { name: '+ Propor sessão ao clube' }).click();
+  const editor = page.getByRole('dialog', { name: 'Nova sessão' });
+  await editor.getByPlaceholder(/Onde receber/).fill('Pressão após perda');
+  await expect(editor.getByRole('button', { name: 'Aprovar e publicar' })).toHaveCount(0);
+  await editor.getByRole('button', { name: 'Enviar para revisão' }).click();
+  await expect(page.getByText('Em revisão ✓')).toBeVisible();
+  const cloudSession = async () => {
+    const res = await fetch(`${FIRESTORE}/club_workspace/${ORG}/records?pageSize=500`, { headers: owner });
+    const docs = ((await res.json()) as { documents?: Array<{ name: string; fields: any }> }).documents || [];
+    const doc = docs.find((d) => d.fields?.kind?.stringValue === 'clubchallenge');
+    return doc?.fields?.data?.mapValue?.fields?.status?.stringValue || '';
+  };
+  await expect.poll(cloudSession, { timeout: 30_000, message: 'a proposta na nuvem' }).toBe('revisao');
+
+  // The coordinator of the club, with the permission «publicar na biblioteca do clube»
+  const coordUid = await personInOrg('coord.vj@clube.pt', 'coordenador');
+  await put(`organizations/${ORG}/members/${coordUid}`, {
+    uid: coordUid,
+    displayName: 'coord.vj@clube.pt',
+    email: 'coord.vj@clube.pt',
+    role: 'coordenador',
+    teamIds: ['*'],
+    status: 'active',
+    addedBy: 'dono-ficticio',
+    addedAt: 1,
+    publishesLibrary: true
+  });
+  const coordPage = await (await browser.newContext()).newPage();
+  await signIn(coordPage, 'coord.vj@clube.pt');
+  await enterPanel(coordPage);
+  await navTo(coordPage, /clube/i);
+  await coordPage.getByRole('button', { name: /Visão de Jogo/ }).click();
+  const coordLibrary = coordPage.getByRole('dialog', { name: 'Visão de Jogo' });
+  await coordLibrary.getByRole('tab', { name: 'Do clube · 1 por rever' }).click();
+  await coordLibrary.getByRole('button', { name: 'Abrir a sessão Pressão após perda' }).click();
+  await coordPage
+    .getByRole('dialog', { name: 'Editar sessão' })
+    .getByRole('button', { name: 'Aprovar e publicar' })
+    .click();
+  await expect(coordPage.getByText('Publicada ✓')).toBeVisible();
+  await expect.poll(cloudSession, { timeout: 30_000, message: 'a sessão publicada na nuvem' }).toBe('publicado');
+});

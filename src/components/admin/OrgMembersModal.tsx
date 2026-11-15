@@ -67,6 +67,10 @@ function historyLine(e: OrgAuditEntry, names: Record<string, string>): string {
       return `${who} mudou o papel de ${role(d.from)} para ${role(d.to)}`;
     case 'member.teams':
       return `${who} mudou as equipas`;
+    case 'member.library':
+      return d.to
+        ? `${who} deu a permissão de publicar na biblioteca do clube`
+        : `${who} tirou a permissão de publicar na biblioteca do clube`;
     case 'member.status':
       return `${who}: ${d.to === 'revoked' ? 'retirou o acesso' : d.to === 'suspended' ? 'suspendeu' : 'reativou'}`;
     default:
@@ -86,6 +90,7 @@ const ManageMember: React.FC<{
 }> = ({ orgId, me, member, teams, history, names, onDone, onClose }) => {
   const [role, setRole] = useState<OrgRole>(member.role);
   const [teamIds, setTeamIds] = useState<string[]>(member.teamIds);
+  const [library, setLibrary] = useState(member.publishesLibrary === true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const roles = ORG_ROLES.filter((r) => r !== 'owner' && roleRank(r) <= roleRank(me.role));
@@ -115,9 +120,11 @@ const ManageMember: React.FC<{
     if (teamIds.length === 0) return setError('Escolha pelo menos uma equipa.');
     const change = {
       ...(role !== member.role ? { role } : {}),
-      ...(teamIds.slice().sort().join(',') !== member.teamIds.slice().sort().join(',') ? { teamIds } : {})
+      ...(teamIds.slice().sort().join(',') !== member.teamIds.slice().sort().join(',') ? { teamIds } : {}),
+      ...(role === 'coordenador' && library !== (member.publishesLibrary === true) ? { publishesLibrary: library } : {})
     };
-    if (!change.role && !change.teamIds) return onClose();
+    const loses = role !== 'coordenador' && member.publishesLibrary === true;
+    if (!change.role && !change.teamIds && change.publishesLibrary === undefined && !loses) return onClose();
     act(() => updateMemberAccess(orgId, member, change, me.uid, Date.now()), 'Acesso guardado ✓');
   };
 
@@ -163,6 +170,17 @@ const ManageMember: React.FC<{
           </select>
         </label>
         <p className="text-ui-caption text-ui-muted">Só pode dar papéis até ao seu ({ROLE_LABELS[me.role]}).</p>
+        {role === 'coordenador' && (
+          <label className="ui-card flex items-start gap-2 px-3 py-2.5 text-ui-body text-ui-text">
+            <input type="checkbox" className="mt-1" checked={library} onChange={(e) => setLibrary(e.target.checked)} />
+            <span>
+              <strong>Publicar na biblioteca do clube</strong>
+              <span className="block text-ui-caption text-ui-muted">
+                Revê, aprova e publica as sessões da Visão de Jogo para todas as equipas do clube.
+              </span>
+            </span>
+          </label>
+        )}
         <fieldset className="space-y-1">
           <legend className="text-ui-caption font-extrabold uppercase tracking-[0.08em] text-ui-muted">Equipas</legend>
           <div className="ui-card px-3 py-1.5">

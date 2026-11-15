@@ -4,6 +4,15 @@ import { Sheet } from '../ui/Sheet';
 import { COMPETENCIES, competencyLabel } from '../../lib/competencies';
 import {
   VJ_STATUS,
+  ClubLibraryViewer,
+  canEditClubSession,
+  canSeeClubSession,
+  clubActions,
+  clubSessionForTeam,
+  clubSessionsOf,
+  newClubSession,
+  teamCopyOf,
+  withClubStatus,
   cleanSession,
   duplicateSession,
   filterSessions,
@@ -14,17 +23,18 @@ import {
   withoutSession
 } from '../../lib/vjLibrary';
 import { youtubeIdOf } from '../../lib/gameVideo';
-import { isReadOnlyRole } from '../../lib/orgPermissions';
+import { canPublishClubLibrary, isReadOnlyRole } from '../../lib/orgPermissions';
 import { uid } from '../../lib/utils';
 import { PauseEditor } from './PauseEditor';
 import { ConductSession } from './ConductSession';
 import { pauseCount, withRun } from '../../lib/vjPauses';
 
 type Tab = 'equipa' | 'clube' | 'plataforma';
+type Action = { to: VjStatus; label: string };
 
 /**
- * 🎬 Visão de Jogo — Biblioteca (VJ1): the team's sessions with their state, filters and favourites; create, edit,
- * publish, archive and duplicate. The club library and the platform library come in the next parts.
+ * 🎬 Visão de Jogo — Biblioteca: the team's sessions (VJ1) and the club library (VJ3: a coach proposes, who publishes
+ * approves for every team of the club). The platform library comes later.
  */
 const VisaoDeJogoModal: React.FC<{
   state: AppState;
@@ -34,13 +44,16 @@ const VisaoDeJogoModal: React.FC<{
 }> = ({ state, onUpdateState, onShowToast, onClose }) => {
   const team = (state.teams || []).find((t) => t.id === state.activeTeamId);
   const sessions = sessionsOf(team);
-  const readOnly = isReadOnlyRole(state.currentUser) || !team;
+  const club = clubSessionsOf(state);
+  const user = state.currentUser;
+  const readOnly = isReadOnlyRole(user) || !team;
+  const viewer: ClubLibraryViewer = { uid: user?.id, publishes: canPublishClubLibrary(user) && !isReadOnlyRole(user) };
   const [tab, setTab] = useState<Tab>('equipa');
   const [competency, setCompetency] = useState('');
   const [status, setStatus] = useState<VjStatus | 'ativas'>('ativas');
   const [favorites, setFavorites] = useState(false);
-  const [editing, setEditing] = useState<VjSession | null>(null);
-  const [conducting, setConducting] = useState<VjSession | null>(null);
+  const [editing, setEditing] = useState<{ session: VjSession; club: boolean } | null>(null);
+  const [conducting, setConducting] = useState<{ session: VjSession; club: boolean } | null>(null);
   const now = () => new Date().toISOString();
 
   const saveAll = (next: VjSession[], msg?: string) => {
@@ -49,13 +62,61 @@ const VisaoDeJogoModal: React.FC<{
     if (msg) onShowToast(msg);
   };
   const save = (s: VjSession, msg?: string) => saveAll(withSession(sessions, cleanSession(s, now())), msg);
+  const saveClub = (s: VjSession, msg?: string) => {
+    onUpdateState({ clubVjSessions: withSession(club, cleanSession(s, now())) });
+    if (msg) onShowToast(msg);
+  };
+  /** «Usar na minha equipa»: the team's copy (made once). */
+  const copyToTeam = (s: VjSession) => {
+    if (!team || teamCopyOf(sessions, s.id)) return;
+    save(clubSessionForTeam(s, uid(), now()), `«${s.title}» já está na biblioteca da equipa ✓`);
+  };
 
   if (conducting) {
+    const { session, club: fromClub } = conducting;
     return (
       <ConductSession
-        session={conducting}
-        onFinish={readOnly ? undefined : (run) => save(withRun(conducting, run), 'Respostas do grupo guardadas ✓')}
+        session={session}
+        onFinish={
+          readOnly
+            ? undefined
+            : (run) => {
+                if (!fromClub) return save(withRun(session, run), 'Respostas do grupo guardadas ✓');
+                // A club session is the same for every team: the group's answers stay in the team's copy
+                const copy = teamCopyOf(sessions, session.id) || clubSessionForTeam(session, uid(), now());
+                save(withRun(copy, run), 'Respostas do grupo guardadas na sessão da equipa ✓');
+              }
+        }
         onClose={() => setConducting(null)}
+      />
+    );
+  }
+
+  if (editing && editing.club) {
+    const s = editing.session;
+    const isNew = !club.some((x) => x.id === s.id);
+    const canEdit = !isReadOnlyRole(user) && (isNew || canEditClubSession(s, viewer));
+    return (
+      <SessionEditor
+        session={s}
+        readOnly={!canEdit}
+        actions={(d) => (canEdit ? clubActions(d, viewer) : [])}
+        onAction={(d, to) => withClubStatus(d, to, user?.name)}
+        onBack={() => setEditing(null)}
+        onSave={(next, msg) => {
+          saveClub(next, msg);
+          setEditing(null);
+        }}
+        onDelete={
+          viewer.publishes && !isNew
+            ? (d) => {
+                if (!window.confirm(`Apagar a sessão «${d.title}» da biblioteca do clube?`)) return;
+                onUpdateState({ clubVjSessions: withoutSession(club, d.id) });
+                onShowToast('Sessão apagada');
+                setEditing(null);
+              }
+            : undefined
+        }
       />
     );
   }
@@ -63,8 +124,10 @@ const VisaoDeJogoModal: React.FC<{
   if (editing) {
     return (
       <SessionEditor
-        session={editing}
+        session={editing.session}
         readOnly={readOnly}
+        actions={(d) => teamActions(d.status)}
+        favorite
         onBack={() => setEditing(null)}
         onSave={(s, msg) => {
           save(s, msg);
@@ -73,7 +136,7 @@ const VisaoDeJogoModal: React.FC<{
         onDuplicate={(s) => {
           const copy = duplicateSession(s, uid(), now());
           save(copy, 'Cópia criada: pode adaptá-la ✓');
-          setEditing(copy);
+          setEditing({ session: copy, club: false });
         }}
         onDelete={(s) => {
           if (!window.confirm(`Apagar a sessão «${s.title}»?`)) return;
@@ -84,8 +147,16 @@ const VisaoDeJogoModal: React.FC<{
     );
   }
 
-  const shown = filterSessions(sessions, { competency: competency || undefined, status, favorites });
-  const used = [...new Set(sessions.flatMap((s) => s.competencies))];
+  const isClub = tab === 'clube';
+  const pool = isClub ? club.filter((s) => canSeeClubSession(s, viewer)) : sessions;
+  const shown = filterSessions(pool, { competency: competency || undefined, status, favorites: !isClub && favorites });
+  const used = [...new Set(pool.flatMap((s) => s.competencies))];
+  const toReview = viewer.publishes ? club.filter((s) => s.status === 'revisao').length : 0;
+  const switchTab = (next: Tab) => {
+    setTab(next);
+    setCompetency('');
+    setStatus(next === 'clube' && toReview > 0 ? 'revisao' : 'ativas');
+  };
 
   return (
     <Sheet title="Visão de Jogo" onClose={onClose} size="lg">
@@ -94,7 +165,7 @@ const VisaoDeJogoModal: React.FC<{
           {(
             [
               ['equipa', 'Da equipa'],
-              ['clube', 'Do clube'],
+              ['clube', toReview > 0 ? `Do clube · ${toReview} por rever` : 'Do clube'],
               ['plataforma', 'BolaComVisão']
             ] as const
           ).map(([key, label]) => (
@@ -103,7 +174,7 @@ const VisaoDeJogoModal: React.FC<{
               type="button"
               role="tab"
               aria-selected={tab === key}
-              onClick={() => setTab(key)}
+              onClick={() => switchTab(key)}
               className={`rounded-full border px-3 py-1 text-xs ${
                 tab === key ? 'border-ui-brand bg-ui-brand/10 text-ui-text' : 'border-ui-line text-ui-muted'
               }`}
@@ -113,14 +184,19 @@ const VisaoDeJogoModal: React.FC<{
           ))}
         </div>
 
-        {tab !== 'equipa' ? (
+        {tab === 'plataforma' ? (
           <p className="ui-card p-4 text-xs text-ui-muted">
-            {tab === 'clube'
-              ? 'A biblioteca do clube (propor, rever e aprovar sessões para todas as equipas) chega na próxima parte da Visão de Jogo.'
-              : 'A biblioteca BolaComVisão (sessões preparadas pela plataforma) ainda está vazia.'}
+            A biblioteca BolaComVisão (sessões preparadas pela plataforma) ainda está vazia.
           </p>
         ) : (
           <>
+            {isClub && (
+              <p className="text-[11px] text-ui-muted">
+                {viewer.publishes
+                  ? 'Revê as propostas dos treinadores e publica para todas as equipas do clube.'
+                  : 'Sessões aprovadas para todas as equipas do clube. Pode propor uma sessão: um coordenador autorizado revê e publica.'}
+              </p>
+            )}
             <div className="flex flex-wrap gap-1.5">
               <select
                 aria-label="Competência"
@@ -143,86 +219,97 @@ const VisaoDeJogoModal: React.FC<{
               >
                 <option value="ativas">Ativas</option>
                 <option value="rascunho">Rascunhos</option>
+                {isClub && <option value="revisao">Em revisão</option>}
                 <option value="publicado">Publicadas</option>
-                <option value="arquivado">Arquivadas</option>
+                {(!isClub || viewer.publishes) && <option value="arquivado">Arquivadas</option>}
               </select>
-              <button
-                type="button"
-                aria-pressed={favorites}
-                onClick={() => setFavorites(!favorites)}
-                className={`rounded-ui border px-2 text-xs ${favorites ? 'border-ui-brand text-ui-text' : 'border-ui-line text-ui-muted'}`}
-              >
-                ⭐ Favoritas
-              </button>
+              {!isClub && (
+                <button
+                  type="button"
+                  aria-pressed={favorites}
+                  onClick={() => setFavorites(!favorites)}
+                  className={`rounded-ui border px-2 text-xs ${favorites ? 'border-ui-brand text-ui-text' : 'border-ui-line text-ui-muted'}`}
+                >
+                  ⭐ Favoritas
+                </button>
+              )}
             </div>
 
             {shown.length === 0 && (
               <p className="text-xs text-ui-muted">
-                {sessions.length === 0
-                  ? 'Ainda sem sessões. Uma sessão junta vídeos (e, em breve, pausas com perguntas) para ver e discutir com a equipa.'
-                  : 'Nenhuma sessão com estes filtros.'}
+                {pool.length > 0
+                  ? 'Nenhuma sessão com estes filtros.'
+                  : isClub
+                    ? 'A biblioteca do clube ainda está vazia.'
+                    : 'Ainda sem sessões. Uma sessão junta vídeos com pausas e perguntas para ver e discutir com a equipa.'}
               </p>
             )}
             <ul className="space-y-2" aria-label="Sessões">
               {shown.map((s) => (
                 <li key={s.id}>
-                  <button
-                    type="button"
-                    onClick={() => setEditing(s)}
-                    className="ui-card w-full p-3 text-left"
-                    aria-label={`Abrir a sessão ${s.title}`}
-                  >
-                    <span className="flex items-start justify-between gap-2">
-                      <span className="min-w-0">
-                        <b className="block text-sm text-ui-text">
-                          {s.favorite ? '⭐ ' : ''}
-                          {s.title}
-                        </b>
-                        <span className="text-[11px] text-ui-muted">
-                          {s.items.length} {s.items.length === 1 ? 'vídeo' : 'vídeos'} · {pauseCount(s)}{' '}
-                          {pauseCount(s) === 1 ? 'pergunta' : 'perguntas'}
-                          {team?.category ? ` · ${team.category}` : ''}
-                          {s.authorName ? ` · ${s.authorName}` : ''}
-                        </span>
-                        <span className="mt-1 flex flex-wrap gap-1">
-                          {s.competencies.map((c) => (
-                            <span key={c} className="rounded-full bg-ui-brand/10 px-2 py-0.5 text-[10px] text-ui-brand">
-                              {competencyLabel(c)}
-                            </span>
-                          ))}
-                        </span>
-                      </span>
-                      <span
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${VJ_STATUS[s.status].cls}`}
-                      >
-                        {VJ_STATUS[s.status].label}
-                      </span>
-                    </span>
-                  </button>
+                  <SessionCard
+                    session={s}
+                    detail={isClub ? undefined : team?.category}
+                    onOpen={() => setEditing({ session: s, club: isClub })}
+                  />
                   {s.status === 'publicado' && s.items.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setConducting(s)}
-                      className="ui-btn ui-btn-primary mt-1 w-full text-xs"
-                      aria-label={`Conduzir no treino: ${s.title}`}
-                    >
-                      ▶ Conduzir no treino
-                    </button>
+                    <div className="mt-1 flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setConducting({ session: s, club: isClub })}
+                        className="ui-btn ui-btn-primary flex-1 text-xs"
+                        aria-label={`Conduzir no treino: ${s.title}`}
+                      >
+                        ▶ Conduzir no treino
+                      </button>
+                      {isClub &&
+                        !readOnly &&
+                        (teamCopyOf(sessions, s.id) ? (
+                          <span className="ui-btn ui-btn-soft flex-1 text-xs text-ui-success">✓ Na minha equipa</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => copyToTeam(s)}
+                            className="ui-btn ui-btn-soft flex-1 text-xs"
+                            aria-label={`Usar na minha equipa: ${s.title}`}
+                          >
+                            Usar na minha equipa
+                          </button>
+                        ))}
+                    </div>
                   )}
                 </li>
               ))}
             </ul>
-            {!readOnly && (
-              <button
-                type="button"
-                onClick={() =>
-                  setEditing(newSession({ id: uid(), title: '', authorName: state.currentUser?.name, now: now() }))
-                }
-                className="ui-btn ui-btn-primary w-full text-sm"
-              >
-                + Nova sessão
-              </button>
-            )}
+            {isClub
+              ? !isReadOnlyRole(user) && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        session: newClubSession({ id: uid(), authorUid: user?.id, authorName: user?.name, now: now() }),
+                        club: true
+                      })
+                    }
+                    className="ui-btn ui-btn-primary w-full text-sm"
+                  >
+                    {viewer.publishes ? '+ Nova sessão do clube' : '+ Propor sessão ao clube'}
+                  </button>
+                )
+              : !readOnly && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditing({
+                        session: newSession({ id: uid(), title: '', authorName: user?.name, now: now() }),
+                        club: false
+                      })
+                    }
+                    className="ui-btn ui-btn-primary w-full text-sm"
+                  >
+                    + Nova sessão
+                  </button>
+                )}
             <p className="text-[11px] text-ui-muted">
               🔒 Só vídeos sem crianças identificáveis (por exemplo, jogos profissionais). Os vídeos do clube com
               atletas chegam mais tarde, com autorização dos encarregados.
@@ -234,14 +321,58 @@ const VisaoDeJogoModal: React.FC<{
   );
 };
 
+const SessionCard: React.FC<{ session: VjSession; detail?: string; onOpen: () => void }> = ({
+  session: s,
+  detail,
+  onOpen
+}) => (
+  <button
+    type="button"
+    onClick={onOpen}
+    className="ui-card w-full p-3 text-left"
+    aria-label={`Abrir a sessão ${s.title}`}
+  >
+    <span className="flex items-start justify-between gap-2">
+      <span className="min-w-0">
+        <b className="block text-sm text-ui-text">
+          {s.favorite ? '⭐ ' : ''}
+          {s.title}
+        </b>
+        <span className="text-[11px] text-ui-muted">
+          {s.items.length} {s.items.length === 1 ? 'vídeo' : 'vídeos'} · {pauseCount(s)}{' '}
+          {pauseCount(s) === 1 ? 'pergunta' : 'perguntas'}
+          {detail ? ` · ${detail}` : ''}
+          {s.authorName ? ` · ${s.authorName}` : ''}
+          {s.status === 'publicado' && s.approvedBy ? ` · aprovada por ${s.approvedBy}` : ''}
+        </span>
+        <span className="mt-1 flex flex-wrap gap-1">
+          {s.competencies.map((c) => (
+            <span key={c} className="rounded-full bg-ui-brand/10 px-2 py-0.5 text-[10px] text-ui-brand">
+              {competencyLabel(c)}
+            </span>
+          ))}
+        </span>
+      </span>
+      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${VJ_STATUS[s.status].cls}`}>
+        {VJ_STATUS[s.status].label}
+      </span>
+    </span>
+  </button>
+);
+
 const SessionEditor: React.FC<{
   session: VjSession;
   readOnly: boolean;
+  /** What can be done with the session in its state (publish, send for review…). */
+  actions: (s: VjSession) => Action[];
+  /** The session in its new state (default: only the state changes). */
+  onAction?: (s: VjSession, to: VjStatus) => VjSession;
+  favorite?: boolean;
   onBack: () => void;
   onSave: (s: VjSession, msg: string) => void;
-  onDuplicate: (s: VjSession) => void;
-  onDelete: (s: VjSession) => void;
-}> = ({ session, readOnly, onBack, onSave, onDuplicate, onDelete }) => {
+  onDuplicate?: (s: VjSession) => void;
+  onDelete?: (s: VjSession) => void;
+}> = ({ session, readOnly, actions, onAction, favorite, onBack, onSave, onDuplicate, onDelete }) => {
   const [draft, setDraft] = useState<VjSession>(session);
   const [link, setLink] = useState('');
   const [label, setLabel] = useState('');
@@ -395,31 +526,38 @@ const SessionEditor: React.FC<{
             >
               Guardar
             </button>
-            {teamActions(draft.status).map((a) => (
+            {actions(draft).map((a) => (
               <button
                 key={a.to}
                 type="button"
-                onClick={() => onSave({ ...draft, status: a.to }, `${VJ_STATUS[a.to].label} ✓`)}
+                onClick={() =>
+                  onSave(onAction ? onAction(draft, a.to) : { ...draft, status: a.to }, `${VJ_STATUS[a.to].label} ✓`)
+                }
                 className={`ui-btn text-xs ${a.to === 'publicado' ? 'ui-btn-primary' : 'ui-btn-soft'}`}
               >
                 {a.label}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() =>
-                onSave({ ...draft, favorite: !draft.favorite }, draft.favorite ? 'Tirada das favoritas' : 'Favorita ⭐')
-              }
-              className="ui-btn ui-btn-soft text-xs"
-            >
-              {draft.favorite ? '☆ Tirar das favoritas' : '⭐ Favorita'}
-            </button>
-            {!isNew && (
+            {favorite && (
+              <button
+                type="button"
+                onClick={() =>
+                  onSave(
+                    { ...draft, favorite: !draft.favorite },
+                    draft.favorite ? 'Tirada das favoritas' : 'Favorita ⭐'
+                  )
+                }
+                className="ui-btn ui-btn-soft text-xs"
+              >
+                {draft.favorite ? '☆ Tirar das favoritas' : '⭐ Favorita'}
+              </button>
+            )}
+            {!isNew && onDuplicate && (
               <button type="button" onClick={() => onDuplicate(draft)} className="ui-btn ui-btn-soft text-xs">
                 Duplicar e adaptar
               </button>
             )}
-            {!isNew && (
+            {!isNew && onDelete && (
               <button
                 type="button"
                 onClick={() => onDelete(draft)}

@@ -6,6 +6,19 @@ import { UserAccount, UserClubRole } from '../types';
 
 type OrgUser = Pick<UserAccount, 'orgId' | 'orgRole'> | null | undefined;
 
+/**
+ * VJ3: who approves and publishes in the club library of Visão de Jogo (the same as the rules): the owner, admins,
+ * directors and the coordinators the club allowed; a club that is not an organization yet keeps the old access.
+ */
+export const canPublishClubLibrary = (
+  user: (OrgUser & { orgPublishesLibrary?: boolean }) | null | undefined
+): boolean =>
+  !user?.orgId ||
+  user.orgRole === 'owner' ||
+  user.orgRole === 'admin' ||
+  user.orgRole === 'diretor' ||
+  (user.orgRole === 'coordenador' && user.orgPublishesLibrary === true);
+
 /** Staff only reads (D4). */
 export const isReadOnlyRole = (user: OrgUser): boolean => Boolean(user?.orgId) && user?.orgRole === 'staff';
 

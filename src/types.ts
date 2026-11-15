@@ -981,6 +981,8 @@ export interface UserAccount {
   orgTeamIds?: string[];
   /** F2.2: the role of this account in that organization (owner, admin, diretor, coordenador, treinador…). */
   orgRole?: string;
+  /** VJ3: this account approves and publishes in the club library (from its membership). */
+  orgPublishesLibrary?: boolean;
 }
 
 export interface TeamInvitation {
@@ -1183,6 +1185,8 @@ export interface AppState {
   /** Copy of the active team's monthly reports (the teams hold them; see SquadProfile.monthlyReports). */
   monthlyReports?: MonthlyReportRecord[];
   exerciseLibrary?: Exercise[];
+  /** 🎬 VJ3: the club library of Visão de Jogo (sessions shared by every team of the club). */
+  clubVjSessions?: VjSession[];
   subscription?: ClubSubscription;
   updatedAt?: number;
   lastLocalMutationAt?: number;
@@ -1289,6 +1293,10 @@ export interface VjSession {
   status: VjStatus;
   items: VjItem[];
   authorName?: string;
+  /** VJ3: who wrote it (club library: the author sends it for review; who publishes approves it). */
+  authorUid?: string;
+  /** VJ3: who approved it for the club library. */
+  approvedBy?: string;
   createdAt: string;
   updatedAt: string;
   favorite?: boolean;

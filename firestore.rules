@@ -227,7 +227,8 @@ service cloud.firestore {
     function isValidOrgMember(uid, data) {
       return data is map &&
         data.keys().hasAll(['uid', 'displayName', 'email', 'role', 'teamIds', 'status', 'addedBy', 'addedAt']) &&
-        data.keys().hasOnly(['uid', 'displayName', 'email', 'role', 'teamIds', 'status', 'addedBy', 'addedAt', 'revokedAt', 'revokedBy']) &&
+        data.keys().hasOnly(['uid', 'displayName', 'email', 'role', 'teamIds', 'status', 'addedBy', 'addedAt', 'revokedAt', 'revokedBy', 'publishesLibrary']) &&
+        (!data.keys().hasAny(['publishesLibrary']) || data.publishesLibrary is bool) &&
         data.uid == uid &&
         data.displayName is string && data.displayName.size() <= 120 &&
         data.email is string && data.email.size() <= 254 &&
@@ -260,6 +261,32 @@ service cloud.firestore {
       return memberSeesTeam(orgId, teamId) &&
         myOrgRole(orgId) != 'staff' &&
         (teamId != '_club' || isOrgManager(orgId));
+    }
+
+    /** VJ3: who approves and publishes in the club library: the owner, admins, directors, and the coordinators the
+     *  club allowed (membership flag publishesLibrary). */
+    function publishesLibrary(orgId) {
+      return isActiveOrgMember(orgId) && (
+        myOrgRole(orgId) in ['owner', 'admin', 'diretor'] ||
+        (myOrgRole(orgId) == 'coordenador' &&
+          get(orgMemberPath(orgId, request.auth.uid)).data.get('publishesLibrary', false) == true)
+      );
+    }
+
+    /** VJ3: who publishes writes any session of the club library; any other member that writes (not staff) only
+     *  proposes: their own sessions, as draft or for review, never published ones. */
+    function writesClubLibrary(orgId) {
+      return publishesLibrary(orgId) || (
+        isActiveOrgMember(orgId) && myOrgRole(orgId) != 'staff' &&
+        incoming().deleted == false &&
+        incoming().data.get('status', '') in ['rascunho', 'revisao'] &&
+        incoming().data.get('authorUid', '') == request.auth.uid &&
+        (resource == null || (
+          resource.data.get('deleted', false) == false &&
+          resource.data.data.get('status', '') in ['rascunho', 'revisao'] &&
+          resource.data.data.get('authorUid', '') == request.auth.uid
+        ))
+      );
     }
 
     /** Invitations (D3): managers invite any role (not Administrador); a coordinator invites coaches and assistants;
@@ -414,6 +441,7 @@ service cloud.firestore {
         m.teamIds == [inv.teamId] &&
         m.status == 'active' &&
         m.uid == request.auth.uid &&
+        m.get('publishesLibrary', false) == false &&
         (inv.get('email', '') == '' || request.auth.token.email == inv.email);
     }
 
@@ -479,7 +507,7 @@ service cloud.firestore {
         data.size() <= 10 &&
         data.keys().hasAll(['kind', 'teamId', 'entityId', 'updatedAt', 'deleted']) &&
         data.keys().hasOnly(['kind', 'teamId', 'entityId', 'updatedAt', 'updatedBy', 'deleted', 'data']) &&
-        data.kind in ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting', 'exercise', 'setpiece', 'tacticplay', 'teamphoto', 'report', 'teamconfig', 'challenge'] &&
+        data.kind in ['club', 'player', 'match', 'training', 'schedule', 'message', 'scouting', 'exercise', 'setpiece', 'tacticplay', 'teamphoto', 'report', 'teamconfig', 'challenge', 'clubchallenge'] &&
         data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
         data.entityId is string && data.entityId.size() > 0 && data.entityId.size() <= 256 &&
         data.updatedAt is number &&
@@ -701,6 +729,11 @@ service cloud.firestore {
             isMasterAdmin() ||
             (memberWritesTeam(workspaceId, incoming().teamId) &&
               (resource == null || resource.data.teamId == incoming().teamId)) ||
+            // VJ3: the club library of Visão de Jogo
+            (incoming().kind == 'clubchallenge' && incoming().teamId == '_club' &&
+              recordId.matches('^clubchallenge__.+') &&
+              (resource == null || resource.data.kind == 'clubchallenge') &&
+              writesClubLibrary(workspaceId)) ||
             (!hasOrgMembership(workspaceId) && legacyClubAccess(workspaceId))
           );
         // Records are deleted with tombstones (deleted: true); hard deletes only by the Administrator.

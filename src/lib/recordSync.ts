@@ -31,7 +31,11 @@ export type EntityKind =
  * rules can give each team's settings only to that team's members. The "club" record keeps only a summary of
  * each team (id, club name, category, season).
  */
-export type RecordKind = EntityKind | 'club' | 'teamconfig';
+export type RecordKind = EntityKind | 'club' | 'teamconfig' | 'clubchallenge';
+
+/** VJ3: the club library's sessions belong to the club, not to a team: records "clubchallenge" of team "_club". */
+export const CLUB_LIBRARY_KIND = 'clubchallenge' as const;
+export const CLUB_LIBRARY_FIELD = 'clubVjSessions' as const;
 
 /** Team array that holds each kind of record. */
 const ENTITY_FIELDS: Record<EntityKind, keyof SquadProfile & keyof AppState> = {
@@ -188,6 +192,19 @@ export function extractRecords(state: AppState): Map<string, LocalRecord> {
     });
   });
 
+  // VJ3: each session of the club library is its own record of the club ("_club"), never inside the club record
+  (
+    (normalized as unknown as Record<string, unknown>)[CLUB_LIBRARY_FIELD] as Array<{ id?: string }> | undefined
+  )?.forEach((item) => {
+    if (!item || !item.id) return;
+    records.set(recordDocId(CLUB_LIBRARY_KIND, CLUB_TEAM_ID, item.id), {
+      kind: CLUB_LIBRARY_KIND,
+      teamId: CLUB_TEAM_ID,
+      entityId: item.id,
+      data: toPlainData(item) as Record<string, unknown>
+    });
+  });
+
   const club = clubDataOf(normalized);
   // F2.1: each team's settings in its own record; the club record keeps only the summary of each team
   ((club.teams || []) as unknown as Array<Record<string, unknown>>).forEach((team) => {
@@ -229,6 +246,7 @@ function clubDataOf(state: AppState): Partial<AppState> {
   DEVICE_ONLY_FIELDS.forEach((f) => delete club[f]);
   ACTIVE_TEAM_COPIES.forEach((f) => delete club[f]);
   ENTITY_KINDS.forEach((kind) => delete club[ENTITY_FIELDS[kind]]);
+  delete club[CLUB_LIBRARY_FIELD];
   club.teams = (state.teams || []).map((t) => {
     // normalizeClubState fills these defaults only for the active team: fill them for every team, so coaches on
     // different teams share the same club record (otherwise each would keep re-saving their own version).
@@ -295,6 +313,20 @@ export function assembleState(
 
   const active = teams.find((t) => t.id === base.activeTeamId) || teams[0];
   const state: Record<string, unknown> = { ...base, teams };
+  // VJ3: the club library (in the order this device had it, new ones after)
+  const libraryItems = new Map<string, Record<string, unknown>>();
+  records.forEach((r) => {
+    if (r.kind === CLUB_LIBRARY_KIND) libraryItems.set(r.entityId, r.data);
+  });
+  const libraryOrder = (
+    ((device as unknown as Record<string, unknown>)[CLUB_LIBRARY_FIELD] as Array<{ id: string }>) || []
+  )
+    .map((x) => x && x.id)
+    .filter((id) => libraryItems.has(id));
+  state[CLUB_LIBRARY_FIELD] = [
+    ...libraryOrder.map((id) => libraryItems.get(id)!),
+    ...[...libraryItems].filter(([id]) => !libraryOrder.includes(id)).map(([, d]) => d)
+  ];
   ENTITY_KINDS.forEach((kind) => {
     const field = ENTITY_FIELDS[kind];
     state[field] = active ? (active as unknown as Record<string, unknown>)[field] || [] : [];

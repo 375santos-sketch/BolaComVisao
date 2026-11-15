@@ -27,7 +27,8 @@ import {
   buildCloudWrite,
   toPlainData,
   setSynced,
-  isRecordKey
+  isRecordKey,
+  CLUB_LIBRARY_KIND
 } from '../lib/recordSync';
 import { legacySyncedKey, syncedKeyFor } from '../lib/deviceCache';
 
@@ -58,7 +59,8 @@ const RECORD_KINDS: RecordKind[] = [
   'teamphoto',
   'report',
   'teamconfig',
-  'challenge'
+  'challenge',
+  'clubchallenge'
 ];
 const MAX_BATCH_WRITES = 400;
 const MAX_BATCH_BYTES = 4_000_000;
@@ -105,19 +107,45 @@ function teamOfRecordId(id: string, remote: Map<string, CloudRecord>): string {
   return remote.get(id)?.teamId ?? (id === CLUB_DOC_ID ? CLUB_RECORD_TEAM : id.split('__')[1] || '');
 }
 
+// VJ3 — The club library of Visão de Jogo: who publishes (owner, admin, director, an allowed coordinator, or a club
+// that is not an organization yet) writes any of its sessions; the others only their own proposals (draft or review).
+// The same as the rules, so that a change the rules would refuse is never sent (it would stop the whole save).
+const libraryPublisherByWorkspace = new Map<string, boolean>();
+const PROPOSAL_STATES = ['rascunho', 'revisao'];
+
+export function setLibraryPublisher(workspaceId: string | null | undefined, publishes: boolean): void {
+  libraryPublisherByWorkspace.set(cleanWorkspaceId(workspaceId), publishes);
+}
+const publishesLibraryIn = (ws: string) => libraryPublisherByWorkspace.get(ws) !== false;
+const isClubLibraryId = (id: string) => id.startsWith(`${CLUB_LIBRARY_KIND}__`);
+
+function mayWriteLibraryRecord(ws: string, r: LocalRecord, cloud: CloudRecord | undefined): boolean {
+  if (publishesLibraryIn(ws)) return true;
+  const me = auth.currentUser?.uid;
+  const ownProposal = (d: Record<string, unknown> | undefined) =>
+    !!d && PROPOSAL_STATES.includes(String(d.status)) && d.authorUid === me;
+  return !!me && ownProposal(r.data) && (!cloud || (!cloud.deleted && ownProposal(cloud.data)));
+}
+
 /**
  * This device's records as they may be written: with a team scope, only its teams' records, and the club record
- * replaced by the cloud's (so it is never written from here).
+ * replaced by the cloud's (so it is never written from here). A session of the club library it may not change is
+ * replaced by the cloud's too.
  */
 function writableLocal(ws: string, local: Map<string, LocalRecord>, remote: Map<string, CloudRecord>) {
   const scope = getTeamScope(ws);
-  if (!scope) return local;
   const out = new Map<string, LocalRecord>();
   local.forEach((r, id) => {
-    if (id !== CLUB_DOC_ID && scope.has(r.teamId)) out.set(id, r);
+    if (r.kind === CLUB_LIBRARY_KIND) {
+      const cloud = remote.get(id);
+      if (mayWriteLibraryRecord(ws, r, cloud)) out.set(id, r);
+      else if (cloud && !cloud.deleted) out.set(id, cloud);
+      return;
+    }
+    if (!scope || (id !== CLUB_DOC_ID && scope.has(r.teamId))) out.set(id, r);
   });
   const club = remote.get(CLUB_DOC_ID);
-  if (club) out.set(CLUB_DOC_ID, club);
+  if (scope && club) out.set(CLUB_DOC_ID, club);
   return out;
 }
 
@@ -287,7 +315,13 @@ export async function pushClubRecords(
   const scope = options.migrating ? null : getTeamScope(ws);
   // …and the club record is never sent from a device with a team scope (only who manages the club writes it)
   if (scope) {
-    pending = pending.filter((id) => id !== CLUB_DOC_ID && (local.has(id) || scope.has(teamOfRecordId(id, remote))));
+    pending = pending.filter(
+      (id) => id !== CLUB_DOC_ID && (local.has(id) || isClubLibraryId(id) || scope.has(teamOfRecordId(id, remote)))
+    );
+  }
+  // VJ3: a session of the club library is removed only by who publishes
+  if (!options.migrating && !publishesLibraryIn(ws)) {
+    pending = pending.filter((id) => local.has(id) || !isClubLibraryId(id));
   }
   const deletions = pending.filter((id) => !local.has(id));
   const entityCount = Object.keys(synced).filter((id) => isRecordKey(id) && id !== CLUB_DOC_ID).length;
@@ -460,8 +494,9 @@ export function subscribeToClubCloud(
     const scope = getTeamScope(ws);
     // F2.2: with a team scope only its teams are known: records of other teams are left exactly as they are
     const knownTeamIds = scope
-      ? new Set<string>(scope)
+      ? new Set<string>([...scope, CLUB_RECORD_TEAM])
       : new Set<string>([
+          CLUB_RECORD_TEAM,
           ...(local.teams || []).map((t) => t.id),
           ...(((club?.data as Partial<AppState>)?.teams || []) as Array<{ id: string }>).map((t) => t.id)
         ]);
