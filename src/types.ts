@@ -40,6 +40,8 @@ export interface Player {
   fitnessTests?: Record<string, Record<string, number>>;
   /** 📈 Evolução: periodic evaluations by the coach (only for coaches: never in reports, shares or comparisons). */
   evaluations?: PlayerEvaluation[];
+  /** 🧩 D1: evaluations by competency (levels 1–4); the older evaluations (1–5 by area) stay in `evaluations`. */
+  competencyEvaluations?: CompetencyEvaluation[];
   /** 🎯 Individual goals the athlete works on (only for coaches). */
   individualGoals?: PlayerGoal[];
 }
@@ -52,6 +54,21 @@ export interface PlayerEvaluation {
   /** Day of the evaluation (YYYY-MM-DD). */
   date: string;
   scores: Record<EvaluationArea, number>;
+  note?: string;
+}
+
+/** D1: 1 = a descobrir, 2 = a praticar, 3 = a consolidar, 4 = domina para a idade. */
+export type CompetencyLevel = 1 | 2 | 3 | 4;
+
+/** D1: an evaluation by competency: only the competencies the coach chose, who evaluated and when. */
+export interface CompetencyEvaluation {
+  id: string;
+  /** Day of the evaluation (YYYY-MM-DD). */
+  date: string;
+  evaluatorUid?: string;
+  evaluatorName?: string;
+  /** Competency id (from the catalogue, or "x:Name" for one the coach added) → level. */
+  levels: Record<string, CompetencyLevel>;
   note?: string;
 }
 

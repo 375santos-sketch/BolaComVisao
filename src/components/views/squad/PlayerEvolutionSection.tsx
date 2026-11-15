@@ -10,13 +10,13 @@ import {
   reformulatedGoal,
   statusOf,
   toggledGoal,
-  withEvaluation,
   withGoal,
   withGoalNote,
   withoutEvaluation,
   withoutGoal
 } from '../../../lib/playerEvolution';
 import { DateTimePT } from '../../ui/DateTimePT';
+import { CompetencyCard } from './CompetencyCard';
 import { localDateISO } from '../../../lib/trainingQuick';
 import { uid } from '../../../lib/utils';
 
@@ -94,69 +94,6 @@ const Radar: React.FC<{ last: PlayerEvaluation; before?: PlayerEvaluation }> = (
   );
 };
 
-/** Quick evaluation: one tap per area, the previous value in brackets, an optional note. */
-const EvaluationForm: React.FC<{
-  previous?: PlayerEvaluation;
-  onSave: (scores: Record<EvaluationArea, number>, note: string) => void;
-  onCancel: () => void;
-}> = ({ previous, onSave, onCancel }) => {
-  const [scores, setScores] = useState<Partial<Record<EvaluationArea, number>>>(() => ({ ...previous?.scores }));
-  const [note, setNote] = useState('');
-  const complete = EVALUATION_AREAS.every((a) => scores[a.key]);
-  return (
-    <section aria-label="Nova avaliação" className="ui-card-raised space-y-2 p-3">
-      <div className="text-sm font-extrabold text-ui-text">Nova avaliação · hoje</div>
-      {previous && <div className="text-[11px] text-ui-muted">Entre parênteses: a de {ddmm(previous.date)}</div>}
-      {EVALUATION_AREAS.map((a) => (
-        <fieldset key={a.key} className="space-y-1">
-          <legend className="flex w-full justify-between text-xs font-bold text-ui-text">
-            <span>{a.label}</span>
-            {previous && <span className="text-ui-muted">({previous.scores[a.key]})</span>}
-          </legend>
-          <div className="flex gap-1.5">
-            {[1, 2, 3, 4, 5].map((v) => (
-              <button
-                key={v}
-                type="button"
-                aria-label={`${a.label} ${v}`}
-                aria-pressed={scores[a.key] === v}
-                onClick={() => setScores({ ...scores, [a.key]: v })}
-                className={`h-9 flex-1 rounded-lg text-sm font-extrabold ${
-                  scores[a.key] === v ? 'bg-ui-brand text-ui-brand-ink' : 'bg-ui-surface-3 text-ui-muted'
-                }`}
-              >
-                {v}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-      ))}
-      <textarea
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        maxLength={500}
-        rows={2}
-        aria-label="Observação do treinador"
-        placeholder="Observação do treinador (opcional)"
-        className="ui-input text-xs"
-      />
-      <div className="flex gap-2">
-        <button
-          type="button"
-          disabled={!complete}
-          onClick={() => onSave(scores as Record<EvaluationArea, number>, note)}
-          className="ui-btn ui-btn-primary flex-1 py-2.5 text-xs"
-        >
-          Guardar avaliação
-        </button>
-        <button type="button" onClick={onCancel} className="ui-btn ui-btn-secondary py-2.5 text-xs">
-          Cancelar
-        </button>
-      </div>
-    </section>
-  );
-};
-
 /**
  * Ficha do atleta → Evolução: the periodic evaluations (radar of the last one over the one before), the coach's
  * notes on each, and the athlete's individual goals. Only for the coaches.
@@ -169,8 +106,9 @@ export const PlayerEvolutionSection: React.FC<{
   part?: 'avaliacoes' | 'objetivos';
   /** Opens with the new evaluation form (the "Avaliar" button of the sheet). */
   startEvaluating?: boolean;
-}> = ({ player, onSavePlayer, onShowToast, part, startEvaluating = false }) => {
-  const [evaluating, setEvaluating] = useState(startEvaluating && !!onSavePlayer);
+  /** D1: who is evaluating (recorded in each evaluation). */
+  evaluator?: { uid?: string; name?: string };
+}> = ({ player, onSavePlayer, onShowToast, part, startEvaluating = false, evaluator }) => {
   const evaluations = evaluationsOf(player);
   const goals = goalsOf(player);
   const [last, before] = evaluations;
@@ -183,87 +121,67 @@ export const PlayerEvolutionSection: React.FC<{
   return (
     <div className="space-y-3">
       {part !== 'objetivos' && (
-        <section aria-label="Avaliações" className="ui-card space-y-2 p-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="ui-kicker">Competências</span>
-            {!evaluating && onSavePlayer && (
-              <button
-                type="button"
-                onClick={() => setEvaluating(true)}
-                className="ui-btn ui-btn-primary px-3 py-1.5 text-xs"
-              >
-                + Nova avaliação
-              </button>
-            )}
+        <CompetencyCard
+          player={player}
+          evaluator={evaluator}
+          startEvaluating={startEvaluating}
+          onSave={onSavePlayer ? save : undefined}
+        />
+      )}
+      {part !== 'objetivos' && last && (
+        <details aria-label="Avaliações antigas" className="ui-card p-3">
+          <summary className="cursor-pointer text-xs text-ui-muted">
+            <b>Avaliações antigas (escala 1–5)</b> · {evaluations.length} · ficam como estavam, não são convertidas em
+            níveis
+          </summary>
+          <div className="mt-2 space-y-2">
+            <Radar last={last} before={before} />
+            <ul aria-label="Lista de avaliações" className="divide-y divide-ui-line">
+              {evaluations.map((e, i) => {
+                const prev = evaluations[i + 1];
+                const diff = prev ? averageOf(e) - averageOf(prev) : null;
+                return (
+                  <li key={e.id} className="py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <b className="text-sm text-ui-text">
+                        {ddmm(e.date)} · média {formatScore(averageOf(e))}
+                      </b>
+                      <span className="flex items-center gap-1.5">
+                        {diff === null ? (
+                          <span className="ui-badge">1.ª</span>
+                        ) : (
+                          <span
+                            className={`ui-badge ${diff > 0 ? 'ui-badge-success' : diff < 0 ? 'ui-badge-warning' : ''}`}
+                          >
+                            {diff > 0 ? '▲ +' : diff < 0 ? '▼ ' : '= '}
+                            {formatScore(Math.abs(diff))}
+                          </span>
+                        )}
+                        {onSavePlayer && (
+                          <button
+                            type="button"
+                            aria-label={`Apagar a avaliação de ${ddmm(e.date)}`}
+                            onClick={() => {
+                              if (window.confirm(`Apagar a avaliação de ${ddmm(e.date)}?`))
+                                save(withoutEvaluation(player, e.id), 'Avaliação apagada');
+                            }}
+                            className="px-1 text-xs text-ui-muted hover:text-ui-danger"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-ui-muted">
+                      {EVALUATION_AREAS.map((a) => `${a.short} ${e.scores[a.key]}`).join(' · ')}
+                    </div>
+                    {e.note && <p className="mt-1 rounded-lg bg-ui-surface-2 p-2 text-xs text-ui-text">📝 {e.note}</p>}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
-          {evaluating && (
-            <EvaluationForm
-              previous={last}
-              onCancel={() => setEvaluating(false)}
-              onSave={(scores, note) => {
-                save(withEvaluation(player, { id: uid(), date: localDateISO(), scores, note }), 'Avaliação guardada ✓');
-                setEvaluating(false);
-              }}
-            />
-          )}
-          {last ? (
-            <>
-              <Radar last={last} before={before} />
-              <ul aria-label="Lista de avaliações" className="divide-y divide-ui-line">
-                {evaluations.map((e, i) => {
-                  const prev = evaluations[i + 1];
-                  const diff = prev ? averageOf(e) - averageOf(prev) : null;
-                  return (
-                    <li key={e.id} className="py-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <b className="text-sm text-ui-text">
-                          {ddmm(e.date)} · média {formatScore(averageOf(e))}
-                        </b>
-                        <span className="flex items-center gap-1.5">
-                          {diff === null ? (
-                            <span className="ui-badge">1.ª</span>
-                          ) : (
-                            <span
-                              className={`ui-badge ${diff > 0 ? 'ui-badge-success' : diff < 0 ? 'ui-badge-warning' : ''}`}
-                            >
-                              {diff > 0 ? '▲ +' : diff < 0 ? '▼ ' : '= '}
-                              {formatScore(Math.abs(diff))}
-                            </span>
-                          )}
-                          {onSavePlayer && (
-                            <button
-                              type="button"
-                              aria-label={`Apagar a avaliação de ${ddmm(e.date)}`}
-                              onClick={() => {
-                                if (window.confirm(`Apagar a avaliação de ${ddmm(e.date)}?`))
-                                  save(withoutEvaluation(player, e.id), 'Avaliação apagada');
-                              }}
-                              className="px-1 text-xs text-ui-muted hover:text-ui-danger"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-ui-muted">
-                        {EVALUATION_AREAS.map((a) => `${a.short} ${e.scores[a.key]}`).join(' · ')}
-                      </div>
-                      {e.note && (
-                        <p className="mt-1 rounded-lg bg-ui-surface-2 p-2 text-xs text-ui-text">📝 {e.note}</p>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
-          ) : (
-            !evaluating && (
-              <p className="text-xs text-ui-muted">
-                Ainda sem avaliações. Uma a cada 4–6 semanas chega para ver a evolução no radar.
-              </p>
-            )
-          )}
-        </section>
+        </details>
       )}
 
       {part !== 'avaliacoes' && <GoalsCard player={player} goals={goals} onSave={onSavePlayer ? save : undefined} />}

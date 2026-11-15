@@ -15,6 +15,7 @@ import { absenceReasonLabel } from '../trainingQuick';
 import { APP } from './pdfTheme';
 import { kpiRow, ring } from './pdfDash';
 import { EVALUATION_AREAS, averageOf, evaluationsOf, formatScore } from '../playerEvolution';
+import { LEVELS, competencyLabel, currentLevels } from '../competencies';
 
 /**
  * 2. Dossier Oficial do Plantel em PDF
@@ -358,15 +359,40 @@ export async function buildPlayerProfilePDF(player: Player, state: AppState, opt
     heading('Avaliações do treinador');
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
+    // D1: the latest level of each competency (no overall score)
+    const competencies = currentLevels(player);
+    if (competencies.length) {
+      const dmyC = (iso: string) => iso.split('-').reverse().join('/');
+      competencies.forEach((c) => {
+        w.ensure(5);
+        doc.setTextColor(...PDF_INK);
+        doc.text(competencyLabel(c.id), 16, w.y);
+        doc.text(
+          `${LEVELS.find((l) => l.value === c.level)?.label || ''} (${dmyC(c.date)})${
+            c.previous && c.previous.level !== c.level
+              ? `  ·  antes: ${LEVELS.find((l) => l.value === c.previous!.level)?.label || ''}`
+              : ''
+          }`,
+          80,
+          w.y
+        );
+        w.skip(5);
+      });
+      w.skip(1);
+    }
     if (evals.length === 0) {
-      doc.setTextColor(...PDF_MUTED);
-      doc.text('Ainda sem avaliações.', 16, w.y);
-      w.skip(6);
+      if (competencies.length) {
+        w.skip(1);
+      } else {
+        doc.setTextColor(...PDF_MUTED);
+        doc.text('Ainda sem avaliações.', 16, w.y);
+        w.skip(6);
+      }
     } else {
       const last = evals[0];
       const dmy = (iso: string) => iso.split('-').reverse().join('/');
       doc.setTextColor(...PDF_INK);
-      doc.text(`Última avaliação: ${dmy(last.date)} · média ${formatScore(averageOf(last))} (de 1 a 5)`, 16, w.y);
+      doc.text(`Avaliação antiga (escala 1 a 5): ${dmy(last.date)} · média ${formatScore(averageOf(last))}`, 16, w.y);
       w.skip(5);
       EVALUATION_AREAS.forEach((a) => {
         w.ensure(5);
