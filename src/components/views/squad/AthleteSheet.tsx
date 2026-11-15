@@ -284,10 +284,12 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
           className="space-y-2 [&_svg[role=img]]:mx-auto [&_svg[role=img]]:max-w-sm"
         >
           <SectionHeader title="Avaliação" />
-          {last && strengths ? (
+          {last && strengths && !(player.competencyEvaluations || []).length ? (
             <div className="ui-card space-y-2 p-4" aria-label="Última avaliação">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-ui-caption font-bold text-ui-muted">Última avaliação · {ddmm(last.date)}</span>
+                <span className="text-ui-caption font-bold text-ui-muted">
+                  Última avaliação (escala antiga 1–5) · {ddmm(last.date)}
+                </span>
                 <span className="text-ui-body font-bold text-ui-text">
                   Média {formatScore(averageOf(last))}
                   {delta !== null && Math.abs(delta) >= 0.05 && (
@@ -325,6 +327,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
             key={evaluateNow}
             part="avaliacoes"
             startEvaluating={evaluateNow > 0}
+            evaluator={{ uid: state.currentUser?.id, name: state.currentUser?.name }}
             player={player}
             onSavePlayer={onUpdateState ? savePlayer : undefined}
             onShowToast={onShowToast}
