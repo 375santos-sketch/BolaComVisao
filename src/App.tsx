@@ -68,6 +68,7 @@ const ClubReportsView = lazyWithRetry(() => import('./components/report/ClubRepo
 const InventoryModal = lazyWithRetry(() => import('./components/admin/InventoryModal'));
 const EncryptedBackupModal = lazyWithRetry(() => import('./components/admin/EncryptedBackupModal'));
 const MainMigrationModal = lazyWithRetry(() => import('./components/admin/MainMigrationModal'));
+const VisaoDeJogoModal = lazyWithRetry(() => import('./components/visaoDeJogo/VisaoDeJogoModal'));
 const OrgMembersModal = lazyWithRetry(() => import('./components/admin/OrgMembersModal'));
 const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerModal'));
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
@@ -195,6 +196,7 @@ export default function App() {
   const [showInventory, setShowInventory] = useState<boolean>(false);
   const [showEncryptedBackup, setShowEncryptedBackup] = useState<boolean>(false);
   const [showMainMigration, setShowMainMigration] = useState<boolean>(false);
+  const [showVisaoDeJogo, setShowVisaoDeJogo] = useState<boolean>(false);
   const [showOrgMembers, setShowOrgMembers] = useState<boolean>(false);
   const [showCareer, setShowCareer] = useState<boolean>(false);
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
@@ -1232,6 +1234,7 @@ export default function App() {
                 onOpenInventory={() => setShowInventory(true)}
                 onOpenEncryptedBackup={() => setShowEncryptedBackup(true)}
                 onOpenMainMigration={() => setShowMainMigration(true)}
+                onOpenVisaoDeJogo={() => setShowVisaoDeJogo(true)}
                 onOpenOrgMembers={() => setShowOrgMembers(true)}
                 pendingUsersCount={pendingUsersCount}
               />
@@ -1415,6 +1418,16 @@ export default function App() {
               }))}
               onShowToast={showToast}
               onClose={() => setShowOrgMembers(false)}
+            />
+          </Suspense>
+        )}
+        {showVisaoDeJogo && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <VisaoDeJogoModal
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onClose={() => setShowVisaoDeJogo(false)}
             />
           </Suspense>
         )}

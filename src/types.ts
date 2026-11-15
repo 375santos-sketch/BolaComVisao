@@ -779,6 +779,8 @@ export interface SquadProfile {
   yellowsForBan?: number;
   /** The team's rehearsed set pieces (corners, free kicks, throw-ins…), each its own cloud record. */
   setPieces?: SetPiece[];
+  /** 🎬 Visão de Jogo: the team's sessions (videos with pauses and questions). */
+  vjSessions?: VjSession[];
   /** Animated plays drawn on the tactics board, each its own cloud record. */
   tacticPlays?: TacticPlay[];
   /** 📸 Team photos (start and end of each season), each its own cloud record. */
@@ -1172,6 +1174,8 @@ export interface AppState {
   clubEvents?: ClubEvent[];
   /** Copy of the active team's set pieces (the teams hold them; see SquadProfile.setPieces). */
   setPieces?: SetPiece[];
+  /** 🎬 Visão de Jogo: the team's sessions (videos with pauses and questions). */
+  vjSessions?: VjSession[];
   /** Copy of the active team's tactics-board plays (the teams hold them; see SquadProfile.tacticPlays). */
   tacticPlays?: TacticPlay[];
   /** Copy of the active team's photos (the teams hold them; see SquadProfile.teamPhotos). */
@@ -1233,4 +1237,33 @@ export interface OpponentFile {
   /** How to prepare for them (shown when preparing the next game against them). */
   strategy?: string;
   updatedAt: number;
+}
+
+/** 🎬 Visão de Jogo (VJ1) — a session: videos (and later images) with pauses and questions, used with the team. */
+export type VjStatus = 'rascunho' | 'revisao' | 'publicado' | 'arquivado';
+
+export interface VjItem {
+  id: string;
+  kind: 'video';
+  youtubeId: string;
+  /** What the video is ("jogo profissional", "treino de outra equipa"…): never identifiable children (VJ0). */
+  label?: string;
+}
+
+export interface VjSession {
+  id: string;
+  /** The common "challenge" model of Visão de Jogo and O Meu Percurso (MC0, 11): a session is one format. */
+  format: 'sessao';
+  title: string;
+  objective?: string;
+  /** Competency ids (the D1 catalogue, or "x:Name"). */
+  competencies: string[];
+  status: VjStatus;
+  items: VjItem[];
+  authorName?: string;
+  createdAt: string;
+  updatedAt: string;
+  favorite?: boolean;
+  /** Copied from another session (kept when duplicating). */
+  copiedFrom?: string;
 }

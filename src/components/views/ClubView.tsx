@@ -18,6 +18,8 @@ interface ClubViewProps {
   onOpenSync: () => void;
   onOpenSeasons: () => void;
   onOpenSeasonGrowth: () => void;
+  /** 🎬 Visão de Jogo: the library of sessions. */
+  onOpenVisaoDeJogo?: () => void;
   onOpenInviteStaff: () => void;
   onOpenAdminUsers: () => void;
   onOpenTour: () => void;
@@ -49,6 +51,7 @@ export const ClubView: React.FC<ClubViewProps> = ({
   onOpenSync,
   onOpenSeasons,
   onOpenSeasonGrowth,
+  onOpenVisaoDeJogo,
   onOpenInviteStaff,
   onOpenAdminUsers,
   onOpenTour,
@@ -132,6 +135,16 @@ export const ClubView: React.FC<ClubViewProps> = ({
           detail: 'Fotos da equipa e números da época numa imagem',
           run: onOpenSeasonGrowth
         },
+        ...(onOpenVisaoDeJogo
+          ? [
+              {
+                icon: 'ball' as IconName,
+                title: 'Visão de Jogo',
+                detail: 'Sessões com vídeo para ver e discutir com a equipa',
+                run: onOpenVisaoDeJogo
+              }
+            ]
+          : []),
         // F2.5: the club's settings only for who manages the club (the rules refuse the others)
         ...(canEditClubSettings(state.currentUser)
           ? [
