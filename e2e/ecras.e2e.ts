@@ -1022,8 +1022,11 @@ test('evolução do atleta: avaliação em 5 áreas com radar e objetivos indivi
   await goals.getByLabel('Área do objetivo').selectOption('tecnica');
   await goals.getByRole('button', { name: 'Adicionar' }).click();
   await expect(goals).toContainText('Técnica · desde');
-  await goals.getByLabel('Cumprido: Receber orientado para a frente').check();
-  await expect(goals).toContainText('cumprido a');
+  // D2: reached with one tap; it leaves «Em curso» and shows under «Alcançados»
+  await goals.getByRole('button', { name: '✓ Alcançado' }).click();
+  await expect(goals).toContainText('Nenhum objetivo neste filtro.');
+  await goals.getByRole('button', { name: /^Alcançados/ }).click();
+  await expect(goals).toContainText('alcançado a');
 
   // Kept in the athlete's record in the cloud (the other coaches see it too)
   await expect

@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { EvaluationArea, Player, PlayerEvaluation } from '../../../types';
+import { EvaluationArea, GoalStatus, Player, PlayerEvaluation, PlayerGoal } from '../../../types';
 import {
   EVALUATION_AREAS,
   averageOf,
   evaluationsOf,
   formatScore,
   goalsOf,
+  isOverdue,
+  reformulatedGoal,
+  statusOf,
   toggledGoal,
   withEvaluation,
   withGoal,
+  withGoalNote,
   withoutEvaluation,
   withoutGoal
 } from '../../../lib/playerEvolution';
+import { DateTimePT } from '../../ui/DateTimePT';
 import { localDateISO } from '../../../lib/trainingQuick';
 import { uid } from '../../../lib/utils';
 
@@ -166,8 +171,6 @@ export const PlayerEvolutionSection: React.FC<{
   startEvaluating?: boolean;
 }> = ({ player, onSavePlayer, onShowToast, part, startEvaluating = false }) => {
   const [evaluating, setEvaluating] = useState(startEvaluating && !!onSavePlayer);
-  const [goalText, setGoalText] = useState('');
-  const [goalArea, setGoalArea] = useState<EvaluationArea | ''>('');
   const evaluations = evaluationsOf(player);
   const goals = goalsOf(player);
   const [last, before] = evaluations;
@@ -263,97 +266,7 @@ export const PlayerEvolutionSection: React.FC<{
         </section>
       )}
 
-      {part !== 'avaliacoes' && (
-        <section aria-label="Objetivos individuais" className="ui-card space-y-2 p-3">
-          <span className="ui-kicker">Objetivos individuais</span>
-          {goals.length === 0 && <p className="text-xs text-ui-muted">Ainda sem objetivos para este atleta.</p>}
-          <ul className="divide-y divide-ui-line">
-            {goals.map((g) => {
-              const area = EVALUATION_AREAS.find((a) => a.key === g.area);
-              return (
-                <li key={g.id} className={`flex items-start gap-2 py-2 ${g.doneAt ? 'opacity-60' : ''}`}>
-                  <input
-                    type="checkbox"
-                    className="mt-1"
-                    checked={Boolean(g.doneAt)}
-                    disabled={!onSavePlayer}
-                    aria-label={`Cumprido: ${g.text}`}
-                    onChange={() =>
-                      save(
-                        toggledGoal(player, g.id, localDateISO()),
-                        g.doneAt ? 'Objetivo reaberto' : 'Objetivo cumprido 🎯'
-                      )
-                    }
-                  />
-                  <span className="min-w-0 flex-1">
-                    <b className="block text-sm text-ui-text">{g.text}</b>
-                    <span className="text-[11px] text-ui-muted">
-                      {[area?.label, g.doneAt ? `cumprido a ${ddmm(g.doneAt)}` : `desde ${ddmm(g.createdAt)}`]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </span>
-                  </span>
-                  {onSavePlayer && (
-                    <button
-                      type="button"
-                      aria-label={`Apagar o objetivo ${g.text}`}
-                      onClick={() => save(withoutGoal(player, g.id), 'Objetivo apagado')}
-                      className="px-1 text-xs text-ui-muted hover:text-ui-danger"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-          {onSavePlayer && (
-            <form
-              className="flex flex-wrap gap-1.5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!goalText.trim()) return;
-                save(
-                  withGoal(player, {
-                    id: uid(),
-                    text: goalText,
-                    createdAt: localDateISO(),
-                    ...(goalArea ? { area: goalArea } : {})
-                  }),
-                  'Objetivo adicionado 🎯'
-                );
-                setGoalText('');
-                setGoalArea('');
-              }}
-            >
-              <input
-                value={goalText}
-                onChange={(e) => setGoalText(e.target.value)}
-                maxLength={140}
-                aria-label="Novo objetivo"
-                placeholder="Novo objetivo (ex.: receber orientado para a frente)"
-                className="ui-input min-w-0 flex-1 text-xs"
-              />
-              <select
-                value={goalArea}
-                onChange={(e) => setGoalArea(e.target.value as EvaluationArea | '')}
-                aria-label="Área do objetivo"
-                className="ui-input w-auto text-xs"
-              >
-                <option value="">Área</option>
-                {EVALUATION_AREAS.map((a) => (
-                  <option key={a.key} value={a.key}>
-                    {a.short}
-                  </option>
-                ))}
-              </select>
-              <button type="submit" className="ui-btn ui-btn-secondary px-3 text-xs">
-                Adicionar
-              </button>
-            </form>
-          )}
-        </section>
-      )}
+      {part !== 'avaliacoes' && <GoalsCard player={player} goals={goals} onSave={onSavePlayer ? save : undefined} />}
 
       {part !== 'avaliacoes' && (
         <p className="text-[11px] text-ui-muted">
@@ -364,3 +277,294 @@ export const PlayerEvolutionSection: React.FC<{
     </div>
   );
 };
+
+const STATUS_LABEL: Record<GoalStatus, { label: string; cls: string }> = {
+  em_curso: { label: 'Em curso', cls: 'bg-ui-brand/15 text-ui-brand' },
+  alcancado: { label: 'Alcançado', cls: 'bg-ui-success/15 text-ui-success' },
+  reformulado: { label: 'Reformulado', cls: 'bg-ui-surface-2 text-ui-muted' }
+};
+
+type GoalFilter = 'em_curso' | 'alcancado' | 'todos';
+
+/**
+ * D2 — Objetivos individuais with a state (em curso, alcançado, reformulado), an optional deadline (shown when it
+ * has passed), the latest progress note, and reformulation that keeps the old goal linked to the new one.
+ */
+const GoalsCard: React.FC<{
+  player: Player;
+  goals: PlayerGoal[];
+  onSave?: (next: Player, msg: string) => void;
+}> = ({ player, goals, onSave }) => {
+  const today = localDateISO();
+  const [filter, setFilter] = useState<GoalFilter>('em_curso');
+  const [text, setText] = useState('');
+  const [area, setArea] = useState<EvaluationArea | ''>('');
+  const [due, setDue] = useState('');
+  const [noteFor, setNoteFor] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState('');
+  const [reformFor, setReformFor] = useState<PlayerGoal | null>(null);
+  const [reform, setReform] = useState({ text: '', area: '' as EvaluationArea | '', due: '' });
+  const count = (st: GoalStatus) => goals.filter((g) => statusOf(g) === st).length;
+  const shown = goals.filter((g) => filter === 'todos' || statusOf(g) === filter);
+  const byId = new Map(goals.map((g) => [g.id, g]));
+  const areaLabel = (a?: EvaluationArea) => EVALUATION_AREAS.find((x) => x.key === a)?.label;
+
+  const meta = (g: PlayerGoal) => {
+    const st = statusOf(g);
+    return [
+      areaLabel(g.area),
+      `desde ${ddmm(g.createdAt)}`,
+      st === 'alcancado' && g.doneAt ? `alcançado a ${ddmm(g.doneAt)}` : null,
+      st === 'reformulado' && g.reformulatedAt ? `reformulado a ${ddmm(g.reformulatedAt)}` : null,
+      st === 'em_curso' && g.dueDate ? `prazo ${ddmm(g.dueDate)}` : null
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  };
+
+  return (
+    <section aria-label="Objetivos individuais" className="ui-card space-y-2 p-3">
+      <span className="ui-kicker">Objetivos individuais</span>
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Mostrar">
+        {(
+          [
+            ['em_curso', `Em curso · ${count('em_curso')}`],
+            ['alcancado', `Alcançados · ${count('alcancado')}`],
+            ['todos', 'Todos']
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={filter === key}
+            onClick={() => setFilter(key)}
+            className={`rounded-full border px-2.5 py-0.5 text-[11px] ${
+              filter === key ? 'border-ui-brand bg-ui-brand/10 text-ui-text' : 'border-ui-line text-ui-muted'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {shown.length === 0 && (
+        <p className="text-xs text-ui-muted">
+          {goals.length === 0 ? 'Ainda sem objetivos para este atleta.' : 'Nenhum objetivo neste filtro.'}
+        </p>
+      )}
+      <ul className="divide-y divide-ui-line">
+        {shown.map((g) => {
+          const st = statusOf(g);
+          const next = g.replacedBy ? byId.get(g.replacedBy) : undefined;
+          return (
+            <li key={g.id} className="space-y-1.5 py-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <span className="min-w-0">
+                  <b className={`block text-sm ${st === 'reformulado' ? 'text-ui-muted' : 'text-ui-text'}`}>{g.text}</b>
+                  <span className="text-[11px] text-ui-muted">
+                    {meta(g)}
+                    {isOverdue(g, today) && <b className="text-ui-warning"> · passou o prazo</b>}
+                  </span>
+                  {next && <span className="block text-[11px] text-ui-muted">↳ passou a «{next.text}»</span>}
+                </span>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${STATUS_LABEL[st].cls}`}>
+                  {STATUS_LABEL[st].label}
+                </span>
+              </div>
+              {g.note && (
+                <p className="rounded-ui border border-ui-line px-2 py-1.5 text-xs text-ui-text">
+                  📝 {g.noteAt ? `${ddmm(g.noteAt)}: ` : ''}
+                  {g.note}
+                </p>
+              )}
+              {onSave && st !== 'reformulado' && (
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onSave(
+                        toggledGoal(player, g.id, today),
+                        st === 'alcancado' ? 'Objetivo reaberto' : 'Objetivo alcançado 🎯'
+                      )
+                    }
+                    className={`ui-btn px-2.5 py-1 text-[11px] ${st === 'alcancado' ? 'ui-btn-soft' : 'ui-btn-secondary text-ui-success'}`}
+                  >
+                    {st === 'alcancado' ? '↺ Reabrir' : '✓ Alcançado'}
+                  </button>
+                  {st === 'em_curso' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReformFor(g);
+                          setReform({ text: g.text, area: g.area || '', due: '' });
+                        }}
+                        className="ui-btn ui-btn-soft px-2.5 py-1 text-[11px]"
+                      >
+                        ↻ Reformular
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNoteFor(noteFor === g.id ? null : g.id);
+                          setNoteText(g.note || '');
+                        }}
+                        className="ui-btn ui-btn-soft px-2.5 py-1 text-[11px]"
+                      >
+                        📝 Nota
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    aria-label={`Apagar o objetivo ${g.text}`}
+                    onClick={() => onSave(withoutGoal(player, g.id), 'Objetivo apagado')}
+                    className="ml-auto px-1 text-xs text-ui-muted hover:text-ui-danger"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              {onSave && noteFor === g.id && (
+                <form
+                  className="flex gap-1.5"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    onSave(withGoalNote(player, g.id, noteText, today), 'Nota guardada 📝');
+                    setNoteFor(null);
+                  }}
+                >
+                  <input
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    maxLength={200}
+                    aria-label={`Nota de progresso: ${g.text}`}
+                    placeholder="Ex.: já abre o corpo no rondo; falta sob pressão"
+                    className="ui-input min-w-0 flex-1 text-xs"
+                  />
+                  <button type="submit" className="ui-btn ui-btn-secondary px-3 text-xs">
+                    Guardar
+                  </button>
+                </form>
+              )}
+              {onSave && reformFor?.id === g.id && (
+                <form
+                  aria-label="Reformular objetivo"
+                  className="space-y-1.5 rounded-ui border border-ui-line p-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!reform.text.trim()) return;
+                    onSave(
+                      reformulatedGoal(
+                        player,
+                        g.id,
+                        {
+                          id: uid(),
+                          text: reform.text,
+                          createdAt: today,
+                          ...(reform.area ? { area: reform.area } : {}),
+                          ...(reform.due ? { dueDate: reform.due } : {})
+                        },
+                        today
+                      ),
+                      'Objetivo reformulado ↻'
+                    );
+                    setReformFor(null);
+                  }}
+                >
+                  <p className="text-[11px] text-ui-muted">Antes: «{g.text}»</p>
+                  <input
+                    value={reform.text}
+                    onChange={(e) => setReform({ ...reform, text: e.target.value })}
+                    maxLength={140}
+                    aria-label="Novo texto do objetivo"
+                    className="ui-input w-full text-xs"
+                  />
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <AreaSelect value={reform.area} onChange={(a) => setReform({ ...reform, area: a })} />
+                    <DateTimePT
+                      type="date"
+                      value={reform.due}
+                      onChange={(v) => setReform({ ...reform, due: v })}
+                      label="Prazo do novo objetivo"
+                      inputClassName="ui-input w-full text-xs"
+                    />
+                  </div>
+                  <button type="submit" className="ui-btn ui-btn-primary w-full text-xs">
+                    Guardar o novo objetivo
+                  </button>
+                  <p className="text-[11px] text-ui-muted">
+                    O antigo fica «Reformulado», ligado ao novo: o histórico não se perde.
+                  </p>
+                </form>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      {onSave && (
+        <form
+          className="grid grid-cols-2 gap-1.5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!text.trim()) return;
+            onSave(
+              withGoal(player, {
+                id: uid(),
+                text,
+                createdAt: today,
+                ...(area ? { area } : {}),
+                ...(due ? { dueDate: due } : {})
+              }),
+              'Objetivo adicionado 🎯'
+            );
+            setText('');
+            setArea('');
+            setDue('');
+            setFilter('em_curso');
+          }}
+        >
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            maxLength={140}
+            aria-label="Novo objetivo"
+            placeholder="Novo objetivo (ex.: receber orientado para a frente)"
+            className="ui-input col-span-2 min-w-0 text-xs"
+          />
+          <AreaSelect value={area} onChange={setArea} />
+          <DateTimePT
+            type="date"
+            value={due}
+            onChange={setDue}
+            label="Prazo (opcional)"
+            inputClassName="ui-input w-full text-xs"
+          />
+          <button type="submit" className="ui-btn ui-btn-primary col-span-2 text-xs">
+            Adicionar
+          </button>
+        </form>
+      )}
+    </section>
+  );
+};
+
+const AreaSelect: React.FC<{ value: EvaluationArea | ''; onChange: (a: EvaluationArea | '') => void }> = ({
+  value,
+  onChange
+}) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value as EvaluationArea | '')}
+    aria-label="Área do objetivo"
+    className="ui-input w-full text-xs"
+  >
+    <option value="">Área</option>
+    {EVALUATION_AREAS.map((a) => (
+      <option key={a.key} value={a.key}>
+        {a.short}
+      </option>
+    ))}
+  </select>
+);

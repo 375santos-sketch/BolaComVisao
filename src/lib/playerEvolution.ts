@@ -1,4 +1,4 @@
-import { EvaluationArea, Player, PlayerEvaluation, PlayerGoal } from '../types';
+import { EvaluationArea, GoalStatus, Player, PlayerEvaluation, PlayerGoal } from '../types';
 
 /**
  * 📈 Evolução do atleta: an evaluation from 1 to 5 in five areas every few weeks, and individual goals. Only for the
@@ -62,42 +62,93 @@ export function withoutEvaluation(player: Player, id: string): Player {
   return { ...player, evaluations: (player.evaluations || []).filter((e) => e.id !== id) };
 }
 
-/** Open goals first (oldest first), then the reached ones (most recent first). */
+/** D2: the state of a goal (older goals have none: reached when they have the day they were reached). */
+export const statusOf = (g: Pick<PlayerGoal, 'status' | 'doneAt'>): GoalStatus =>
+  g.status || (g.doneAt ? 'alcancado' : 'em_curso');
+
+/** D2: an open goal whose deadline has passed. */
+export const isOverdue = (g: PlayerGoal, today: string): boolean =>
+  statusOf(g) === 'em_curso' && Boolean(g.dueDate) && (g.dueDate as string) < today;
+
+/**
+ * Open goals first (nearest deadline first, then oldest), then the reached ones (most recent first), then the
+ * reformulated ones (most recent first).
+ */
 export function goalsOf(player: Pick<Player, 'individualGoals'>): PlayerGoal[] {
   const list = (Array.isArray(player.individualGoals) ? player.individualGoals : []).filter(
     (g) => g && typeof g.id === 'string' && typeof g.text === 'string' && g.text.trim()
   );
-  const open = list.filter((g) => !g.doneAt).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const done = list.filter((g) => g.doneAt).sort((a, b) => (b.doneAt || '').localeCompare(a.doneAt || ''));
-  return [...open, ...done];
+  const open = list
+    .filter((g) => statusOf(g) === 'em_curso')
+    .sort((a, b) => (a.dueDate || '9999').localeCompare(b.dueDate || '9999') || a.createdAt.localeCompare(b.createdAt));
+  const done = list
+    .filter((g) => statusOf(g) === 'alcancado')
+    .sort((a, b) => (b.doneAt || '').localeCompare(a.doneAt || ''));
+  const reformulated = list
+    .filter((g) => statusOf(g) === 'reformulado')
+    .sort((a, b) => (b.reformulatedAt || '').localeCompare(a.reformulatedAt || ''));
+  return [...open, ...done, ...reformulated];
 }
 
 export function withGoal(player: Player, goal: PlayerGoal): Player {
   const text = goal.text.trim().slice(0, 140);
   if (!text) return player;
+  const previous = (player.individualGoals || []).find((g) => g.id === goal.id);
   return {
     ...player,
     individualGoals: [
       ...(player.individualGoals || []).filter((g) => g.id !== goal.id),
-      { id: goal.id, text, createdAt: goal.createdAt, ...(goal.area ? { area: goal.area } : {}) }
+      {
+        ...(previous || {}),
+        id: goal.id,
+        text,
+        createdAt: goal.createdAt,
+        ...(goal.area ? { area: goal.area } : {}),
+        ...(goal.dueDate ? { dueDate: goal.dueDate } : {}),
+        status: statusOf(goal)
+      }
     ]
   };
 }
 
+const mapGoal = (player: Player, id: string, change: (g: PlayerGoal) => PlayerGoal): Player => ({
+  ...player,
+  individualGoals: (player.individualGoals || []).map((g) => (g.id === id ? change(g) : g))
+});
+
 /** Marks a goal as reached today, or opens it again. */
 export function toggledGoal(player: Player, id: string, today: string): Player {
-  return {
-    ...player,
-    individualGoals: (player.individualGoals || []).map((g) => {
-      if (g.id !== id) return g;
-      if (g.doneAt) {
-        const rest = { ...g };
-        delete rest.doneAt;
-        return rest;
-      }
-      return { ...g, doneAt: today };
-    })
-  };
+  return mapGoal(player, id, (g) => {
+    if (statusOf(g) === 'alcancado') {
+      const rest = { ...g, status: 'em_curso' as const };
+      delete rest.doneAt;
+      return rest;
+    }
+    return { ...g, status: 'alcancado', doneAt: today };
+  });
+}
+
+/** D2: the latest progress note of a goal (empty text removes it). */
+export function withGoalNote(player: Player, id: string, text: string, today: string): Player {
+  const clean = text.trim().slice(0, 200);
+  return mapGoal(player, id, (g) => {
+    const rest = { ...g };
+    delete rest.note;
+    delete rest.noteAt;
+    return clean ? { ...rest, note: clean, noteAt: today } : rest;
+  });
+}
+
+/** D2: reformulates a goal: the old one stays (reformulated, linked to the new one) and the new one starts. */
+export function reformulatedGoal(player: Player, id: string, next: PlayerGoal, today: string): Player {
+  if (!next.text.trim()) return player;
+  const withOld = mapGoal(player, id, (g) => ({
+    ...g,
+    status: 'reformulado',
+    reformulatedAt: today,
+    replacedBy: next.id
+  }));
+  return withGoal(withOld, { ...next, status: 'em_curso' });
 }
 
 export function withoutGoal(player: Player, id: string): Player {

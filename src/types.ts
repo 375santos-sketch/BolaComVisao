@@ -63,7 +63,19 @@ export interface PlayerGoal {
   createdAt: string;
   /** Day it was reached (YYYY-MM-DD). */
   doneAt?: string;
+  /** D2: in progress, reached or reformulated (absent on older goals: reached when doneAt is set). */
+  status?: GoalStatus;
+  /** D2: deadline (YYYY-MM-DD), optional. */
+  dueDate?: string;
+  /** D2: the latest progress note and its day. */
+  note?: string;
+  noteAt?: string;
+  /** D2: reformulated: the day, and the goal that replaced it. */
+  reformulatedAt?: string;
+  replacedBy?: string;
 }
+
+export type GoalStatus = 'em_curso' | 'alcancado' | 'reformulado';
 
 export type GoalType =
   | 'Canto'
