@@ -16,6 +16,9 @@ import {
 import { youtubeIdOf } from '../../lib/gameVideo';
 import { isReadOnlyRole } from '../../lib/orgPermissions';
 import { uid } from '../../lib/utils';
+import { PauseEditor } from './PauseEditor';
+import { ConductSession } from './ConductSession';
+import { pauseCount, withRun } from '../../lib/vjPauses';
 
 type Tab = 'equipa' | 'clube' | 'plataforma';
 
@@ -37,6 +40,7 @@ const VisaoDeJogoModal: React.FC<{
   const [status, setStatus] = useState<VjStatus | 'ativas'>('ativas');
   const [favorites, setFavorites] = useState(false);
   const [editing, setEditing] = useState<VjSession | null>(null);
+  const [conducting, setConducting] = useState<VjSession | null>(null);
   const now = () => new Date().toISOString();
 
   const saveAll = (next: VjSession[], msg?: string) => {
@@ -45,6 +49,16 @@ const VisaoDeJogoModal: React.FC<{
     if (msg) onShowToast(msg);
   };
   const save = (s: VjSession, msg?: string) => saveAll(withSession(sessions, cleanSession(s, now())), msg);
+
+  if (conducting) {
+    return (
+      <ConductSession
+        session={conducting}
+        onFinish={readOnly ? undefined : (run) => save(withRun(conducting, run), 'Respostas do grupo guardadas ✓')}
+        onClose={() => setConducting(null)}
+      />
+    );
+  }
 
   if (editing) {
     return (
@@ -165,7 +179,8 @@ const VisaoDeJogoModal: React.FC<{
                           {s.title}
                         </b>
                         <span className="text-[11px] text-ui-muted">
-                          {s.items.length} {s.items.length === 1 ? 'vídeo' : 'vídeos'}
+                          {s.items.length} {s.items.length === 1 ? 'vídeo' : 'vídeos'} · {pauseCount(s)}{' '}
+                          {pauseCount(s) === 1 ? 'pergunta' : 'perguntas'}
                           {team?.category ? ` · ${team.category}` : ''}
                           {s.authorName ? ` · ${s.authorName}` : ''}
                         </span>
@@ -184,6 +199,16 @@ const VisaoDeJogoModal: React.FC<{
                       </span>
                     </span>
                   </button>
+                  {s.status === 'publicado' && s.items.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setConducting(s)}
+                      className="ui-btn ui-btn-primary mt-1 w-full text-xs"
+                      aria-label={`Conduzir no treino: ${s.title}`}
+                    >
+                      ▶ Conduzir no treino
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -290,24 +315,32 @@ const SessionEditor: React.FC<{
           <span className="text-xs text-ui-muted">Vídeos</span>
           {draft.items.length === 0 && <p className="text-[11px] text-ui-muted">Ainda sem vídeos.</p>}
           {draft.items.map((it, i) => (
-            <div key={it.id} className="flex items-center justify-between gap-2 rounded-ui border border-ui-line p-2">
-              <span className="min-w-0 text-xs">
-                <b className="text-ui-text">▶ Vídeo {i + 1}</b>
-                <span className="block truncate text-[11px] text-ui-muted">
-                  youtube.com/watch?v={it.youtubeId}
-                  {it.label ? ` · ${it.label}` : ''}
+            <div key={it.id} className="space-y-1.5 rounded-ui border border-ui-line p-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="min-w-0 text-xs">
+                  <b className="text-ui-text">▶ Vídeo {i + 1}</b>
+                  <span className="block truncate text-[11px] text-ui-muted">
+                    youtube.com/watch?v={it.youtubeId}
+                    {it.label ? ` · ${it.label}` : ''}
+                  </span>
                 </span>
-              </span>
-              {!readOnly && (
-                <button
-                  type="button"
-                  aria-label={`Tirar o vídeo ${i + 1}`}
-                  onClick={() => set({ items: draft.items.filter((x) => x.id !== it.id) })}
-                  className="px-1 text-xs text-ui-muted hover:text-ui-danger"
-                >
-                  ✕
-                </button>
-              )}
+                {!readOnly && (
+                  <button
+                    type="button"
+                    aria-label={`Tirar o vídeo ${i + 1}`}
+                    onClick={() => set({ items: draft.items.filter((x) => x.id !== it.id) })}
+                    className="px-1 text-xs text-ui-muted hover:text-ui-danger"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <PauseEditor
+                item={it}
+                index={i}
+                readOnly={readOnly}
+                onChange={(pauses) => set({ items: draft.items.map((x) => (x.id === it.id ? { ...x, pauses } : x)) })}
+              />
             </div>
           ))}
           {!readOnly && (
@@ -349,9 +382,6 @@ const SessionEditor: React.FC<{
               >
                 + Vídeo
               </button>
-              <p className="text-[10px] text-ui-muted">
-                As pausas com perguntas em cada vídeo chegam na próxima parte da Visão de Jogo.
-              </p>
             </div>
           )}
         </div>
