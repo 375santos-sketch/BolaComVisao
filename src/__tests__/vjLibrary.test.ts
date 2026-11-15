@@ -9,6 +9,7 @@ import {
   duplicateSession,
   filterSessions,
   newSession,
+  platformActions,
   teamActions,
   teamCopyOf,
   withClubStatus,
@@ -147,5 +148,13 @@ describe('Visão de Jogo — biblioteca do clube (VJ3)', () => {
     const back = assembleState(records, { ...state, clubVjSessions: [] } as never);
     expect(back.clubVjSessions?.map((s) => s.id)).toEqual(['c1', 'c2']);
     expect(clubSessionsOf(back)[0]).toMatchObject({ status: 'revisao', authorUid: 'treinador1' });
+  });
+});
+
+describe('Visão de Jogo — biblioteca BolaComVisão (VJ4)', () => {
+  it('the platform Administrator publishes for every club, withdraws and publishes again', () => {
+    expect(platformActions('rascunho').map((a) => a.to)).toEqual(['publicado']);
+    expect(platformActions('publicado').map((a) => a.to)).toEqual(['rascunho', 'arquivado']);
+    expect(platformActions('arquivado').map((a) => a.to)).toEqual(['publicado']);
   });
 });

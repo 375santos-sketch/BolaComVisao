@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { COACH_A, FIRESTORE, owner } from './seed';
 import { enterPanel, login, navTo } from './helpers';
+import { PLATFORM_ADMIN, ensurePlatformAdmin } from './emulatorData';
 
 // 🎬 Visão de Jogo (VJ1): a session of the team, published, kept as the team's record in the cloud. Fictitious data.
 test('visão de jogo: sessão com vídeo e pausa com pergunta, publicar, conduzir no treino e guardar na nuvem', async ({
@@ -66,4 +67,36 @@ test('visão de jogo: sessão com vídeo e pausa com pergunta, publicar, conduzi
       { timeout: 30_000, message: 'a sessão no registo da equipa' }
     )
     .toBe(true);
+});
+
+// 🎬 VJ4: the platform Administrator publishes a session in the BolaComVisão library; a coach of any club uses it
+test('biblioteca BolaComVisão: o Administrador publica, o treinador usa na sua equipa', async ({ page, browser }) => {
+  await ensurePlatformAdmin();
+  await login(page, PLATFORM_ADMIN);
+  await enterPanel(page);
+  await navTo(page, /clube/i);
+  await page.getByRole('button', { name: /Visão de Jogo/ }).click();
+  const library = page.getByRole('dialog', { name: 'Visão de Jogo' });
+  await library.getByRole('tab', { name: 'BolaComVisão' }).click();
+  await library.getByRole('button', { name: '+ Nova sessão BolaComVisão' }).click();
+  const editor = page.getByRole('dialog', { name: 'Nova sessão' });
+  await editor.getByPlaceholder(/Onde receber/).fill('Largura e profundidade');
+  await editor.getByLabel('Link do vídeo do YouTube').fill('https://youtu.be/dQw4w9WgXcQ');
+  await editor.getByRole('button', { name: '+ Vídeo' }).click();
+  await editor.getByRole('button', { name: 'Publicar para todos os clubes' }).click();
+  await expect(page.getByText('Publicada ✓')).toBeVisible();
+  await expect(library.getByRole('list', { name: 'Sessões' })).toContainText('Largura e profundidade');
+
+  const coach = await (await browser.newContext()).newPage();
+  await login(coach, COACH_A);
+  await enterPanel(coach);
+  await navTo(coach, /clube/i);
+  await coach.getByRole('button', { name: /Visão de Jogo/ }).click();
+  const coachLibrary = coach.getByRole('dialog', { name: 'Visão de Jogo' });
+  await coachLibrary.getByRole('tab', { name: 'BolaComVisão' }).click();
+  await expect(coachLibrary.getByRole('button', { name: '+ Nova sessão BolaComVisão' })).toHaveCount(0);
+  await coachLibrary.getByRole('button', { name: 'Usar na minha equipa: Largura e profundidade' }).click();
+  await expect(coachLibrary.getByText('✓ Na minha equipa')).toBeVisible();
+  await coachLibrary.getByRole('tab', { name: 'Da equipa' }).click();
+  await expect(coachLibrary.getByRole('list', { name: 'Sessões' })).toContainText('Largura e profundidade');
 });
