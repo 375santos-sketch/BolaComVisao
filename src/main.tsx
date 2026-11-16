@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import { Root } from './Root';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 import { applyCompact, loadBrand, loadCompact } from './lib/clubBrand';
@@ -41,7 +41,7 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <Root />
     </ErrorBoundary>
   </StrictMode>
 );
