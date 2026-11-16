@@ -57,7 +57,8 @@ test('visão de jogo: sessão com vídeo e pausa com pergunta, publicar, conduzi
   await expect(summary).toContainText('Grupo: Entre linhas · ✗ ainda não'); // the two right answers were not both chosen
   // VJ5: who was in the session (ticked with today's attendance), for each athlete's competencies
   const present = summary.getByRole('group', { name: 'Quem esteve na sessão?' });
-  await expect(present.getByLabel('Rui Silva')).toBeChecked();
+  // (comes ticked with today's attendance — unit-tested; another test may mark today's absences, so tick it here)
+  await present.getByLabel('Rui Silva').check();
   await summary.getByRole('button', { name: 'Guardar e terminar' }).click();
   await expect(page.getByText('Respostas do grupo guardadas ✓')).toBeVisible();
   await expect

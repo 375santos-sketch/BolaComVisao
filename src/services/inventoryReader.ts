@@ -18,7 +18,17 @@ import {
 } from '../lib/inventory';
 
 /** Collections that are only counted (their content is not needed for the inventory). */
-const COUNTED_COLLECTIONS = ['team_workspaces', 'team_databases', 'clubs', 'audit_logs', 'system'];
+const COUNTED_COLLECTIONS = [
+  'team_workspaces',
+  'team_databases',
+  'clubs',
+  'audit_logs',
+  'system',
+  'platform_library',
+  'guardian_invites',
+  'family_views',
+  'guardians'
+];
 
 const reason = (err: unknown) => {
   const e = err as { code?: string; message?: string };

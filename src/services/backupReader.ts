@@ -14,7 +14,20 @@ const reason = (err: unknown) => {
 };
 
 /** Collections at the top that are copied whole. */
-const TOP_COLLECTIONS = ['users', 'admins', 'invitations', 'audit_logs', 'system', 'team_workspaces', 'clubs'];
+const TOP_COLLECTIONS = [
+  'users',
+  'admins',
+  'invitations',
+  'audit_logs',
+  'system',
+  'team_workspaces',
+  'clubs',
+  // VJ4: the BolaComVisão library; E1: the guardians' invitations (with their consents), pages and accounts
+  'platform_library',
+  'guardian_invites',
+  'family_views',
+  'guardians'
+];
 
 export async function readBackupDocuments(
   onProgress?: (text: string) => void

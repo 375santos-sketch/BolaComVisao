@@ -1009,7 +1009,8 @@ service cloud.firestore {
           get(/databases/$(database)/documents/guardian_invites/$(code)).data.status == 'accepted' &&
           get(/databases/$(database)/documents/guardian_invites/$(code)).data.get('acceptedBy', '') == request.auth.uid)
       );
-      allow list: if false;
+      // Only the platform Administrator lists them (for the encrypted copy)
+      allow list: if isMasterAdmin();
       allow create, update: if isValidId(code) &&
         exists(/databases/$(database)/documents/guardian_invites/$(code)) &&
         incoming().keys().hasOnly(['clubId', 'teamId', 'athleteId', 'view', 'updatedAt']) &&
@@ -1024,7 +1025,7 @@ service cloud.firestore {
     // The guardian's own account: their name and the invitations they accepted (nothing of the club)
     match /guardians/{uid} {
       allow get: if isOwner(uid) || isMasterAdmin();
-      allow list: if false;
+      allow list: if isMasterAdmin();
       allow create, update: if isOwner(uid) &&
         incoming().keys().hasOnly(['uid', 'name', 'email', 'codes', 'createdAt', 'updatedAt']) &&
         incoming().uid == uid && incoming().codes is list && incoming().codes.size() <= 6 &&
