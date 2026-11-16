@@ -937,6 +937,21 @@ service cloud.firestore {
       }
     }
 
+    // VJ4 — Biblioteca BolaComVisão: sessions of Visão de Jogo prepared by the platform for every club. Every approved
+    // account reads the published ones (copies them to its team); only the platform Administrator writes. Only videos
+    // without identifiable children (e.g. professional matches); no personal data.
+    match /platform_library/{sessionId} {
+      allow get, list: if isMasterAdmin() || (isApprovedUser() && resource.data.status == 'publicado');
+      allow create, update: if isMasterAdmin() && isValidId(sessionId) &&
+        incoming().keys().hasOnly(['status', 'session', 'updatedAt', 'updatedBy']) &&
+        incoming().keys().hasAll(['status', 'session', 'updatedAt']) &&
+        incoming().status in ['rascunho', 'publicado', 'arquivado'] &&
+        incoming().session is map && incoming().session.get('id', '') == sessionId &&
+        incoming().session.get('status', '') == incoming().status &&
+        incoming().updatedAt is number;
+      allow delete: if isMasterAdmin();
+    }
+
     // System configurations & metadata
     match /system/{docId} {
       allow read: if isAuthenticated();

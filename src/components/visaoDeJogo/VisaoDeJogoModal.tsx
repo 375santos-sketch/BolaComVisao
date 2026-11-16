@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AppState, VjSession, VjStatus } from '../../types';
 import { Sheet } from '../ui/Sheet';
 import { COMPETENCIES, competencyLabel } from '../../lib/competencies';
@@ -11,6 +11,7 @@ import {
   clubSessionForTeam,
   clubSessionsOf,
   newClubSession,
+  platformActions,
   teamCopyOf,
   withClubStatus,
   cleanSession,
@@ -24,10 +25,14 @@ import {
 } from '../../lib/vjLibrary';
 import { youtubeIdOf } from '../../lib/gameVideo';
 import { canPublishClubLibrary, isReadOnlyRole } from '../../lib/orgPermissions';
+import { isAppAdmin } from '../../services/cloudAuthService';
+import { cachedPlatformSessions, loadPlatformSessions, savePlatformSession } from '../../services/platformLibrary';
 import { uid } from '../../lib/utils';
 import { PauseEditor } from './PauseEditor';
 import { ConductSession } from './ConductSession';
 import { pauseCount, withRun } from '../../lib/vjPauses';
+import { defaultPresentIds, runScore } from '../../lib/vjCompetencies';
+import { localDateISO } from '../../lib/trainingQuick';
 
 type Tab = 'equipa' | 'clube' | 'plataforma';
 type Action = { to: VjStatus; label: string };
@@ -52,8 +57,33 @@ const VisaoDeJogoModal: React.FC<{
   const [competency, setCompetency] = useState('');
   const [status, setStatus] = useState<VjStatus | 'ativas'>('ativas');
   const [favorites, setFavorites] = useState(false);
-  const [editing, setEditing] = useState<{ session: VjSession; club: boolean } | null>(null);
-  const [conducting, setConducting] = useState<{ session: VjSession; club: boolean } | null>(null);
+  const [editing, setEditing] = useState<{ session: VjSession; scope: Tab } | null>(null);
+  const [conducting, setConducting] = useState<{ session: VjSession; scope: Tab } | null>(null);
+  // VJ4: the BolaComVisão library, read when its tab opens (the last copy read stays on the device for offline)
+  const admin = isAppAdmin(user);
+  const [platform, setPlatform] = useState<VjSession[]>(() => cachedPlatformSessions());
+  const [platformNote, setPlatformNote] = useState('');
+  const platformLoaded = useRef(false);
+  useEffect(() => {
+    if (tab !== 'plataforma' || platformLoaded.current) return;
+    platformLoaded.current = true;
+    let gone = false;
+    loadPlatformSessions(admin).then(
+      (list) => {
+        if (gone) return;
+        setPlatform(list);
+        setPlatformNote('');
+      },
+      () => {
+        if (gone) return;
+        platformLoaded.current = false;
+        setPlatformNote('Sem ligação: mostra a última cópia guardada neste aparelho.');
+      }
+    );
+    return () => {
+      gone = true;
+    };
+  }, [tab, admin]);
   const now = () => new Date().toISOString();
 
   const saveAll = (next: VjSession[], msg?: string) => {
@@ -62,6 +92,16 @@ const VisaoDeJogoModal: React.FC<{
     if (msg) onShowToast(msg);
   };
   const save = (s: VjSession, msg?: string) => saveAll(withSession(sessions, cleanSession(s, now())), msg);
+  const savePlatform = (s: VjSession, msg: string) => {
+    const clean = cleanSession(s, now());
+    savePlatformSession(clean).then(
+      () => {
+        setPlatform((list) => withSession(list, clean));
+        onShowToast(msg);
+      },
+      () => onShowToast('Não foi possível guardar na biblioteca BolaComVisão (sem ligação?).')
+    );
+  };
   const saveClub = (s: VjSession, msg?: string) => {
     onUpdateState({ clubVjSessions: withSession(club, cleanSession(s, now())) });
     if (msg) onShowToast(msg);
@@ -73,7 +113,8 @@ const VisaoDeJogoModal: React.FC<{
   };
 
   if (conducting) {
-    const { session, club: fromClub } = conducting;
+    const { session, scope } = conducting;
+    const fromClub = scope !== 'equipa';
     return (
       <ConductSession
         session={session}
@@ -88,11 +129,29 @@ const VisaoDeJogoModal: React.FC<{
               }
         }
         onClose={() => setConducting(null)}
+        athletes={(team?.roster || []).filter((p) => p.active !== false).map((p) => ({ id: p.id, name: p.name }))}
+        defaultPresent={defaultPresentIds(team?.roster || [], team?.trainings || [], localDateISO())}
       />
     );
   }
 
-  if (editing && editing.club) {
+  if (editing && editing.scope === 'plataforma') {
+    const s = editing.session;
+    return (
+      <SessionEditor
+        session={s}
+        readOnly={!admin}
+        actions={(d) => (admin ? platformActions(d.status) : [])}
+        onBack={() => setEditing(null)}
+        onSave={(next, msg) => {
+          savePlatform(next, msg);
+          setEditing(null);
+        }}
+      />
+    );
+  }
+
+  if (editing && editing.scope === 'clube') {
     const s = editing.session;
     const isNew = !club.some((x) => x.id === s.id);
     const canEdit = !isReadOnlyRole(user) && (isNew || canEditClubSession(s, viewer));
@@ -136,7 +195,7 @@ const VisaoDeJogoModal: React.FC<{
         onDuplicate={(s) => {
           const copy = duplicateSession(s, uid(), now());
           save(copy, 'Cópia criada: pode adaptá-la ✓');
-          setEditing({ session: copy, club: false });
+          setEditing({ session: copy, scope: 'equipa' });
         }}
         onDelete={(s) => {
           if (!window.confirm(`Apagar a sessão «${s.title}»?`)) return;
@@ -148,8 +207,14 @@ const VisaoDeJogoModal: React.FC<{
   }
 
   const isClub = tab === 'clube';
-  const pool = isClub ? club.filter((s) => canSeeClubSession(s, viewer)) : sessions;
-  const shown = filterSessions(pool, { competency: competency || undefined, status, favorites: !isClub && favorites });
+  const isPlatform = tab === 'plataforma';
+  const shared = isClub || isPlatform;
+  const pool = isPlatform
+    ? platform.filter((s) => admin || s.status === 'publicado')
+    : isClub
+      ? club.filter((s) => canSeeClubSession(s, viewer))
+      : sessions;
+  const shown = filterSessions(pool, { competency: competency || undefined, status, favorites: !shared && favorites });
   const used = [...new Set(pool.flatMap((s) => s.competencies))];
   const toReview = viewer.publishes ? club.filter((s) => s.status === 'revisao').length : 0;
   const switchTab = (next: Tab) => {
@@ -184,12 +249,16 @@ const VisaoDeJogoModal: React.FC<{
           ))}
         </div>
 
-        {tab === 'plataforma' ? (
-          <p className="ui-card p-4 text-xs text-ui-muted">
-            A biblioteca BolaComVisão (sessões preparadas pela plataforma) ainda está vazia.
-          </p>
-        ) : (
+        {
           <>
+            {isPlatform && (
+              <p className="text-[11px] text-ui-muted">
+                {admin
+                  ? 'Administrador: as sessões que publicar aqui ficam disponíveis para todos os clubes.'
+                  : 'Sessões preparadas pela BolaComVisão para todos os clubes. Use-as no treino ou copie-as para a sua equipa.'}
+                {platformNote ? ` ${platformNote}` : ''}
+              </p>
+            )}
             {isClub && (
               <p className="text-[11px] text-ui-muted">
                 {viewer.publishes
@@ -221,9 +290,9 @@ const VisaoDeJogoModal: React.FC<{
                 <option value="rascunho">Rascunhos</option>
                 {isClub && <option value="revisao">Em revisão</option>}
                 <option value="publicado">Publicadas</option>
-                {(!isClub || viewer.publishes) && <option value="arquivado">Arquivadas</option>}
+                {(isPlatform ? admin : !isClub || viewer.publishes) && <option value="arquivado">Arquivadas</option>}
               </select>
-              {!isClub && (
+              {!shared && (
                 <button
                   type="button"
                   aria-pressed={favorites}
@@ -239,9 +308,11 @@ const VisaoDeJogoModal: React.FC<{
               <p className="text-xs text-ui-muted">
                 {pool.length > 0
                   ? 'Nenhuma sessão com estes filtros.'
-                  : isClub
-                    ? 'A biblioteca do clube ainda está vazia.'
-                    : 'Ainda sem sessões. Uma sessão junta vídeos com pausas e perguntas para ver e discutir com a equipa.'}
+                  : isPlatform
+                    ? 'A biblioteca BolaComVisão ainda está vazia.'
+                    : isClub
+                      ? 'A biblioteca do clube ainda está vazia.'
+                      : 'Ainda sem sessões. Uma sessão junta vídeos com pausas e perguntas para ver e discutir com a equipa.'}
               </p>
             )}
             <ul className="space-y-2" aria-label="Sessões">
@@ -249,20 +320,20 @@ const VisaoDeJogoModal: React.FC<{
                 <li key={s.id}>
                   <SessionCard
                     session={s}
-                    detail={isClub ? undefined : team?.category}
-                    onOpen={() => setEditing({ session: s, club: isClub })}
+                    detail={shared ? undefined : team?.category}
+                    onOpen={() => setEditing({ session: s, scope: tab })}
                   />
                   {s.status === 'publicado' && s.items.length > 0 && (
                     <div className="mt-1 flex gap-1">
                       <button
                         type="button"
-                        onClick={() => setConducting({ session: s, club: isClub })}
+                        onClick={() => setConducting({ session: s, scope: tab })}
                         className="ui-btn ui-btn-primary flex-1 text-xs"
                         aria-label={`Conduzir no treino: ${s.title}`}
                       >
                         ▶ Conduzir no treino
                       </button>
-                      {isClub &&
+                      {shared &&
                         !readOnly &&
                         (teamCopyOf(sessions, s.id) ? (
                           <span className="ui-btn ui-btn-soft flex-1 text-xs text-ui-success">✓ Na minha equipa</span>
@@ -281,41 +352,61 @@ const VisaoDeJogoModal: React.FC<{
                 </li>
               ))}
             </ul>
-            {isClub
-              ? !isReadOnlyRole(user) && (
+            {isPlatform
+              ? admin && (
                   <button
                     type="button"
                     onClick={() =>
                       setEditing({
-                        session: newClubSession({ id: uid(), authorUid: user?.id, authorName: user?.name, now: now() }),
-                        club: true
+                        session: newSession({ id: uid(), title: '', authorName: 'BolaComVisão', now: now() }),
+                        scope: 'plataforma'
                       })
                     }
                     className="ui-btn ui-btn-primary w-full text-sm"
                   >
-                    {viewer.publishes ? '+ Nova sessão do clube' : '+ Propor sessão ao clube'}
+                    + Nova sessão BolaComVisão
                   </button>
                 )
-              : !readOnly && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setEditing({
-                        session: newSession({ id: uid(), title: '', authorName: user?.name, now: now() }),
-                        club: false
-                      })
-                    }
-                    className="ui-btn ui-btn-primary w-full text-sm"
-                  >
-                    + Nova sessão
-                  </button>
-                )}
+              : isClub
+                ? !isReadOnlyRole(user) && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditing({
+                          session: newClubSession({
+                            id: uid(),
+                            authorUid: user?.id,
+                            authorName: user?.name,
+                            now: now()
+                          }),
+                          scope: 'clube'
+                        })
+                      }
+                      className="ui-btn ui-btn-primary w-full text-sm"
+                    >
+                      {viewer.publishes ? '+ Nova sessão do clube' : '+ Propor sessão ao clube'}
+                    </button>
+                  )
+                : !readOnly && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditing({
+                          session: newSession({ id: uid(), title: '', authorName: user?.name, now: now() }),
+                          scope: 'equipa'
+                        })
+                      }
+                      className="ui-btn ui-btn-primary w-full text-sm"
+                    >
+                      + Nova sessão
+                    </button>
+                  )}
             <p className="text-[11px] text-ui-muted">
               🔒 Só vídeos sem crianças identificáveis (por exemplo, jogos profissionais). Os vídeos do clube com
               atletas chegam mais tarde, com autorização dos encarregados.
             </p>
           </>
-        )}
+        }
       </div>
     </Sheet>
   );
@@ -517,6 +608,25 @@ const SessionEditor: React.FC<{
           )}
         </div>
 
+        {(draft.runs || []).length > 0 && (
+          <section className="space-y-1" aria-label="Vezes conduzida">
+            <span className="text-xs text-ui-muted">Vezes conduzida</span>
+            {[...(draft.runs || [])].reverse().map((run) => {
+              const sc = runScore(draft, run);
+              return (
+                <p key={run.id} className="flex justify-between border-b border-ui-line py-1 text-[11px] text-ui-text">
+                  <span>
+                    {run.date.slice(8, 10)}/{run.date.slice(5, 7)}
+                    {run.presentIds ? ` · ${run.presentIds.length} atletas` : ''}
+                  </span>
+                  <span className={sc.asked && sc.right * 2 >= sc.asked ? 'text-ui-success' : 'text-ui-muted'}>
+                    {sc.asked ? `${sc.right}/${sc.asked} certas` : 'conversada em grupo'}
+                  </span>
+                </p>
+              );
+            })}
+          </section>
+        )}
         {!readOnly && (
           <div className="grid grid-cols-2 gap-2">
             <button

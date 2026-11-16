@@ -15,6 +15,7 @@ import {
 import { EVALUATION_AREAS } from '../../../lib/playerEvolution';
 import { localDateISO } from '../../../lib/trainingQuick';
 import { uid } from '../../../lib/utils';
+import { VjCompetencyStat, vjStatLine } from '../../../lib/vjCompetencies';
 
 const ddmm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 const AREAS = [
@@ -28,6 +29,22 @@ const LEVEL_CLS: Record<CompetencyLevel, string> = {
   4: 'bg-ui-success/15 text-ui-success'
 };
 
+/** VJ5: «🎬 Visão de Jogo · esteve em 3 sessões · o grupo acertou 5 de 7 perguntas», with a bar. */
+const VjLine: React.FC<{ stat: VjCompetencyStat }> = ({ stat }) => (
+  <div className="mt-1 text-[11px] text-ui-muted" aria-label="Visão de Jogo">
+    🎬 <b className="text-ui-text">Visão de Jogo</b> · {vjStatLine(stat)} · última {ddmm(stat.lastDate)} «
+    {stat.lastTitle}»
+    {stat.asked > 0 && (
+      <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-ui-surface-2">
+        <span
+          className="block h-full bg-ui-brand"
+          style={{ width: `${Math.round((stat.right / stat.asked) * 100)}%` }}
+        />
+      </span>
+    )}
+  </div>
+);
+
 /**
  * D1 — Avaliação por competência: the latest level of each competency (and the change against the athlete's own
  * evaluation before), the evaluations made (who and when), and the form: only the competencies chosen, four levels
@@ -38,7 +55,10 @@ export const CompetencyCard: React.FC<{
   evaluator?: { uid?: string; name?: string };
   startEvaluating?: boolean;
   onSave?: (next: Player, msg: string) => void;
-}> = ({ player, evaluator, startEvaluating = false, onSave }) => {
+  /** VJ5: the group's answers in the Visão de Jogo sessions this athlete was in, by competency. */
+  vjStats?: Record<string, VjCompetencyStat>;
+}> = ({ player, evaluator, startEvaluating = false, onSave, vjStats = {} }) => {
+  const vjOnly = Object.keys(vjStats).filter((id) => !currentLevels(player).some((c) => c.id === id));
   const [evaluating, setEvaluating] = useState(startEvaluating && !!onSave);
   const now = currentLevels(player);
   const evaluations = competencyEvaluationsOf(player);
@@ -97,29 +117,46 @@ export const CompetencyCard: React.FC<{
             <div className="mt-1 text-xs font-bold text-ui-brand">{area.label}</div>
             <ul className="divide-y divide-ui-line">
               {rows.map((c) => (
-                <li key={c.id} className="flex items-center justify-between gap-2 py-1.5 text-xs">
-                  <span className="text-ui-text">{competencyLabel(c.id)}</span>
-                  <span className="flex items-center gap-1.5">
-                    {c.previous && c.previous.level !== c.level ? (
-                      <span
-                        className={`text-[10px] font-bold ${c.level > c.previous.level ? 'text-ui-success' : 'text-ui-warning'}`}
-                      >
-                        {c.level > c.previous.level ? '▲' : '▼'} era {levelLabel(c.previous.level)} (
-                        {ddmm(c.previous.date)})
+                <li key={c.id} className="py-1.5 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-ui-text">{competencyLabel(c.id)}</span>
+                    <span className="flex items-center gap-1.5">
+                      {c.previous && c.previous.level !== c.level ? (
+                        <span
+                          className={`text-[10px] font-bold ${c.level > c.previous.level ? 'text-ui-success' : 'text-ui-warning'}`}
+                        >
+                          {c.level > c.previous.level ? '▲' : '▼'} era {levelLabel(c.previous.level)} (
+                          {ddmm(c.previous.date)})
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-ui-muted">{ddmm(c.date)}</span>
+                      )}
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${LEVEL_CLS[c.level]}`}>
+                        {levelLabel(c.level)}
                       </span>
-                    ) : (
-                      <span className="text-[10px] text-ui-muted">{ddmm(c.date)}</span>
-                    )}
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${LEVEL_CLS[c.level]}`}>
-                      {levelLabel(c.level)}
                     </span>
-                  </span>
+                  </div>
+                  {vjStats[c.id] && <VjLine stat={vjStats[c.id]} />}
                 </li>
               ))}
             </ul>
           </div>
         );
       })}
+
+      {vjOnly.length > 0 && (
+        <div aria-label="Só na Visão de Jogo">
+          <div className="mt-1 text-xs font-bold text-ui-brand">Só na Visão de Jogo (ainda sem avaliação)</div>
+          <ul className="divide-y divide-ui-line">
+            {vjOnly.map((id) => (
+              <li key={id} className="py-1.5 text-xs">
+                <span className="text-ui-text">{competencyLabel(id)}</span>
+                <VjLine stat={vjStats[id]} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {evaluations.length > 0 && (
         <ul aria-label="Avaliações por competência" className="space-y-1 border-t border-ui-line pt-2">

@@ -182,3 +182,22 @@ export const clubSessionForTeam = (s: VjSession, newId: string, now: string): Vj
 /** The team's copy of a club session, when the team already uses it. */
 export const teamCopyOf = (teamSessions: VjSession[], clubSessionId: string): VjSession | undefined =>
   teamSessions.find((t) => t.copiedFrom === clubSessionId && t.status !== 'arquivado');
+
+// ---------- VJ4: the BolaComVisão library ----------
+// Sessions prepared by the platform for every club: the platform Administrator publishes or withdraws them; the
+// coaches use them (conduct, or copy to their team).
+
+export function platformActions(status: VjStatus): Array<{ to: VjStatus; label: string }> {
+  switch (status) {
+    case 'rascunho':
+    case 'revisao':
+      return [{ to: 'publicado', label: 'Publicar para todos os clubes' }];
+    case 'publicado':
+      return [
+        { to: 'rascunho', label: 'Voltar a rascunho' },
+        { to: 'arquivado', label: 'Retirar (arquivar)' }
+      ];
+    case 'arquivado':
+      return [{ to: 'publicado', label: 'Publicar de novo' }];
+  }
+}

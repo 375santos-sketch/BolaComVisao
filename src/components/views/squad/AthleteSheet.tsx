@@ -10,6 +10,8 @@ import { PlayerSeasonSection } from './PlayerSeasonSection';
 import { AthleteCareer } from './AthleteCareer';
 import { PlayerTestsSection } from './PlayerTestsSection';
 import { PlayerEvolutionSection } from './PlayerEvolutionSection';
+import { vjStatsFor } from '../../../lib/vjCompetencies';
+import { sessionsOf } from '../../../lib/vjLibrary';
 import { StatsPanel } from '../../stats/StatsPanel';
 import { Avatar } from '../../ui/Avatar';
 import { AvailabilityPill } from '../../ui/AvailabilityPill';
@@ -89,6 +91,9 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
   const indicator = squadIndicators(state).get(player.id) || { callupShare: null, attendance: null };
   const evaluations = evaluationsOf(player);
   const [last, before] = evaluations;
+  // VJ5: the Visão de Jogo sessions of the team this athlete was in (the group's answers, by competency)
+  const vjTeam = (state.teams || []).find((t) => t.id === state.activeTeamId);
+  const vjStats = vjStatsFor(player.id, sessionsOf(vjTeam), vjTeam?.trainings || state.trainings || []);
   const age = computeAge(player.birthDate);
 
   // A tab shows its sections from the top (only the sheet scrolls, never the page behind)
@@ -328,6 +333,7 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
             part="avaliacoes"
             startEvaluating={evaluateNow > 0}
             evaluator={{ uid: state.currentUser?.id, name: state.currentUser?.name }}
+            vjStats={vjStats}
             player={player}
             onSavePlayer={onUpdateState ? savePlayer : undefined}
             onShowToast={onShowToast}

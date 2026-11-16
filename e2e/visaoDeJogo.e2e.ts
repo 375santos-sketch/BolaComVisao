@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { COACH_A, FIRESTORE, owner } from './seed';
 import { enterPanel, login, navTo } from './helpers';
+import { PLATFORM_ADMIN, ensurePlatformAdmin } from './emulatorData';
 
 // 🎬 Visão de Jogo (VJ1): a session of the team, published, kept as the team's record in the cloud. Fictitious data.
 test('visão de jogo: sessão com vídeo e pausa com pergunta, publicar, conduzir no treino e guardar na nuvem', async ({
@@ -54,6 +55,9 @@ test('visão de jogo: sessão com vídeo e pausa com pergunta, publicar, conduzi
   await conduct.getByRole('button', { name: 'Terminar' }).click();
   const summary = page.getByRole('dialog', { name: 'Resumo da sessão' });
   await expect(summary).toContainText('Grupo: Entre linhas · ✗ ainda não'); // the two right answers were not both chosen
+  // VJ5: who was in the session (ticked with today's attendance), for each athlete's competencies
+  const present = summary.getByRole('group', { name: 'Quem esteve na sessão?' });
+  await expect(present.getByLabel('Rui Silva')).toBeChecked();
   await summary.getByRole('button', { name: 'Guardar e terminar' }).click();
   await expect(page.getByText('Respostas do grupo guardadas ✓')).toBeVisible();
   await expect
@@ -61,9 +65,57 @@ test('visão de jogo: sessão com vídeo e pausa com pergunta, publicar, conduzi
       async () => {
         const res = await fetch(`${FIRESTORE}/club_workspace/clubA/records?pageSize=500`, { headers: owner });
         const raw = JSON.stringify(await res.json());
-        return raw.includes('"challenge"') && raw.includes('dQw4w9WgXcQ') && raw.includes('"runs"');
+        return (
+          raw.includes('"challenge"') &&
+          raw.includes('dQw4w9WgXcQ') &&
+          raw.includes('"runs"') &&
+          raw.includes('presentIds')
+        );
       },
       { timeout: 30_000, message: 'a sessão no registo da equipa' }
     )
     .toBe(true);
+  // …and the athlete's sheet shows it under the session's competency (beside the coach's evaluation, unchanged)
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('navigation', { name: 'Secções da ficha' }).getByRole('button', { name: 'Avaliação' }).click();
+  const evaluations = page.getByRole('region', { name: 'Avaliações' });
+  // (under the competency's evaluation, or in «Só na Visão de Jogo» when it has none yet: another test may evaluate it)
+  await expect(evaluations.getByLabel('Visão de Jogo', { exact: true }).first()).toContainText(
+    /esteve em \d+ sess(ão|ões) · o grupo acertou \d+ de \d+ pergunta/
+  );
+});
+
+// 🎬 VJ4: the platform Administrator publishes a session in the BolaComVisão library; a coach of any club uses it
+test('biblioteca BolaComVisão: o Administrador publica, o treinador usa na sua equipa', async ({ page, browser }) => {
+  await ensurePlatformAdmin();
+  await login(page, PLATFORM_ADMIN);
+  await enterPanel(page);
+  await navTo(page, /clube/i);
+  await page.getByRole('button', { name: /Visão de Jogo/ }).click();
+  const library = page.getByRole('dialog', { name: 'Visão de Jogo' });
+  await library.getByRole('tab', { name: 'BolaComVisão' }).click();
+  await library.getByRole('button', { name: '+ Nova sessão BolaComVisão' }).click();
+  const editor = page.getByRole('dialog', { name: 'Nova sessão' });
+  await editor.getByPlaceholder(/Onde receber/).fill('Largura e profundidade');
+  await editor.getByLabel('Link do vídeo do YouTube').fill('https://youtu.be/dQw4w9WgXcQ');
+  await editor.getByRole('button', { name: '+ Vídeo' }).click();
+  await editor.getByRole('button', { name: 'Publicar para todos os clubes' }).click();
+  await expect(page.getByText('Publicada ✓')).toBeVisible();
+  await expect(library.getByRole('list', { name: 'Sessões' })).toContainText('Largura e profundidade');
+
+  const coach = await (await browser.newContext()).newPage();
+  await login(coach, COACH_A);
+  await enterPanel(coach);
+  await navTo(coach, /clube/i);
+  await coach.getByRole('button', { name: /Visão de Jogo/ }).click();
+  const coachLibrary = coach.getByRole('dialog', { name: 'Visão de Jogo' });
+  await coachLibrary.getByRole('tab', { name: 'BolaComVisão' }).click();
+  await expect(coachLibrary.getByRole('button', { name: '+ Nova sessão BolaComVisão' })).toHaveCount(0);
+  await coachLibrary.getByRole('button', { name: 'Usar na minha equipa: Largura e profundidade' }).click();
+  await expect(coachLibrary.getByText('✓ Na minha equipa')).toBeVisible();
+  await coachLibrary.getByRole('tab', { name: 'Da equipa' }).click();
+  await expect(coachLibrary.getByRole('list', { name: 'Sessões' })).toContainText('Largura e profundidade');
 });
