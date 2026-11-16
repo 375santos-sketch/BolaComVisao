@@ -283,7 +283,12 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
         onOpenSync={onOpenSync}
         unreadNotificationsCount={(state.notifications || []).filter((n) => !n.read).length}
         syncInfo={state.syncInfo}
-        clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
+        clubInfo={{
+          clubName: state.myClubName,
+          category: state.category,
+          season: state.season,
+          logoUrl: state.clubLogoUrl
+        }}
       />
 
       {/* Análise 360°: the title over the stadium, and Exportar always at hand */}

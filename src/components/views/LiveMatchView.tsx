@@ -174,7 +174,12 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           onOpenSync={onOpenSync}
           unreadNotificationsCount={(state.notifications || []).filter((n) => !n.read).length}
           syncInfo={state.syncInfo}
-          clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
+          clubInfo={{
+            clubName: state.myClubName,
+            category: state.category,
+            season: state.season,
+            logoUrl: state.clubLogoUrl
+          }}
         />
         <div className="text-center mt-12 px-4">
           <div className="ui-card p-8 max-w-md mx-auto">
@@ -316,7 +321,12 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         onOpenSync={onOpenSync}
         unreadNotificationsCount={(state.notifications || []).filter((n) => !n.read).length}
         syncInfo={state.syncInfo}
-        clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
+        clubInfo={{
+          clubName: state.myClubName,
+          category: state.category,
+          season: state.season,
+          logoUrl: state.clubLogoUrl
+        }}
         hasActiveMatch={true}
       />
 

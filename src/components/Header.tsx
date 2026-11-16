@@ -1,6 +1,5 @@
 import React from 'react';
 import { Language, UserAccount, SyncState } from '../types';
-import logoImg from '../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { isAppAdmin } from '../services/cloudAuthService';
 import { TabType } from './Navbar';
 import { getActiveCategory } from './navCategory';
@@ -25,9 +24,18 @@ interface HeaderProps {
   syncInfo?: SyncState;
   currentUser?: UserAccount | null;
   onLogout?: () => void;
-  clubInfo?: { clubName: string; category?: string; season?: string };
+  clubInfo?: { clubName: string; category?: string; season?: string; logoUrl?: string };
   hasActiveMatch?: boolean;
 }
+
+const clubInitials = (name?: string) =>
+  (name || 'Clube')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 || /^[A-Z]/.test(w))
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase() || 'C';
 
 export const Header: React.FC<HeaderProps> = ({
   title,
@@ -69,12 +77,22 @@ export const Header: React.FC<HeaderProps> = ({
             title="Ir para o Início"
             aria-label="Início BolaComVisão"
           >
-            <img
-              src={logoImg}
-              alt="BolaComVisão Logo"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border-2 border-cyan-400/80"
-              referrerPolicy="no-referrer"
-            />
+            {/* The club's crest at the top of every page (its initials until the club has one) */}
+            {clubInfo?.logoUrl ? (
+              <img
+                src={clubInfo.logoUrl}
+                alt="Emblema do clube"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-contain bg-ui-inset p-0.5 border-2 border-ui-line-strong"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <span
+                aria-label="Emblema do clube"
+                className="grid w-8 h-8 sm:w-9 sm:h-9 place-items-center rounded-xl border-2 border-ui-line-strong bg-ui-inset text-[11px] font-black text-ui-text"
+              >
+                {clubInitials(clubInfo?.clubName)}
+              </span>
+            )}
             {hasActiveMatch && (
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping border border-slate-950" />
             )}
