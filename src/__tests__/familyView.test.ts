@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { activeInvites, canInviteGuardians, canInviteMore, familyViewOf, inviteMessage } from '../lib/familyView';
+import {
+  activeInvites,
+  canInviteGuardians,
+  canInviteMore,
+  familySessionsOf,
+  familyViewOf,
+  inviteMessage
+} from '../lib/familyView';
 import { normalizeClubState } from '../lib/storage';
 
 // Fictitious data, only for this test
@@ -73,5 +80,49 @@ describe('E1 — página do educando', () => {
     expect(
       inviteMessage({ id: 'abc', athleteName: 'Atleta Um', clubName: 'Clube Exemplo' }, 'https://app.exemplo')
     ).toContain('https://app.exemplo/encarregado?c=abc');
+  });
+});
+
+describe('VJ6 — Visão de Jogo para ver em casa', () => {
+  const s = (id: string, status: string, updatedAt: string, items = 1) =>
+    ({
+      id,
+      format: 'sessao',
+      title: `Sessão ${id}`,
+      competencies: ['decisao'],
+      status,
+      items: Array.from({ length: items }, (_, i) => ({
+        id: `v${i}`,
+        kind: 'video',
+        youtubeId: 'dQw4w9WgXcQ',
+        pauses: [{ id: 'q1', at: 10, kind: 'escolha', question: 'Onde?', options: [] }]
+      })),
+      runs: [{ id: 'r1', date: '2026-11-10', answers: { q1: ['a'] }, presentIds: ['p1', 'p2'] }],
+      authorUid: 'treinador1',
+      favorite: true,
+      createdAt: updatedAt,
+      updatedAt
+    }) as never;
+
+  it('only published sessions with videos, the latest 5, never the runs nor who was there', () => {
+    const list = familySessionsOf([
+      s('a', 'publicado', '2026-11-01'),
+      s('b', 'rascunho', '2026-11-15'),
+      s('c', 'publicado', '2026-11-02', 0),
+      ...['d', 'e', 'f', 'g', 'h'].map((id, i) => s(id, 'publicado', `2026-11-1${i}`))
+    ]);
+    expect(list.map((x) => x.id)).toEqual(['h', 'g', 'f', 'e', 'd']);
+    const raw = JSON.stringify(list);
+    for (const secret of ['presentIds', 'runs', 'treinador1', 'favorite', 'p1']) expect(raw).not.toContain(secret);
+    expect(list[0].items[0].pauses?.[0].question).toBe('Onde?');
+  });
+
+  it("the family page carries them (the team's own copies of club and BolaComVisão sessions too)", () => {
+    const withTeam = {
+      ...state,
+      teams: [{ ...(state.teams || [])[0], id: 'eq1', vjSessions: [s('t1', 'publicado', '2026-11-10')] }]
+    } as never;
+    expect(familyViewOf(withTeam, state.roster[0], today).vjSessions?.map((x) => x.id)).toEqual(['t1']);
+    expect(familyViewOf(state, state.roster[0], today).vjSessions).toBeUndefined();
   });
 });

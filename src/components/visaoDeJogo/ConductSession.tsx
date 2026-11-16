@@ -20,7 +20,9 @@ export const ConductSession: React.FC<{
   athletes?: Array<{ id: string; name: string }>;
   /** Who comes ticked: the athletes at today's training. */
   defaultPresent?: string[];
-}> = ({ session, onFinish, onClose, athletes = [], defaultPresent = [] }) => {
+  /** VJ6: watched at home by the family (the answers stay on that phone; nothing is saved). */
+  home?: boolean;
+}> = ({ session, onFinish, onClose, athletes = [], defaultPresent = [], home = false }) => {
   const [present, setPresent] = useState<string[]>(defaultPresent);
   const [itemIndex, setItemIndex] = useState(0);
   const [done, setDone] = useState<Set<string>>(new Set());
@@ -83,8 +85,10 @@ export const ConductSession: React.FC<{
                     {!a
                       ? 'não respondida'
                       : p.kind === 'aberta'
-                        ? 'conversada em grupo'
-                        : `Grupo: ${labels.join(' + ') || '—'} · ${got ? '✓ certo' : '✗ ainda não'}`}
+                        ? home
+                          ? 'conversada em casa'
+                          : 'conversada em grupo'
+                        : `${home ? 'Resposta' : 'Grupo'}: ${labels.join(' + ') || '—'} · ${got ? '✓ certo' : '✗ ainda não'}`}
                   </span>
                 </li>
               );
@@ -128,7 +132,9 @@ export const ConductSession: React.FC<{
             {onFinish && Object.keys(answers).length ? 'Guardar e terminar' : 'Terminar'}
           </button>
           <p className="text-[11px] text-ui-muted">
-            Fica guardada a resposta do grupo e quem esteve, nunca uma resposta de cada criança.
+            {home
+              ? 'As respostas ficam só neste telemóvel: o clube não recebe nada.'
+              : 'Fica guardada a resposta do grupo e quem esteve, nunca uma resposta de cada criança.'}
           </p>
         </div>
       </Sheet>
@@ -136,7 +142,7 @@ export const ConductSession: React.FC<{
   }
 
   return (
-    <Sheet title="Conduzir no treino" onClose={onClose} size="lg">
+    <Sheet title={home ? 'Ver em casa' : 'Conduzir no treino'} onClose={onClose} size="lg">
       <div className="space-y-2">
         <p className="text-[11px] text-ui-muted">
           {session.title} · vídeo {itemIndex + 1} de {session.items.length}

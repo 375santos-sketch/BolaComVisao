@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -18,6 +18,12 @@ import {
   setVideoConsent
 } from '../services/guardians';
 import { FamilyView, GuardianInvite } from '../lib/familyView';
+import { VjSession } from '../types';
+
+// VJ6: the player of the Visão de Jogo sessions, loaded only when a session is opened
+const ConductSession = lazy(() =>
+  import('../components/visaoDeJogo/ConductSession').then((m) => ({ default: m.ConductSession }))
+);
 
 /**
  * E1 — Área do encarregado de educação (/encarregado): create the account with the coach's invitation (and the
@@ -303,6 +309,7 @@ const MyChildren: React.FC<{ account: GuardianAccount | null }> = ({ account }) 
 const ChildCard: React.FC<{ code: string }> = ({ code }) => {
   const [state, setState] = useState<{ invite: GuardianInvite | null; view: FamilyView | null } | undefined>();
   const [msg, setMsg] = useState('');
+  const [watching, setWatching] = useState<VjSession | null>(null);
 
   useEffect(() => {
     let gone = false;
@@ -362,6 +369,33 @@ const ChildCard: React.FC<{ code: string }> = ({ code }) => {
           Treinos: {view.trainings.attended} de {view.trainings.total}
         </p>
       </div>
+      {watching && (
+        <Suspense fallback={<p className="text-sm text-ui-muted">A abrir…</p>}>
+          <ConductSession session={watching} home onClose={() => setWatching(null)} />
+        </Suspense>
+      )}
+      {(view.vjSessions || []).length > 0 && (
+        <div className="ui-card space-y-1.5 p-4" aria-label="Para ver em casa">
+          <p className="text-sm font-bold">🎬 Para ver em casa</p>
+          <p className="text-[11px] text-ui-muted">
+            Sessões da Visão de Jogo da equipa: o vídeo para e faz perguntas. As respostas ficam só neste telemóvel.
+          </p>
+          {(view.vjSessions || []).map((s) => {
+            const n = s.items.reduce((k, i) => k + (i.pauses?.length || 0), 0);
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setWatching(s)}
+                className="ui-btn ui-btn-soft w-full text-left text-xs"
+                aria-label={`Ver em casa: ${s.title}`}
+              >
+                ▶ {s.title} · {n} {n === 1 ? 'pergunta' : 'perguntas'}
+              </button>
+            );
+          })}
+        </div>
+      )}
       {view.seasonMessage && (
         <div className="ui-card p-4">
           <p className="text-sm font-bold">Mensagem do treinador</p>
