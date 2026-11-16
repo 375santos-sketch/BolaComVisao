@@ -1,4 +1,5 @@
-import { AppState, Player } from '../types';
+import { AppState, Player, VjSession } from '../types';
+import { sessionsOf } from './vjLibrary';
 import { calendarEventsOf } from '../hooks/useCalendarPublisher';
 
 /**
@@ -50,7 +51,37 @@ export interface FamilyView {
   next: FamilyEvent[];
   trainings: { attended: number; total: number };
   seasonMessage?: string;
+  /** VJ6: the team's published Visão de Jogo sessions (the latest 5), to watch at home. Only the videos and the
+   *  questions: never the runs nor who was there. */
+  vjSessions?: VjSession[];
   updatedAt: number;
+}
+
+export const FAMILY_SESSIONS = 5;
+
+/** The latest published sessions of the team, stripped to what a family may see. */
+export function familySessionsOf(sessions: VjSession[]): VjSession[] {
+  return sessions
+    .filter((s) => s.status === 'publicado' && s.items.length > 0)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, FAMILY_SESSIONS)
+    .map((s) => ({
+      id: s.id,
+      format: 'sessao',
+      title: s.title,
+      ...(s.objective ? { objective: s.objective } : {}),
+      competencies: s.competencies,
+      status: 'publicado',
+      items: s.items.map((i) => ({
+        id: i.id,
+        kind: i.kind,
+        youtubeId: i.youtubeId,
+        ...(i.label ? { label: i.label } : {}),
+        pauses: i.pauses || []
+      })),
+      createdAt: s.createdAt,
+      updatedAt: s.updatedAt
+    }));
 }
 
 /** The invitations that still hold a place (at most 2 per athlete). */
@@ -89,6 +120,8 @@ export function familyViewOf(state: AppState, player: Player, today = new Date()
     (t) => t.date.slice(0, 10) <= day && t.completed !== false && (!t.season || t.season === state.season)
   );
   const message = player.seasonMessages?.[state.season]?.trim();
+  const team = (state.teams || []).find((t) => t.id === state.activeTeamId);
+  const vjSessions = familySessionsOf(sessionsOf(team));
   return {
     athleteName: player.name,
     teamName: [state.category].filter(Boolean).join(' ') || 'Equipa',
@@ -97,6 +130,7 @@ export function familyViewOf(state: AppState, player: Player, today = new Date()
     next,
     trainings: { attended: done.filter((t) => !(t.absences || []).includes(player.id)).length, total: done.length },
     ...(message ? { seasonMessage: message.slice(0, 2000) } : {}),
+    ...(vjSessions.length ? { vjSessions } : {}),
     updatedAt: today.getTime()
   };
 }
