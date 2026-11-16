@@ -244,7 +244,7 @@ const AcceptInvite: React.FC<{ code: string; onDone: () => void }> = ({ code, on
       }}
     >
       <div>
-        <p className="text-base font-extrabold">Bem-vindo ao {invite.clubName || 'clube'}</p>
+        <p className="text-base font-extrabold">Convite · {invite.clubName || 'clube'}</p>
         <p className="text-xs text-ui-muted">
           Encarregado de educação de <b className="text-ui-text">{invite.athleteName}</b>
           {invite.teamName ? ` · ${invite.teamName}` : ''}
