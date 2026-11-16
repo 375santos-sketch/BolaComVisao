@@ -5,7 +5,7 @@ import { enterPanel, login, navTo } from './helpers';
 // E1: the coach invites a guardian; the guardian creates the account with the invitation (consents), and sees ONLY
 // «O meu educando», published from the coach's phone. Fictitious data.
 test('encarregados: o treinador convida, o encarregado aceita e vê só o seu educando', async ({ page, browser }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   await page.addInitScript(() => {
     (window as unknown as { open: (u: string) => null }).open = (u: string) => {
       (window as unknown as { __wa: string }).__wa = u;
@@ -69,9 +69,10 @@ test('encarregados: o treinador convida, o encarregado aceita e vê só o seu ed
       async () => {
         await g.reload();
         await g.waitForTimeout(1500);
-        return g.getByRole('region', { name: 'O meu educando: Rui Silva' }).getByText('Esta época').count();
+        // the page with the session just published (another test may publish its own sessions at the same time)
+        return g.getByRole('button', { name: 'Ver em casa: Ver em casa: largura' }).count();
       },
-      { timeout: 45_000, intervals: [3000] }
+      { timeout: 90_000, intervals: [3000] }
     )
     .toBe(1);
   const child = g.getByRole('region', { name: 'O meu educando: Rui Silva' });

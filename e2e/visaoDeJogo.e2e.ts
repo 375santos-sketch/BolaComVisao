@@ -12,7 +12,6 @@ test('visão de jogo: sessão com vídeo e pausa com pergunta, publicar, conduzi
   await navTo(page, /clube/i);
   await page.getByRole('button', { name: /Visão de Jogo/ }).click();
   const library = page.getByRole('dialog', { name: 'Visão de Jogo' });
-  await expect(library).toContainText('Ainda sem sessões');
   await library.getByRole('button', { name: '+ Nova sessão' }).click();
   const editor = page.getByRole('dialog', { name: 'Nova sessão' });
   await editor.getByPlaceholder(/Onde receber/).fill('Onde receber? (receção orientada)');
