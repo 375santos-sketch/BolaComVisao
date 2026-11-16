@@ -204,7 +204,12 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
           onOpenSync={onOpenSync}
           unreadNotificationsCount={(state.notifications || []).filter((n) => !n.read).length}
           syncInfo={state.syncInfo}
-          clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
+          clubInfo={{
+            clubName: state.myClubName,
+            category: state.category,
+            season: state.season,
+            logoUrl: state.clubLogoUrl
+          }}
         />
         <div className="card text-center py-8">
           <div className="text-4xl mb-3">📋</div>
@@ -239,7 +244,12 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
         onOpenSync={onOpenSync}
         unreadNotificationsCount={(state.notifications || []).filter((n) => !n.read).length}
         syncInfo={state.syncInfo}
-        clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
+        clubInfo={{
+          clubName: state.myClubName,
+          category: state.category,
+          season: state.season,
+          logoUrl: state.clubLogoUrl
+        }}
       />
 
       {/* The game: who, when, where, and how far the call-up is */}

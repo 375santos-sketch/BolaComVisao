@@ -70,7 +70,12 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           onOpenSync={onOpenSync}
           unreadNotificationsCount={(state.notifications || []).filter((n) => !n.read).length}
           syncInfo={state.syncInfo}
-          clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
+          clubInfo={{
+            clubName: state.myClubName,
+            category: state.category,
+            season: state.season,
+            logoUrl: state.clubLogoUrl
+          }}
         />
 
         <div className="empty mt-10">{t(state.lang, 'res_none')}</div>
@@ -129,7 +134,12 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         onOpenSync={onOpenSync}
         unreadNotificationsCount={(state.notifications || []).filter((n) => !n.read).length}
         syncInfo={state.syncInfo}
-        clubInfo={{ clubName: state.myClubName, category: state.category, season: state.season }}
+        clubInfo={{
+          clubName: state.myClubName,
+          category: state.category,
+          season: state.season,
+          logoUrl: state.clubLogoUrl
+        }}
       />
 
       {mvpMatch && (

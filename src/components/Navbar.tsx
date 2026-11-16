@@ -161,9 +161,7 @@ const SideMenu: React.FC<Omit<NavbarProps, 'lang'>> = ({
       className="hidden lg:flex fixed inset-y-0 left-0 z-40 w-60 flex-col border-r border-ui-line bg-ui-surface pt-[max(1.25rem,env(safe-area-inset-top,0px))] pb-4"
     >
       <div className="flex items-center gap-2.5 px-5 pb-5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-ui bg-ui-brand text-ui-brand-ink" aria-hidden>
-          <Icon name="ball" className="h-5 w-5" strokeWidth={2.4} />
-        </span>
+        <img src="/icons/icon-192.png" alt="" aria-hidden className="h-9 w-9 shrink-0 rounded-ui object-cover" />
         <span>
           <span className="block text-ui-lead font-extrabold leading-none text-ui-text">BolaComVisão</span>
           <span className="whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.1em] text-ui-muted">

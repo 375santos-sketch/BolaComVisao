@@ -62,6 +62,12 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
         onOpenSettings={onOpenSettings}
         onOpenNotifications={onOpenNotifications}
         onOpenSync={onOpenSync}
+        clubInfo={{
+          clubName: state.myClubName,
+          category: state.category,
+          season: state.season,
+          logoUrl: state.clubLogoUrl
+        }}
       />
 
       {!game ? (
