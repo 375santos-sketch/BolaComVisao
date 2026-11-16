@@ -937,6 +937,102 @@ service cloud.firestore {
       }
     }
 
+    // E1 — Contas dos encarregados de educação. The guardian NEVER reads the club's data: the coaches' phones publish
+    // a page per accepted invitation (family_views/{code}) with only what the family may see. The invitation is
+    // one-use, for ONE athlete, expires in 7 days, and records the consents. Created by the team's coach or the
+    // director (owner/admin too); the guardian only accepts it, changes the video consent or leaves.
+    function invitesGuardians(clubId, teamId) {
+      return isAuthenticated() && (
+        isMasterAdmin() ||
+        (memberSeesTeam(clubId, teamId) && myOrgRole(clubId) in ['owner', 'admin', 'diretor', 'treinador']) ||
+        (!hasOrgMembership(clubId) && legacyClubAccess(clubId))
+      );
+    }
+
+    function writesFamilyView(clubId, teamId) {
+      return isAuthenticated() && (
+        isMasterAdmin() ||
+        memberWritesTeam(clubId, teamId) ||
+        (!hasOrgMembership(clubId) && legacyClubAccess(clubId))
+      );
+    }
+
+    function isValidGuardianInvite(d) {
+      return d.keys().hasOnly(['id', 'clubId', 'teamId', 'athleteId', 'athleteName', 'teamName', 'clubName',
+          'createdBy', 'createdAt', 'expiresAt', 'status', 'acceptedBy', 'acceptedAt', 'consentData', 'consentVideo',
+          'consentAt', 'revokedAt', 'revokedBy']) &&
+        d.keys().hasAll(['id', 'clubId', 'teamId', 'athleteId', 'athleteName', 'createdBy', 'createdAt', 'expiresAt',
+          'status']) &&
+        d.clubId is string && d.clubId.size() <= 128 && d.teamId is string && d.teamId.size() <= 128 &&
+        d.athleteId is string && d.athleteId.size() <= 128 &&
+        d.athleteName is string && d.athleteName.size() <= 120 &&
+        d.get('teamName', '') is string && d.get('teamName', '').size() <= 120 &&
+        d.get('clubName', '') is string && d.get('clubName', '').size() <= 120 &&
+        d.createdAt is number && d.expiresAt is number &&
+        d.status in ['pending', 'accepted', 'revoked', 'left'];
+    }
+
+    match /guardian_invites/{code} {
+      // The code is the secret (24 random characters): whoever has it sees who the invitation is for
+      allow get: if isAuthenticated() && code.size() >= 20;
+      allow list: if invitesGuardians(resource.data.clubId, resource.data.teamId);
+      allow create: if isValidId(code) && code.size() >= 20 && isValidGuardianInvite(incoming()) &&
+        incoming().id == code && incoming().status == 'pending' && incoming().createdBy == request.auth.uid &&
+        incoming().expiresAt <= request.time.toMillis() + 8 * 86400000 &&
+        invitesGuardians(incoming().clubId, incoming().teamId);
+      allow update: if isValidGuardianInvite(incoming()) && (
+        // The coach (or the director) takes the access away
+        (invitesGuardians(resource.data.clubId, resource.data.teamId) &&
+          incoming().status == 'revoked' && incoming().revokedBy == request.auth.uid &&
+          incoming().diff(resource.data).affectedKeys().hasOnly(['status', 'revokedAt', 'revokedBy'])) ||
+        // The guardian accepts it once, before it expires, with the data consent (the video one is optional)
+        (isAuthenticated() && resource.data.status == 'pending' &&
+          resource.data.expiresAt > request.time.toMillis() &&
+          incoming().status == 'accepted' && incoming().acceptedBy == request.auth.uid &&
+          incoming().consentData == true && incoming().consentVideo is bool &&
+          incoming().diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedBy', 'acceptedAt', 'consentData',
+            'consentVideo', 'consentAt'])) ||
+        // …later changes the video consent, or leaves
+        (isAuthenticated() && resource.data.status == 'accepted' &&
+          resource.data.acceptedBy == request.auth.uid &&
+          incoming().acceptedBy == request.auth.uid &&
+          incoming().status in ['accepted', 'left'] && incoming().consentVideo is bool &&
+          incoming().diff(resource.data).affectedKeys().hasOnly(['status', 'consentVideo', 'consentAt']))
+      );
+      allow delete: if false;
+    }
+
+    match /family_views/{code} {
+      allow get: if isAuthenticated() && (
+        isMasterAdmin() ||
+        (exists(/databases/$(database)/documents/guardian_invites/$(code)) &&
+          get(/databases/$(database)/documents/guardian_invites/$(code)).data.status == 'accepted' &&
+          get(/databases/$(database)/documents/guardian_invites/$(code)).data.get('acceptedBy', '') == request.auth.uid)
+      );
+      // Only the platform Administrator lists them (for the encrypted copy)
+      allow list: if isMasterAdmin();
+      allow create, update: if isValidId(code) &&
+        exists(/databases/$(database)/documents/guardian_invites/$(code)) &&
+        incoming().keys().hasOnly(['clubId', 'teamId', 'athleteId', 'view', 'updatedAt']) &&
+        incoming().view is map && incoming().updatedAt is number &&
+        incoming().clubId == get(/databases/$(database)/documents/guardian_invites/$(code)).data.clubId &&
+        incoming().teamId == get(/databases/$(database)/documents/guardian_invites/$(code)).data.teamId &&
+        incoming().athleteId == get(/databases/$(database)/documents/guardian_invites/$(code)).data.athleteId &&
+        writesFamilyView(incoming().clubId, incoming().teamId);
+      allow delete: if writesFamilyView(resource.data.clubId, resource.data.teamId);
+    }
+
+    // The guardian's own account: their name and the invitations they accepted (nothing of the club)
+    match /guardians/{uid} {
+      allow get: if isOwner(uid) || isMasterAdmin();
+      allow list: if isMasterAdmin();
+      allow create, update: if isOwner(uid) &&
+        incoming().keys().hasOnly(['uid', 'name', 'email', 'codes', 'createdAt', 'updatedAt']) &&
+        incoming().uid == uid && incoming().codes is list && incoming().codes.size() <= 6 &&
+        incoming().get('name', '') is string && incoming().get('name', '').size() <= 120;
+      allow delete: if isOwner(uid);
+    }
+
     // VJ4 — Biblioteca BolaComVisão: sessions of Visão de Jogo prepared by the platform for every club. Every approved
     // account reads the published ones (copies them to its team); only the platform Administrator writes. Only videos
     // without identifiable children (e.g. professional matches); no personal data.

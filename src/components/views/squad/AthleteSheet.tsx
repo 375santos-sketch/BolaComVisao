@@ -12,6 +12,9 @@ import { PlayerTestsSection } from './PlayerTestsSection';
 import { PlayerEvolutionSection } from './PlayerEvolutionSection';
 import { vjStatsFor } from '../../../lib/vjCompetencies';
 import { sessionsOf } from '../../../lib/vjLibrary';
+import { canInviteGuardians } from '../../../lib/familyView';
+
+const GuardiansCard = lazy(() => import('./GuardiansCard'));
 import { StatsPanel } from '../../stats/StatsPanel';
 import { Avatar } from '../../ui/Avatar';
 import { AvailabilityPill } from '../../ui/AvailabilityPill';
@@ -541,6 +544,13 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
               text="Os números aparecem com os primeiros treinos e jogos."
             />
           )}
+          {canInviteGuardians(state.currentUser) &&
+            state.currentUser?.id &&
+            !state.currentUser.id.startsWith('guest-') && (
+              <Suspense fallback={null}>
+                <GuardiansCard state={state} player={player} onShowToast={onShowToast} />
+              </Suspense>
+            )}
         </section>
       </div>
 

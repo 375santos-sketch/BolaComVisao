@@ -523,6 +523,18 @@ export default function App() {
   // Real-time cloud sync for multi-device use: the legacy single document or per-record storage (see clubCloud.ts)
   const syncWorkspaceId = workspaceIdOf(state.currentUser);
   const syncTeamScopeKey = (teamScopeOf(state.currentUser) || []).join(',');
+  // E1: the family pages («O meu educando») of the active team, published again a few seconds after a change
+  const familyKey =
+    authUid && state.currentUser?.id && !isReadOnlyRole(state.currentUser)
+      ? `${syncWorkspaceId}|${state.activeTeamId}|${state.lastLocalMutationAt || 0}|${state.updatedAt || 0}`
+      : '';
+  useEffect(() => {
+    if (!familyKey) return;
+    const timer = setTimeout(() => {
+      import('./services/familyPublisher').then((m) => m.publishFamilyViews(latestStateRef.current)).catch(() => {});
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [familyKey]);
   // VJ3: what this device may write in the club library (before any save)
   const publishesClubLibrary = canPublishClubLibrary(state.currentUser);
   useEffect(() => {
