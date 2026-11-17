@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Assignment, Mission, Player, VjSession } from '../../types';
 import { Sheet } from '../ui/Sheet';
+import { DateTimePT } from '../ui/DateTimePT';
 import { COMPETENCIES, competencyLabel } from '../../lib/competencies';
 import { CHALLENGE_TYPES, DIFFICULTIES, challengeTypeOf } from '../../lib/challenges';
 import {
@@ -398,15 +399,13 @@ export const AssignSheet: React.FC<TeamData & { target: Assignment['target']; on
             </select>
           </label>
         )}
-        <label className="block text-xs text-ui-muted">
-          Prazo (opcional)
-          <input
-            type="date"
-            value={due}
-            onChange={(e) => setDue(e.target.value)}
-            className="ui-input mt-1 w-full text-xs"
-          />
-        </label>
+        <DateTimePT
+          type="date"
+          value={due}
+          onChange={setDue}
+          label="Prazo (opcional)"
+          inputClassName="ui-input w-full text-xs"
+        />
         <label className="flex items-center gap-2 text-xs text-ui-text">
           <input type="checkbox" checked={priority} onChange={(e) => setPriority(e.target.checked)} />
           Prioridade (aparece primeiro)
