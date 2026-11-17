@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { workspaceIdOf } from '../../lib/deviceCache';
 import { AppState } from '../../types';
 import { Icon, IconName } from '../ui/Icon';
 import { isAppAdmin } from '../../services/cloudAuthService';
@@ -63,6 +64,40 @@ export const ClubView: React.FC<ClubViewProps> = ({
   pendingUsersCount = 0
 }) => {
   const isAdmin = isAppAdmin(state.currentUser);
+  // MC2a: the platform Administrator switches «O Meu Percurso» on for this club (test clubs until the AIPD)
+  const careerClub = workspaceIdOf(state.currentUser);
+  const [careerOn, setCareerOn] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!isAdmin) return;
+    let gone = false;
+    import('../../services/guardians')
+      .then((m) => m.careerClubs())
+      .then(
+        (list) => !gone && setCareerOn(list.includes(careerClub)),
+        () => !gone && setCareerOn(null)
+      );
+    return () => {
+      gone = true;
+    };
+  }, [isAdmin, careerClub]);
+  const toggleCareer = async () => {
+    const next = !careerOn;
+    if (
+      next &&
+      !window.confirm(
+        'Ligar «O Meu Percurso» neste clube? Os encarregados passam a ter o Modo atleta e podem convidar o atleta (13+). ' +
+          'Use só em clubes de teste até a validação jurídica (AIPD) estar concluída.'
+      )
+    )
+      return;
+    try {
+      const m = await import('../../services/guardians');
+      const list = await m.setCareerClub(careerClub, next);
+      setCareerOn(list.includes(careerClub));
+    } catch {
+      window.alert('Não foi possível mudar (sem ligação?).');
+    }
+  };
   const teams = getUserAccessibleTeams(state.currentUser, state.teams || []);
   const club = state.myClubName || 'O meu clube';
   const season = state.season || defaultSeason();
@@ -185,6 +220,18 @@ export const ClubView: React.FC<ClubViewProps> = ({
                 title: 'Cópia cifrada da plataforma',
                 detail: 'Só leitura · criar e verificar uma cópia completa protegida por frase-passe',
                 run: onOpenEncryptedBackup
+              }
+            ]
+          : []),
+        ...(isAdmin && careerOn !== null
+          ? [
+              {
+                icon: 'ball' as IconName,
+                title: `O Meu Percurso (teste): ${careerOn ? 'ligado' : 'desligado'} neste clube`,
+                detail: careerOn
+                  ? 'Toque para desligar: as páginas dos atletas fecham'
+                  : 'Toque para ligar só em clubes de teste (até à AIPD)',
+                run: toggleCareer
               }
             ]
           : []),

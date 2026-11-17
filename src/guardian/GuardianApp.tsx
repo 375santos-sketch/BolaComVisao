@@ -1,5 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   sendPasswordResetEmail,
@@ -13,11 +15,16 @@ import {
   acceptInvite,
   leaveInvite,
   readFamilyView,
+  createAthleteInvite,
+  readAthleteView,
   readGuardianAccount,
   readInvite,
+  revokeGuardianInvite,
   setVideoConsent
 } from '../services/guardians';
-import { FamilyView, GuardianInvite } from '../lib/familyView';
+import { FamilyView, GuardianInvite, inviteMessage } from '../lib/familyView';
+import { AthleteView } from '../lib/athleteView';
+import { AthleteMode } from './AthleteMode';
 import { VjSession } from '../types';
 
 // VJ6: the player of the Visão de Jogo sessions, loaded only when a session is opened
@@ -217,6 +224,7 @@ const AcceptInvite: React.FC<{ code: string; onDone: () => void }> = ({ code, on
 
   if (invite === undefined) return <p className="text-sm text-ui-muted">A abrir o convite…</p>;
   const usable = invite && invite.status === 'pending' && invite.expiresAt > now;
+  const athlete = invite?.kind === 'atleta';
   if (!usable)
     return (
       <div className="ui-card space-y-2 p-4" role="alert">
@@ -239,7 +247,7 @@ const AcceptInvite: React.FC<{ code: string; onDone: () => void }> = ({ code, on
         setBusy(true);
         setError('');
         try {
-          await acceptInvite(code, { video }, { name });
+          await acceptInvite(code, { video: athlete ? false : video }, { name });
           window.history.replaceState(null, '', '/encarregado');
           onDone();
         } catch (err) {
@@ -252,7 +260,8 @@ const AcceptInvite: React.FC<{ code: string; onDone: () => void }> = ({ code, on
       <div>
         <p className="text-base font-extrabold">Convite · {invite.clubName || 'clube'}</p>
         <p className="text-xs text-ui-muted">
-          Encarregado de educação de <b className="text-ui-text">{invite.athleteName}</b>
+          {athlete ? 'Conta de atleta de ' : 'Encarregado de educação de '}
+          <b className="text-ui-text">{invite.athleteName}</b>
           {invite.teamName ? ` · ${invite.teamName}` : ''}
         </p>
       </div>
@@ -268,18 +277,29 @@ const AcceptInvite: React.FC<{ code: string; onDone: () => void }> = ({ code, on
       </label>
       <label className="flex items-start gap-2 text-xs">
         <input type="checkbox" required checked={data} onChange={(e) => setData(e.target.checked)} className="mt-0.5" />
-        <span>
-          Li e aceito como o clube usa os dados do meu educando nesta app: próximos jogos e treinos, convocatórias e
-          presenças. <b>(obrigatório)</b>
-        </span>
+        {athlete ? (
+          <span>
+            Aceito usar a app para o meu percurso no clube. O meu encarregado de educação autorizou este convite e pode
+            retirá-lo. <b>(obrigatório)</b>
+          </span>
+        ) : (
+          <span>
+            Li e aceito como o clube usa os dados do meu educando nesta app: próximos jogos e treinos, convocatórias e
+            presenças. <b>(obrigatório)</b>
+          </span>
+        )}
       </label>
-      <label className="flex items-start gap-2 text-xs">
-        <input type="checkbox" checked={video} onChange={(e) => setVideo(e.target.checked)} className="mt-0.5" />
-        <span>Autorizo vídeos de treinos e jogos com o meu educando na Visão de Jogo. (opcional)</span>
-      </label>
-      <p className="text-[11px] text-ui-muted">
-        Pode retirar a autorização dos vídeos a qualquer momento. Fica registado quando a deu ou retirou.
-      </p>
+      {!athlete && (
+        <>
+          <label className="flex items-start gap-2 text-xs">
+            <input type="checkbox" checked={video} onChange={(e) => setVideo(e.target.checked)} className="mt-0.5" />
+            <span>Autorizo vídeos de treinos e jogos com o meu educando na Visão de Jogo. (opcional)</span>
+          </label>
+          <p className="text-[11px] text-ui-muted">
+            Pode retirar a autorização dos vídeos a qualquer momento. Fica registado quando a deu ou retirou.
+          </p>
+        </>
+      )}
       {error && <p className="text-xs text-ui-danger">{error}</p>}
       <button type="submit" disabled={busy || !data} className="ui-btn ui-btn-primary w-full">
         Aceitar o convite
@@ -300,22 +320,32 @@ const MyChildren: React.FC<{ account: GuardianAccount | null }> = ({ account }) 
   return (
     <>
       {codes.map((c) => (
-        <ChildCard key={c} code={c} />
+        <ChildCard key={c} code={c} sent={account?.sent || []} />
       ))}
     </>
   );
 };
 
-const ChildCard: React.FC<{ code: string }> = ({ code }) => {
+const ChildCard: React.FC<{ code: string; sent: string[] }> = ({ code, sent }) => {
   const [state, setState] = useState<{ invite: GuardianInvite | null; view: FamilyView | null } | undefined>();
+  // MC2a: «O Meu Percurso» (only when the club switched it on and the coach's phone published it)
+  const [career, setCareer] = useState<AthleteView | null>(null);
+  const [athleteMode, setAthleteMode] = useState(false);
+  const [exiting, setExiting] = useState(false);
   const [msg, setMsg] = useState('');
   const [watching, setWatching] = useState<VjSession | null>(null);
 
   useEffect(() => {
     let gone = false;
-    Promise.all([readInvite(code).catch(() => null), readFamilyView(code).catch(() => null)]).then(
-      ([invite, page]) => !gone && setState({ invite, view: page?.view || null })
-    );
+    Promise.all([
+      readInvite(code).catch(() => null),
+      readFamilyView(code).catch(() => null),
+      readAthleteView(code).catch(() => null)
+    ]).then(([invite, page, athletePage]) => {
+      if (gone) return;
+      setState({ invite, view: page?.view || null });
+      setCareer(athletePage?.view || null);
+    });
     return () => {
       gone = true;
     };
@@ -324,6 +354,21 @@ const ChildCard: React.FC<{ code: string }> = ({ code }) => {
   if (state === undefined) return <p className="text-sm text-ui-muted">A carregar…</p>;
   const { invite, view } = state;
   if (!invite || invite.status !== 'accepted') return null; // revoked or left: nothing to show
+  const ownAccount = invite.kind === 'atleta';
+  // The athlete's own account (13+): the percurso first
+  if (ownAccount && career) return <AthleteMode view={career} />;
+  // «Modo atleta» (under 13, on the guardian's phone): the whole screen, and leaving needs the guardian's password
+  if (athleteMode && career)
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-ui-bg px-4 py-6">
+        <div className="mx-auto max-w-md">
+          <AthleteMode view={career} onExit={() => setExiting(true)} exitLabel="Sair do Modo atleta (encarregado)" />
+          {exiting && (
+            <ExitLock onDone={() => (setExiting(false), setAthleteMode(false))} onCancel={() => setExiting(false)} />
+          )}
+        </div>
+      </div>
+    );
   if (!view)
     return (
       <section className="ui-card p-4" aria-label={`O meu educando: ${invite.athleteName}`}>
@@ -396,6 +441,9 @@ const ChildCard: React.FC<{ code: string }> = ({ code }) => {
           })}
         </div>
       )}
+      {career && !ownAccount && (
+        <CareerCard career={career} invite={invite} sent={sent} onAthleteMode={() => setAthleteMode(true)} />
+      )}
       {view.seasonMessage && (
         <div className="ui-card p-4">
           <p className="text-sm font-bold">Mensagem do treinador</p>
@@ -446,3 +494,147 @@ const ChildCard: React.FC<{ code: string }> = ({ code }) => {
 };
 
 export default GuardianApp;
+
+/**
+ * MC2a — on the guardian's page: «O Meu Percurso» of the child, «Passar ao Modo atleta» (the child uses the guardian's
+ * phone) and, from 13, inviting the athlete's own account (the guardian's consent is this invitation).
+ */
+const CareerCard: React.FC<{
+  career: AthleteView;
+  invite: GuardianInvite;
+  sent: string[];
+  onAthleteMode: () => void;
+}> = ({ career, invite, sent, onAthleteMode }) => {
+  const [mine, setMine] = useState<GuardianInvite[]>([]);
+  const [now] = useState(() => Date.now());
+  const [msg, setMsg] = useState('');
+  useEffect(() => {
+    let gone = false;
+    Promise.all(sent.map((c) => readInvite(c).catch(() => null))).then(
+      (list) =>
+        !gone &&
+        setMine(list.filter((i): i is GuardianInvite => !!i && i.athleteId === invite.athleteId && i.kind === 'atleta'))
+    );
+    return () => {
+      gone = true;
+    };
+  }, [sent, invite.athleteId]);
+  const active = mine.filter((i) => i.status === 'accepted' || (i.status === 'pending' && i.expiresAt > now));
+  const share = (i: GuardianInvite) =>
+    window.open(`https://wa.me/?text=${encodeURIComponent(inviteMessage(i, window.location.origin))}`, '_blank');
+
+  return (
+    <div className="ui-card space-y-2 p-4" aria-label="O Meu Percurso do educando">
+      <p className="text-sm font-bold">🎯 O Meu Percurso</p>
+      <p className="text-xs text-ui-muted">
+        {career.assignments.length
+          ? `${career.assignments.length} ${career.assignments.length === 1 ? 'missão ou desafio' : 'missões e desafios'} do treinador`
+          : 'Ainda sem missões do treinador.'}
+      </p>
+      <button type="button" onClick={onAthleteMode} className="ui-btn ui-btn-primary w-full text-sm">
+        ▶ Passar ao Modo atleta
+      </button>
+      <p className="text-[11px] text-ui-muted">
+        O seu educando usa o seu telemóvel; para sair é preciso a sua palavra-passe. Nada do que faz fica guardado.
+      </p>
+      {career.canHaveOwnAccount && (
+        <div className="space-y-1 border-t border-ui-line pt-2">
+          <p className="text-xs font-bold">Conta própria do atleta (13 ou mais anos)</p>
+          {active.map((i) => (
+            <p key={i.id} className="flex items-center justify-between gap-2 text-xs">
+              <span>{i.status === 'accepted' ? '✓ O atleta já tem conta' : 'Convite enviado · à espera'}</span>
+              <span className="flex gap-2">
+                {i.status === 'pending' && (
+                  <button type="button" onClick={() => share(i)} className="text-ui-brand underline">
+                    Reenviar
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!window.confirm('Retirar a conta do atleta?')) return;
+                    try {
+                      await revokeGuardianInvite(i.id);
+                      setMine((m) => m.map((x) => (x.id === i.id ? { ...x, status: 'revoked' } : x)));
+                    } catch {
+                      setMsg('Não foi possível (sem ligação?).');
+                    }
+                  }}
+                  className="text-ui-danger"
+                  aria-label="Retirar a conta do atleta"
+                >
+                  Retirar
+                </button>
+              </span>
+            </p>
+          ))}
+          {active.length === 0 && (
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const created = await createAthleteInvite(invite);
+                  setMine((m) => [...m, created]);
+                  setMsg('Convite criado ✓ Envie o link ao seu educando.');
+                  share(created);
+                } catch {
+                  setMsg('Não foi possível criar o convite (sem ligação?).');
+                }
+              }}
+              className="ui-btn ui-btn-soft w-full text-xs"
+            >
+              Convidar o meu educando (conta própria)
+            </button>
+          )}
+          <p className="text-[11px] text-ui-muted">
+            Ao convidar, autoriza a conta do seu educando. Pode retirá-la a qualquer momento.
+          </p>
+        </div>
+      )}
+      {msg && <p className="text-[11px] text-ui-success">{msg}</p>}
+    </div>
+  );
+};
+
+/** Leaving the «Modo atleta» needs the guardian's password (the child uses the guardian's phone). */
+const ExitLock: React.FC<{ onDone: () => void; onCancel: () => void }> = ({ onDone, onCancel }) => {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  return (
+    <form
+      className="ui-card mt-3 space-y-2 p-4"
+      aria-label="Sair do Modo atleta"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (!user?.email) return setError('Sem sessão.');
+        try {
+          await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, password));
+          onDone();
+        } catch {
+          setError('Palavra-passe errada.');
+        }
+      }}
+    >
+      <label className="block text-xs text-ui-muted">
+        Palavra-passe do encarregado
+        <input
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="ui-input mt-1 w-full text-sm"
+        />
+      </label>
+      {error && <p className="text-xs text-ui-danger">{error}</p>}
+      <div className="grid grid-cols-2 gap-2">
+        <button type="button" onClick={onCancel} className="ui-btn ui-btn-soft text-xs">
+          Continuar no Modo atleta
+        </button>
+        <button type="submit" className="ui-btn ui-btn-primary text-xs">
+          Sair
+        </button>
+      </div>
+    </form>
+  );
+};

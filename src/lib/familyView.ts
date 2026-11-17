@@ -32,7 +32,14 @@ export interface GuardianInvite {
   consentAt?: number;
   revokedAt?: number;
   revokedBy?: string;
+  /** MC2: a guardian's invitation (default) or the athlete's own account (13+), invited by its guardian. */
+  kind?: 'encarregado' | 'atleta';
+  /** MC2: the guardian's invitation the athlete's invitation comes from (the guardian's consent). */
+  parentCode?: string;
 }
+
+/** A guardian's invitation (the athlete's own invitations do not take a guardian's place). */
+export const isGuardianInvite = (i: Pick<GuardianInvite, 'kind'>) => (i.kind || 'encarregado') === 'encarregado';
 
 export interface FamilyEvent {
   kind: 'jogo' | 'treino';
@@ -89,7 +96,7 @@ export function familySessionsOf(sessions: VjSession[]): VjSession[] {
 }
 
 /** The invitations that still hold a place (at most 2 per athlete). */
-export const activeInvites = (invites: GuardianInvite[], now = Date.now()) =>
+export const activeInvites = (all: GuardianInvite[], now = Date.now(), invites = all.filter(isGuardianInvite)) =>
   invites.filter((i) => i.status === 'accepted' || (i.status === 'pending' && i.expiresAt > now));
 
 export const canInviteMore = (invites: GuardianInvite[], athleteId: string, now = Date.now()) =>
