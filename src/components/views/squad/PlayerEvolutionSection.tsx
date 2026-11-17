@@ -17,6 +17,7 @@ import {
 } from '../../../lib/playerEvolution';
 import { DateTimePT } from '../../ui/DateTimePT';
 import { CompetencyCard } from './CompetencyCard';
+import { COMPETENCIES, competencyLabel, currentLevels } from '../../../lib/competencies';
 import { VjCompetencyStat } from '../../../lib/vjCompetencies';
 import { localDateISO } from '../../../lib/trainingQuick';
 import { uid } from '../../../lib/utils';
@@ -222,10 +223,15 @@ const GoalsCard: React.FC<{
   const [text, setText] = useState('');
   const [area, setArea] = useState<EvaluationArea | ''>('');
   const [due, setDue] = useState('');
+  const [competency, setCompetency] = useState('');
   const [noteFor, setNoteFor] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
   const [reformFor, setReformFor] = useState<PlayerGoal | null>(null);
-  const [reform, setReform] = useState({ text: '', area: '' as EvaluationArea | '', due: '' });
+  const [reform, setReform] = useState({ text: '', area: '' as EvaluationArea | '', due: '', competency: '' });
+  // MC1a: the competencies to link a goal to: the catalogue and this athlete's own ones
+  const ownCompetencies = currentLevels(player)
+    .map((c) => c.id)
+    .filter((id) => id.startsWith('x:'));
   const count = (st: GoalStatus) => goals.filter((g) => statusOf(g) === st).length;
   const shown = goals.filter((g) => filter === 'todos' || statusOf(g) === filter);
   const byId = new Map(goals.map((g) => [g.id, g]));
@@ -235,6 +241,7 @@ const GoalsCard: React.FC<{
     const st = statusOf(g);
     return [
       areaLabel(g.area),
+      g.competencyId ? `🧩 ${competencyLabel(g.competencyId)}` : null,
       `desde ${ddmm(g.createdAt)}`,
       st === 'alcancado' && g.doneAt ? `alcançado a ${ddmm(g.doneAt)}` : null,
       st === 'reformulado' && g.reformulatedAt ? `reformulado a ${ddmm(g.reformulatedAt)}` : null,
@@ -319,7 +326,7 @@ const GoalsCard: React.FC<{
                         type="button"
                         onClick={() => {
                           setReformFor(g);
-                          setReform({ text: g.text, area: g.area || '', due: '' });
+                          setReform({ text: g.text, area: g.area || '', due: '', competency: g.competencyId || '' });
                         }}
                         className="ui-btn ui-btn-soft px-2.5 py-1 text-[11px]"
                       >
@@ -385,7 +392,8 @@ const GoalsCard: React.FC<{
                           text: reform.text,
                           createdAt: today,
                           ...(reform.area ? { area: reform.area } : {}),
-                          ...(reform.due ? { dueDate: reform.due } : {})
+                          ...(reform.due ? { dueDate: reform.due } : {}),
+                          ...(reform.competency ? { competencyId: reform.competency } : {})
                         },
                         today
                       ),
@@ -412,6 +420,11 @@ const GoalsCard: React.FC<{
                       inputClassName="ui-input w-full text-xs"
                     />
                   </div>
+                  <CompetencySelect
+                    value={reform.competency}
+                    own={ownCompetencies}
+                    onChange={(c) => setReform({ ...reform, competency: c })}
+                  />
                   <button type="submit" className="ui-btn ui-btn-primary w-full text-xs">
                     Guardar o novo objetivo
                   </button>
@@ -437,13 +450,15 @@ const GoalsCard: React.FC<{
                 text,
                 createdAt: today,
                 ...(area ? { area } : {}),
-                ...(due ? { dueDate: due } : {})
+                ...(due ? { dueDate: due } : {}),
+                ...(competency ? { competencyId: competency } : {})
               }),
               'Objetivo adicionado 🎯'
             );
             setText('');
             setArea('');
             setDue('');
+            setCompetency('');
             setFilter('em_curso');
           }}
         >
@@ -463,6 +478,9 @@ const GoalsCard: React.FC<{
             label="Prazo (opcional)"
             inputClassName="ui-input w-full text-xs"
           />
+          <div className="col-span-2">
+            <CompetencySelect value={competency} own={ownCompetencies} onChange={setCompetency} />
+          </div>
           <button type="submit" className="ui-btn ui-btn-primary col-span-2 text-xs">
             Adicionar
           </button>
@@ -486,6 +504,32 @@ const AreaSelect: React.FC<{ value: EvaluationArea | ''; onChange: (a: Evaluatio
     {EVALUATION_AREAS.map((a) => (
       <option key={a.key} value={a.key}>
         {a.short}
+      </option>
+    ))}
+  </select>
+);
+
+/** MC1a: the competency a goal works on (optional): the D1 catalogue and the athlete's own competencies. */
+const CompetencySelect: React.FC<{ value: string; own: string[]; onChange: (id: string) => void }> = ({
+  value,
+  own,
+  onChange
+}) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    aria-label="Competência do objetivo"
+    className="ui-input w-full text-xs"
+  >
+    <option value="">Competência (opcional)</option>
+    {COMPETENCIES.map((c) => (
+      <option key={c.id} value={c.id}>
+        {c.label}
+      </option>
+    ))}
+    {own.map((id) => (
+      <option key={id} value={id}>
+        {competencyLabel(id)}
       </option>
     ))}
   </select>

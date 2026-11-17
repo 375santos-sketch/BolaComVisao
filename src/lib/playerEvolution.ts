@@ -1,4 +1,5 @@
 import { EvaluationArea, GoalStatus, Player, PlayerEvaluation, PlayerGoal } from '../types';
+import { isKnownCompetency } from './competencies';
 
 /**
  * 📈 Evolução do atleta: an evaluation from 1 to 5 in five areas every few weeks, and individual goals. Only for the
@@ -105,6 +106,8 @@ export function withGoal(player: Player, goal: PlayerGoal): Player {
         createdAt: goal.createdAt,
         ...(goal.area ? { area: goal.area } : {}),
         ...(goal.dueDate ? { dueDate: goal.dueDate } : {}),
+        // MC1a: the competency it works on (only one the app knows)
+        ...(isKnownCompetency(goal.competencyId) ? { competencyId: goal.competencyId } : {}),
         status: statusOf(goal)
       }
     ]

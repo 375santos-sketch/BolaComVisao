@@ -90,6 +90,8 @@ export interface PlayerGoal {
   /** D2: reformulated: the day, and the goal that replaced it. */
   reformulatedAt?: string;
   replacedBy?: string;
+  /** MC1a: the competency the goal works on (the D1 catalogue, or "x:Name"); optional. */
+  competencyId?: string;
 }
 
 export type GoalStatus = 'em_curso' | 'alcancado' | 'reformulado';
@@ -1306,4 +1308,36 @@ export interface VjSession {
   copiedFrom?: string;
   /** VJ2: the latest runs with the team (the group's answers), most recent last; at most 10. */
   runs?: VjRun[];
+  /**
+   * MC1a — the kind of challenge. Every challenge keeps `format: 'sessao'` (the app versions before MC1a only keep
+   * that format, and would otherwise take the others for deleted): the real kind is this field. Absent = video.
+   */
+  challengeType?: ChallengeType;
+  /** MC1a «pergunta»: the question (the same model as a video pause), with an optional image or diagram. */
+  prompt?: VjPause & { image?: string };
+  /** MC1a «prático»: the exercise of the team's library it uses (referenced, never copied). */
+  exerciseId?: string;
+  instructions?: string;
+  completionCriteria?: string;
+  /** MC1a «reflexão»: only the questions to think about; the answers are never kept. */
+  reflection?: { prompts: string[]; emojiScale?: boolean };
+  /** MC1a: recommended age groups (empty or absent = all) and difficulty. */
+  ageGroups?: string[];
+  difficulty?: ChallengeDifficulty;
+  /** MC1a: rights of the content, needed to publish. */
+  rights?: ChallengeRights;
+}
+
+export type ChallengeType = 'video' | 'pergunta' | 'pratico' | 'reflexao';
+export type ChallengeDifficulty = 1 | 2 | 3;
+export interface ChallengeRights {
+  kind: 'proprio' | 'licenciado' | 'externo';
+  /** Where it comes from (a book, a link…): needed for licensed and external content. */
+  source?: string;
+  /** The licence or authorisation: needed for licensed content. */
+  licence?: string;
+  /** External videos and images: confirmed without identifiable children (VJ0). */
+  noIdentifiableChildren?: boolean;
+  confirmedBy?: string;
+  confirmedAt?: string;
 }

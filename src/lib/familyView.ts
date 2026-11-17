@@ -1,5 +1,6 @@
 import { AppState, Player, VjSession } from '../types';
 import { sessionsOf } from './vjLibrary';
+import { isVideoChallenge } from './challenges';
 import { calendarEventsOf } from '../hooks/useCalendarPublisher';
 
 /**
@@ -61,27 +62,30 @@ export const FAMILY_SESSIONS = 5;
 
 /** The latest published sessions of the team, stripped to what a family may see. */
 export function familySessionsOf(sessions: VjSession[]): VjSession[] {
-  return sessions
-    .filter((s) => s.status === 'publicado' && s.items.length > 0)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, FAMILY_SESSIONS)
-    .map((s) => ({
-      id: s.id,
-      format: 'sessao',
-      title: s.title,
-      ...(s.objective ? { objective: s.objective } : {}),
-      competencies: s.competencies,
-      status: 'publicado',
-      items: s.items.map((i) => ({
-        id: i.id,
-        kind: i.kind,
-        youtubeId: i.youtubeId,
-        ...(i.label ? { label: i.label } : {}),
-        pauses: i.pauses || []
-      })),
-      createdAt: s.createdAt,
-      updatedAt: s.updatedAt
-    }));
+  return (
+    sessions
+      // MC1a: only video challenges (questions, practical exercises and reflections never go home: VJ6 unchanged)
+      .filter((s) => s.status === 'publicado' && s.items.length > 0 && isVideoChallenge(s))
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      .slice(0, FAMILY_SESSIONS)
+      .map((s) => ({
+        id: s.id,
+        format: 'sessao',
+        title: s.title,
+        ...(s.objective ? { objective: s.objective } : {}),
+        competencies: s.competencies,
+        status: 'publicado',
+        items: s.items.map((i) => ({
+          id: i.id,
+          kind: i.kind,
+          youtubeId: i.youtubeId,
+          ...(i.label ? { label: i.label } : {}),
+          pauses: i.pauses || []
+        })),
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt
+      }))
+  );
 }
 
 /** The invitations that still hold a place (at most 2 per athlete). */

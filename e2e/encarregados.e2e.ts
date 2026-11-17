@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { COACH_A } from './seed';
-import { enterPanel, login, navTo } from './helpers';
+import { enterPanel, login, navTo, setRights } from './helpers';
 
 // E1: the coach invites a guardian; the guardian creates the account with the invitation (consents), and sees ONLY
 // «O meu educando», published from the coach's phone. Fictitious data.
@@ -57,6 +57,7 @@ test('encarregados: o treinador convida, o encarregado aceita e vê só o seu ed
   await pause.getByLabel('Explicação da resposta A').fill('Ninguém o marca');
   await pause.getByLabel('Resposta B', { exact: true }).fill('O central');
   await pause.getByRole('button', { name: 'Guardar a pausa' }).click();
+  await setRights(editor);
   await editor.getByRole('button', { name: 'Publicar na equipa' }).click();
   await expect(page.getByText('Publicada ✓')).toBeVisible();
   await page.waitForTimeout(3000); // saved on this phone before it opens again

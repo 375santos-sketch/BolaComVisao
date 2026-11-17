@@ -1,4 +1,4 @@
-import { expect, type Page, type BrowserContext } from '@playwright/test';
+import { expect, type Page, type BrowserContext, type Locator } from '@playwright/test';
 import { FIRESTORE, owner, PASSWORD } from './seed';
 
 /** Fails the test on any uncaught error in the page (a broken screen). */
@@ -118,4 +118,17 @@ export async function clubSettingsText(workspace = 'clubA'): Promise<string> {
   const res = await fetch(`${FIRESTORE}/club_workspace/${workspace}/records?pageSize=500`, { headers: owner });
   const body = (await res.json()) as { documents?: Array<{ name: string }> };
   return JSON.stringify((body.documents || []).filter((d) => /\/records\/(club|teamconfig__[^/]+)$/.test(d.name)));
+}
+
+/** MC1a: the rights of a challenge, needed to publish it (a public YouTube video: external, without children). */
+export async function setRights(editor: Locator, kind: 'proprio' | 'externo' = 'externo') {
+  const rights = editor.getByRole('group', { name: 'Direitos do conteúdo' });
+  if (kind === 'proprio') {
+    await rights.getByLabel(/^Conteúdo próprio/).check();
+    return;
+  }
+  await rights.getByLabel(/^Conteúdo externo/).check();
+  await rights.getByLabel('Fonte').fill('https://youtu.be/dQw4w9WgXcQ');
+  const children = rights.getByLabel(/não mostra crianças identificáveis/);
+  if (await children.count()) await children.check();
 }

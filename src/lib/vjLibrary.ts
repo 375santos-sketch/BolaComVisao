@@ -1,5 +1,6 @@
 import { SquadProfile, VjPause, VjSession, VjStatus } from '../types';
 import { cleanPause } from './vjPauses';
+import { challengeTypeOf, cleanChallengeFields } from './challenges';
 
 /**
  * 🎬 Visão de Jogo — the team's library of sessions (VJ1). Each session is its own record of the team (kind
@@ -46,12 +47,15 @@ export function newSession(input: { id: string; title: string; authorName?: stri
 
 /** A clean session (title kept short, no empty or repeated competencies, only valid videos). */
 export function cleanSession(s: VjSession, now: string): VjSession {
-  return {
+  const video = challengeTypeOf(s) === 'video';
+  const cleaned: VjSession = {
     ...s,
+    ...cleanChallengeFields(s),
     title: s.title.trim().slice(0, 120) || 'Sessão sem título',
     objective: (s.objective || '').trim().slice(0, 300) || undefined,
     competencies: [...new Set((s.competencies || []).filter(Boolean))].slice(0, 8),
-    items: (s.items || [])
+    // MC1a: only the video challenges have videos (and runs with the group)
+    items: (video ? s.items || [] : [])
       .filter((i) => i && i.kind === 'video' && /^[\w-]{11}$/.test(i.youtubeId))
       .slice(0, 10)
       .map((i) => ({
@@ -62,8 +66,11 @@ export function cleanSession(s: VjSession, now: string): VjSession {
           .sort((a, b) => a.at - b.at)
           .slice(0, 12)
       })),
+    ...(video ? {} : { runs: undefined }),
     updatedAt: now
   };
+  // No undefined fields in the cloud record
+  return Object.fromEntries(Object.entries(cleaned).filter(([, v]) => v !== undefined)) as VjSession;
 }
 
 export const sessionsOf = (team: Pick<SquadProfile, 'vjSessions'> | undefined): VjSession[] =>

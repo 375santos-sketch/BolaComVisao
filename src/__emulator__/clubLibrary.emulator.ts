@@ -223,3 +223,26 @@ describe('VJ3 — a app nunca envia o que as regras recusam', () => {
     expect((await fs.getDoc(docOf('d1'))).data()?.deleted).toBe(false);
   });
 });
+
+describe('MC1a — desafios novos com as mesmas regras (sem alterações)', () => {
+  const challenge = (id: string, status: string, author: string) => ({
+    ...session(id, status, author),
+    data: {
+      ...session(id, status, author).data,
+      challengeType: 'pergunta',
+      prompt: { id: 'q1', at: 0, kind: 'escolha', question: 'Quem pressiona?', options: [] },
+      ageGroups: ['Sub-11'],
+      difficulty: 1,
+      rights: { kind: 'proprio' }
+    }
+  });
+  it('a coach proposes a question to the club; only who publishes publishes it; staff never writes', async () => {
+    await signInAs('treinadorA');
+    expect(await ok(fs.setDoc(docOf('mc1'), challenge('mc1', 'revisao', 'treinadorA')))).toBe(true);
+    expect(await ok(fs.setDoc(docOf('mc1'), challenge('mc1', 'publicado', 'treinadorA')))).toBe(false);
+    await signInAs('staffA');
+    expect(await ok(fs.setDoc(docOf('mc2'), challenge('mc2', 'rascunho', 'staffA')))).toBe(false);
+    await signInAs('coordAutorizado');
+    expect(await ok(fs.setDoc(docOf('mc1'), challenge('mc1', 'publicado', 'treinadorA')))).toBe(true);
+  });
+});
