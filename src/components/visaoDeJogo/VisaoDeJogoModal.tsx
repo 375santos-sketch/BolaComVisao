@@ -527,7 +527,7 @@ const SessionCard: React.FC<{ session: VjSession; detail?: string; onOpen: () =>
             `${CHALLENGE_TYPES[challengeTypeOf(s)].icon} ${CHALLENGE_TYPES[challengeTypeOf(s)].label}`
           )}
           {s.difficulty ? ` · ${DIFFICULTIES[s.difficulty]}` : ''}
-          {s.ageGroups?.length ? ` · ${s.ageGroups.join(', ')}` : ''}
+          {s.ageGroups?.length ? ` · para ${s.ageGroups.join(', ')}` : ''}
           {detail ? ` · ${detail}` : ''}
           {s.authorName ? ` · ${s.authorName}` : ''}
           {s.status === 'publicado' && s.approvedBy ? ` · aprovada por ${s.approvedBy}` : ''}

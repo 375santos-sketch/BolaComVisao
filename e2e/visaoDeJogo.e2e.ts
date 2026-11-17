@@ -184,7 +184,7 @@ test('desafios: pergunta, prático e reflexão; direitos para publicar; objetivo
   await expect(page.getByText('Publicada ✓')).toBeVisible();
   const list = library.getByRole('list', { name: 'Sessões' });
   await expect(list).toContainText('MC1a: para onde receber?');
-  await expect(list).toContainText('❓ Pergunta · Intermédio · Sub-11');
+  await expect(list).toContainText('❓ Pergunta · Intermédio · para Sub-11');
   // Shown in training: the explanation on the screen, nothing saved
   await library.getByRole('button', { name: 'Mostrar no treino: MC1a: para onde receber?' }).click();
   const show = page.getByRole('dialog', { name: 'Mostrar no treino' });
