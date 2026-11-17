@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { FIRESTORE, owner, PASSWORD } from './seed';
-import { enterPanel, navTo } from './helpers';
+import { enterPanel, navTo, setRights } from './helpers';
 
 const AUTH = 'http://127.0.0.1:9099';
 const ORG = 'orgPermissoes';
@@ -194,9 +194,15 @@ test('biblioteca do clube: o treinador propõe, o coordenador autorizado aprova 
   const library = page.getByRole('dialog', { name: 'Visão de Jogo' });
   await library.getByRole('tab', { name: 'Do clube' }).click();
   await expect(library).toContainText('A biblioteca do clube ainda está vazia.');
-  await library.getByRole('button', { name: '+ Propor sessão ao clube' }).click();
-  const editor = page.getByRole('dialog', { name: 'Nova sessão' });
+  // MC1a: a question proposed to the club (no practical challenges here: they stay in the team, D2)
+  await expect(library.getByRole('group', { name: 'Outros desafios' })).not.toContainText('Prático');
+  await library.getByRole('group', { name: 'Outros desafios' }).getByRole('button', { name: '+ Pergunta' }).click();
+  const editor = page.getByRole('dialog', { name: 'Novo desafio · Pergunta' });
   await editor.getByPlaceholder(/Onde receber/).fill('Pressão após perda');
+  await editor.getByLabel('Pergunta', { exact: true }).fill('Quem pressiona primeiro?');
+  await editor.getByLabel('Resposta A', { exact: true }).fill('O mais próximo da bola');
+  await editor.getByLabel('Resposta A certa').check();
+  await editor.getByLabel('Resposta B', { exact: true }).fill('O guarda-redes');
   await expect(editor.getByRole('button', { name: 'Aprovar e publicar' })).toHaveCount(0);
   await editor.getByRole('button', { name: 'Enviar para revisão' }).click();
   await expect(page.getByText('Em revisão ✓')).toBeVisible();
@@ -229,10 +235,11 @@ test('biblioteca do clube: o treinador propõe, o coordenador autorizado aprova 
   const coordLibrary = coordPage.getByRole('dialog', { name: 'Visão de Jogo' });
   await coordLibrary.getByRole('tab', { name: 'Do clube · 1 por rever' }).click();
   await coordLibrary.getByRole('button', { name: 'Abrir a sessão Pressão após perda' }).click();
-  await coordPage
-    .getByRole('dialog', { name: 'Editar sessão' })
-    .getByRole('button', { name: 'Aprovar e publicar' })
-    .click();
+  const review = coordPage.getByRole('dialog', { name: 'Editar desafio · Pergunta' });
+  await review.getByRole('button', { name: 'Aprovar e publicar' }).click();
+  await expect(review.getByRole('alert')).toContainText('Indique os direitos do conteúdo.'); // rights first
+  await setRights(review, 'proprio');
+  await review.getByRole('button', { name: 'Aprovar e publicar' }).click();
   await expect(coordPage.getByText('Publicada ✓')).toBeVisible();
   await expect.poll(cloudSession, { timeout: 30_000, message: 'a sessão publicada na nuvem' }).toBe('publicado');
 });

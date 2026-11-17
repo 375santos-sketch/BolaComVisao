@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AppState, VjSession, VjStatus } from '../../types';
+import { AppState, ChallengeType, Exercise, VjSession, VjStatus } from '../../types';
 import { Sheet } from '../ui/Sheet';
 import { COMPETENCIES, competencyLabel } from '../../lib/competencies';
 import {
@@ -29,6 +29,24 @@ import { isAppAdmin } from '../../services/cloudAuthService';
 import { cachedPlatformSessions, loadPlatformSessions, savePlatformSession } from '../../services/platformLibrary';
 import { uid } from '../../lib/utils';
 import { PauseEditor } from './PauseEditor';
+import {
+  CommonFields,
+  PracticeFields,
+  QuestionFields,
+  ReflectionFields,
+  RightsPanel,
+  ShowInTraining
+} from './ChallengeParts';
+import {
+  CHALLENGE_TYPES,
+  CHALLENGE_TYPE_ORDER,
+  DIFFICULTIES,
+  canLeaveTeam,
+  challengeTypeOf,
+  emptyPrompt,
+  publishProblems,
+  rightsProblems
+} from '../../lib/challenges';
 import { ConductSession } from './ConductSession';
 import { pauseCount, withRun } from '../../lib/vjPauses';
 import { defaultPresentIds, runScore } from '../../lib/vjCompetencies';
@@ -59,6 +77,10 @@ const VisaoDeJogoModal: React.FC<{
   const [favorites, setFavorites] = useState(false);
   const [editing, setEditing] = useState<{ session: VjSession; scope: Tab } | null>(null);
   const [conducting, setConducting] = useState<{ session: VjSession; scope: Tab } | null>(null);
+  // MC1a: the other kinds of challenge (question, practical, reflection), shown in training without saving anything
+  const [typeFilter, setTypeFilter] = useState<ChallengeType | ''>('');
+  const [showing, setShowing] = useState<VjSession | null>(null);
+  const exercises: Exercise[] = Array.isArray(state.exerciseLibrary) ? state.exerciseLibrary : [];
   // VJ4: the BolaComVisão library, read when its tab opens (the last copy read stays on the device for offline)
   const admin = isAppAdmin(user);
   const [platform, setPlatform] = useState<VjSession[]>(() => cachedPlatformSessions());
@@ -112,6 +134,8 @@ const VisaoDeJogoModal: React.FC<{
     save(clubSessionForTeam(s, uid(), now()), `«${s.title}» já está na biblioteca da equipa ✓`);
   };
 
+  if (showing) return <ShowInTraining session={showing} exercises={exercises} onClose={() => setShowing(null)} />;
+
   if (conducting) {
     const { session, scope } = conducting;
     const fromClub = scope !== 'equipa';
@@ -139,6 +163,8 @@ const VisaoDeJogoModal: React.FC<{
     const s = editing.session;
     return (
       <SessionEditor
+        exercises={exercises}
+        userName={user?.name}
         session={s}
         readOnly={!admin}
         actions={(d) => (admin ? platformActions(d.status) : [])}
@@ -157,6 +183,8 @@ const VisaoDeJogoModal: React.FC<{
     const canEdit = !isReadOnlyRole(user) && (isNew || canEditClubSession(s, viewer));
     return (
       <SessionEditor
+        exercises={exercises}
+        userName={user?.name}
         session={s}
         readOnly={!canEdit}
         actions={(d) => (canEdit ? clubActions(d, viewer) : [])}
@@ -183,6 +211,8 @@ const VisaoDeJogoModal: React.FC<{
   if (editing) {
     return (
       <SessionEditor
+        exercises={exercises}
+        userName={user?.name}
         session={editing.session}
         readOnly={readOnly}
         actions={(d) => teamActions(d.status)}
@@ -214,7 +244,26 @@ const VisaoDeJogoModal: React.FC<{
     : isClub
       ? club.filter((s) => canSeeClubSession(s, viewer))
       : sessions;
-  const shown = filterSessions(pool, { competency: competency || undefined, status, favorites: !shared && favorites });
+  const shown = filterSessions(pool, {
+    competency: competency || undefined,
+    status,
+    favorites: !shared && favorites
+  }).filter((s) => !typeFilter || challengeTypeOf(s) === typeFilter);
+  /** MC1a: a new challenge of this kind for the tab (D2: practical ones only in the team's library). */
+  const newOfType = (type: ChallengeType): VjSession => {
+    const base =
+      tab === 'clube'
+        ? newClubSession({ id: uid(), authorUid: user?.id, authorName: user?.name, now: now() })
+        : newSession({
+            id: uid(),
+            title: '',
+            authorName: tab === 'plataforma' ? 'BolaComVisão' : user?.name,
+            now: now()
+          });
+    return { ...base, challengeType: type, ...(type === 'pergunta' ? { prompt: emptyPrompt() } : {}) };
+  };
+  const canAdd = isPlatform ? admin : isClub ? !isReadOnlyRole(user) : !readOnly;
+  const otherTypes = CHALLENGE_TYPE_ORDER.filter((t) => t !== 'video' && (tab === 'equipa' || t !== 'pratico'));
   const used = [...new Set(pool.flatMap((s) => s.competencies))];
   const toReview = viewer.publishes ? club.filter((s) => s.status === 'revisao').length : 0;
   const switchTab = (next: Tab) => {
@@ -292,6 +341,19 @@ const VisaoDeJogoModal: React.FC<{
                 <option value="publicado">Publicadas</option>
                 {(isPlatform ? admin : !isClub || viewer.publishes) && <option value="arquivado">Arquivadas</option>}
               </select>
+              <select
+                aria-label="Tipo de desafio"
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value as ChallengeType | '')}
+                className="ui-input w-auto text-xs"
+              >
+                <option value="">Todos os tipos</option>
+                {CHALLENGE_TYPE_ORDER.map((t) => (
+                  <option key={t} value={t}>
+                    {CHALLENGE_TYPES[t].icon} {CHALLENGE_TYPES[t].label}
+                  </option>
+                ))}
+              </select>
               {!shared && (
                 <button
                   type="button"
@@ -323,17 +385,29 @@ const VisaoDeJogoModal: React.FC<{
                     detail={shared ? undefined : team?.category}
                     onOpen={() => setEditing({ session: s, scope: tab })}
                   />
-                  {s.status === 'publicado' && s.items.length > 0 && (
+                  {s.status === 'publicado' && (challengeTypeOf(s) !== 'video' || s.items.length > 0) && (
                     <div className="mt-1 flex gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setConducting({ session: s, scope: tab })}
-                        className="ui-btn ui-btn-primary flex-1 text-xs"
-                        aria-label={`Conduzir no treino: ${s.title}`}
-                      >
-                        ▶ Conduzir no treino
-                      </button>
+                      {challengeTypeOf(s) === 'video' ? (
+                        <button
+                          type="button"
+                          onClick={() => setConducting({ session: s, scope: tab })}
+                          className="ui-btn ui-btn-primary flex-1 text-xs"
+                          aria-label={`Conduzir no treino: ${s.title}`}
+                        >
+                          ▶ Conduzir no treino
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowing(s)}
+                          className="ui-btn ui-btn-primary flex-1 text-xs"
+                          aria-label={`Mostrar no treino: ${s.title}`}
+                        >
+                          ▶ Mostrar no treino
+                        </button>
+                      )}
                       {shared &&
+                        canLeaveTeam(s) &&
                         !readOnly &&
                         (teamCopyOf(sessions, s.id) ? (
                           <span className="ui-btn ui-btn-soft flex-1 text-xs text-ui-success">✓ Na minha equipa</span>
@@ -401,6 +475,20 @@ const VisaoDeJogoModal: React.FC<{
                       + Nova sessão
                     </button>
                   )}
+            {canAdd && (
+              <div className="grid grid-cols-3 gap-1" role="group" aria-label="Outros desafios">
+                {otherTypes.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setEditing({ session: newOfType(t), scope: tab })}
+                    className="ui-btn ui-btn-soft text-xs"
+                  >
+                    + {CHALLENGE_TYPES[t].label}
+                  </button>
+                ))}
+              </div>
+            )}
             <p className="text-[11px] text-ui-muted">
               🔒 Só vídeos sem crianças identificáveis (por exemplo, jogos profissionais). Os vídeos do clube com
               atletas chegam mais tarde, com autorização dos encarregados.
@@ -430,13 +518,26 @@ const SessionCard: React.FC<{ session: VjSession; detail?: string; onOpen: () =>
           {s.title}
         </b>
         <span className="text-[11px] text-ui-muted">
-          {s.items.length} {s.items.length === 1 ? 'vídeo' : 'vídeos'} · {pauseCount(s)}{' '}
-          {pauseCount(s) === 1 ? 'pergunta' : 'perguntas'}
+          {challengeTypeOf(s) === 'video' ? (
+            <>
+              {s.items.length} {s.items.length === 1 ? 'vídeo' : 'vídeos'} · {pauseCount(s)}{' '}
+              {pauseCount(s) === 1 ? 'pergunta' : 'perguntas'}
+            </>
+          ) : (
+            `${CHALLENGE_TYPES[challengeTypeOf(s)].icon} ${CHALLENGE_TYPES[challengeTypeOf(s)].label}`
+          )}
+          {s.difficulty ? ` · ${DIFFICULTIES[s.difficulty]}` : ''}
+          {s.ageGroups?.length ? ` · para ${s.ageGroups.join(', ')}` : ''}
           {detail ? ` · ${detail}` : ''}
           {s.authorName ? ` · ${s.authorName}` : ''}
           {s.status === 'publicado' && s.approvedBy ? ` · aprovada por ${s.approvedBy}` : ''}
         </span>
         <span className="mt-1 flex flex-wrap gap-1">
+          {s.status === 'publicado' && rightsProblems(s).length > 0 && (
+            <span className="rounded-full bg-ui-warning/15 px-2 py-0.5 text-[10px] text-ui-warning">
+              Direitos por indicar
+            </span>
+          )}
           {s.competencies.map((c) => (
             <span key={c} className="rounded-full bg-ui-brand/10 px-2 py-0.5 text-[10px] text-ui-brand">
               {competencyLabel(c)}
@@ -463,8 +564,25 @@ const SessionEditor: React.FC<{
   onSave: (s: VjSession, msg: string) => void;
   onDuplicate?: (s: VjSession) => void;
   onDelete?: (s: VjSession) => void;
-}> = ({ session, readOnly, actions, onAction, favorite, onBack, onSave, onDuplicate, onDelete }) => {
+  /** MC1a: the team's exercise library (for the practical challenges) and who confirms the rights. */
+  exercises?: Exercise[];
+  userName?: string;
+}> = ({
+  session,
+  readOnly,
+  actions,
+  onAction,
+  favorite,
+  onBack,
+  onSave,
+  onDuplicate,
+  onDelete,
+  exercises = [],
+  userName
+}) => {
   const [draft, setDraft] = useState<VjSession>(session);
+  const [publishError, setPublishError] = useState<string[]>([]);
+  const type = challengeTypeOf(draft);
   const [link, setLink] = useState('');
   const [label, setLabel] = useState('');
   const [linkError, setLinkError] = useState('');
@@ -473,11 +591,22 @@ const SessionEditor: React.FC<{
   const available = COMPETENCIES.filter((c) => !draft.competencies.includes(c.id));
 
   return (
-    <Sheet title={isNew ? 'Nova sessão' : 'Editar sessão'} onClose={onBack} size="lg">
+    <Sheet
+      title={
+        type === 'video'
+          ? isNew
+            ? 'Nova sessão'
+            : 'Editar sessão'
+          : `${isNew ? 'Novo desafio' : 'Editar desafio'} · ${CHALLENGE_TYPES[type].label}`
+      }
+      onClose={onBack}
+      size="lg"
+    >
       <div className="space-y-3">
         <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${VJ_STATUS[draft.status].cls}`}>
           {VJ_STATUS[draft.status].label}
         </span>
+        {type !== 'video' && <p className="text-[11px] text-ui-muted">{CHALLENGE_TYPES[type].hint}</p>}
         <label className="block text-xs text-ui-muted">
           Título
           <input
@@ -533,80 +662,90 @@ const SessionEditor: React.FC<{
           </div>
         </div>
 
-        <div className="space-y-2">
-          <span className="text-xs text-ui-muted">Vídeos</span>
-          {draft.items.length === 0 && <p className="text-[11px] text-ui-muted">Ainda sem vídeos.</p>}
-          {draft.items.map((it, i) => (
-            <div key={it.id} className="space-y-1.5 rounded-ui border border-ui-line p-2">
-              <div className="flex items-center justify-between gap-2">
-                <span className="min-w-0 text-xs">
-                  <b className="text-ui-text">▶ Vídeo {i + 1}</b>
-                  <span className="block truncate text-[11px] text-ui-muted">
-                    youtube.com/watch?v={it.youtubeId}
-                    {it.label ? ` · ${it.label}` : ''}
+        {type === 'pergunta' && <QuestionFields draft={draft} readOnly={readOnly} set={set} />}
+        {type === 'pratico' && <PracticeFields draft={draft} readOnly={readOnly} set={set} exercises={exercises} />}
+        {type === 'reflexao' && <ReflectionFields draft={draft} readOnly={readOnly} set={set} />}
+        {type === 'video' && (
+          <div className="space-y-2">
+            <span className="text-xs text-ui-muted">Vídeos</span>
+            {draft.items.length === 0 && <p className="text-[11px] text-ui-muted">Ainda sem vídeos.</p>}
+            {draft.items.map((it, i) => (
+              <div key={it.id} className="space-y-1.5 rounded-ui border border-ui-line p-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="min-w-0 text-xs">
+                    <b className="text-ui-text">▶ Vídeo {i + 1}</b>
+                    <span className="block truncate text-[11px] text-ui-muted">
+                      youtube.com/watch?v={it.youtubeId}
+                      {it.label ? ` · ${it.label}` : ''}
+                    </span>
                   </span>
-                </span>
-                {!readOnly && (
-                  <button
-                    type="button"
-                    aria-label={`Tirar o vídeo ${i + 1}`}
-                    onClick={() => set({ items: draft.items.filter((x) => x.id !== it.id) })}
-                    className="px-1 text-xs text-ui-muted hover:text-ui-danger"
-                  >
-                    ✕
-                  </button>
-                )}
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      aria-label={`Tirar o vídeo ${i + 1}`}
+                      onClick={() => set({ items: draft.items.filter((x) => x.id !== it.id) })}
+                      className="px-1 text-xs text-ui-muted hover:text-ui-danger"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <PauseEditor
+                  item={it}
+                  index={i}
+                  readOnly={readOnly}
+                  onChange={(pauses) => set({ items: draft.items.map((x) => (x.id === it.id ? { ...x, pauses } : x)) })}
+                />
               </div>
-              <PauseEditor
-                item={it}
-                index={i}
-                readOnly={readOnly}
-                onChange={(pauses) => set({ items: draft.items.map((x) => (x.id === it.id ? { ...x, pauses } : x)) })}
-              />
-            </div>
-          ))}
-          {!readOnly && (
-            <div className="space-y-1.5 rounded-ui border border-dashed border-ui-line p-2">
-              <input
-                value={link}
-                onChange={(e) => {
-                  setLink(e.target.value);
-                  setLinkError('');
-                }}
-                aria-label="Link do vídeo do YouTube"
-                placeholder="Link do YouTube (ex.: https://youtu.be/…)"
-                className="ui-input w-full text-xs"
-              />
-              <input
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
-                maxLength={80}
-                aria-label="O que é o vídeo"
-                placeholder="O que é (ex.: jogo profissional)"
-                className="ui-input w-full text-xs"
-              />
-              {linkError && <p className="text-[11px] text-ui-danger">{linkError}</p>}
-              <button
-                type="button"
-                onClick={() => {
-                  const id = youtubeIdOf(link);
-                  if (!id) return setLinkError('Este link não é de um vídeo do YouTube.');
-                  set({
-                    items: [
-                      ...draft.items,
-                      { id: uid(), kind: 'video', youtubeId: id, ...(label.trim() ? { label: label.trim() } : {}) }
-                    ]
-                  });
-                  setLink('');
-                  setLabel('');
-                }}
-                className="ui-btn ui-btn-soft w-full text-xs"
-              >
-                + Vídeo
-              </button>
-            </div>
-          )}
-        </div>
+            ))}
+            {!readOnly && (
+              <div className="space-y-1.5 rounded-ui border border-dashed border-ui-line p-2">
+                <input
+                  value={link}
+                  onChange={(e) => {
+                    setLink(e.target.value);
+                    setLinkError('');
+                  }}
+                  aria-label="Link do vídeo do YouTube"
+                  placeholder="Link do YouTube (ex.: https://youtu.be/…)"
+                  className="ui-input w-full text-xs"
+                />
+                <input
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  maxLength={80}
+                  aria-label="O que é o vídeo"
+                  placeholder="O que é (ex.: jogo profissional)"
+                  className="ui-input w-full text-xs"
+                />
+                {linkError && <p className="text-[11px] text-ui-danger">{linkError}</p>}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const id = youtubeIdOf(link);
+                    if (!id) return setLinkError('Este link não é de um vídeo do YouTube.');
+                    set({
+                      items: [
+                        ...draft.items,
+                        { id: uid(), kind: 'video', youtubeId: id, ...(label.trim() ? { label: label.trim() } : {}) }
+                      ]
+                    });
+                    setLink('');
+                    setLabel('');
+                  }}
+                  className="ui-btn ui-btn-soft w-full text-xs"
+                >
+                  + Vídeo
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        <CommonFields draft={draft} readOnly={readOnly} set={set} />
+        <RightsPanel draft={draft} readOnly={readOnly} set={set} userName={userName} />
+        {draft.status === 'publicado' && rightsProblems(draft).length > 0 && (
+          <p className="text-[11px] text-ui-warning">Direitos por indicar: preencha-os antes de publicar de novo.</p>
+        )}
 
         {(draft.runs || []).length > 0 && (
           <section className="space-y-1" aria-label="Vezes conduzida">
@@ -627,11 +766,24 @@ const SessionEditor: React.FC<{
             })}
           </section>
         )}
+        {publishError.length > 0 && (
+          <div
+            role="alert"
+            className="rounded-ui border border-ui-warning/50 bg-ui-warning/10 p-2 text-[11px] text-ui-text"
+          >
+            <b>Ainda não pode publicar:</b>
+            {publishError.map((p) => (
+              <span key={p} className="block">
+                · {p}
+              </span>
+            ))}
+          </div>
+        )}
         {!readOnly && (
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={() => onSave(draft, 'Sessão guardada ✓')}
+              onClick={() => onSave(draft, type === 'video' ? 'Sessão guardada ✓' : 'Desafio guardado ✓')}
               className="ui-btn ui-btn-soft text-xs"
             >
               Guardar
@@ -640,9 +792,13 @@ const SessionEditor: React.FC<{
               <button
                 key={a.to}
                 type="button"
-                onClick={() =>
-                  onSave(onAction ? onAction(draft, a.to) : { ...draft, status: a.to }, `${VJ_STATUS[a.to].label} ✓`)
-                }
+                onClick={() => {
+                  // MC1a: publishing needs the content complete and the rights (draft and review do not)
+                  const problems = a.to === 'publicado' ? publishProblems(draft) : [];
+                  setPublishError(problems);
+                  if (problems.length) return;
+                  onSave(onAction ? onAction(draft, a.to) : { ...draft, status: a.to }, `${VJ_STATUS[a.to].label} ✓`);
+                }}
                 className={`ui-btn text-xs ${a.to === 'publicado' ? 'ui-btn-primary' : 'ui-btn-soft'}`}
               >
                 {a.label}

@@ -42,6 +42,12 @@ export const COMPETENCIES: Array<{ id: string; area: EvaluationArea; label: stri
 const CUSTOM = 'x:';
 export const customCompetencyId = (name: string) => `${CUSTOM}${name.trim().slice(0, 60)}`;
 
+/** MC1a: a competency the app knows (the catalogue, or the coach's own "x:Name"). */
+export const isKnownCompetency = (id: unknown): id is string =>
+  typeof id === 'string' &&
+  ((id.startsWith(CUSTOM) && id.length > CUSTOM.length && id.length <= CUSTOM.length + 60) ||
+    COMPETENCIES.some((c) => c.id === id));
+
 export function competencyLabel(id: string): string {
   if (id.startsWith(CUSTOM)) return id.slice(CUSTOM.length);
   return COMPETENCIES.find((c) => c.id === id)?.label || id;
