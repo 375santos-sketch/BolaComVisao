@@ -246,3 +246,65 @@ test('desafios: pergunta, prático e reflexão; direitos para publicar; objetivo
   await goals.getByRole('button', { name: 'Adicionar' }).click();
   await expect(goals).toContainText('🧩 Receção orientada');
 });
+
+// MC1b: a mission of 2 published challenges, given to 2 athletes with a deadline; the coach ticks what each one did;
+// finishing suggests reassessing (it never changes the evaluation); the athlete's sheet shows it. Fictitious data.
+test('missões: criar, atribuir a atletas, marcar feito e ver na ficha do atleta', async ({ page }) => {
+  test.setTimeout(150_000);
+  await login(page, COACH_A);
+  await enterPanel(page);
+  await navTo(page, /clube/i);
+  await page.getByRole('button', { name: /Visão de Jogo/ }).click();
+  const library = page.getByRole('dialog', { name: 'Visão de Jogo' });
+  // Two published reflections of the team (the steps of the mission)
+  for (const name of ['MC1b: antes do jogo', 'MC1b: depois do jogo']) {
+    await library.getByRole('group', { name: 'Outros desafios' }).getByRole('button', { name: '+ Reflexão' }).click();
+    const editor = page.getByRole('dialog', { name: 'Novo desafio · Reflexão' });
+    await editor.getByPlaceholder(/Onde receber/).fill(name);
+    await editor.getByLabel('Pergunta de reflexão 1').fill('O que queres melhorar?');
+    await setRights(editor, 'proprio');
+    await editor.getByRole('button', { name: 'Publicar na equipa' }).click();
+    await expect(page.getByText('Publicada ✓')).toBeVisible();
+  }
+  // The mission
+  await library.getByRole('tab', { name: 'Missões' }).click();
+  await library.getByRole('button', { name: '+ Nova missão' }).click();
+  const m = page.getByRole('dialog', { name: 'Nova missão' });
+  await m.getByPlaceholder(/Melhorar a receção/).fill('MC1b: receção orientada');
+  await m.getByLabel('Competência').selectOption('rececao_orientada');
+  await m.getByRole('button', { name: 'Publicar na equipa' }).click();
+  await expect(m.getByRole('alert')).toContainText('Uma missão tem de 2 a 6 desafios.');
+  const pick = m.getByLabel('Juntar desafio à missão');
+  await pick.selectOption({ label: '💭 MC1b: antes do jogo' });
+  await pick.selectOption({ label: '💭 MC1b: depois do jogo' });
+  await m.getByRole('button', { name: 'Publicar na equipa' }).click();
+  await expect(page.getByText('Missão publicada ✓')).toBeVisible();
+  // Given to 2 athletes, with a deadline
+  await library.getByRole('button', { name: 'Atribuir a missão MC1b: receção orientada' }).click();
+  const assign = page.getByRole('form', { name: 'Atribuir' });
+  await assign.getByRole('button', { name: 'Atletas escolhidos' }).click();
+  await assign.getByLabel('Rui Silva').check();
+  await assign.getByLabel('Tomás Gonçalves').check();
+  await assign.getByLabel('Prazo (opcional)').fill('2026-12-31');
+  await assign.getByRole('button', { name: 'Atribuir' }).click();
+  await expect(page.getByText('Atribuído ✓')).toBeVisible();
+  // The coach ticks both steps of Rui Silva: reassessing is suggested
+  await library.getByRole('tab', { name: 'Atribuições' }).click();
+  const item = library.getByRole('list', { name: 'Atribuições' }).getByRole('listitem').filter({
+    hasText: 'MC1b: receção orientada'
+  });
+  await expect(item).toContainText('2 atletas · prazo 31/12 · 0 de 2 concluíram');
+  await item.getByRole('button', { name: /Atribuição/ }).click();
+  await item.getByLabel('Rui Silva: passo 1 feito').check();
+  await item.getByLabel('Rui Silva: passo 2 feito').check();
+  await expect(item).toContainText('1 de 2 concluíram');
+  await expect(item).toContainText('Reavaliar 🧩 Receção orientada? Rui Silva fez todos os passos');
+  // On the athlete's sheet
+  await page.keyboard.press('Escape');
+  await navTo(page, /equipa/i);
+  await page.getByRole('heading', { name: 'Rui Silva' }).click();
+  await page.getByRole('navigation', { name: 'Secções da ficha' }).getByRole('button', { name: 'Avaliação' }).click();
+  const card = page.getByRole('region', { name: 'Missões e desafios atribuídos' });
+  await expect(card).toContainText('MC1b: receção orientada');
+  await expect(card).toContainText('2/2');
+});

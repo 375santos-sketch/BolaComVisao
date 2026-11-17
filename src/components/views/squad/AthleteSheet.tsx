@@ -12,6 +12,8 @@ import { PlayerTestsSection } from './PlayerTestsSection';
 import { PlayerEvolutionSection } from './PlayerEvolutionSection';
 import { vjStatsFor } from '../../../lib/vjCompetencies';
 import { sessionsOf } from '../../../lib/vjLibrary';
+import { assignmentsOf, missionsOf } from '../../../lib/missions';
+import { AthleteAssignments } from '../../visaoDeJogo/MissionsPanels';
 import { canInviteGuardians } from '../../../lib/familyView';
 
 const GuardiansCard = lazy(() => import('./GuardiansCard'));
@@ -340,6 +342,14 @@ const AthleteSheetInner: React.FC<AthleteSheetProps & { player: Player }> = ({
             player={player}
             onSavePlayer={onUpdateState ? savePlayer : undefined}
             onShowToast={onShowToast}
+          />
+          {/* MC1b: what was given to this athlete (only the coaching staff sees it) */}
+          <AthleteAssignments
+            athleteId={player.id}
+            assignments={assignmentsOf(vjTeam)}
+            missions={missionsOf(vjTeam)}
+            challenges={sessionsOf(vjTeam)}
+            roster={vjTeam?.roster || []}
           />
         </section>
 

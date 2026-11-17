@@ -60,6 +60,8 @@ const RECORD_KINDS: RecordKind[] = [
   'report',
   'teamconfig',
   'challenge',
+  'mission',
+  'assignment',
   'clubchallenge'
 ];
 const MAX_BATCH_WRITES = 400;
