@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AppState, ChallengeType, Exercise, VjSession, VjStatus } from '../../types';
+import { AppState, Assignment, ChallengeType, Exercise, Mission, VjSession, VjStatus } from '../../types';
+import { AssignSheet, AssignmentsTab, MissionsTab } from './MissionsPanels';
+import { assignmentsOf, missionsOf } from '../../lib/missions';
 import { Sheet } from '../ui/Sheet';
 import { COMPETENCIES, competencyLabel } from '../../lib/competencies';
 import {
@@ -52,7 +54,7 @@ import { pauseCount, withRun } from '../../lib/vjPauses';
 import { defaultPresentIds, runScore } from '../../lib/vjCompetencies';
 import { localDateISO } from '../../lib/trainingQuick';
 
-type Tab = 'equipa' | 'clube' | 'plataforma';
+type Tab = 'equipa' | 'clube' | 'plataforma' | 'missoes' | 'atribuicoes';
 type Action = { to: VjStatus; label: string };
 
 /**
@@ -108,6 +110,21 @@ const VisaoDeJogoModal: React.FC<{
   }, [tab, admin]);
   const now = () => new Date().toISOString();
 
+  // MC1b: the team's missions and assignments (only for the coaching staff)
+  const [assigning, setAssigning] = useState<Assignment['target'] | null>(null);
+  const teamData = {
+    challenges: sessions,
+    missions: missionsOf(team),
+    assignments: assignmentsOf(team),
+    roster: team?.roster || [],
+    readOnly,
+    userName: user?.name,
+    onSave: (patch: { missions?: Mission[]; assignments?: Assignment[] }, msg?: string) => {
+      if (!team) return;
+      onUpdateState({ teams: (state.teams || []).map((t) => (t.id === team.id ? { ...t, ...patch } : t)) });
+      if (msg) onShowToast(msg);
+    }
+  };
   const saveAll = (next: VjSession[], msg?: string) => {
     if (!team) return;
     onUpdateState({ teams: (state.teams || []).map((t) => (t.id === team.id ? { ...t, vjSessions: next } : t)) });
@@ -134,6 +151,7 @@ const VisaoDeJogoModal: React.FC<{
     save(clubSessionForTeam(s, uid(), now()), `«${s.title}» já está na biblioteca da equipa ✓`);
   };
 
+  if (assigning) return <AssignSheet {...teamData} target={assigning} onClose={() => setAssigning(null)} />;
   if (showing) return <ShowInTraining session={showing} exercises={exercises} onClose={() => setShowing(null)} />;
 
   if (conducting) {
@@ -280,25 +298,33 @@ const VisaoDeJogoModal: React.FC<{
             [
               ['equipa', 'Da equipa'],
               ['clube', toReview > 0 ? `Do clube · ${toReview} por rever` : 'Do clube'],
-              ['plataforma', 'BolaComVisão']
+              ['plataforma', 'BolaComVisão'],
+              ['missoes', 'Missões'],
+              ['atribuicoes', 'Atribuições']
             ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              role="tab"
-              aria-selected={tab === key}
-              onClick={() => switchTab(key)}
-              className={`rounded-full border px-3 py-1 text-xs ${
-                tab === key ? 'border-ui-brand bg-ui-brand/10 text-ui-text' : 'border-ui-line text-ui-muted'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+          )
+            .filter(([key]) => team || (key !== 'missoes' && key !== 'atribuicoes'))
+            .map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={tab === key}
+                onClick={() => switchTab(key)}
+                className={`rounded-full border px-3 py-1 text-xs ${
+                  tab === key ? 'border-ui-brand bg-ui-brand/10 text-ui-text' : 'border-ui-line text-ui-muted'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
         </div>
 
-        {
+        {tab === 'missoes' ? (
+          <MissionsTab {...teamData} />
+        ) : tab === 'atribuicoes' ? (
+          <AssignmentsTab {...teamData} />
+        ) : (
           <>
             {isPlatform && (
               <p className="text-[11px] text-ui-muted">
@@ -406,6 +432,16 @@ const VisaoDeJogoModal: React.FC<{
                           ▶ Mostrar no treino
                         </button>
                       )}
+                      {!shared && !readOnly && (
+                        <button
+                          type="button"
+                          onClick={() => setAssigning({ kind: 'desafio', id: s.id })}
+                          className="ui-btn ui-btn-soft flex-1 text-xs"
+                          aria-label={`Atribuir: ${s.title}`}
+                        >
+                          Atribuir
+                        </button>
+                      )}
                       {shared &&
                         canLeaveTeam(s) &&
                         !readOnly &&
@@ -494,7 +530,7 @@ const VisaoDeJogoModal: React.FC<{
               atletas chegam mais tarde, com autorização dos encarregados.
             </p>
           </>
-        }
+        )}
       </div>
     </Sheet>
   );

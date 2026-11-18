@@ -783,6 +783,9 @@ export interface SquadProfile {
   setPieces?: SetPiece[];
   /** 🎬 Visão de Jogo: the team's sessions (videos with pauses and questions). */
   vjSessions?: VjSession[];
+  /** MC1b: the team's missions (2–6 challenges in a row) and what was given to whom (only for the coaches). */
+  missions?: Mission[];
+  assignments?: Assignment[];
   /** Animated plays drawn on the tactics board, each its own cloud record. */
   tacticPlays?: TacticPlay[];
   /** 📸 Team photos (start and end of each season), each its own cloud record. */
@@ -1180,6 +1183,9 @@ export interface AppState {
   setPieces?: SetPiece[];
   /** 🎬 Visão de Jogo: the team's sessions (videos with pauses and questions). */
   vjSessions?: VjSession[];
+  /** MC1b: the team's missions (2–6 challenges in a row) and what was given to whom (only for the coaches). */
+  missions?: Mission[];
+  assignments?: Assignment[];
   /** Copy of the active team's tactics-board plays (the teams hold them; see SquadProfile.tacticPlays). */
   tacticPlays?: TacticPlay[];
   /** Copy of the active team's photos (the teams hold them; see SquadProfile.teamPhotos). */
@@ -1329,6 +1335,44 @@ export interface VjSession {
 }
 
 export type ChallengeType = 'video' | 'pergunta' | 'pratico' | 'reflexao';
+
+/** MC1b — a mission: 2 to 6 published challenges of the team, in order (referenced by id, never copied). */
+export interface Mission {
+  id: string;
+  title: string;
+  objective?: string;
+  /** The competency it works on (the D1 catalogue, or "x:Name"). */
+  competencyId?: string;
+  ageGroups?: string[];
+  difficulty?: ChallengeDifficulty;
+  steps: Array<{ challengeId: string; note?: string }>;
+  status: 'rascunho' | 'publicado' | 'arquivado';
+  authorName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * MC1b — a mission or a challenge given to the team or to some athletes (roster ids), with a deadline. The coach
+ * ticks what each athlete did (internal, like attendance: never shown to the families).
+ */
+export interface Assignment {
+  id: string;
+  target: { kind: 'missao' | 'desafio'; id: string };
+  /** 'equipa' = the whole team; otherwise the athletes (roster ids). */
+  to: 'equipa' | string[];
+  dueDate?: string;
+  priority?: boolean;
+  /** Only for one athlete: the goal it works on. */
+  goal?: { athleteId: string; goalId: string };
+  note?: string;
+  status: 'ativa' | 'concluida' | 'cancelada';
+  /** athleteId → step index (0 for a single challenge) → the day the coach ticked it done. */
+  progress?: Record<string, Record<string, string>>;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 export type ChallengeDifficulty = 1 | 2 | 3;
 export interface ChallengeRights {
   kind: 'proprio' | 'licenciado' | 'externo';
