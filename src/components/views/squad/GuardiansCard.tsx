@@ -86,16 +86,20 @@ const GuardiansCard: React.FC<{ state: AppState; player: Player; onShowToast: (m
               <span className="min-w-0 text-ui-text">
                 {i.status === 'accepted' ? (
                   <>
-                    ✓ Na app desde {ddmm(i.acceptedAt || i.createdAt)}
+                    ✓ {i.kind === 'atleta' ? 'Atleta (conta própria)' : 'Na app'} desde{' '}
+                    {ddmm(i.acceptedAt || i.createdAt)}
                     <span className="block text-[11px] text-ui-muted">
-                      Vídeos com o educando: {i.consentVideo ? 'autorizados' : 'não autorizados'}
+                      {i.kind === 'atleta'
+                        ? 'Autorizada pelo encarregado'
+                        : `Vídeos com o educando: ${i.consentVideo ? 'autorizados' : 'não autorizados'}`}
                     </span>
                   </>
                 ) : expired ? (
                   <span className="text-ui-muted">Convite de {ddmm(i.createdAt)} expirou</span>
                 ) : (
                   <>
-                    Convite enviado {ddmm(i.createdAt)} · à espera
+                    {i.kind === 'atleta' ? 'Convite do encarregado ao atleta' : 'Convite enviado'} {ddmm(i.createdAt)} ·
+                    à espera
                     <button type="button" onClick={() => send(i)} className="ml-2 text-ui-brand underline">
                       Reenviar
                     </button>

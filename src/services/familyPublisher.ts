@@ -6,10 +6,37 @@ import { AppState } from '../types';
 import { workspaceIdOf } from '../lib/deviceCache';
 import { familyViewOf, GuardianInvite } from '../lib/familyView';
 import { hashData } from '../lib/recordSync';
-import { publishFamilyView, teamGuardianInvites } from './guardians';
+import { careerClubs, publishAthleteView, publishFamilyView, teamGuardianInvites } from './guardians';
+import { athleteViewOf } from '../lib/athleteView';
+import { Player } from '../types';
 
 const INVITES_TTL = 10 * 60 * 1000;
 const cache = new Map<string, { at: number; invites: GuardianInvite[] }>();
+let career: { at: number; clubs: string[] } | null = null;
+
+/** MC2a: the athlete's page («O Meu Percurso») of one accepted invitation, published again when it changed. */
+async function publishAthlete(invite: GuardianInvite, state: AppState, player: Player): Promise<number> {
+  const view = athleteViewOf(state, player);
+  const hash = hashData({ ...view, updatedAt: 0 });
+  const mark = `bcv_ath_${invite.id}`;
+  try {
+    if (localStorage.getItem(mark) === hash) return 0;
+  } catch {
+    /* publish anyway */
+  }
+  try {
+    await publishAthleteView(invite, view);
+    try {
+      localStorage.setItem(mark, hash);
+    } catch {
+      /* the next change publishes again */
+    }
+    return 1;
+  } catch (err) {
+    console.warn('O Meu Percurso: não foi possível atualizar.', err);
+    return 0;
+  }
+}
 
 export async function publishFamilyViews(state: AppState): Promise<number> {
   const user = state.currentUser;
@@ -26,6 +53,12 @@ export async function publishFamilyViews(state: AppState): Promise<number> {
     entry = { at: Date.now(), invites };
     cache.set(key, entry);
   }
+  // MC2a: «O Meu Percurso» only in the clubs the platform Administrator switched on (read again every 10 minutes)
+  if (!career || Date.now() - career.at > INVITES_TTL) {
+    const clubs = await careerClubs().catch(() => null);
+    career = { at: Date.now(), clubs: clubs || [] };
+  }
+  const careerOn = career.clubs.includes(clubId);
   let published = 0;
   for (const invite of entry.invites.filter((i) => i.status === 'accepted')) {
     const player = (state.roster || []).find((p) => p.id === invite.athleteId);
@@ -38,6 +71,7 @@ export async function publishFamilyViews(state: AppState): Promise<number> {
     } catch {
       /* publish anyway */
     }
+    if (careerOn) published += await publishAthlete(invite, state, player);
     try {
       await publishFamilyView(invite, view);
       published++;
