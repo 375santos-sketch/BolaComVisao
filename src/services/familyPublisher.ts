@@ -63,6 +63,10 @@ export async function publishFamilyViews(state: AppState): Promise<number> {
   for (const invite of entry.invites.filter((i) => i.status === 'accepted')) {
     const player = (state.roster || []).find((p) => p.id === invite.athleteId);
     if (!player) continue;
+    // «O Meu Percurso» on its own: the coach's ticks change it without changing the family's page
+    if (careerOn) published += await publishAthlete(invite, state, player);
+    // The athlete's own account (13+) has only «O Meu Percurso»: never a family page
+    if (invite.kind === 'atleta') continue;
     const view = familyViewOf(state, player);
     const hash = hashData({ ...view, updatedAt: 0 });
     const mark = `bcv_fam_${invite.id}`;
@@ -71,7 +75,6 @@ export async function publishFamilyViews(state: AppState): Promise<number> {
     } catch {
       /* publish anyway */
     }
-    if (careerOn) published += await publishAthlete(invite, state, player);
     try {
       await publishFamilyView(invite, view);
       published++;

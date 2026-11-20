@@ -357,6 +357,16 @@ const ChildCard: React.FC<{ code: string; sent: string[] }> = ({ code, sent }) =
   const ownAccount = invite.kind === 'atleta';
   // The athlete's own account (13+): the percurso first
   if (ownAccount && career) return <AthleteMode view={career} />;
+  // …and nothing else: the family page is the guardian's, never the athlete's
+  if (ownAccount)
+    return (
+      <section className="ui-card p-4" aria-label={`À espera do percurso: ${invite.athleteName}`}>
+        <p className="font-extrabold">{invite.athleteName}</p>
+        <p className="text-xs text-ui-muted">
+          O teu percurso aparece aqui quando o clube o tiver ligado e o treinador abrir a app.
+        </p>
+      </section>
+    );
   // «Modo atleta» (under 13, on the guardian's phone): the whole screen, and leaving needs the guardian's password
   if (athleteMode && career)
     return (
