@@ -5,8 +5,15 @@
 import { AppState } from '../types';
 import { workspaceIdOf } from '../lib/deviceCache';
 import { familyViewOf, GuardianInvite } from '../lib/familyView';
-import { hashData } from '../lib/recordSync';
-import { careerClubs, publishAthleteView, publishFamilyView, teamGuardianInvites } from './guardians';
+import { hashData, toPlainData } from '../lib/recordSync';
+import {
+  careerClubs,
+  publishAthleteView,
+  publishFamilyView,
+  readAthleteView,
+  readFamilyView,
+  teamGuardianInvites
+} from './guardians';
 import { athleteViewOf } from '../lib/athleteView';
 import { Player } from '../types';
 
@@ -14,23 +21,48 @@ const INVITES_TTL = 10 * 60 * 1000;
 const cache = new Map<string, { at: number; invites: GuardianInvite[] }>();
 let career: { at: number; clubs: string[] } | null = null;
 
+/** What a published page holds, without its date (the same page published twice has the same hash). */
+const viewHash = (view: { updatedAt: number }) => hashData({ ...toPlainData(view), updatedAt: 0 });
+
+const readMark = (mark: string): string | null => {
+  try {
+    return localStorage.getItem(mark);
+  } catch {
+    return null; // publish anyway
+  }
+};
+
+const remember = (mark: string, hash: string) => {
+  try {
+    localStorage.setItem(mark, hash);
+  } catch {
+    /* the next change publishes again */
+  }
+};
+
+/** True when the cloud already holds exactly this page (unreadable or missing: publish it). */
+async function sameInCloud(read: () => Promise<{ view: { updatedAt: number } } | null>, hash: string) {
+  try {
+    const current = await read();
+    return Boolean(current?.view) && viewHash(current!.view) === hash;
+  } catch {
+    return false;
+  }
+}
+
 /** MC2a: the athlete's page («O Meu Percurso») of one accepted invitation, published again when it changed. */
 async function publishAthlete(invite: GuardianInvite, state: AppState, player: Player): Promise<number> {
   const view = athleteViewOf(state, player);
-  const hash = hashData({ ...view, updatedAt: 0 });
+  const hash = viewHash(view);
   const mark = `bcv_ath_${invite.id}`;
-  try {
-    if (localStorage.getItem(mark) === hash) return 0;
-  } catch {
-    /* publish anyway */
+  if (readMark(mark) === hash) return 0;
+  if (await sameInCloud(() => readAthleteView(invite.id), hash)) {
+    remember(mark, hash);
+    return 0;
   }
   try {
     await publishAthleteView(invite, view);
-    try {
-      localStorage.setItem(mark, hash);
-    } catch {
-      /* the next change publishes again */
-    }
+    remember(mark, hash);
     return 1;
   } catch (err) {
     console.warn('O Meu Percurso: não foi possível atualizar.', err);
@@ -64,22 +96,20 @@ export async function publishFamilyViews(state: AppState): Promise<number> {
     const player = (state.roster || []).find((p) => p.id === invite.athleteId);
     if (!player) continue;
     const view = familyViewOf(state, player);
-    const hash = hashData({ ...view, updatedAt: 0 });
+    const hash = viewHash(view);
     const mark = `bcv_fam_${invite.id}`;
-    try {
-      if (localStorage.getItem(mark) === hash) continue;
-    } catch {
-      /* publish anyway */
-    }
+    if (readMark(mark) === hash) continue;
     if (careerOn) published += await publishAthlete(invite, state, player);
+    // A phone that never published this page (new device, after signing in again) first compares with the cloud:
+    // the same page is not written again (it would only spend the daily quota and change nothing for the family).
+    if (await sameInCloud(() => readFamilyView(invite.id), hash)) {
+      remember(mark, hash);
+      continue;
+    }
     try {
       await publishFamilyView(invite, view);
       published++;
-      try {
-        localStorage.setItem(mark, hash);
-      } catch {
-        /* the next change publishes again */
-      }
+      remember(mark, hash);
     } catch (err) {
       console.warn('Página do educando: não foi possível atualizar.', err);
     }

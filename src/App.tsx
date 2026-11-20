@@ -215,6 +215,9 @@ export default function App() {
   const [showAssistantHub, setShowAssistantHub] = useState<boolean>(false);
   const [showSignature, setShowSignature] = useState<boolean>(false);
   const [tourOpen, setTourOpen] = useState<boolean>(false);
+  // Who closed the first-visit tour on this screen: closing it must hide it at once (the localStorage mark alone
+  // does not redraw the screen, so the tour stayed on top of the app until something else changed).
+  const [tourClosedFor, setTourClosedFor] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [showAdminUsers, setShowAdminUsers] = useState<boolean>(false);
   const [showInviteStaff, setShowInviteStaff] = useState<boolean>(false);
@@ -1326,10 +1329,15 @@ export default function App() {
         />
 
         {/* Modals */}
-        {(tourOpen || (currentTab === 'home' && state.currentUser?.id && !tourDone(state.currentUser.id))) && (
+        {(tourOpen ||
+          (currentTab === 'home' &&
+            state.currentUser?.id &&
+            tourClosedFor !== state.currentUser.id &&
+            !tourDone(state.currentUser.id))) && (
           <GuidedTour
             onClose={() => {
               markTourDone(state.currentUser?.id);
+              setTourClosedFor(state.currentUser?.id || null);
               setTourOpen(false);
             }}
           />
