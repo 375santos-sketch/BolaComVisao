@@ -104,6 +104,8 @@ export async function readBackupDocuments(
       }
     }
     await readCollection(`club_workspace/${ws}/records`);
+    // F3.2: the athletes' private records
+    await readCollection(`club_workspace/${ws}/private`);
     await readCollection(`club_workspace/${ws}/push_subscriptions`);
   }
   errors.push(

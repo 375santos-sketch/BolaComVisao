@@ -59,6 +59,11 @@ async function readWorkspace(id: string): Promise<RawWorkspace> {
     ws.errors.push(`registos: ${reason(err)}`);
   }
   try {
+    ws.privateRecords = await readAll(['club_workspace', id, 'private']);
+  } catch (err) {
+    ws.errors.push(`dados privados dos atletas: ${reason(err)}`);
+  }
+  try {
     ws.pushSubscriptions = await readAll(['club_workspace', id, 'push_subscriptions']);
   } catch (err) {
     ws.errors.push(`telemóveis com avisos: ${reason(err)}`);

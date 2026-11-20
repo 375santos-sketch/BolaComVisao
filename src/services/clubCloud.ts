@@ -6,6 +6,7 @@ import {
   getDoc,
   onSnapshot,
   query,
+  setDoc,
   where,
   writeBatch,
   Unsubscribe
@@ -28,8 +29,10 @@ import {
   toPlainData,
   setSynced,
   isRecordKey,
-  CLUB_LIBRARY_KIND
+  CLUB_LIBRARY_KIND,
+  hashData
 } from '../lib/recordSync';
+import { PrivateKind, extractPrivateRecords } from '../lib/privateRecords';
 import { legacySyncedKey, syncedKeyFor } from '../lib/deviceCache';
 
 /**
@@ -592,4 +595,112 @@ export function subscribeToClubCloud(
     unsubLegacy();
     unsubs.forEach((u) => u());
   };
+}
+
+// ---------- F3.2: the athletes' private records (double writing, phase 0) ----------
+// Only in the clubs the platform Administrator switched on (system/dadosPrivados.clubesLigados, off by default).
+// The sport profile (records/player) still holds everything and is the source; this keeps the private copies in
+// club_workspace/{club}/private up to date from the devices that may write them. Never read here yet, so it costs
+// no reads; a refused write never stops the saving of the records (its own batches, after them).
+
+const PRIVATE_TTL = 10 * 60 * 1000;
+let privateSwitch: { at: number; clubs: string[] } | null = null;
+
+/** The clubs where the private records are kept (read again every 10 minutes). */
+export async function privateDataClubs(fresh = false): Promise<string[]> {
+  if (!fresh && privateSwitch && Date.now() - privateSwitch.at < PRIVATE_TTL) return privateSwitch.clubs;
+  const snap = await getDoc(doc(db, 'system', 'dadosPrivados'));
+  const list = snap.exists() ? (snap.data()?.clubesLigados as unknown) : [];
+  const clubs = Array.isArray(list) ? list.filter((c): c is string => typeof c === 'string') : [];
+  privateSwitch = { at: Date.now(), clubs };
+  return clubs;
+}
+
+/** The platform Administrator switches the private records on or off for a club. */
+export async function setPrivateDataClub(clubId: string, on: boolean): Promise<string[]> {
+  const now = await privateDataClubs(true);
+  const clubs = on ? [...new Set([...now, clubId])] : now.filter((c) => c !== clubId);
+  await setDoc(doc(db, 'system', 'dadosPrivados'), { clubesLigados: clubs, updatedAt: Date.now() });
+  privateSwitch = { at: Date.now(), clubs };
+  return clubs;
+}
+
+const privateSyncedKey = (ws: string) => `bcv_priv_synced_${ws}`;
+function loadPrivateSynced(ws: string): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(privateSyncedKey(ws)) || '{}') as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+function savePrivateSynced(ws: string, synced: Record<string, string>) {
+  try {
+    localStorage.setItem(privateSyncedKey(ws), JSON.stringify(synced));
+  } catch {
+    /* written again next time */
+  }
+}
+
+/**
+ * Writes the private records that changed since this device last wrote them (tombstones for the ones that are now
+ * empty or whose athlete or game is gone), only of the kinds this member may write and of the teams it works with.
+ */
+export async function pushPrivateRecords(
+  workspaceId: string | null | undefined,
+  state: AppState,
+  kinds: PrivateKind[]
+): Promise<{ success: boolean; written: number; message?: string }> {
+  const ws = cleanWorkspaceId(workspaceId);
+  if (!auth.currentUser || kinds.length === 0) return { success: true, written: 0 };
+  const scope = getTeamScope(ws);
+  const mine = (kind: string, teamId: string) => kinds.includes(kind as PrivateKind) && (!scope || scope.has(teamId));
+  const local = new Map([...extractPrivateRecords(state)].filter(([, r]) => mine(r.kind, r.teamId)));
+  const synced = loadPrivateSynced(ws);
+  const now = Date.now();
+  const author = auth.currentUser.uid;
+  const writes: Array<[string, Record<string, unknown>, string | null]> = [];
+  local.forEach((r, id) => {
+    const hash = hashData(r.data);
+    if (synced[id] !== hash)
+      writes.push([
+        id,
+        {
+          kind: r.kind,
+          teamId: r.teamId,
+          entityId: r.entityId,
+          data: r.data,
+          updatedAt: now,
+          updatedBy: author,
+          deleted: false
+        },
+        hash
+      ]);
+  });
+  Object.keys(synced).forEach((id) => {
+    if (local.has(id)) return;
+    const [kind, teamId, ...rest] = id.split('__');
+    if (!mine(kind, teamId)) return;
+    writes.push([
+      id,
+      { kind, teamId, entityId: rest.join('__'), data: null, updatedAt: now, updatedBy: author, deleted: true },
+      null
+    ]);
+  });
+  const next = { ...synced };
+  let written = 0;
+  try {
+    for (let i = 0; i < writes.length; i += MAX_BATCH_WRITES) {
+      const batch = writeBatch(db);
+      const part = writes.slice(i, i + MAX_BATCH_WRITES);
+      part.forEach(([id, rec]) => batch.set(doc(db, 'club_workspace', ws, 'private', id), toPlainData(rec)));
+      await batch.commit();
+      part.forEach(([id, , hash]) => (hash ? (next[id] = hash) : delete next[id]));
+      written += part.length;
+      savePrivateSynced(ws, next);
+    }
+    return { success: true, written };
+  } catch (err) {
+    if (isQuotaExceededError(err)) markQuotaExhausted(15);
+    return { success: false, written, message: (err as Error)?.message || 'Erro ao guardar os dados privados.' };
+  }
 }

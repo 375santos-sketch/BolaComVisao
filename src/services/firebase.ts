@@ -24,7 +24,14 @@ import {
 } from 'firebase/auth';
 import config from '../../firebase-applet-config.json';
 import { AppState } from '../types';
-import { resolveCloudMode, pushClubRecords, loadClubStateFromRecords } from './clubCloud';
+import {
+  resolveCloudMode,
+  pushClubRecords,
+  loadClubStateFromRecords,
+  privateDataClubs,
+  pushPrivateRecords
+} from './clubCloud';
+import { privateKindsFor } from '../lib/privateRecords';
 
 let app: FirebaseApp;
 if (!getApps().length) {
@@ -204,7 +211,10 @@ export async function saveMasterClubState(
 
   // Clubs migrated to per-record storage are saved record by record (the legacy document stays as a backup).
   if ((await resolveCloudMode(cleanWorkspaceId)) === 'records') {
-    return pushClubRecords(cleanWorkspaceId, state, { authorId, allowMassDelete: forceOverwrite });
+    const result = await pushClubRecords(cleanWorkspaceId, state, { authorId, allowMassDelete: forceOverwrite });
+    // F3.2: then the athletes' private copies, only in the clubs switched on (never stops the save above)
+    if (result.success) await keepPrivateCopies(cleanWorkspaceId, state);
+    return result;
   }
 
   // If quota was already hit and cooldown is active, avoid hitting Firestore backend with failing requests
@@ -377,3 +387,15 @@ export {
   GoogleAuthProvider,
   signInWithPopup
 };
+
+/** F3.2 — Keeps the athletes' private copies up to date after a save (phase 0: double writing, F3 plan). */
+async function keepPrivateCopies(workspaceId: string, state: AppState): Promise<void> {
+  try {
+    const kinds = privateKindsFor(state.currentUser);
+    if (!kinds.length || !(await privateDataClubs()).includes(workspaceId)) return;
+    const done = await pushPrivateRecords(workspaceId, state, kinds);
+    if (!done.success) console.warn('Dados privados: não foi possível atualizar a cópia.', done.message);
+  } catch (err) {
+    console.warn('Dados privados: não foi possível atualizar a cópia.', err);
+  }
+}
