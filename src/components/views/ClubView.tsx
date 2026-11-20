@@ -80,6 +80,40 @@ export const ClubView: React.FC<ClubViewProps> = ({
       gone = true;
     };
   }, [isAdmin, careerClub]);
+  // F3.2: the platform Administrator switches the athletes' private copies on for this club (test clubs first)
+  const [privateOn, setPrivateOn] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!isAdmin) return;
+    let gone = false;
+    import('../../services/clubCloud')
+      .then((m) => m.privateDataClubs(true))
+      .then(
+        (list) => !gone && setPrivateOn(list.includes(careerClub)),
+        () => !gone && setPrivateOn(null)
+      );
+    return () => {
+      gone = true;
+    };
+  }, [isAdmin, careerClub]);
+  const togglePrivate = async () => {
+    const next = !privateOn;
+    if (
+      next &&
+      !window.confirm(
+        'Ligar os dados privados (F3) neste clube? Os telemóveis dos treinadores passam a guardar também uma cópia ' +
+          'separada dos contactos, avaliações, notas e objetivos, e o staff deixa de os ver na app. Nada é apagado. ' +
+          'Use primeiro em clubes de teste.'
+      )
+    )
+      return;
+    try {
+      const m = await import('../../services/clubCloud');
+      const list = await m.setPrivateDataClub(careerClub, next);
+      setPrivateOn(list.includes(careerClub));
+    } catch {
+      window.alert('Não foi possível mudar (sem ligação?).');
+    }
+  };
   const toggleCareer = async () => {
     const next = !careerOn;
     if (
@@ -232,6 +266,18 @@ export const ClubView: React.FC<ClubViewProps> = ({
                   ? 'Toque para desligar: as páginas dos atletas fecham'
                   : 'Toque para ligar só em clubes de teste (até à AIPD)',
                 run: toggleCareer
+              }
+            ]
+          : []),
+        ...(isAdmin && privateOn !== null
+          ? [
+              {
+                icon: 'database' as IconName,
+                title: `Dados privados dos atletas (teste): ${privateOn ? 'ligados' : 'desligados'} neste clube`,
+                detail: privateOn
+                  ? 'Toque para desligar (a cópia separada deixa de ser atualizada; nada é apagado)'
+                  : 'Toque para ligar só em clubes de teste (F3: cópia separada; o staff deixa de ver)',
+                run: togglePrivate
               }
             ]
           : []),

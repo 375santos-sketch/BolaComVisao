@@ -27,6 +27,8 @@ const COUNTED_COLLECTIONS = [
   'platform_library',
   'guardian_invites',
   'family_views',
+  // MC2a: «O Meu Percurso» (the athletes' pages)
+  'athlete_views',
   'guardians'
 ];
 
@@ -57,6 +59,11 @@ async function readWorkspace(id: string): Promise<RawWorkspace> {
     ws.records = await readAll(['club_workspace', id, 'records']);
   } catch (err) {
     ws.errors.push(`registos: ${reason(err)}`);
+  }
+  try {
+    ws.privateRecords = await readAll(['club_workspace', id, 'private']);
+  } catch (err) {
+    ws.errors.push(`dados privados dos atletas: ${reason(err)}`);
   }
   try {
     ws.pushSubscriptions = await readAll(['club_workspace', id, 'push_subscriptions']);

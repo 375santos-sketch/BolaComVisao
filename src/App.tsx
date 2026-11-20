@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
 import { forgetClubOnDevice, teamScopeOf, workspaceIdOf } from './lib/deviceCache';
 import { canPublishClubLibrary, isReadOnlyRole } from './lib/orgPermissions';
+import { hasPrivateData, readsPrivateData, stripPrivate } from './lib/privateRecords';
 import { withInactiveAbsences } from './lib/inactiveAbsences';
 import { liveMatchOf } from './lib/liveFollow';
 import { localDateISO } from './lib/trainingQuick';
@@ -153,6 +154,9 @@ export default function App() {
 
   const pushStateToCloud = async (s: AppState, forceOverwrite = false): Promise<void> => {
     if (!s.currentUser?.id) return;
+    // Staff only reads (F2.5, D4): the rules refuse every write from it, so its device never sends anything (F3.2:
+    // its copy without the private data must never look like a change to save)
+    if (isReadOnlyRole(s.currentUser)) return;
     // One save at a time: a save computed from an older state could undo a newer one.
     if (pushInFlightRef.current) {
       pushAgainRef.current = true;
@@ -540,6 +544,36 @@ export default function App() {
   useEffect(() => {
     setLibraryPublisher(syncWorkspaceId, publishesClubLibrary);
   }, [syncWorkspaceId, publishesClubLibrary]);
+  // F3.2: in the clubs where the platform Administrator switched the private data on, a member who does not read
+  // it (staff) keeps none of it on the device: removed from what arrives and, once, from the device's copy
+  const privateMember = Boolean(authUid && state.currentUser?.orgId) && !readsPrivateData(state.currentUser);
+  // The clubs with the private data switched on, as last read (null = not known yet)
+  const [privateClubs, setPrivateClubs] = useState<string[] | null>(null);
+  useEffect(() => {
+    if (!privateMember) return;
+    let gone = false;
+    import('./services/clubCloud')
+      .then((m) => m.privateDataClubs())
+      .then(
+        (clubs) => !gone && setPrivateClubs(clubs),
+        () => {}
+      );
+    return () => {
+      gone = true;
+    };
+  }, [privateMember, syncWorkspaceId]);
+  const hidePrivate = privateMember && (privateClubs || []).includes(syncWorkspaceId);
+  const hidePrivateRef = useRef(false);
+  useEffect(() => {
+    hidePrivateRef.current = hidePrivate;
+  }, [hidePrivate]);
+  useEffect(() => {
+    if (!hidePrivate || !hasPrivateData(state)) return;
+    const clean = stripPrivate(latestStateRef.current);
+    latestStateRef.current = clean;
+    setState(clean);
+    saveAppState(clean);
+  }, [hidePrivate, state]);
   useEffect(() => {
     if (!state.currentUser || !state.currentUser.id || !authUid) return;
     const workspaceId = workspaceIdOf(state.currentUser);
@@ -549,7 +583,8 @@ export default function App() {
     const applyRemote = (incoming: AppState) => {
       isRemoteSyncRef.current = true;
       const merged: AppState = {
-        ...incoming,
+        // F3.2: a member who does not read the private data (staff) keeps none of it on the device
+        ...(hidePrivateRef.current ? stripPrivate(incoming) : incoming),
         currentUser: latestStateRef.current.currentUser,
         syncInfo: {
           ...latestStateRef.current.syncInfo!,

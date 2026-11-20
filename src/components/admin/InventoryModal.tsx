@@ -9,6 +9,14 @@ import { StatTile } from '../ui/StatTile';
 import { Inventory, InventoryWorkspace, buildInventory, inventoryFile } from '../../lib/inventory';
 import { readInventorySource } from '../../services/inventoryReader';
 
+// F3.2: the athletes' private records (only counted)
+const PRIVATE_LABELS: Record<string, string> = {
+  pcontact: 'Contactos e saúde',
+  peval: 'Avaliações',
+  pnotes: 'Notas',
+  pgoals: 'Objetivos',
+  mratings: 'Classificações dos jogos'
+};
 const KIND_LABELS: Record<string, string> = {
   club: 'Clube (documento comum)',
   player: 'Atletas',
@@ -126,6 +134,13 @@ const WorkspaceCard: React.FC<{ ws: InventoryWorkspace }> = ({ ws }) => (
           .join(' · ') || '—'
       ])}
     />
+    {ws.privateRecords.live + ws.privateRecords.deleted > 0 && (
+      <Table
+        label={`Dados privados dos atletas em ${ws.id}`}
+        head={['Tipo', 'Ativos', 'Apagados']}
+        rows={Object.entries(ws.privateRecords.byKind).map(([k, c]) => [label(PRIVATE_LABELS, k), c.live, c.deleted])}
+      />
+    )}
     <p className="text-ui-caption text-ui-muted">
       Telemóveis com avisos: {ws.pushSubscriptions.phones} (de {ws.pushSubscriptions.accounts}{' '}
       {ws.pushSubscriptions.accounts === 1 ? 'conta' : 'contas'}) · Links públicos ligados:{' '}
