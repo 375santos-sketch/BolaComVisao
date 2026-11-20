@@ -97,6 +97,11 @@ Regras importantes (cada uma corrige um problema real que já aconteceu):
   `opponentScouting`): `withoutOpponentScouting` (em `normalizeClubState`) apaga esses dados sempre que aparecerem;
   `resetOldPreMatchFlags` (versão de dados 3, corre uma vez) tira o ✓ antigo dos jogos sem plano novo. O campo
   `opponentScouting` e o tipo de registo `scouting` ficam no código só para a sincronização apagar o que existia.
+- **Páginas dos pais e "O Meu Percurso"** (`familyPublisher.ts`): antes de gravar, um aparelho que ainda não as
+  publicou compara com a cópia da nuvem e não grava a mesma página outra vez (as regras deixam ler quem as pode
+  escrever). Antes, entrar num telemóvel novo regravava todas e gastava quota (20/11/2026).
+- **Modo Convidado removido a 20/11/2026** a pedido do Administrador: sem dados de demonstração, abria um ecrã
+  bloqueado. Os `guest-` que ainda existam nos aparelhos continuam a ser tratados no código.
 - **Removidos a 21/10/2026 a pedido do Administrador** (não voltar a pôr sem pedido): Módulos & Funcionalidades
   (planos comerciais; `licensingEngine` fica só para o registo de clubes), Chat da Equipa Técnica (as mensagens
   `staffMessages` ficam guardadas, sem ecrã), Biblioteca de Exercícios (e as Fichas PDF dos treinos), Relatórios da

@@ -1087,8 +1087,10 @@ service cloud.firestore {
     }
 
     match /family_views/{code} {
+      // The coaches who publish the page may read it (to compare before writing it again; it is made from their data)
       allow get: if isAuthenticated() && (
         isMasterAdmin() ||
+        writesFamilyView(resource.data.clubId, resource.data.teamId) ||
         (exists(/databases/$(database)/documents/guardian_invites/$(code)) &&
           get(/databases/$(database)/documents/guardian_invites/$(code)).data.status == 'accepted' &&
           get(/databases/$(database)/documents/guardian_invites/$(code)).data.get('acceptedBy', '') == request.auth.uid)
@@ -1112,6 +1114,7 @@ service cloud.firestore {
     match /athlete_views/{code} {
       allow get: if isAuthenticated() && (
         isMasterAdmin() ||
+        writesFamilyView(resource.data.clubId, resource.data.teamId) ||
         (exists(inviteDoc(code)) &&
           get(inviteDoc(code)).data.status == 'accepted' &&
           get(inviteDoc(code)).data.get('acceptedBy', '') == request.auth.uid &&

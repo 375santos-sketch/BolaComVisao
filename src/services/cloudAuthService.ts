@@ -121,7 +121,7 @@ function formatFirebaseAuthError(err: any): string {
   const rawMsg = err?.message || String(err || '');
 
   if (code === 'auth/unauthorized-domain' || rawMsg.includes('unauthorized-domain')) {
-    return `Domínio não autorizado pelo Firebase Authentication ("${currentHostname || 'atual'}"). Para autenticar com a Conta Google neste endereço, adicione "${currentHostname || 'este domínio'}" na Consola Firebase (Authentication > Definições > Domínios Autorizados). Em alternativa, pode entrar diretamente através de Utilizador/Email e Palavra-passe do clube ou em Modo Convidado.`;
+    return `Domínio não autorizado pelo Firebase Authentication ("${currentHostname || 'atual'}"). Para autenticar com a Conta Google neste endereço, adicione "${currentHostname || 'este domínio'}" na Consola Firebase (Authentication > Definições > Domínios Autorizados). Em alternativa, pode entrar diretamente através de Utilizador/Email e Palavra-passe do clube.`;
   }
 
   if (

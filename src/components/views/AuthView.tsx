@@ -36,8 +36,7 @@ const AuthErrorBanner: React.FC<{
   error: string;
   onClear: () => void;
   onShowToast: (msg: string) => void;
-  onGuestLogin?: () => void;
-}> = ({ error, onClear, onShowToast, onGuestLogin }) => {
+}> = ({ error, onClear, onShowToast }) => {
   const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
   const isUnauthorizedDomain =
     error.includes('unauthorized-domain') ||
@@ -89,17 +88,6 @@ const AuthErrorBanner: React.FC<{
                 Copiar Domínio (
                 {currentHostname.length > 22 ? currentHostname.substring(0, 20) + '...' : currentHostname})
               </span>
-            </button>
-          )}
-
-          {onGuestLogin && (
-            <button
-              type="button"
-              onClick={onGuestLogin}
-              className="ui-btn ui-btn-soft-warning py-1.5 px-3 text-[11px] flex items-center gap-1.5"
-            >
-              <span>⚡</span>
-              <span>Entrar como Convidado</span>
             </button>
           )}
         </div>
@@ -469,20 +457,6 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
     }
   };
 
-  const handleGuestLogin = () => {
-    const guestUser: UserAccount = {
-      id: 'guest-' + Date.now(),
-      username: 'convidado',
-      name: 'Treinador Convidado',
-      role: 'Modo Demo',
-      status: 'approved',
-      createdAt: new Date().toISOString()
-    };
-    onUpdateState({ currentUser: guestUser });
-    onShowToast('Sessão iniciada como Treinador Convidado.');
-    onLoginSuccess();
-  };
-
   return (
     <div className="w-full min-h-full flex flex-col items-center justify-start p-3 sm:p-6 pb-36 font-sans relative">
       {/* Background visual accents */}
@@ -744,12 +718,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                 {/* LOGIN FORM */}
                 <form onSubmit={handleLogin} className="space-y-3">
                   {loginError && (
-                    <AuthErrorBanner
-                      error={loginError}
-                      onClear={() => setLoginError(null)}
-                      onShowToast={onShowToast}
-                      onGuestLogin={handleGuestLogin}
-                    />
+                    <AuthErrorBanner error={loginError} onClear={() => setLoginError(null)} onShowToast={onShowToast} />
                   )}
 
                   <div>
@@ -853,12 +822,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                 </div>
 
                 {regError && (
-                  <AuthErrorBanner
-                    error={regError}
-                    onClear={() => setRegError(null)}
-                    onShowToast={onShowToast}
-                    onGuestLogin={handleGuestLogin}
-                  />
+                  <AuthErrorBanner error={regError} onClear={() => setRegError(null)} onShowToast={onShowToast} />
                 )}
 
                 <form onSubmit={handleRegister} className="space-y-2.5">
@@ -1061,26 +1025,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                 </form>
               </div>
             )}
-
-            {/* Guest Demo Divider */}
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-ui-line"></div>
-              </div>
-              <div className="relative flex justify-center text-[10px] uppercase tracking-widest tabular-nums">
-                <span className="bg-ui-surface px-3 text-ui-muted">ou acesso rápido</span>
-              </div>
-            </div>
-
-            {/* Demo Fast Access Button */}
-            <button
-              type="button"
-              onClick={handleGuestLogin}
-              className="ui-btn ui-btn-soft w-full py-2.5 text-xs flex items-center justify-center gap-2"
-            >
-              <span>⚡</span>
-              <span>Entrar sem Registo (Modo Convidado)</span>
-            </button>
+            {/* The guest mode was removed on 20/11/2026: without demo data it opened a blocked screen. */}
           </>
         )}
 

@@ -179,8 +179,11 @@ describe('E1 — o encarregado aceita e vê só a página do educando', () => {
     expect(await ok(g.publishFamilyView({ ...invite, athleteId: 'a9' }, view as never))).toBe(false);
     await signInAs('adjuntoA');
     expect(await ok(g.publishFamilyView(invite, view as never))).toBe(true);
+    // The coaches who publish it read it back (to compare before writing it again); staff does not
+    expect((await g.readFamilyView(code))?.view.trainings).toEqual({ attended: 3, total: 4 });
     await signInAs('staffA');
     expect(await ok(g.publishFamilyView(invite, view as never))).toBe(false);
+    expect(await ok(g.readFamilyView(code))).toBe(false);
   });
 
   it("the guardian reads the page, never the club's records; another account reads nothing", async () => {
