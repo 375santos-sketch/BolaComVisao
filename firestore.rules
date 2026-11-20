@@ -263,6 +263,47 @@ service cloud.firestore {
         (teamId != '_club' || isOrgManager(orgId));
     }
 
+    // F3.1 — The athletes' private data (club_workspace/{club}/private): contacts and health, evaluations, notes,
+    // goals and the ratings of each game, apart from the sport profile that the whole coaching staff reads.
+    // Staff (and anyone outside the team or the club, and the old access without memberships) never reads them.
+    function privateKinds() {
+      return ['pcontact', 'peval', 'pnotes', 'pgoals', 'mratings'];
+    }
+
+    /** Who reads the private records of a team: every active member that sees the team, except staff. */
+    function readsPrivate(orgId, teamId) {
+      // (no '_club' private record exists: isValidPrivateRecord refuses it)
+      return memberSeesTeam(orgId, teamId) && myOrgRole(orgId) != 'staff';
+    }
+
+    /** Who writes each kind (F3 plan, section 3): coaches and assistants write them all; the club's managers as the
+     *  plan says (contacts: owner, admin, diretor; evaluations and goals: owner, admin, coordenador; notes and game
+     *  ratings: only the team's coaches). */
+    function writesPrivate(orgId, teamId, kind) {
+      return readsPrivate(orgId, teamId) && (
+        myOrgRole(orgId) in ['treinador', 'adjunto'] ||
+        (kind == 'pcontact' && myOrgRole(orgId) in ['owner', 'admin', 'diretor']) ||
+        (kind in ['peval', 'pgoals'] && myOrgRole(orgId) in ['owner', 'admin', 'coordenador'])
+      );
+    }
+
+    function isValidPrivateRecord(recordId, data) {
+      return data is map &&
+        data.keys().hasAll(['kind', 'teamId', 'entityId', 'updatedAt', 'deleted']) &&
+        data.keys().hasOnly(['kind', 'teamId', 'entityId', 'updatedAt', 'updatedBy', 'deleted', 'data']) &&
+        data.kind in privateKinds() &&
+        data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 && data.teamId != '_club' &&
+        data.entityId is string && data.entityId.size() > 0 && data.entityId.size() <= 256 &&
+        // The id says what it is: kind__team__entity (a record cannot pose as another kind or team)
+        recordId == data.kind + '__' + data.teamId + '__' + data.entityId &&
+        data.updatedAt is number &&
+        data.updatedAt >= 0 &&
+        data.updatedAt <= (request.time.toMillis() + 600000) &&
+        data.deleted is bool &&
+        (!data.keys().hasAny(['updatedBy']) || (data.updatedBy is string && data.updatedBy.size() <= 128)) &&
+        (data.deleted == true || data.data is map);
+    }
+
     /** VJ3: who approves and publishes in the club library: the owner, admins, directors, and the coordinators the
      *  club allowed (membership flag publishesLibrary). */
     function publishesLibrary(orgId) {
@@ -737,6 +778,22 @@ service cloud.firestore {
             (!hasOrgMembership(workspaceId) && legacyClubAccess(workspaceId))
           );
         // Records are deleted with tombstones (deleted: true); hard deletes only by the Administrator.
+        allow delete: if isMasterAdmin();
+      }
+
+      // F3.1 — The athletes' private records (see readsPrivate). Same envelope as the records; a record never moves
+      // to another team nor changes kind. The platform Administrator reads them for the encrypted copy and the
+      // inventory (the app does not show them to the Administrator: D8). No access through the old club access.
+      match /private/{recordId} {
+        allow get, list: if isMasterAdmin() ||
+          (resource != null && readsPrivate(workspaceId, resource.data.teamId));
+        allow create, update: if isValidId(recordId) &&
+          isValidPrivateRecord(recordId, incoming()) &&
+          (resource == null || (resource.data.teamId == incoming().teamId && resource.data.kind == incoming().kind)) && (
+            isMasterAdmin() ||
+            writesPrivate(workspaceId, incoming().teamId, incoming().kind)
+          );
+        // Deleted with tombstones (deleted: true); hard deletes only by the Administrator.
         allow delete: if isMasterAdmin();
       }
 
