@@ -24,7 +24,22 @@ test('cópia cifrada: criar sem alterar nada, verificar, e restaurar no emulador
   await enterPanel(page);
   await navTo(page, /clube/i);
   await expect(page.getByTestId('sync-status').first()).toHaveAttribute('data-status', 'synced', { timeout: 30_000 });
-  await page.waitForTimeout(3000);
+  // The coaches' phones publish the family pages a few seconds after opening (this Administrator is also a coach of
+  // the test club): wait until the database is quiet (the same twice, 7 s apart) before the copy
+  const stamp = async () => JSON.stringify([...(await readWholeDatabase())].map(([p, d]) => [p, d.updateTime]).sort());
+  let quiet = await stamp();
+  await expect
+    .poll(
+      async () => {
+        await page.waitForTimeout(7000);
+        const now = await stamp();
+        const same = now === quiet;
+        quiet = now;
+        return same;
+      },
+      { timeout: 60_000, intervals: [0] }
+    )
+    .toBe(true);
   const before = await readWholeDatabase();
 
   await page.getByRole('button', { name: /Cópia cifrada da plataforma/ }).click();

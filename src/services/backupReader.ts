@@ -26,6 +26,8 @@ const TOP_COLLECTIONS = [
   'platform_library',
   'guardian_invites',
   'family_views',
+  // MC2a: «O Meu Percurso» (the athletes' pages)
+  'athlete_views',
   'guardians'
 ];
 
@@ -104,6 +106,8 @@ export async function readBackupDocuments(
       }
     }
     await readCollection(`club_workspace/${ws}/records`);
+    // F3.2: the athletes' private records
+    await readCollection(`club_workspace/${ws}/private`);
     await readCollection(`club_workspace/${ws}/push_subscriptions`);
   }
   errors.push(

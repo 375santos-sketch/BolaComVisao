@@ -95,11 +95,14 @@ export async function publishFamilyViews(state: AppState): Promise<number> {
   for (const invite of entry.invites.filter((i) => i.status === 'accepted')) {
     const player = (state.roster || []).find((p) => p.id === invite.athleteId);
     if (!player) continue;
+    // «O Meu Percurso» on its own: the coach's ticks change it without changing the family's page
+    if (careerOn) published += await publishAthlete(invite, state, player);
+    // The athlete's own account (13+) has only «O Meu Percurso»: never a family page
+    if (invite.kind === 'atleta') continue;
     const view = familyViewOf(state, player);
     const hash = viewHash(view);
     const mark = `bcv_fam_${invite.id}`;
     if (readMark(mark) === hash) continue;
-    if (careerOn) published += await publishAthlete(invite, state, player);
     // A phone that never published this page (new device, after signing in again) first compares with the cloud:
     // the same page is not written again (it would only spend the daily quota and change nothing for the family).
     if (await sameInCloud(() => readFamilyView(invite.id), hash)) {

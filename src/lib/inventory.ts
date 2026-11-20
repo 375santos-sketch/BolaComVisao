@@ -28,6 +28,8 @@ export interface RawWorkspace {
   legacy: Data | null;
   records: RawDoc[];
   pushSubscriptions: RawDoc[];
+  /** F3.2: the athletes' private records (club_workspace/{id}/private): only counted, never kept. */
+  privateRecords?: RawDoc[];
   /** Why part of this workspace could not be read (shown, never hidden). */
   errors: string[];
 }
@@ -110,6 +112,8 @@ export interface InventoryWorkspace {
   records: { total: number; live: number; deleted: number; byKind: Record<string, KindCount>; unknownKind: number };
   teams: TeamCount[];
   pushSubscriptions: { phones: number; accounts: number };
+  /** F3.2: the athletes' private records, counted by kind (live and deleted). */
+  privateRecords: { live: number; deleted: number; byKind: Record<string, KindCount> };
   /** Public links switched on in the teams (calendar, coaches' calendar, assistant's plan, parents' live). */
   publicLinks: Record<string, number>;
   errors: string[];
@@ -277,6 +281,17 @@ function summarizeWorkspace(ws: RawWorkspace, accounts: InventoryAccount[]): Inv
     })
   );
 
+  const privateByKind: Record<string, KindCount> = {};
+  let privateLive = 0;
+  (ws.privateRecords || []).forEach((r) => {
+    const count = (privateByKind[str(r.data.kind, '?')] ||= { live: 0, deleted: 0 });
+    if (r.data.deleted === true) count.deleted += 1;
+    else {
+      count.live += 1;
+      privateLive += 1;
+    }
+  });
+
   const subscribers = new Set(ws.pushSubscriptions.map((s) => str(s.data.uid)).filter(Boolean));
   return {
     id: ws.id,
@@ -293,6 +308,11 @@ function summarizeWorkspace(ws: RawWorkspace, accounts: InventoryAccount[]): Inv
     },
     teams: [...byTeam.values()].sort((a, b) => a.label.localeCompare(b.label)),
     pushSubscriptions: { phones: ws.pushSubscriptions.length, accounts: subscribers.size },
+    privateRecords: {
+      live: privateLive,
+      deleted: (ws.privateRecords || []).length - privateLive,
+      byKind: sortedObject(privateByKind)
+    },
     publicLinks,
     errors: ws.errors
   };
