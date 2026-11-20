@@ -27,6 +27,8 @@ const COUNTED_COLLECTIONS = [
   'platform_library',
   'guardian_invites',
   'family_views',
+  // MC2a: «O Meu Percurso» (the athletes' pages)
+  'athlete_views',
   'guardians'
 ];
 
