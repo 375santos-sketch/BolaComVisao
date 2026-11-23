@@ -765,6 +765,8 @@ export interface SquadProfile {
   liveToken?: string;
   /** The parents' live link also shows the cards (off unless the coach turns it on). */
   liveShowCards?: boolean;
+  /** Secret part of the parents' weekly summary link (/semana/{token}); none = not shared. */
+  newsletterToken?: string;
   /** Championship series (one per season): other games of the series, for the league table. */
   leagues?: LeagueSetup[];
   /** Training templates (Treinos → Modelos): a session plan kept to start new trainings from it. */
