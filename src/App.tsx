@@ -46,6 +46,7 @@ import { Navbar, TabType } from './components/Navbar';
 import { getActiveCategory } from './components/navCategory';
 import { PerformanceSubNav } from './components/PerformanceSubNav';
 import { BackupReminder } from './components/BackupReminder';
+import { NewsletterReminder } from './components/NewsletterReminder';
 import { getSyncView } from './lib/syncView';
 import { SessionExpiredBanner } from './components/SessionExpiredBanner';
 import { MoreDrawer } from './components/MoreDrawer';
@@ -1161,6 +1162,7 @@ export default function App() {
             {currentTab === 'home' && isAppAdmin(state.currentUser) && (
               <BackupReminder state={state} onShowToast={showToast} />
             )}
+            {currentTab === 'home' && <NewsletterReminder state={state} onOpen={() => setShowNewsletter(true)} />}
             {currentTab === 'home' && (
               <HomeView
                 state={state}

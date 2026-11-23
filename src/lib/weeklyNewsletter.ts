@@ -4,9 +4,10 @@ import { liveScore } from './liveFollow';
 import { addDaysISO } from './trainingQuick';
 
 /**
- * 📰 Resumo da semana para os pais (Mais → Comunicação): the app puts the week together on its own (the results of
- * the last 7 days, the attendance at the trainings and the games and trainings of the next 7 days); the coach
- * writes a short note, the highlights and the notices, checks it and publishes it. One secret link per team
+ * 📰 Resumo da semana para os pais (Mais → Comunicação): weeks run from Monday to Sunday and the summary goes out on
+ * Monday morning. The app puts it together on its own (the results and the attendance of the week that has just
+ * ended, and the games and trainings of the week that starts); the coach writes a short note, the highlights and
+ * the notices, checks it and publishes it. One secret link per team
  * (public_newsletters/{token}, shown by the server at /semana/{token}) always shows the latest one.
  * Only what every parent of the team may see: the scorers' first names (as in the game link), never surnames,
  * contacts, birth dates, absences of a given athlete, ratings or the coach's notes.
@@ -35,9 +36,12 @@ export interface NewsletterEvent {
 }
 
 export interface NewsletterIssue {
-  /** The week it covers: the 7 days before `to` (results) and the 7 days from `to` (next events). */
+  /** The week that has ended (Monday to Sunday): results and attendance. */
   from: string;
   to: string;
+  /** The week that starts (Monday to Sunday): next games and trainings. */
+  nextFrom: string;
+  nextTo: string;
   intro: string;
   highlights: string[];
   notices: string;
@@ -146,30 +150,62 @@ function gameEvent(s: ScheduledMatch, teamName: string): NewsletterEvent {
   };
 }
 
-/** Everything the app fills in for the week that ends on `today` (results) and starts on it (next events). */
+/**
+ * The two weeks of the summary published on `today`: the last full week (Monday to Sunday) and the week of `today`.
+ * Published on Monday 24/11: results of 17–23/11 and events of 24–30/11.
+ */
+export function newsletterWeeks(today: string): { from: string; to: string; nextFrom: string; nextTo: string } {
+  const [y, m, d] = today.split('-').map(Number);
+  const monday = addDaysISO(today, -((new Date(y, m - 1, d).getDay() + 6) % 7));
+  return {
+    from: addDaysISO(monday, -7),
+    to: addDaysISO(monday, -1),
+    nextFrom: monday,
+    nextTo: addDaysISO(monday, 6)
+  };
+}
+
+/** Monday from this hour on: the summary of the week that has ended is due. */
+export const NEWSLETTER_HOUR = 7;
+
+/**
+ * The week whose summary is due and not yet published (its Monday, `from`), or null. Due from Monday at 7:00 until
+ * the coach publishes it; `lastWeek` is the `from` of the last summary published for the team.
+ */
+export function newsletterDue(now: Date, lastWeek: string | undefined): string | null {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  if (now.getDay() === 1 && now.getHours() < NEWSLETTER_HOUR) return null;
+  const { from } = newsletterWeeks(today);
+  return lastWeek && lastWeek >= from ? null : from;
+}
+
+/** Everything the app fills in: the week that has ended (results) and the week that starts (next events). */
 export function newsletterOf(
   state: Pick<AppState, 'matches' | 'schedule' | 'trainings' | 'roster'>,
   teamName: string,
   today: string
 ): Omit<NewsletterIssue, 'intro' | 'highlights' | 'notices' | 'publishedAt'> {
-  const from = addDaysISO(today, -7);
-  const until = addDaysISO(today, 7);
+  const { from, to, nextFrom, nextTo } = newsletterWeeks(today);
+  const start = today > nextFrom ? today : nextFrom;
   const roster = state.roster || [];
-  const played = (state.matches || []).filter(
-    (m) => m && m.finished && dayOf(m.date) >= from && dayOf(m.date) <= today
-  );
+  const played = (state.matches || []).filter((m) => m && m.finished && dayOf(m.date) >= from && dayOf(m.date) <= to);
   const results = played
     .sort((a, b) => dayOf(a.date).localeCompare(dayOf(b.date)))
     .slice(-LIMITS.results)
     .map((m) => resultOf(m, roster));
-  // A game of today that is already over is a result, not a next game
-  const done = new Set(played.map((m) => `${dayOf(m.date)}|${(m.opponent || '').trim().toLowerCase()}`));
+  // A game of this week that is already over (published late) is not a next game
+  const done = new Set(
+    (state.matches || [])
+      .filter((m) => m && m.finished)
+      .map((m) => `${dayOf(m.date)}|${(m.opponent || '').trim().toLowerCase()}`)
+  );
   const games = (state.schedule || [])
-    .filter((s) => s && dayOf(s.date) >= today && dayOf(s.date) <= until)
+    .filter((s) => s && dayOf(s.date) >= start && dayOf(s.date) <= nextTo)
     .filter((s) => !done.has(`${dayOf(s.date)}|${(s.opponent || '').trim().toLowerCase()}`))
     .map((s) => gameEvent(s, teamName));
   const trainings = (state.trainings || [])
-    .filter((t) => t && dayOf(t.date) >= today && dayOf(t.date) <= until && t.completed === false)
+    .filter((t) => t && dayOf(t.date) >= start && dayOf(t.date) <= nextTo && t.completed === false)
     .map((t): NewsletterEvent => ({
       kind: 'treino',
       date: dayOf(t.date),
@@ -183,9 +219,11 @@ export function newsletterOf(
     .slice(0, LIMITS.upcoming);
   return {
     from,
-    to: today,
+    to,
+    nextFrom,
+    nextTo,
     results,
-    attendance: attendanceOf(state.trainings || [], roster, from, addDaysISO(today, -1)),
+    attendance: attendanceOf(state.trainings || [], roster, from, to),
     upcoming
   };
 }
@@ -282,6 +320,9 @@ export function newsletterFromRestDocument(
       ? {
           from: i.from,
           to: i.to,
+          // Summaries published before the Monday-to-Sunday weeks: the week after `to`
+          nextFrom: isDay(i.nextFrom) ? i.nextFrom : addDaysISO(i.to, 1),
+          nextTo: isDay(i.nextTo) ? i.nextTo : addDaysISO(i.to, 7),
           intro: clip(i.intro, LIMITS.intro),
           highlights: strings(i.highlights, LIMITS.highlight, LIMITS.highlights),
           notices: clip(i.notices, LIMITS.notices),
@@ -368,7 +409,7 @@ ul{list-style:none;display:grid;gap:8px}li{display:flex;gap:10px;align-items:bas
           return `<div class="res"><div class="sc"><b>${esc(left)}</b><span class="n">${esc(score)}</span><b>${esc(right)}</b></div><div class="meta">${esc(meta)}${r.scorers ? ` · Golos: ${esc(r.scorers)}` : ''}</div></div>`;
         })
         .join('')
-    : '<p class="empty">Não houve jogos esta semana.</p>';
+    : '<p class="empty">Não houve jogos nesta semana.</p>';
   const facts = [
     issue.attendance
       ? `<li><span><b>Treinos:</b> ${issue.attendance.trainings} ${issue.attendance.trainings === 1 ? 'treino' : 'treinos'} com ${issue.attendance.percent}% de presenças.</span></li>`
@@ -386,6 +427,6 @@ ul{list-style:none;display:grid;gap:8px}li{display:flex;gap:10px;align-items:bas
           return `<div class="ev ${e.kind}"><div class="d"><b>${esc(d)}</b><span>${esc(wd)} ${esc(MONTHS[Number(m) - 1] || '')}</span></div><div><b>${esc(e.title)}</b>${when ? `<small>${esc(when)}</small>` : ''}${e.place ? `<small>📍 ${esc(e.place)}</small>` : ''}</div></div>`;
         })
         .join('')
-    : '<p class="empty">Não há jogos nem treinos marcados para os próximos 7 dias.</p>';
-  return `${head}<div class="w"><div class="hd">${logo}<div><div class="wk">${esc(teamName)} · ${esc(weekLabel(issue.from, issue.to))}</div><h1>Resumo da semana</h1></div></div><div class="bd">${issue.intro ? `<p class="intro">${esc(issue.intro)}</p>` : ''}<section><h2>Resultados</h2>${results}</section>${facts ? `<section><h2>Destaques</h2><ul>${facts}</ul></section>` : ''}<section><h2>Próximos 7 dias</h2>${upcoming}</section>${issue.notices ? `<div class="av"><b>Avisos:</b> ${esc(issue.notices)}</div>` : ''}</div><div class="ft">Publicado pelo treinador na BolaComVisão. Este link mostra sempre o resumo mais recente.</div></div></body></html>`;
+    : '<p class="empty">Não há jogos nem treinos marcados para esta semana.</p>';
+  return `${head}<div class="w"><div class="hd">${logo}<div><div class="wk">${esc(teamName)} · ${esc(weekLabel(issue.from, issue.to))}</div><h1>Resumo da semana</h1></div></div><div class="bd">${issue.intro ? `<p class="intro">${esc(issue.intro)}</p>` : ''}<section><h2>Resultados da semana</h2>${results}</section>${facts ? `<section><h2>Destaques</h2><ul>${facts}</ul></section>` : ''}<section><h2>Esta semana · ${esc(weekLabel(issue.nextFrom, issue.nextTo))}</h2>${upcoming}</section>${issue.notices ? `<div class="av"><b>Avisos:</b> ${esc(issue.notices)}</div>` : ''}</div><div class="ft">Publicado pelo treinador na BolaComVisão. Este link mostra sempre o resumo mais recente.</div></div></body></html>`;
 }

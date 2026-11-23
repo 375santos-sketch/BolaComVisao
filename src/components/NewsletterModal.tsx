@@ -44,10 +44,11 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
   const [published, setPublished] = useState(false);
   const link = token ? newsletterLink(token) : '';
 
-  const setToken = (newsletterToken: string | undefined) =>
+  const setTeam = (changes: { newsletterToken?: string; newsletterWeek?: string }) =>
     onUpdateState({
-      teams: (state.teams || []).map((t) => (t.id === state.activeTeamId ? { ...t, newsletterToken } : t))
+      teams: (state.teams || []).map((t) => (t.id === state.activeTeamId ? { ...t, ...changes } : t))
     });
+  const setToken = (newsletterToken: string | undefined) => setTeam({ newsletterToken });
 
   const publish = async () => {
     if (!clubId || !state.activeTeamId) {
@@ -63,7 +64,8 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
         teamName,
         issue: issueOf(auto, draft)
       });
-      if (!token) setToken(target);
+      // The week is marked as sent: the Monday reminder on Início goes away for every coach of the team
+      setTeam({ newsletterToken: target, newsletterWeek: auto.from });
       setPublished(true);
       onShowToast('Resumo da semana publicado ✓');
     } catch {
@@ -135,9 +137,10 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
           </button>
         </div>
         <p className="text-xs text-ui-text leading-relaxed">
-          A app junta os resultados, as presenças e os próximos 7 dias. Escreva a mensagem, reveja e publique: os pais
-          abrem um link sem conta, que mostra sempre o resumo mais recente. Só aparecem os primeiros nomes de quem
-          marcou; nunca faltas de um atleta, contactos ou notas.
+          A semana vai de segunda a domingo e o resumo segue à segunda de manhã. A app junta os resultados e as
+          presenças da semana que acabou e os jogos e treinos da semana que começa. Escreva a mensagem, reveja e
+          publique: os pais abrem um link sem conta, que mostra sempre o resumo mais recente. Só aparecem os primeiros
+          nomes de quem marcou; nunca faltas de um atleta, contactos ou notas.
         </p>
 
         <section aria-label="O que a app preencheu" className="ui-card-raised space-y-1.5 p-3 text-xs text-ui-text">
@@ -153,19 +156,19 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
               </p>
             ))
           ) : (
-            <p className="text-ui-muted">Sem jogos nos últimos 7 dias.</p>
+            <p className="text-ui-muted">Sem jogos nesta semana.</p>
           )}
           <p>
             🏃{' '}
             {auto.attendance
               ? `${auto.attendance.trainings} ${auto.attendance.trainings === 1 ? 'treino' : 'treinos'} · ${auto.attendance.percent}% de presenças`
-              : 'Sem treinos fechados nos últimos 7 dias.'}
+              : 'Sem treinos fechados nesta semana.'}
           </p>
           <p>
             📅{' '}
             {auto.upcoming.length
-              ? `${auto.upcoming.filter((e) => e.kind === 'jogo').length} jogo(s) e ${auto.upcoming.filter((e) => e.kind === 'treino').length} treino(s) nos próximos 7 dias`
-              : 'Nada marcado nos próximos 7 dias.'}
+              ? `${auto.upcoming.filter((e) => e.kind === 'jogo').length} jogo(s) e ${auto.upcoming.filter((e) => e.kind === 'treino').length} treino(s) na semana de ${weekLabel(auto.nextFrom, auto.nextTo)}`
+              : `Nada marcado na semana de ${weekLabel(auto.nextFrom, auto.nextTo)}.`}
           </p>
         </section>
 

@@ -4,7 +4,9 @@ import {
   issueOf,
   newsletterFromRestDocument,
   newsletterMessage,
+  newsletterDue,
   newsletterOf,
+  newsletterWeeks,
   renderNewsletterPage,
   suggestedIntro,
   weekLabel
@@ -97,9 +99,8 @@ const state = {
 describe('newsletterOf', () => {
   const auto = newsletterOf(state, 'Sub-11 A', TODAY);
 
-  it('covers the last 7 days (results) and the next 7 days (events)', () => {
-    expect(auto.from).toBe('2026-11-17');
-    expect(auto.to).toBe(TODAY);
+  it('covers the week that ended (Monday to Sunday) and the rest of the week that started', () => {
+    expect(auto).toMatchObject({ from: '2026-11-16', to: '2026-11-22', nextFrom: '2026-11-23', nextTo: '2026-11-29' });
     expect(auto.results.map((r) => r.opponent)).toEqual(['GD Vale Verde']);
     expect(auto.upcoming.map((e) => `${e.kind} ${e.date}`)).toEqual([
       'treino 2026-11-25',
@@ -121,7 +122,7 @@ describe('newsletterOf', () => {
     });
   });
 
-  it('a game of today that is already over is a result, not a next game', () => {
+  it('a game of this week that is already over is neither a result nor a next game', () => {
     const today = newsletterOf(
       {
         ...state,
@@ -131,7 +132,7 @@ describe('newsletterOf', () => {
       'Sub-11 A',
       TODAY
     );
-    expect(today.results).toHaveLength(1);
+    expect(today.results).toHaveLength(0);
     expect(today.upcoming.filter((e) => e.kind === 'jogo')).toHaveLength(0);
   });
 
@@ -140,6 +141,24 @@ describe('newsletterOf', () => {
     for (const secret of ['Gomes', 'Martins', '912345678', '2015-03-02', 'privada', 'convocatória']) {
       expect(json).not.toContain(secret);
     }
+  });
+});
+
+describe('newsletterWeeks and newsletterDue', () => {
+  it('weeks run from Monday to Sunday, whatever the day it is published', () => {
+    const weeks = { from: '2026-11-16', to: '2026-11-22', nextFrom: '2026-11-23', nextTo: '2026-11-29' };
+    expect(newsletterWeeks('2026-11-23')).toEqual(weeks); // segunda
+    expect(newsletterWeeks('2026-11-29')).toEqual(weeks); // domingo
+    expect(newsletterWeeks('2026-12-01').from).toBe('2026-11-23'); // across months
+  });
+
+  it('is due from Monday at 7:00 until the week is published', () => {
+    expect(newsletterDue(new Date(2026, 10, 23, 6, 59), undefined)).toBeNull();
+    expect(newsletterDue(new Date(2026, 10, 23, 7, 0), undefined)).toBe('2026-11-16');
+    expect(newsletterDue(new Date(2026, 10, 25, 20, 0), '2026-11-09')).toBe('2026-11-16');
+    expect(newsletterDue(new Date(2026, 10, 25, 20, 0), '2026-11-16')).toBeNull();
+    // Sunday night: last week's summary was sent; the next one is due on Monday
+    expect(newsletterDue(new Date(2026, 10, 29, 23, 0), '2026-11-16')).toBeNull();
   });
 });
 
@@ -196,7 +215,8 @@ describe('the page', () => {
     const page = newsletterFromRestDocument(toRest({ teamName: 'Sub-11 A', issue }).mapValue);
     expect(page?.issue?.results[0].scorers).toBe('Tomás (2), Leonor, Rafa');
     const html = renderNewsletterPage(page!);
-    expect(html).toContain('17 a 24 nov');
+    expect(html).toContain('16 a 22 nov');
+    expect(html).toContain('Esta semana · 23 a 29 nov');
     expect(html).toContain('4 – 1');
     expect(html).toContain('&lt;script&gt;');
     expect(html).not.toContain('<script>alert');

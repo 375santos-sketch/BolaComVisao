@@ -767,6 +767,8 @@ export interface SquadProfile {
   liveShowCards?: boolean;
   /** Secret part of the parents' weekly summary link (/semana/{token}); none = not shared. */
   newsletterToken?: string;
+  /** Monday (YYYY-MM-DD) of the last week whose summary was published: the Monday reminder stops until the next. */
+  newsletterWeek?: string;
   /** Championship series (one per season): other games of the series, for the league table. */
   leagues?: LeagueSetup[];
   /** Training templates (Treinos → Modelos): a session plan kept to start new trainings from it. */
