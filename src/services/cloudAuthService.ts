@@ -18,6 +18,7 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
+  sendPasswordResetEmail,
   onAuthStateChanged,
   getFirestoreQuotaState,
   isQuotaExceededError,
@@ -39,6 +40,7 @@ import {
 import { AppState, UserAccount, UserStatus, TeamInvitation } from '../types';
 import { MASTER_ADMIN_EMAIL, MASTER_ADMIN_USERNAME } from '../lib/constants';
 import { uid as generateUid } from '../lib/utils';
+import { resetTargetFor } from '../lib/passwordReset';
 
 const LOCAL_SESSION_KEY = 'bolacomvisao_user_session_v1';
 
@@ -769,6 +771,41 @@ export async function createCoachUserAsAdmin(
  * Authenticates user strictly via Firebase Auth SDK.
  * Checks Firestore approval status for coaches.
  */
+/**
+ * "Esqueci-me da palavra-passe": Firebase emails a link to choose a new password. Firebase does not say
+ * whether the address has an account, so the message on success says "se".
+ */
+export async function requestPasswordReset(usernameOrEmail: string): Promise<{ success: boolean; message: string }> {
+  const target = resetTargetFor(usernameOrEmail);
+  if (target.kind === 'empty') {
+    return { success: false, message: 'Escreva o seu email no campo «Utilizador ou Email» e carregue outra vez.' };
+  }
+  if (target.kind === 'username-only') {
+    return {
+      success: false,
+      message:
+        'Esta conta foi criada só com nome de utilizador e não tem email para onde enviar. Peça ao administrador do clube para lhe criar um novo acesso.'
+    };
+  }
+  try {
+    await sendPasswordResetEmail(auth, target.email);
+    return {
+      success: true,
+      message: `Se ${target.email} tiver conta, vai receber um email para escolher uma nova palavra-passe. Veja também a pasta de spam.`
+    };
+  } catch (e: any) {
+    const code = e?.code || '';
+    if (code === 'auth/invalid-email') return { success: false, message: 'Formato de email inválido.' };
+    if (code === 'auth/too-many-requests') {
+      return { success: false, message: 'Demasiados pedidos. Espere uns minutos e tente outra vez.' };
+    }
+    if (code === 'auth/network-request-failed') {
+      return { success: false, message: 'Sem ligação à internet. Tente outra vez quando tiver rede.' };
+    }
+    return { success: false, message: 'Não foi possível enviar o email. Tente outra vez.' };
+  }
+}
+
 export async function loginCoachUser(
   usernameOrEmail: string,
   pass: string

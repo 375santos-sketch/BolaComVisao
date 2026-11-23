@@ -18,6 +18,7 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  sendPasswordResetEmail,
   setPersistence,
   browserLocalPersistence,
   connectAuthEmulator
@@ -385,7 +386,8 @@ export {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  sendPasswordResetEmail
 };
 
 /** F3.2 — Keeps the athletes' private copies up to date after a save (phase 0: double writing, F3 plan). */
