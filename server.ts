@@ -700,10 +700,39 @@ async function startServer() {
       if (!page) return notFound();
       res.set('Cache-Control', 'no-store');
       res.set('X-Robots-Tag', 'noindex');
-      return res.type('html').send(renderNewsletterPage(page));
+      // The full address, for the link's card in the parents' chat (og:url, og:image)
+      const proto = String(req.headers['x-forwarded-proto'] || req.protocol)
+        .split(',')[0]
+        .trim();
+      const origin = `${proto}://${req.get('host')}`;
+      return res.type('html').send(renderNewsletterPage(page, { origin, token }));
     } catch (err) {
       console.error('Erro na rota /semana:', err);
       return res.status(502).type('text/plain').send('Resumo temporariamente indisponível.');
+    }
+  });
+
+  // 📰 The picture of the summary's card in the parents' chat: the JPEG the coach's phone drew when publishing.
+  app.get('/semana/:token/cartao.jpg', async (req, res) => {
+    const token = /^[a-zA-Z0-9]{20,64}$/.test(req.params.token || '') ? req.params.token : '';
+    if (!token) return res.status(404).end();
+    try {
+      const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+      const base = process.env.FIRESTORE_EMULATOR_HOST
+        ? `http://${process.env.FIRESTORE_EMULATOR_HOST}`
+        : 'https://firestore.googleapis.com';
+      const key = firebaseConfig.apiKey ? `?key=${encodeURIComponent(firebaseConfig.apiKey)}` : '';
+      const resp = await fetch(
+        `${base}/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/public_newsletters/${token}${key}`
+      );
+      const page = resp.ok ? newsletterFromRestDocument(await resp.json()) : null;
+      if (!page?.card) return res.status(404).end();
+      res.set('Cache-Control', 'public, max-age=300');
+      res.set('X-Robots-Tag', 'noindex');
+      return res.type('image/jpeg').send(Buffer.from(page.card.slice(page.card.indexOf(',') + 1), 'base64'));
+    } catch (err) {
+      console.error('Erro na rota /semana/cartao:', err);
+      return res.status(502).end();
     }
   });
 

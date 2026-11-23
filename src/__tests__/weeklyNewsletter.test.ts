@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   ARCHIVE_WEEKS,
+  cardOf,
+  outcomeOf,
+  scorerChips,
   archiveAfter,
   attendanceOf,
   issueOf,
@@ -222,7 +225,8 @@ describe('the page', () => {
     const html = renderNewsletterPage(page!);
     expect(html).toContain('16 a 22 nov');
     expect(html).toContain('Esta semana · 23 a 29 nov');
-    expect(html).toContain('4 – 1');
+    expect(html).toContain('<span class="pill">Vitória</span>');
+    expect(html).toContain('<span>⚽ Tomás ×2</span>');
     expect(html).toContain('&lt;script&gt;');
     expect(html).not.toContain('<script>alert');
   });
@@ -345,5 +349,75 @@ describe('the AI note', () => {
     for (const secret of ['Gomes', 'Martins', '912345678', '2015-03-02', 'privada']) {
       expect(prompt).not.toContain(secret);
     }
+  });
+});
+
+describe('design: outcome, scorers and the link card', () => {
+  const auto = newsletterOf(state, 'Sub-11 A', TODAY);
+  const issue = issueOf(auto, { intro: 'Olá', highlights: '3 vitórias seguidas\nFair-play', notices: '' }, 7);
+  const toRest = (v: unknown): any => {
+    if (v === null) return { nullValue: null };
+    if (Array.isArray(v)) return { arrayValue: { values: v.map(toRest) } };
+    if (typeof v === 'object')
+      return { mapValue: { fields: Object.fromEntries(Object.entries(v as object).map(([k, x]) => [k, toRest(x)])) } };
+    if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+    if (typeof v === 'boolean') return { booleanValue: v };
+    return { stringValue: String(v) };
+  };
+
+  it('tells a win, a draw and a loss apart', () => {
+    expect(outcomeOf({ ours: 2, theirs: 1 })).toBe('vitoria');
+    expect(outcomeOf({ ours: 1, theirs: 1 })).toBe('empate');
+    expect(outcomeOf({ ours: 0, theirs: 3 })).toBe('derrota');
+  });
+
+  it('turns the scorers into chips', () => {
+    expect(scorerChips('Tomás (2), Leonor, Rafa')).toEqual(['Tomás ×2', 'Leonor', 'Rafa']);
+  });
+
+  it('an away game keeps our team highlighted, on the right side of the score', () => {
+    const away = { ...issue, results: [{ ...issue.results[0], home: false, ours: 1, theirs: 3 }] };
+    const html = renderNewsletterPage({ teamName: 'Sub-11 A', issue: away });
+    expect(html).toContain('class="res derrota"');
+    expect(html.indexOf('tm them')).toBeLessThan(html.indexOf('g us'));
+  });
+
+  it('the card has the week, the score, the outcome, the next game and the highlights', () => {
+    expect(cardOf('Sub-11 A', issue)).toMatchObject({
+      title: 'Resumo da semana · Sub-11 A',
+      week: 'Sub-11 A · 16 a 22 nov',
+      score: '4 – 1',
+      outcome: 'vitoria',
+      opponent: 'vs GD Vale Verde',
+      next: 'Próximo: Dom 29/11 10:00',
+      description: '3 vitórias seguidas · Fair-play · 83% de presenças nos treinos'
+    });
+  });
+
+  it('the server page carries the card for the chat (picture only when the app made one)', () => {
+    const card = 'data:image/jpeg;base64,/9j/AAAA';
+    const page = newsletterFromRestDocument(toRest({ teamName: 'Sub-11 A', issue, card }).mapValue)!;
+    expect(page.card).toBe(card);
+    const html = renderNewsletterPage(page, { origin: 'https://app.pt', token: 'abc' });
+    expect(html).toContain('<meta property="og:title" content="Resumo da semana · Sub-11 A">');
+    expect(html).toContain('<meta property="og:url" content="https://app.pt/semana/abc">');
+    expect(html).toContain('content="https://app.pt/semana/abc/cartao.jpg?v=7"');
+    const noCard = renderNewsletterPage({ ...page, card: undefined }, { origin: 'https://app.pt', token: 'abc' });
+    expect(noCard).toContain('og:description');
+    expect(noCard).not.toContain('og:image');
+  });
+
+  it('only a JPEG picture is accepted as the card', () => {
+    const page = newsletterFromRestDocument(
+      toRest({ teamName: 'Sub-11 A', issue, card: 'data:text/html;base64,PHNjcmlwdD4=' }).mapValue
+    );
+    expect(page?.card).toBeUndefined();
+  });
+
+  it('the coach preview says the parents do not see it yet', () => {
+    expect(renderNewsletterPage({ teamName: 'Sub-11 A', issue }, { preview: true })).toContain(
+      'os pais ainda não veem esta versão'
+    );
+    expect(renderNewsletterPage({ teamName: 'Sub-11 A', issue })).not.toContain('Pré-visualização');
   });
 });

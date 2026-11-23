@@ -11,6 +11,7 @@ import {
   newsletterFacts,
   newsletterMessage,
   newsletterOf,
+  renderNewsletterPage,
   shortDay,
   suggestedHighlights,
   suggestedIntro,
@@ -18,6 +19,7 @@ import {
 } from '../lib/weeklyNewsletter';
 import { newsletterLink, publishNewsletter, unpublishNewsletter } from '../services/publicNewsletter';
 import { writeNewsletterIntro } from '../services/chronicle';
+import { drawNewsletterCard } from '../lib/newsletterCard';
 
 interface NewsletterModalProps {
   state: AppState;
@@ -48,6 +50,7 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
   const [busy, setBusy] = useState(false);
   const [writing, setWriting] = useState(false);
   const [published, setPublished] = useState(false);
+  const [tab, setTab] = useState<'editar' | 'ver'>('editar');
   const link = token ? newsletterLink(token) : '';
 
   const setTeam = (changes: { newsletterToken?: string; newsletterWeek?: string }) =>
@@ -64,12 +67,10 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
     setBusy(true);
     const target = token || newCalendarToken();
     try {
-      await publishNewsletter(target, {
-        clubId,
-        teamId: state.activeTeamId,
-        teamName,
-        issue: issueOf(auto, draft)
-      });
+      const issue = issueOf(auto, draft);
+      // The picture of the link's card in the parents' chat (without it, the card shows only the texts)
+      const card = await drawNewsletterCard(teamName, issue);
+      await publishNewsletter(target, { clubId, teamId: state.activeTeamId, teamName, issue, card });
       // The week is marked as sent: the Monday reminder on Início goes away for every coach of the team
       setTeam({ newsletterToken: target, newsletterWeek: auto.from });
       setPublished(true);
@@ -97,6 +98,11 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
   };
 
   const message = link ? newsletterMessage(teamName, issueOf(auto, draft), link) : '';
+  // 👀 Exactly the page the parents will open, with this draft (the earlier weeks are left out of the preview)
+  const preview = useMemo(
+    () => (tab === 'ver' ? renderNewsletterPage({ teamName, issue: issueOf(auto, draft) }, { preview: true }) : ''),
+    [tab, teamName, auto, draft]
+  );
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(message);
@@ -174,75 +180,129 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
           nomes de quem marcou; nunca faltas de um atleta, contactos ou notas.
         </p>
 
-        <section aria-label="O que a app preencheu" className="ui-card-raised space-y-1.5 p-3 text-xs text-ui-text">
-          <div className="ui-kicker">Semana de {weekLabel(auto.from, auto.to)}</div>
-          {auto.results.length ? (
-            auto.results.map((r) => (
-              <p key={`${r.date}-${r.opponent}`}>
-                ⚽ {shortDay(r.date)} ·{' '}
-                {r.home === false
-                  ? `${r.opponent} ${r.theirs}–${r.ours} ${teamName}`
-                  : `${teamName} ${r.ours}–${r.theirs} ${r.opponent}`}
-                {r.scorers ? <span className="text-ui-muted"> · {r.scorers}</span> : null}
+        <div role="tablist" aria-label="Modo" className="grid grid-cols-2 gap-1 rounded-xl bg-ui-inset p-1">
+          {(
+            [
+              ['editar', '✏️ Editar'],
+              ['ver', '👀 Pré-visualizar']
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              id={`newsletter-tab-${id}`}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              aria-controls={`newsletter-panel-${id}`}
+              onClick={() => setTab(id)}
+              className={`ui-btn py-2 text-xs ${tab === id ? 'ui-btn-primary' : 'ui-btn-ghost'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'ver' ? (
+          <div
+            id="newsletter-panel-ver"
+            role="tabpanel"
+            aria-labelledby="newsletter-tab-ver"
+            className="overflow-hidden rounded-2xl border border-ui-line"
+          >
+            <iframe
+              title="Pré-visualização do resumo"
+              srcDoc={preview}
+              sandbox=""
+              className="block h-[60dvh] w-full bg-ui-bg"
+            />
+          </div>
+        ) : (
+          <div
+            id="newsletter-panel-editar"
+            role="tabpanel"
+            aria-labelledby="newsletter-tab-editar"
+            className="space-y-3"
+          >
+            <section aria-label="O que a app preencheu" className="ui-card-raised space-y-1.5 p-3 text-xs text-ui-text">
+              <div className="ui-kicker">Semana de {weekLabel(auto.from, auto.to)}</div>
+              {auto.results.length ? (
+                auto.results.map((r) => (
+                  <p key={`${r.date}-${r.opponent}`}>
+                    ⚽ {shortDay(r.date)} ·{' '}
+                    {r.home === false
+                      ? `${r.opponent} ${r.theirs}–${r.ours} ${teamName}`
+                      : `${teamName} ${r.ours}–${r.theirs} ${r.opponent}`}
+                    {r.scorers ? <span className="text-ui-muted"> · {r.scorers}</span> : null}
+                  </p>
+                ))
+              ) : (
+                <p className="text-ui-muted">Sem jogos nesta semana.</p>
+              )}
+              <p>
+                🏃{' '}
+                {auto.attendance
+                  ? `${auto.attendance.trainings} ${auto.attendance.trainings === 1 ? 'treino' : 'treinos'} · ${auto.attendance.percent}% de presenças`
+                  : 'Sem treinos fechados nesta semana.'}
               </p>
-            ))
-          ) : (
-            <p className="text-ui-muted">Sem jogos nesta semana.</p>
-          )}
-          <p>
-            🏃{' '}
-            {auto.attendance
-              ? `${auto.attendance.trainings} ${auto.attendance.trainings === 1 ? 'treino' : 'treinos'} · ${auto.attendance.percent}% de presenças`
-              : 'Sem treinos fechados nesta semana.'}
-          </p>
-          <p>
-            📅{' '}
-            {auto.upcoming.length
-              ? `${auto.upcoming.filter((e) => e.kind === 'jogo').length} jogo(s) e ${auto.upcoming.filter((e) => e.kind === 'treino').length} treino(s) na semana de ${weekLabel(auto.nextFrom, auto.nextTo)}`
-              : `Nada marcado na semana de ${weekLabel(auto.nextFrom, auto.nextTo)}.`}
-          </p>
-        </section>
+              <p>
+                📅{' '}
+                {auto.upcoming.length
+                  ? `${auto.upcoming.filter((e) => e.kind === 'jogo').length} jogo(s) e ${auto.upcoming.filter((e) => e.kind === 'treino').length} treino(s) na semana de ${weekLabel(auto.nextFrom, auto.nextTo)}`
+                  : `Nada marcado na semana de ${weekLabel(auto.nextFrom, auto.nextTo)}.`}
+              </p>
+            </section>
 
-        {suggestions.length > 0 && (
-          <section aria-label="Destaques sugeridos" className="space-y-1.5">
-            <span className="ui-kicker">Destaques sugeridos pela app (toque para pôr ou tirar)</span>
-            <div className="flex flex-wrap gap-1.5">
-              {suggestions.map((h) => (
-                <button
-                  key={h}
-                  type="button"
-                  aria-pressed={lines.includes(h)}
-                  onClick={() => toggleHighlight(h)}
-                  className={`ui-btn px-2.5 py-1.5 text-[11px] ${lines.includes(h) ? 'ui-btn-primary' : 'ui-btn-secondary'}`}
-                >
-                  {lines.includes(h) ? '✓ ' : '+ '}
-                  {h}
-                </button>
-              ))}
-            </div>
-          </section>
+            {suggestions.length > 0 && (
+              <section aria-label="Destaques sugeridos" className="space-y-1.5">
+                <span className="ui-kicker">Destaques sugeridos pela app (toque para pôr ou tirar)</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {suggestions.map((h) => (
+                    <button
+                      key={h}
+                      type="button"
+                      aria-pressed={lines.includes(h)}
+                      onClick={() => toggleHighlight(h)}
+                      className={`ui-btn px-2.5 py-1.5 text-[11px] ${lines.includes(h) ? 'ui-btn-primary' : 'ui-btn-secondary'}`}
+                    >
+                      {lines.includes(h) ? '✓ ' : '+ '}
+                      {h}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+            {field(
+              'highlights',
+              'Destaques (um por linha, até 6)',
+              LIMITS.highlight * LIMITS.highlights,
+              3,
+              'Fair-play: ajudámos um adversário lesionado\nTreino em foco: passe e desmarcação'
+            )}
+            {field('intro', 'Mensagem do treinador', LIMITS.intro, 4, 'Olá a todos! …')}
+            <button
+              type="button"
+              disabled={writing}
+              onClick={writeWithAI}
+              className="ui-btn ui-btn-soft w-full py-2 text-xs"
+            >
+              {writing ? 'A escrever…' : '✨ Escrever com IA (a partir dos resultados e destaques)'}
+            </button>
+            {field('notices', 'Avisos', LIMITS.notices, 2, 'Quota de dezembro até dia 8.')}
+          </div>
         )}
-        {field(
-          'highlights',
-          'Destaques (um por linha, até 6)',
-          LIMITS.highlight * LIMITS.highlights,
-          3,
-          'Fair-play: ajudámos um adversário lesionado\nTreino em foco: passe e desmarcação'
-        )}
-        {field('intro', 'Mensagem do treinador', LIMITS.intro, 4, 'Olá a todos! …')}
-        <button
-          type="button"
-          disabled={writing}
-          onClick={writeWithAI}
-          className="ui-btn ui-btn-soft w-full py-2 text-xs"
-        >
-          {writing ? 'A escrever…' : '✨ Escrever com IA (a partir dos resultados e destaques)'}
-        </button>
-        {field('notices', 'Avisos', LIMITS.notices, 2, 'Quota de dezembro até dia 8.')}
 
-        <button type="button" disabled={busy} onClick={publish} className="ui-btn ui-btn-primary w-full py-3 text-sm">
-          {busy ? 'A publicar…' : token ? 'Publicar o resumo desta semana' : 'Criar link e publicar'}
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setTab(tab === 'ver' ? 'editar' : 'ver')}
+            className="ui-btn ui-btn-secondary py-3 text-sm"
+          >
+            {tab === 'ver' ? '✏️ Voltar a editar' : '👀 Pré-visualizar'}
+          </button>
+          <button type="button" disabled={busy} onClick={publish} className="ui-btn ui-btn-primary py-3 text-sm">
+            {busy ? 'A publicar…' : token ? 'Publicar' : 'Criar link e publicar'}
+          </button>
+        </div>
 
         {token && (
           <section aria-label="Enviar aos pais" className="space-y-2">

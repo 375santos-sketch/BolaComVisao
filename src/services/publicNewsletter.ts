@@ -10,14 +10,15 @@ import { toPlainData } from '../lib/recordSync';
  */
 export async function publishNewsletter(
   token: string,
-  data: { clubId: string; teamId: string; teamName: string; issue: NewsletterIssue }
+  data: { clubId: string; teamId: string; teamName: string; issue: NewsletterIssue; card?: string | null }
 ): Promise<void> {
   const ref = doc(db, 'public_newsletters', token);
   const previous = await getDoc(ref)
     .then((snap) => (snap.exists() ? (snap.data() as { issue?: NewsletterIssue; archive?: NewsletterIssue[] }) : null))
     .catch(() => null); // a new link, or offline: published without the earlier weeks
   const archive = archiveAfter(previous, data.issue);
-  await setDoc(ref, toPlainData({ ...data, archive, updatedAt: Date.now() }));
+  const { card, ...rest } = data;
+  await setDoc(ref, toPlainData({ ...rest, ...(card ? { card } : {}), archive, updatedAt: Date.now() }));
 }
 
 /** Switches the link off: it stops working for everyone who has it (the earlier weeks go with it). */

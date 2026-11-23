@@ -408,6 +408,54 @@ interface NewsletterPage {
   issue: NewsletterIssue | null;
   /** Earlier weeks, most recent first (results, attendance, note and highlights only). */
   archive?: NewsletterIssue[];
+  /** The picture of the link's card (JPEG made by the app when publishing), served at /semana/{token}/cartao.jpg. */
+  card?: string;
+}
+
+/** How the page is shown: on the server (origin and token, for the link's card) or as the coach's preview. */
+export interface NewsletterRender {
+  origin?: string;
+  token?: string;
+  preview?: boolean;
+}
+
+/** The card picture as the rules accept it: a JPEG data URL well below Firestore's 1 MB. */
+export const CARD_MAX = 400_000;
+export const CARD_IMAGE = /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/;
+
+export type Outcome = 'vitoria' | 'empate' | 'derrota';
+export const outcomeOf = (r: Pick<NewsletterResult, 'ours' | 'theirs'>): Outcome =>
+  r.ours > r.theirs ? 'vitoria' : r.ours < r.theirs ? 'derrota' : 'empate';
+export const OUTCOME_LABEL: Record<Outcome, string> = { vitoria: 'Vitória', empate: 'Empate', derrota: 'Derrota' };
+
+/** "Tomás (2), Leonor" → ["Tomás ×2", "Leonor"] */
+export const scorerChips = (scorers: string) =>
+  scorers
+    .split(', ')
+    .map((s) => s.trim().replace(/\s*\((\d+)\)$/, ' ×$1'))
+    .filter(Boolean);
+
+/** The texts of the link's card (picture and description), from the published summary. */
+export function cardOf(teamName: string, issue: NewsletterIssue) {
+  const r = issue.results[issue.results.length - 1];
+  const next = issue.upcoming.find((e) => e.kind === 'jogo');
+  const nextText = next ? `Próximo: ${shortDay(next.date)}${next.time ? ` ${next.time}` : ''}` : '';
+  const facts = [
+    ...issue.highlights.slice(0, 3),
+    issue.attendance ? `${issue.attendance.percent}% de presenças nos treinos` : ''
+  ].filter(Boolean);
+  return {
+    title: `Resumo da semana · ${teamName}`,
+    week: `${teamName} · ${weekLabel(issue.from, issue.to)}`,
+    score: r ? (r.home === false ? `${r.theirs} – ${r.ours}` : `${r.ours} – ${r.theirs}`) : '',
+    outcome: r ? outcomeOf(r) : null,
+    opponent: r ? `vs ${r.opponent}` : 'Sem jogos nesta semana',
+    next: nextText,
+    description: (facts.length
+      ? facts.join(' · ')
+      : issue.intro || 'Resultados, destaques e próximos jogos da semana.'
+    ).slice(0, 200)
+  };
 }
 
 /** How many earlier weeks the link keeps ("Semanas anteriores"). */
@@ -453,7 +501,9 @@ export function newsletterFromRestDocument(
     .map(issueFromData)
     .filter((i: NewsletterIssue | null): i is NewsletterIssue => Boolean(i))
     .slice(0, ARCHIVE_WEEKS);
-  return { teamName: clip(data.teamName, 200), issue: issueFromData(data.issue), archive };
+  const card =
+    typeof data.card === 'string' && data.card.length <= CARD_MAX && CARD_IMAGE.test(data.card) ? data.card : undefined;
+  return { teamName: clip(data.teamName, 200), issue: issueFromData(data.issue), archive, card };
 }
 
 /** One summary read back from the published document (null when it is not one). */
@@ -508,11 +558,24 @@ const esc = (s: unknown) =>
   );
 
 /** The whole page, in the app's colours (dark, or light when the phone is in light mode). */
-export function renderNewsletterPage({ teamName, issue, archive = [] }: NewsletterPage): string {
-  const head = `<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Resumo da semana · ${esc(teamName)}</title>
+export function renderNewsletterPage(
+  { teamName, issue, archive = [], card }: NewsletterPage,
+  { origin, token, preview }: NewsletterRender = {}
+): string {
+  // 1 · The link's card in the parents' chat (Open Graph): title, the week's facts and the picture made by the app
+  const info = issue ? cardOf(teamName, issue) : null;
+  const pageUrl = origin && token ? `${origin}/semana/${token}` : '';
+  const og = info
+    ? `<meta property="og:type" content="website"><meta property="og:site_name" content="BolaComVisão"><meta property="og:title" content="${esc(info.title)}"><meta property="og:description" content="${esc(info.description)}"><meta name="description" content="${esc(info.description)}">${pageUrl ? `<meta property="og:url" content="${esc(pageUrl)}">` : ''}${
+        pageUrl && card
+          ? `<meta property="og:image" content="${esc(`${pageUrl}/cartao.jpg?v=${issue!.publishedAt}`)}"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image">`
+          : ''
+      }`
+    : '';
+  const head = `<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Resumo da semana · ${esc(teamName)}</title>${og}
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"><style>
-:root{--bg:#0b1220;--surface:#111a2b;--inset:#0d1626;--line:#22324d;--text:#e7eef7;--muted:#8b9bb4;--brand:#22c3ee;--brand-soft:#0d2a3a;--warn:#f5b301;--warn-soft:#2e2610;--banner:#0d1626;color-scheme:dark}
-@media (prefers-color-scheme:light){:root{--bg:#eef2f6;--surface:#fff;--inset:#f3f6f9;--line:#c5d0db;--text:#0b1620;--muted:#334155;--brand:#0284c7;--brand-soft:#e0f2fe;--warn:#b45309;--warn-soft:#fef3c7;--banner:#0b1220;color-scheme:light}}
+:root{--bg:#0b1220;--surface:#111a2b;--inset:#0d1626;--line:#22324d;--text:#e7eef7;--muted:#8b9bb4;--brand:#22c3ee;--brand-soft:#0d2a3a;--warn:#f5b301;--warn-soft:#2e2610;--banner:#0d1626;--win:#22c55e;--win-soft:#0f2e1c;--draw:#94a3b8;--draw-soft:#1e293b;--loss:#ef4444;--loss-soft:#3a1414;color-scheme:dark}
+@media (prefers-color-scheme:light){:root{--bg:#eef2f6;--surface:#fff;--inset:#f3f6f9;--line:#c5d0db;--text:#0b1620;--muted:#334155;--brand:#0284c7;--brand-soft:#e0f2fe;--warn:#b45309;--warn-soft:#fef3c7;--banner:#0b1220;--win:#15803d;--win-soft:#dcfce7;--draw:#475569;--draw-soft:#e2e8f0;--loss:#b91c1c;--loss-soft:#fee2e2;color-scheme:light}}
 *{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);color:var(--text);font-family:"Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.55;padding:16px 16px 40px}
 .w{max-width:640px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .hd{background:var(--banner);color:#e7eef7;padding:20px;border-bottom:3px solid #22c3ee;display:flex;gap:16px;align-items:center}
@@ -522,10 +585,17 @@ h1{font-family:"Chakra Petch","Plus Jakarta Sans",sans-serif;font-size:28px;line
 .bd{padding:20px;display:flex;flex-direction:column;gap:22px}
 h2{font-family:"Chakra Petch","Plus Jakarta Sans",sans-serif;font-size:18px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
 .intro{white-space:pre-wrap}
-.res{border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:8px}
-.sc{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}.sc b{font-weight:600}.sc b:last-child{text-align:right}
-.n{font-family:"Chakra Petch",sans-serif;font-size:26px;font-variant-numeric:tabular-nums;line-height:1;padding:4px 10px;border-radius:6px;background:var(--brand-soft);color:var(--brand);white-space:nowrap}
-.meta{font-size:13px;color:var(--muted);margin-top:6px}
+.res{border:1px solid var(--line);border-radius:10px;margin-top:8px;overflow:hidden;display:grid;grid-template-columns:5px minmax(0,1fr);background:var(--surface)}
+.res .bar{background:var(--k)}.res .in{padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.pill{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--ks);color:var(--k);white-space:nowrap}
+.ln{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center}
+.tm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tm.them{color:var(--muted);font-weight:500}
+.g{font-family:"Chakra Petch",sans-serif;font-size:22px;line-height:1.1;text-align:right;font-variant-numeric:tabular-nums}.g.us{color:var(--k)}
+.goals{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;border-top:1px dashed var(--line);padding-top:8px}
+.goals span{background:var(--inset);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+.vitoria{--k:var(--win);--ks:var(--win-soft)}.empate{--k:var(--draw);--ks:var(--draw-soft)}.derrota{--k:var(--loss);--ks:var(--loss-soft)}
+.pv{background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:13px;text-align:center;padding:10px 16px;border-radius:8px;max-width:640px;margin:0 auto 12px}
 ul{list-style:none;display:grid;gap:8px}li{display:flex;gap:10px;align-items:baseline}li:before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--brand);transform:translateY(-1px)}
 .ev{display:grid;grid-template-columns:62px minmax(0,1fr);gap:12px;padding:10px;border:1px solid var(--line);border-radius:8px;margin-top:8px}
 .d{text-align:center;border-radius:6px;padding:6px 0;font-family:"Chakra Petch",sans-serif;line-height:1.1;background:var(--brand-soft);color:var(--brand)}
@@ -547,13 +617,15 @@ summary span{color:var(--muted);font-weight:500;font-size:13px;margin-left:auto}
   const resultsOf = (list: NewsletterResult[]) =>
     list
       .map((r) => {
-        const left = r.home === false ? r.opponent : teamName;
-        const right = r.home === false ? teamName : r.opponent;
-        const score = r.home === false ? `${r.theirs} – ${r.ours}` : `${r.ours} – ${r.theirs}`;
+        // 2 + 3 · Win, draw or loss in colour; our team always highlighted; the scorers on a line of their own
+        const k = outcomeOf(r);
+        const us = `<span class="tm">${esc(teamName)}</span><span class="g us">${r.ours}</span>`;
+        const them = `<span class="tm them">${esc(r.opponent)}</span><span class="g">${r.theirs}</span>`;
         const meta = [shortDay(r.date), r.competition, r.home === null ? '' : r.home ? 'Em casa' : 'Fora']
           .filter(Boolean)
           .join(' · ');
-        return `<div class="res"><div class="sc"><b>${esc(left)}</b><span class="n">${esc(score)}</span><b>${esc(right)}</b></div><div class="meta">${esc(meta)}${r.scorers ? ` · Golos: ${esc(r.scorers)}` : ''}</div></div>`;
+        const goals = r.scorers ? scorerChips(r.scorers) : [];
+        return `<article class="res ${k}"><span class="bar"></span><div class="in"><div class="top"><span>${esc(meta)}</span><span class="pill">${OUTCOME_LABEL[k]}</span></div><div class="ln">${r.home === false ? them + us : us + them}</div>${goals.length ? `<div class="goals">${goals.map((g) => `<span>⚽ ${esc(g)}</span>`).join('')}</div>` : ''}</div></article>`;
       })
       .join('') || '<p class="empty">Não houve jogos nesta semana.</p>';
   const factsOf = (i: NewsletterIssue) =>
@@ -570,7 +642,7 @@ summary span{color:var(--muted);font-weight:500;font-size:13px;margin-left:auto}
     ? `<section><h2>Semanas anteriores</h2>${older
         .map((a) => {
           const games = a.results.length
-            ? a.results.map((r) => (r.home === false ? `${r.theirs}–${r.ours}` : `${r.ours}–${r.theirs}`)).join(' · ')
+            ? a.results.map((r) => `${OUTCOME_LABEL[outcomeOf(r)][0]} ${r.ours}–${r.theirs}`).join(' · ')
             : 'sem jogos';
           const f = factsOf(a);
           return `<details><summary>${esc(weekLabel(a.from, a.to))}<span>${esc(games)}</span></summary><div class="old">${a.intro ? `<p class="intro">${esc(a.intro)}</p>` : ''}${resultsOf(a.results)}${f ? `<ul>${f}</ul>` : ''}</div></details>`;
@@ -589,5 +661,6 @@ summary span{color:var(--muted);font-weight:500;font-size:13px;margin-left:auto}
         })
         .join('')
     : '<p class="empty">Não há jogos nem treinos marcados para esta semana.</p>';
-  return `${head}<div class="w"><div class="hd">${logo}<div><div class="wk">${esc(teamName)} · ${esc(weekLabel(issue.from, issue.to))}</div><h1>Resumo da semana</h1></div></div><div class="bd">${issue.intro ? `<p class="intro">${esc(issue.intro)}</p>` : ''}<section><h2>Resultados da semana</h2>${results}</section>${facts ? `<section><h2>Destaques</h2><ul>${facts}</ul></section>` : ''}<section><h2>Esta semana · ${esc(weekLabel(issue.nextFrom, issue.nextTo))}</h2>${upcoming}</section>${issue.notices ? `<div class="av"><b>Avisos:</b> ${esc(issue.notices)}</div>` : ''}${archiveHtml}</div><div class="ft">Publicado pelo treinador na BolaComVisão. Este link mostra sempre o resumo mais recente.</div></div></body></html>`;
+  const banner = preview ? '<div class="pv">Pré-visualização: os pais ainda não veem esta versão</div>' : '';
+  return `${head}${banner}<div class="w"><div class="hd">${logo}<div><div class="wk">${esc(teamName)} · ${esc(weekLabel(issue.from, issue.to))}</div><h1>Resumo da semana</h1></div></div><div class="bd">${issue.intro ? `<p class="intro">${esc(issue.intro)}</p>` : ''}<section><h2>Resultados da semana</h2>${results}</section>${facts ? `<section><h2>Destaques</h2><ul>${facts}</ul></section>` : ''}<section><h2>Esta semana · ${esc(weekLabel(issue.nextFrom, issue.nextTo))}</h2>${upcoming}</section>${issue.notices ? `<div class="av"><b>Avisos:</b> ${esc(issue.notices)}</div>` : ''}${archiveHtml}</div><div class="ft">Publicado pelo treinador na BolaComVisão. Este link mostra sempre o resumo mais recente.</div></div></body></html>`;
 }

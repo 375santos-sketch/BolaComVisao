@@ -423,6 +423,7 @@ describe('Resumo da semana para os pais (link secreto)', () => {
     await fs.setDoc(newsDoc(), news('clubA'));
     await fs.setDoc(newsDoc(), news('clubA', { issue: null }));
     await fs.setDoc(newsDoc(), news('clubA', { archive: [{ from: '2026-11-09', to: '2026-11-15', results: [] }] }));
+    await fs.setDoc(newsDoc(), news('clubA', { card: 'data:image/jpeg;base64,/9j/AAAA' }));
     await fs.setDoc(newsDoc(), news('clubA'));
     const res = await fetch(`${url}/${TOKEN}`);
     expect(res.status).toBe(200);
@@ -438,6 +439,9 @@ describe('Resumo da semana para os pais (link secreto)', () => {
     await expect(fs.setDoc(newsDoc(), news('clubA', { emails: ['pai@exemplo.pt'] }))).rejects.toMatchObject(denied);
     await expect(
       fs.setDoc(newsDoc(), news('clubA', { archive: Array.from({ length: 9 }, () => ({ from: '2026-11-09' })) }))
+    ).rejects.toMatchObject(denied);
+    await expect(
+      fs.setDoc(newsDoc(), news('clubA', { card: 'data:text/html;base64,PHNjcmlwdD4=' }))
     ).rejects.toMatchObject(denied);
     await expect(fs.setDoc(newsDoc('curto'), news('clubA'))).rejects.toMatchObject(denied);
     await fa.signOut(fb.auth);
