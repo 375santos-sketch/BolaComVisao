@@ -6,7 +6,8 @@ import {
   registerCoachUser,
   loginCoachUser,
   loginWithGoogle,
-  lookupInvitationByCode
+  lookupInvitationByCode,
+  requestPasswordReset
 } from '../../services/cloudAuthService';
 import { loadMasterClubState } from '../../services/firebase';
 import {
@@ -132,6 +133,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [resetNote, setResetNote] = useState<string | null>(null);
+  const [isSendingReset, setIsSendingReset] = useState(false);
 
   // Register form state
   const [regName, setRegName] = useState('');
@@ -303,6 +306,16 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
         setLoginError(rawMsg || 'Erro ao comunicar com o servidor de autenticação.');
       }
     }
+  };
+
+  const handleForgotPassword = async () => {
+    setLoginError(null);
+    setResetNote(null);
+    setIsSendingReset(true);
+    const res = await requestPasswordReset(loginUsername);
+    setIsSendingReset(false);
+    if (res.success) setResetNote(res.message);
+    else setLoginError(res.message);
   };
 
   const handleCheckInviteCode = async () => {
@@ -765,6 +778,18 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       <span>Entrar na Plataforma ➔</span>
                     )}
                   </button>
+
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      disabled={isSendingReset}
+                      className="text-xs text-ui-brand underline hover:brightness-110 disabled:opacity-50 cursor-pointer"
+                    >
+                      {isSendingReset ? 'A enviar...' : 'Esqueci-me da palavra-passe'}
+                    </button>
+                    {resetNote && <p className="mt-1.5 text-xs text-ui-success leading-snug">{resetNote}</p>}
+                  </div>
 
                   <div className="text-center pt-1">
                     <span className="text-xs text-ui-muted tabular-nums">
