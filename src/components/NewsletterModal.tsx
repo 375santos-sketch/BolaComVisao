@@ -8,13 +8,16 @@ import {
   LIMITS,
   NewsletterDraft,
   issueOf,
+  newsletterFacts,
   newsletterMessage,
   newsletterOf,
   shortDay,
+  suggestedHighlights,
   suggestedIntro,
   weekLabel
 } from '../lib/weeklyNewsletter';
 import { newsletterLink, publishNewsletter, unpublishNewsletter } from '../services/publicNewsletter';
+import { writeNewsletterIntro } from '../services/chronicle';
 
 interface NewsletterModalProps {
   state: AppState;
@@ -24,9 +27,10 @@ interface NewsletterModalProps {
 }
 
 /**
- * Mais → 📣 Comunicação → 📰 Resumo da semana: the app fills in the results, the attendance and the next 7 days;
- * the coach writes the note, the highlights and the notices, checks it and publishes it to the team's link
- * (/semana/{token}, the same link every week), then sends the link by WhatsApp.
+ * Mais → 📣 Comunicação → 📰 Resumo da semana: the app fills in the results, the attendance and the week ahead, and
+ * suggests highlights; the coach picks them, writes the note (or asks the AI to), adds the notices, checks it and
+ * publishes it to the team's link (/semana/{token}, the same link every week, with the earlier weeks below), then
+ * sends the link by WhatsApp.
  */
 const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState, onShowToast, onClose }) => {
   const team = (state.teams || []).find((t) => t.id === state.activeTeamId);
@@ -40,7 +44,9 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
     highlights: '',
     notices: ''
   }));
+  const suggestions = useMemo(() => suggestedHighlights(state, auto), [state, auto]);
   const [busy, setBusy] = useState(false);
+  const [writing, setWriting] = useState(false);
   const [published, setPublished] = useState(false);
   const link = token ? newsletterLink(token) : '';
 
@@ -97,6 +103,31 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
       onShowToast('Mensagem copiada ✓');
     } catch {
       onShowToast('Não foi possível copiar: selecione o texto.');
+    }
+  };
+
+  const lines = draft.highlights
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
+  /** A suggested highlight in or out of the list (the coach can still edit the text). */
+  const toggleHighlight = (h: string) => {
+    const next = lines.includes(h) ? lines.filter((l) => l !== h) : [...lines, h].slice(0, LIMITS.highlights);
+    setDraft({ ...draft, highlights: next.join('\n') });
+    setPublished(false);
+  };
+
+  const writeWithAI = async () => {
+    setWriting(true);
+    try {
+      const text = await writeNewsletterIntro(newsletterFacts(teamName, auto, draft.highlights));
+      setDraft((d) => ({ ...d, intro: text }));
+      setPublished(false);
+      onShowToast('Mensagem escrita ✓ Reveja antes de publicar.');
+    } catch (err) {
+      onShowToast(err instanceof Error ? err.message : 'Não foi possível escrever a mensagem.');
+    } finally {
+      setWriting(false);
     }
   };
 
@@ -172,7 +203,25 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
           </p>
         </section>
 
-        {field('intro', 'Mensagem do treinador', LIMITS.intro, 3, 'Olá a todos! …')}
+        {suggestions.length > 0 && (
+          <section aria-label="Destaques sugeridos" className="space-y-1.5">
+            <span className="ui-kicker">Destaques sugeridos pela app (toque para pôr ou tirar)</span>
+            <div className="flex flex-wrap gap-1.5">
+              {suggestions.map((h) => (
+                <button
+                  key={h}
+                  type="button"
+                  aria-pressed={lines.includes(h)}
+                  onClick={() => toggleHighlight(h)}
+                  className={`ui-btn px-2.5 py-1.5 text-[11px] ${lines.includes(h) ? 'ui-btn-primary' : 'ui-btn-secondary'}`}
+                >
+                  {lines.includes(h) ? '✓ ' : '+ '}
+                  {h}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
         {field(
           'highlights',
           'Destaques (um por linha, até 6)',
@@ -180,6 +229,15 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
           3,
           'Fair-play: ajudámos um adversário lesionado\nTreino em foco: passe e desmarcação'
         )}
+        {field('intro', 'Mensagem do treinador', LIMITS.intro, 4, 'Olá a todos! …')}
+        <button
+          type="button"
+          disabled={writing}
+          onClick={writeWithAI}
+          className="ui-btn ui-btn-soft w-full py-2 text-xs"
+        >
+          {writing ? 'A escrever…' : '✨ Escrever com IA (a partir dos resultados e destaques)'}
+        </button>
         {field('notices', 'Avisos', LIMITS.notices, 2, 'Quota de dezembro até dia 8.')}
 
         <button type="button" disabled={busy} onClick={publish} className="ui-btn ui-btn-primary w-full py-3 text-sm">

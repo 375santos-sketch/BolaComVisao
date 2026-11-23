@@ -600,11 +600,12 @@ service cloud.firestore {
     function isValidPublicNewsletter(data) {
       return data is map &&
         data.keys().hasAll(['clubId', 'teamId', 'teamName', 'updatedAt']) &&
-        data.keys().hasOnly(['clubId', 'teamId', 'teamName', 'issue', 'updatedAt']) &&
+        data.keys().hasOnly(['clubId', 'teamId', 'teamName', 'issue', 'archive', 'updatedAt']) &&
         data.clubId is string && data.clubId.size() > 0 && data.clubId.size() <= 128 &&
         data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
         data.teamName is string && data.teamName.size() <= 200 &&
         (!data.keys().hasAny(['issue']) || data.issue == null || data.issue is map) &&
+        (!data.keys().hasAny(['archive']) || (data.archive is list && data.archive.size() <= 8)) &&
         data.updatedAt is number;
     }
 

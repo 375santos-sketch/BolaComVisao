@@ -14,7 +14,12 @@ import {
   EXERCISES_SCHEMA
 } from './src/lib/printExercise';
 import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
-import { newsletterFromRestDocument, renderNewsletterPage } from './src/lib/weeklyNewsletter';
+import {
+  LIMITS as NEWSLETTER_LIMITS,
+  newsletterFromRestDocument,
+  newsletterIntroPrompt,
+  renderNewsletterPage
+} from './src/lib/weeklyNewsletter';
 import webpush from 'web-push';
 import {
   VAPID_PUBLIC_KEY,
@@ -355,6 +360,7 @@ async function startServer() {
 
   // Resultados → "📰 Crónica do jogo": Gemini writes a short text from the game's facts (sent by the app: score,
   // goals in order, first names of scorers only when the coach chose so). Only for signed-in users.
+  // kind "resumo": the coach's note of the weekly summary for the parents (Comunicação → 📰 Resumo da semana).
   app.post('/api/cronica', async (req, res) => {
     try {
       const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
@@ -369,6 +375,7 @@ async function startServer() {
         return res.status(503).json({ success: false, error: 'A escrita automática não está disponível.' });
       const facts = req.body?.facts;
       const audience: ChronicleAudience = req.body?.audience === 'pais' ? 'pais' : 'clube';
+      const summary = req.body?.kind === 'resumo';
       if (!facts || typeof facts !== 'object' || JSON.stringify(facts).length > 6000) {
         return res.status(400).json({ success: false, error: 'Dados do jogo inválidos.' });
       }
@@ -379,10 +386,16 @@ async function startServer() {
         try {
           const response = await ai.models.generateContent({
             model,
-            contents: [{ role: 'user', parts: [{ text: chroniclePrompt(facts, audience) }] }],
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: summary ? newsletterIntroPrompt(facts) : chroniclePrompt(facts, audience) }]
+              }
+            ],
             config: { temperature: 0.9 }
           });
-          const text = cleanChronicle(response.text);
+          const clean = cleanChronicle(response.text);
+          const text = clean && summary ? clean.slice(0, NEWSLETTER_LIMITS.intro) : clean;
           if (text) return res.json({ success: true, text });
           lastError = new Error('Resposta vazia');
         } catch (err: any) {

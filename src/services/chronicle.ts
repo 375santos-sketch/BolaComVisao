@@ -16,3 +16,19 @@ export async function writeChronicle(facts: ChronicleFacts, audience: ChronicleA
   }
   return data.text;
 }
+
+/** 📰 Resumo da semana: asks the server to write the coach's note to the parents from the week's facts. */
+export async function writeNewsletterIntro(facts: unknown): Promise<string> {
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) throw new Error('Entre na app com a sua conta.');
+  const resp = await fetch('/api/cronica', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ facts, kind: 'resumo' })
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok || !data.success || typeof data.text !== 'string') {
+    throw new Error(data.error || 'Não foi possível escrever a mensagem.');
+  }
+  return data.text;
+}

@@ -1,13 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import {
+  ARCHIVE_WEEKS,
+  archiveAfter,
   attendanceOf,
   issueOf,
   newsletterFromRestDocument,
   newsletterMessage,
   newsletterDue,
+  newsletterFacts,
+  newsletterIntroPrompt,
   newsletterOf,
   newsletterWeeks,
   renderNewsletterPage,
+  suggestedHighlights,
   suggestedIntro,
   weekLabel
 } from '../lib/weeklyNewsletter';
@@ -231,7 +236,114 @@ describe('the page', () => {
     expect(newsletterFromRestDocument({ fields: {} })).toBeNull();
   });
 
+  it('shows the earlier weeks under "Semanas anteriores", without their events and notices', () => {
+    const older = { ...issue, from: '2026-11-09', to: '2026-11-15', intro: 'Semana antiga', notices: 'Aviso antigo' };
+    const archive = archiveAfter({ issue: older, archive: [] }, issue);
+    const page = newsletterFromRestDocument(toRest({ teamName: 'Sub-11 A', issue, archive }).mapValue);
+    expect(page?.archive?.map((a) => a.from)).toEqual(['2026-11-09']);
+    const html = renderNewsletterPage(page!);
+    expect(html).toContain('Semanas anteriores');
+    expect(html).toContain('9 a 15 nov');
+    expect(html).toContain('Semana antiga');
+    expect(html).not.toContain('Aviso antigo');
+  });
+
   it('labels weeks across months', () => {
     expect(weekLabel('2026-11-28', '2026-12-04')).toBe('28 nov a 4 dez');
+  });
+});
+
+describe('archiveAfter', () => {
+  const week = (from: string, intro = '') =>
+    issueOf(newsletterOf(state, 'Sub-11 A', from), { intro, highlights: '', notices: 'aviso' }, 1);
+
+  it('moves the published summary to the archive, most recent first', () => {
+    const a = week('2026-11-09');
+    const b = week('2026-11-16');
+    const c = week('2026-11-23');
+    const archive = archiveAfter({ issue: b, archive: archiveAfter({ issue: a }, b) }, c);
+    expect(archive.map((i) => i.from)).toEqual([b.from, a.from]);
+    expect(archive.every((i) => i.upcoming.length === 0 && i.notices === '')).toBe(true);
+  });
+
+  it('publishing the same week again replaces it instead of archiving it', () => {
+    const first = week('2026-11-23', 'primeira');
+    const again = week('2026-11-24', 'segunda versão');
+    expect(first.from).toBe(again.from);
+    expect(archiveAfter({ issue: first }, again)).toEqual([]);
+  });
+
+  it('keeps at most ARCHIVE_WEEKS weeks', () => {
+    let doc: { issue: ReturnType<typeof week>; archive: ReturnType<typeof week>[] } | null = null;
+    for (let i = 0; i < ARCHIVE_WEEKS + 3; i++) {
+      const next = week(
+        `2026-${String(9 + Math.floor(i / 4)).padStart(2, '0')}-${String(1 + (i % 4) * 7).padStart(2, '0')}`
+      );
+      doc = { issue: next, archive: archiveAfter(doc, next) };
+    }
+    expect(doc!.archive).toHaveLength(ARCHIVE_WEEKS);
+  });
+});
+
+describe('suggestedHighlights', () => {
+  const weeks = { from: '2026-11-16', to: '2026-11-22' };
+
+  it('suggests a run of wins, first goals of the season, a clean sheet and a full training', () => {
+    const matches = [
+      match({ id: 'a', date: '2026-10-25', goals: [goal('scored', 'p1')] }),
+      match({ id: 'b', date: '2026-11-01', goals: [goal('scored', 'p1'), goal('scored', 'p1')] }),
+      match({ id: 'c', date: '2026-11-22', goals: [goal('scored', 'p1'), goal('scored', 'p3')] })
+    ];
+    const trainings = [training('t1', '2026-11-18', []), training('t2', '2026-11-20', ['p2'])];
+    const out = suggestedHighlights({ roster, matches, trainings }, weeks);
+    expect(out).toContain('3 vitórias seguidas');
+    expect(out).toContain('Primeiro golo do Rafa nesta época');
+    expect(out).not.toContain('Primeiro golo do Tomás nesta época');
+    expect(out).toContain('Baliza a zeros frente ao GD Vale Verde');
+    expect(out).toContain('100% de presenças no treino de quarta');
+    expect(out.some((h) => h.includes('sexta'))).toBe(false);
+  });
+
+  it('suggests games without losing when there are draws, and many scorers', () => {
+    const draw = [goal('scored', 'p1'), goal('conceded')];
+    const matches = [
+      match({ id: 'a', date: '2026-11-01', goals: draw }),
+      match({ id: 'b', date: '2026-11-08', goals: [goal('scored', 'p1')] }),
+      match({
+        id: 'c',
+        date: '2026-11-21',
+        goals: [
+          goal('scored', 'p1'),
+          goal('scored', 'p2'),
+          goal('scored', 'p3'),
+          goal('scored', 'x9'),
+          goal('conceded')
+        ]
+      })
+    ];
+    const out = suggestedHighlights(
+      { roster: [...roster, player('x9', 'Duarte Novo')], matches, trainings: [] },
+      weeks
+    );
+    expect(out).toContain('2 vitórias seguidas');
+    expect(out).toContain('4 jogadores diferentes marcaram frente ao GD Vale Verde');
+  });
+
+  it('suggests nothing about games when there was no game in the week', () => {
+    expect(suggestedHighlights({ roster, matches: [match({ date: '2026-11-01' })], trainings: [] }, weeks)).toEqual([]);
+  });
+});
+
+describe('the AI note', () => {
+  it('gets only the facts of the summary, never private data', () => {
+    const auto = newsletterOf(state, 'Sub-11 A', TODAY);
+    const facts = newsletterFacts('Sub-11 A', auto, 'Fair-play\n3 vitórias seguidas');
+    expect(facts.destaques).toEqual(['Fair-play', '3 vitórias seguidas']);
+    expect(facts.resultados[0]).toMatchObject({ adversario: 'GD Vale Verde', nos: 4, eles: 1 });
+    const prompt = newsletterIntroPrompt(facts);
+    expect(prompt).toContain('português de Portugal');
+    for (const secret of ['Gomes', 'Martins', '912345678', '2015-03-02', 'privada']) {
+      expect(prompt).not.toContain(secret);
+    }
   });
 });

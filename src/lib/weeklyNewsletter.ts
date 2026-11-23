@@ -242,6 +242,116 @@ export function suggestedIntro(results: NewsletterResult[]): string {
   return `Olá a todos! ${mood} Obrigado pelo apoio de sempre.`;
 }
 
+type AutoIssue = Omit<NewsletterIssue, 'intro' | 'highlights' | 'notices' | 'publishedAt'>;
+
+const won = (m: Match) => {
+  const { ours, theirs } =
+    m.finalScore && !(m.goals || []).length
+      ? { ours: m.finalScore.scored, theirs: m.finalScore.conceded }
+      : liveScore(m);
+  return ours > theirs ? 1 : ours < theirs ? -1 : 0;
+};
+
+/**
+ * Highlights the app suggests from the data (the coach picks the ones to publish): a run of wins or of games without
+ * losing, a first goal of the season, a clean sheet, many different scorers, a training with everyone present.
+ * Only first names, as in the rest of the summary.
+ */
+export function suggestedHighlights(
+  state: Pick<AppState, 'matches' | 'trainings' | 'roster'>,
+  auto: Pick<AutoIssue, 'from' | 'to'>
+): string[] {
+  const roster = state.roster || [];
+  const finished = (state.matches || [])
+    .filter((m) => m && m.finished && dayOf(m.date))
+    .sort((a, b) => dayOf(a.date).localeCompare(dayOf(b.date)));
+  const upTo = finished.filter((m) => dayOf(m.date) <= auto.to);
+  const week = upTo.filter((m) => dayOf(m.date) >= auto.from);
+  const out: string[] = [];
+  if (week.length) {
+    // The run that the last game of the week extends
+    let wins = 0;
+    let unbeaten = 0;
+    for (let i = upTo.length - 1; i >= 0 && won(upTo[i]) === 1; i--) wins++;
+    for (let i = upTo.length - 1; i >= 0 && won(upTo[i]) >= 0; i--) unbeaten++;
+    if (wins >= 2) out.push(`${wins} vitórias seguidas`);
+    else if (unbeaten >= 3) out.push(`${unbeaten} jogos seguidos sem perder`);
+  }
+  for (const m of week) {
+    const season = m.season || '';
+    const before = finished.filter(
+      (x) => (x.season || '') === season && `${dayOf(x.date)}${x.id}` < `${dayOf(m.date)}${m.id}`
+    );
+    const scoredBefore = new Set(
+      before.flatMap((x) => (x.goals || []).filter((g) => g.type === 'scored').map((g) => g.scorerId || g.scorer || ''))
+    );
+    const firsts = new Set<string>();
+    for (const g of m.goals || []) {
+      const key = g.scorerId || g.scorer || '';
+      if (g.type !== 'scored' || !key || key === 'autogolo' || scoredBefore.has(key)) continue;
+      const name = firstName(roster, g.scorerId, g.scorer);
+      if (name) firsts.add(name);
+    }
+    for (const name of firsts) out.push(`Primeiro golo do ${name} nesta época`);
+    const r = resultOf(m, roster);
+    if (r.theirs === 0) out.push(`Baliza a zeros frente ao ${r.opponent}`);
+    const scorers = r.scorers ? r.scorers.split(', ').length : 0;
+    if (scorers >= 4) out.push(`${scorers} jogadores diferentes marcaram frente ao ${r.opponent}`);
+  }
+  for (const t of state.trainings || []) {
+    const day = dayOf(t?.date);
+    if (!day || day < auto.from || day > auto.to || t.completed === false) continue;
+    const squad = expectedAt(roster, day);
+    const absent = new Set(t.absences || []);
+    if (squad.length && squad.every((p) => !absent.has(p.id))) {
+      const [y, mo, d] = day.split('-').map(Number);
+      const weekday = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'][
+        new Date(y, mo - 1, d).getDay()
+      ];
+      out.push(`100% de presenças no treino de ${weekday}`);
+    }
+  }
+  return [...new Set(out)].map((h) => h.slice(0, LIMITS.highlight)).slice(0, 10);
+}
+
+/** What the AI gets to write the coach's note: only facts of the summary (first names, no private data). */
+export function newsletterFacts(teamName: string, auto: AutoIssue, highlights: string) {
+  return {
+    equipa: teamName,
+    semana: weekLabel(auto.from, auto.to),
+    resultados: auto.results.map((r) => ({
+      dia: shortDay(r.date),
+      adversario: r.opponent,
+      local: r.home === null ? '' : r.home ? 'casa' : 'fora',
+      nos: r.ours,
+      eles: r.theirs,
+      competicao: r.competition,
+      marcadores: r.scorers
+    })),
+    presencas: auto.attendance,
+    destaques: (highlights || '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .slice(0, LIMITS.highlights),
+    proximosJogos: auto.upcoming
+      .filter((e) => e.kind === 'jogo')
+      .map((e) => `${shortDay(e.date)}${e.time ? ` ${e.time}` : ''} · ${e.title}`)
+  };
+}
+
+/** The prompt for the coach's note (Gemini, through /api/cronica with kind "resumo"). */
+export function newsletterIntroPrompt(facts: unknown): string {
+  return `Escreve em português de Portugal a mensagem de abertura do resumo semanal que o treinador de uma equipa de futebol de formação (crianças) envia aos pais.
+Regras:
+- Usa só os factos do JSON abaixo. Não inventes lances, nomes, minutos nem estatísticas.
+- Tom próximo, positivo e educativo: valoriza o esforço e a atitude de toda a equipa, mais do que o resultado.
+- Só nomeia jogadores que aparecem em "marcadores" ou "destaques" (primeiro nome). Sem críticas a jogadores, ao árbitro ou ao adversário.
+- Se houver "proximosJogos", termina com uma frase a convidar os pais para o próximo jogo.
+- Até 80 palavras, 1 ou 2 parágrafos curtos, no máximo 2 emojis. Texto simples, sem markdown, sem saudação final nem assinatura.
+Factos: ${JSON.stringify(facts)}`;
+}
+
 /** The coach's text, cleaned and cut to the sizes the page and the rules accept. */
 export function issueOf(
   auto: Omit<NewsletterIssue, 'intro' | 'highlights' | 'notices' | 'publishedAt'>,
@@ -296,6 +406,31 @@ export function newsletterMessage(teamName: string, issue: NewsletterIssue, link
 interface NewsletterPage {
   teamName: string;
   issue: NewsletterIssue | null;
+  /** Earlier weeks, most recent first (results, attendance, note and highlights only). */
+  archive?: NewsletterIssue[];
+}
+
+/** How many earlier weeks the link keeps ("Semanas anteriores"). */
+export const ARCHIVE_WEEKS = 8;
+
+/** An earlier week as kept in the archive: what happened, without the events and notices of that time. */
+const archived = (issue: NewsletterIssue): NewsletterIssue => ({ ...issue, upcoming: [], notices: '' });
+
+/**
+ * The archive after publishing `issue`: the summary that was on the link moves to the archive (unless it is the same
+ * week published again), most recent first, at most ARCHIVE_WEEKS weeks.
+ */
+export function archiveAfter(
+  previous: { issue?: NewsletterIssue | null; archive?: NewsletterIssue[] } | null,
+  issue: NewsletterIssue
+): NewsletterIssue[] {
+  const all = [...(previous?.issue ? [previous.issue] : []), ...(previous?.archive || [])];
+  const byWeek = new Map<string, NewsletterIssue>();
+  for (const i of all) if (i && i.from && i.from !== issue.from && !byWeek.has(i.from)) byWeek.set(i.from, i);
+  return [...byWeek.values()]
+    .sort((a, b) => b.from.localeCompare(a.from))
+    .slice(0, ARCHIVE_WEEKS)
+    .map(archived);
 }
 
 const strings = (v: unknown, max: number, count: number) =>
@@ -314,49 +449,56 @@ export function newsletterFromRestDocument(
 ): NewsletterPage | null {
   const data = fromRest({ mapValue: { fields: doc?.fields } }) as Record<string, any> | null;
   if (!data || typeof data.teamName !== 'string') return null;
-  const i = data.issue && typeof data.issue === 'object' ? data.issue : null;
-  const issue: NewsletterIssue | null =
-    i && isDay(i.from) && isDay(i.to)
-      ? {
-          from: i.from,
-          to: i.to,
-          // Summaries published before the Monday-to-Sunday weeks: the week after `to`
-          nextFrom: isDay(i.nextFrom) ? i.nextFrom : addDaysISO(i.to, 1),
-          nextTo: isDay(i.nextTo) ? i.nextTo : addDaysISO(i.to, 7),
-          intro: clip(i.intro, LIMITS.intro),
-          highlights: strings(i.highlights, LIMITS.highlight, LIMITS.highlights),
-          notices: clip(i.notices, LIMITS.notices),
-          results: (Array.isArray(i.results) ? i.results : [])
-            .slice(0, LIMITS.results)
-            .filter((r: any) => r && isDay(r.date))
-            .map((r: any) => ({
-              date: r.date,
-              opponent: clip(r.opponent, 80) || 'Adversário',
-              home: typeof r.home === 'boolean' ? r.home : null,
-              ours: num(r.ours, 99),
-              theirs: num(r.theirs, 99),
-              competition: clip(r.competition, 120),
-              scorers: clip(r.scorers, 300)
-            })),
-          attendance:
-            i.attendance && typeof i.attendance === 'object' && Number(i.attendance.trainings) > 0
-              ? { trainings: num(i.attendance.trainings, 31), percent: num(i.attendance.percent, 100) }
-              : null,
-          upcoming: (Array.isArray(i.upcoming) ? i.upcoming : [])
-            .slice(0, LIMITS.upcoming)
-            .filter((e: any) => e && isDay(e.date))
-            .map((e: any) => ({
-              kind: e.kind === 'jogo' ? 'jogo' : 'treino',
-              date: e.date,
-              time: /^\d{2}:\d{2}$/.test(e.time) ? e.time : '',
-              title: clip(e.title, 160),
-              meeting: clip(e.meeting, 120),
-              place: clip(e.place, 120)
-            })),
-          publishedAt: Number(i.publishedAt) || 0
-        }
-      : null;
-  return { teamName: clip(data.teamName, 200), issue };
+  const archive = (Array.isArray(data.archive) ? data.archive : [])
+    .map(issueFromData)
+    .filter((i: NewsletterIssue | null): i is NewsletterIssue => Boolean(i))
+    .slice(0, ARCHIVE_WEEKS);
+  return { teamName: clip(data.teamName, 200), issue: issueFromData(data.issue), archive };
+}
+
+/** One summary read back from the published document (null when it is not one). */
+function issueFromData(value: unknown): NewsletterIssue | null {
+  const i = value && typeof value === 'object' ? (value as Record<string, any>) : null;
+  return i && isDay(i.from) && isDay(i.to)
+    ? {
+        from: i.from,
+        to: i.to,
+        // Summaries published before the Monday-to-Sunday weeks: the week after `to`
+        nextFrom: isDay(i.nextFrom) ? i.nextFrom : addDaysISO(i.to, 1),
+        nextTo: isDay(i.nextTo) ? i.nextTo : addDaysISO(i.to, 7),
+        intro: clip(i.intro, LIMITS.intro),
+        highlights: strings(i.highlights, LIMITS.highlight, LIMITS.highlights),
+        notices: clip(i.notices, LIMITS.notices),
+        results: (Array.isArray(i.results) ? i.results : [])
+          .slice(0, LIMITS.results)
+          .filter((r: any) => r && isDay(r.date))
+          .map((r: any) => ({
+            date: r.date,
+            opponent: clip(r.opponent, 80) || 'Adversário',
+            home: typeof r.home === 'boolean' ? r.home : null,
+            ours: num(r.ours, 99),
+            theirs: num(r.theirs, 99),
+            competition: clip(r.competition, 120),
+            scorers: clip(r.scorers, 300)
+          })),
+        attendance:
+          i.attendance && typeof i.attendance === 'object' && Number(i.attendance.trainings) > 0
+            ? { trainings: num(i.attendance.trainings, 31), percent: num(i.attendance.percent, 100) }
+            : null,
+        upcoming: (Array.isArray(i.upcoming) ? i.upcoming : [])
+          .slice(0, LIMITS.upcoming)
+          .filter((e: any) => e && isDay(e.date))
+          .map((e: any) => ({
+            kind: e.kind === 'jogo' ? 'jogo' : 'treino',
+            date: e.date,
+            time: /^\d{2}:\d{2}$/.test(e.time) ? e.time : '',
+            title: clip(e.title, 160),
+            meeting: clip(e.meeting, 120),
+            place: clip(e.place, 120)
+          })),
+        publishedAt: Number(i.publishedAt) || 0
+      }
+    : null;
 }
 
 const esc = (s: unknown) =>
@@ -366,7 +508,7 @@ const esc = (s: unknown) =>
   );
 
 /** The whole page, in the app's colours (dark, or light when the phone is in light mode). */
-export function renderNewsletterPage({ teamName, issue }: NewsletterPage): string {
+export function renderNewsletterPage({ teamName, issue, archive = [] }: NewsletterPage): string {
   const head = `<!doctype html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Resumo da semana · ${esc(teamName)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"><style>
 :root{--bg:#0b1220;--surface:#111a2b;--inset:#0d1626;--line:#22324d;--text:#e7eef7;--muted:#8b9bb4;--brand:#22c3ee;--brand-soft:#0d2a3a;--warn:#f5b301;--warn-soft:#2e2610;--banner:#0d1626;color-scheme:dark}
@@ -392,30 +534,49 @@ ul{list-style:none;display:grid;gap:8px}li{display:flex;gap:10px;align-items:bas
 .av{background:var(--warn-soft);border-radius:8px;padding:12px 14px;white-space:pre-wrap}.av b{color:var(--warn)}
 .ft{border-top:1px solid var(--line);padding:14px 20px;font-size:12px;color:var(--muted)}
 .empty{color:var(--muted)}
+details{border:1px solid var(--line);border-radius:8px;margin-top:8px;background:var(--inset)}
+summary{cursor:pointer;padding:12px;font-weight:600;display:flex;justify-content:space-between;gap:10px;list-style:none}
+summary::-webkit-details-marker{display:none}summary:after{content:"+";color:var(--brand);font-weight:700}details[open] summary:after{content:"–"}
+summary span{color:var(--muted);font-weight:500;font-size:13px;margin-left:auto}summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.old{padding:0 12px 12px;display:flex;flex-direction:column;gap:12px}
 </style></head><body>`;
   const logo = '<img src="/icons/icon-192.png" alt="BolaComVisão" width="80" height="80">';
   if (!issue) {
     return `${head}<div class="w"><div class="hd">${logo}<div><div class="wk">${esc(teamName)}</div><h1>Resumo da semana</h1></div></div><div class="bd"><p class="empty">O treinador ainda não publicou o resumo desta semana.</p></div></div></body></html>`;
   }
-  const results = issue.results.length
-    ? issue.results
-        .map((r) => {
-          const left = r.home === false ? r.opponent : teamName;
-          const right = r.home === false ? teamName : r.opponent;
-          const score = r.home === false ? `${r.theirs} – ${r.ours}` : `${r.ours} – ${r.theirs}`;
-          const meta = [shortDay(r.date), r.competition, r.home === null ? '' : r.home ? 'Em casa' : 'Fora']
-            .filter(Boolean)
-            .join(' · ');
-          return `<div class="res"><div class="sc"><b>${esc(left)}</b><span class="n">${esc(score)}</span><b>${esc(right)}</b></div><div class="meta">${esc(meta)}${r.scorers ? ` · Golos: ${esc(r.scorers)}` : ''}</div></div>`;
+  const resultsOf = (list: NewsletterResult[]) =>
+    list
+      .map((r) => {
+        const left = r.home === false ? r.opponent : teamName;
+        const right = r.home === false ? teamName : r.opponent;
+        const score = r.home === false ? `${r.theirs} – ${r.ours}` : `${r.ours} – ${r.theirs}`;
+        const meta = [shortDay(r.date), r.competition, r.home === null ? '' : r.home ? 'Em casa' : 'Fora']
+          .filter(Boolean)
+          .join(' · ');
+        return `<div class="res"><div class="sc"><b>${esc(left)}</b><span class="n">${esc(score)}</span><b>${esc(right)}</b></div><div class="meta">${esc(meta)}${r.scorers ? ` · Golos: ${esc(r.scorers)}` : ''}</div></div>`;
+      })
+      .join('') || '<p class="empty">Não houve jogos nesta semana.</p>';
+  const factsOf = (i: NewsletterIssue) =>
+    [
+      i.attendance
+        ? `<li><span><b>Treinos:</b> ${i.attendance.trainings} ${i.attendance.trainings === 1 ? 'treino' : 'treinos'} com ${i.attendance.percent}% de presenças.</span></li>`
+        : '',
+      ...i.highlights.map((h) => `<li><span>${esc(h)}</span></li>`)
+    ].join('');
+  const results = resultsOf(issue.results);
+  const facts = factsOf(issue);
+  const older = archive.filter((a) => a.from !== issue.from);
+  const archiveHtml = older.length
+    ? `<section><h2>Semanas anteriores</h2>${older
+        .map((a) => {
+          const games = a.results.length
+            ? a.results.map((r) => (r.home === false ? `${r.theirs}–${r.ours}` : `${r.ours}–${r.theirs}`)).join(' · ')
+            : 'sem jogos';
+          const f = factsOf(a);
+          return `<details><summary>${esc(weekLabel(a.from, a.to))}<span>${esc(games)}</span></summary><div class="old">${a.intro ? `<p class="intro">${esc(a.intro)}</p>` : ''}${resultsOf(a.results)}${f ? `<ul>${f}</ul>` : ''}</div></details>`;
         })
-        .join('')
-    : '<p class="empty">Não houve jogos nesta semana.</p>';
-  const facts = [
-    issue.attendance
-      ? `<li><span><b>Treinos:</b> ${issue.attendance.trainings} ${issue.attendance.trainings === 1 ? 'treino' : 'treinos'} com ${issue.attendance.percent}% de presenças.</span></li>`
-      : '',
-    ...issue.highlights.map((h) => `<li><span>${esc(h)}</span></li>`)
-  ].join('');
+        .join('')}</section>`
+    : '';
   const upcoming = issue.upcoming.length
     ? issue.upcoming
         .map((e) => {
@@ -428,5 +589,5 @@ ul{list-style:none;display:grid;gap:8px}li{display:flex;gap:10px;align-items:bas
         })
         .join('')
     : '<p class="empty">Não há jogos nem treinos marcados para esta semana.</p>';
-  return `${head}<div class="w"><div class="hd">${logo}<div><div class="wk">${esc(teamName)} · ${esc(weekLabel(issue.from, issue.to))}</div><h1>Resumo da semana</h1></div></div><div class="bd">${issue.intro ? `<p class="intro">${esc(issue.intro)}</p>` : ''}<section><h2>Resultados da semana</h2>${results}</section>${facts ? `<section><h2>Destaques</h2><ul>${facts}</ul></section>` : ''}<section><h2>Esta semana · ${esc(weekLabel(issue.nextFrom, issue.nextTo))}</h2>${upcoming}</section>${issue.notices ? `<div class="av"><b>Avisos:</b> ${esc(issue.notices)}</div>` : ''}</div><div class="ft">Publicado pelo treinador na BolaComVisão. Este link mostra sempre o resumo mais recente.</div></div></body></html>`;
+  return `${head}<div class="w"><div class="hd">${logo}<div><div class="wk">${esc(teamName)} · ${esc(weekLabel(issue.from, issue.to))}</div><h1>Resumo da semana</h1></div></div><div class="bd">${issue.intro ? `<p class="intro">${esc(issue.intro)}</p>` : ''}<section><h2>Resultados da semana</h2>${results}</section>${facts ? `<section><h2>Destaques</h2><ul>${facts}</ul></section>` : ''}<section><h2>Esta semana · ${esc(weekLabel(issue.nextFrom, issue.nextTo))}</h2>${upcoming}</section>${issue.notices ? `<div class="av"><b>Avisos:</b> ${esc(issue.notices)}</div>` : ''}${archiveHtml}</div><div class="ft">Publicado pelo treinador na BolaComVisão. Este link mostra sempre o resumo mais recente.</div></div></body></html>`;
 }
