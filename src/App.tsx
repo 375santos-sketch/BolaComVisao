@@ -32,7 +32,7 @@ import { saveBrand } from './lib/clubBrand';
 import { teamSettings } from './lib/teamSettings';
 import { exportJSONBackup } from './lib/exportUtils';
 import { evaluateSystemNotifications } from './lib/notificationEngine';
-import { syncStateWithCloud, processOfflineMutationsQueue, clearDeviceClubData } from './lib/syncEngine';
+import { clearDeviceClubData, removeUnusedOfflineCopies } from './lib/syncEngine';
 import { recordAuditLog } from './lib/auditEngine';
 import { subscribeToLegacyClubDocument, auth, onAuthStateChanged, loadMasterClubState } from './services/firebase';
 import { checkMembershipForAccount } from './services/organizations';
@@ -505,6 +505,8 @@ export default function App() {
   // The phone's small storage was full: the copy of the club is in the larger one (IndexedDB); open it from there
   useEffect(() => {
     let cancelled = false;
+    // P1-02: copies of the whole club that older versions kept on the device and nothing read (once; then nothing)
+    void removeUnusedOfflineCopies();
     void loadAppStateFromLargeStorage().then((saved) => {
       if (!cancelled && saved) setState((prev) => (prev.currentUser ? prev : saved));
     });
@@ -879,17 +881,7 @@ export default function App() {
   // Auto-sync listener for online / offline events
   useEffect(() => {
     const handleOnline = async () => {
-      showToast('Ligação à internet detetada! A sincronizar na Nuvem... 🔄');
-
-      // Process any queued offline mutations first
-      try {
-        const queueRes = await processOfflineMutationsQueue();
-        if (queueRes.processed > 0) {
-          showToast(`Sincronizadas ${queueRes.processed} alterações guardadas offline! 📲`);
-        }
-      } catch (e) {
-        console.warn('Queue flush note:', e);
-      }
+      showToast('Ligação à internet recuperada. A enviar as alterações para a nuvem… 🔄');
 
       const currentSyncInfo = state.syncInfo || {
         isOnline: true,
@@ -909,24 +901,23 @@ export default function App() {
         }
       });
 
-      if (state.currentUser?.id) {
-        await pushStateToCloud(state);
+      // P1-02: ONE save, through pushStateToCloud: one at a time, with the latest state (not the copy this handler
+      // was made with), never from a read-only role, and not while the daily quota is spent. Before, a second save
+      // (syncStateWithCloud) ran in parallel outside those guards, and an empty offline queue was "processed".
+      // If this save fails, the retry effect above keeps trying while there are changes not yet in the cloud.
+      if (latestStateRef.current.currentUser?.id && !getFirestoreQuotaState().isExhausted) {
+        await pushStateToCloud(latestStateRef.current);
       }
-
-      const res = await syncStateWithCloud(state, currentSyncInfo.syncId);
 
       updateState({
         syncInfo: {
           ...currentSyncInfo,
           isOnline: true,
-          status: res.success ? 'synced' : 'error',
+          status: 'synced',
           lastSyncedAt: Date.now(),
-          pendingChangesCount: res.success ? 0 : currentSyncInfo.pendingChangesCount,
-          lastSyncMessage: res.message
+          lastSyncMessage: 'Ligação recuperada. O indicador de gravação mostra se ficou tudo na nuvem.'
         }
       });
-
-      showToast(res.message);
     };
 
     const handleOffline = () => {
