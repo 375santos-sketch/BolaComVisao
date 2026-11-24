@@ -12,7 +12,6 @@ import {
   toggledGoal,
   withGoal,
   withGoalNote,
-  withoutEvaluation,
   withoutGoal
 } from '../../../lib/playerEvolution';
 import { DateTimePT } from '../../ui/DateTimePT';
@@ -136,8 +135,8 @@ export const PlayerEvolutionSection: React.FC<{
       {part !== 'objetivos' && last && (
         <details aria-label="Avaliações antigas" className="ui-card p-3">
           <summary className="cursor-pointer text-xs text-ui-muted">
-            <b>Avaliações antigas (escala 1–5)</b> · {evaluations.length} · ficam como estavam, não são convertidas em
-            níveis
+            <b>Avaliações antigas (escala 1–5)</b> · {evaluations.length} · histórico só de leitura: ficam como estavam,
+            não são convertidas em níveis
           </summary>
           <div className="mt-2 space-y-2">
             <Radar last={last} before={before} />
@@ -162,25 +161,8 @@ export const PlayerEvolutionSection: React.FC<{
                             {formatScore(Math.abs(diff))}
                           </span>
                         )}
-                        {onSavePlayer && (
-                          <button
-                            type="button"
-                            aria-label={`Apagar a avaliação de ${ddmm(e.date)}`}
-                            onClick={() => {
-                              // P0-09: an old evaluation (1–5) can no longer be made again: two confirmations
-                              if (
-                                window.confirm(`Apagar a avaliação de ${ddmm(e.date)}?`) &&
-                                window.confirm(
-                                  'É uma avaliação antiga (escala 1–5), que já não se pode voltar a criar. Apagada, só volta com uma cópia de segurança. Apagar mesmo?'
-                                )
-                              )
-                                save(withoutEvaluation(player, e.id), 'Avaliação apagada');
-                            }}
-                            className="px-1 text-xs text-ui-muted hover:text-ui-danger"
-                          >
-                            ✕
-                          </button>
-                        )}
+                        {/* Decisão 9 (dono, 24/11/2026): the old evaluations (1–5) are history, read only — no
+                            delete button (they can no longer be made, so deleting was the only way to lose them) */}
                       </span>
                     </div>
                     <div className="text-[11px] text-ui-muted">
