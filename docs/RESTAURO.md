@@ -43,5 +43,6 @@ Mostra só números, sem nomes nem e-mails:
 
 ## Registo de ensaios
 
-| Data | Cópia de | Documentos | Resultado | Tempo total |
-| ---- | -------- | ---------- | --------- | ----------- |
+| Data       | Cópia de                | Documentos                                              | Resultado | Tempo total |
+| ---------- | ----------------------- | ------------------------------------------------------- | --------- | ----------- |
+| 24/11/2026 | 24/11/2026, 17:52 (UTC) | 316 (0 em falta, 0 diferentes, 0 a mais; SHA-256 igual) | ✅ OK     | 19,7 s      |
