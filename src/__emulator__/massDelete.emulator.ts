@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import type { Training } from '../types';
 
 vi.mock('../../firebase-applet-config.json', async (importOriginal) => {
   const original = (await importOriginal()) as { default: Record<string, unknown> };
@@ -45,12 +46,13 @@ const cloud = await import('../services/clubCloud');
 const { normalizeClubState } = await import('../lib/storage');
 
 const CLUB = 'clubeApagoes';
-const training = (n: number) => ({
-  id: `t${n}`,
-  date: `2026-10-${String((n % 28) + 1).padStart(2, '0')}`,
-  absences: [],
-  completed: true
-});
+const training = (n: number) =>
+  ({
+    id: `t${n}`,
+    date: `2026-10-${String((n % 28) + 1).padStart(2, '0')}`,
+    absences: [],
+    completed: true
+  }) as unknown as Training;
 const stateWith = (count: number) => {
   const trainings = Array.from({ length: count }, (_, i) => training(i + 1));
   return normalizeClubState({
