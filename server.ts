@@ -3,7 +3,7 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
-import { MASTER_ADMIN_EMAIL } from './src/lib/constants';
+import { aiAccessFor, createDailyLimiter } from './src/lib/aiAccess';
 import { buildICS, feedFromRestDocument, reminderPlanFromQuery } from './src/lib/calendarFeed';
 import {
   cleanPrintExercise,
@@ -56,21 +56,25 @@ try {
   console.warn('Backend warning reading firebase config:', e);
 }
 
+/** Firestore REST address of a document of the app's database (the emulator in the tests). */
+function firestoreDocUrl(docPath: string): string {
+  const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+  const base = process.env.FIRESTORE_EMULATOR_HOST
+    ? `http://${process.env.FIRESTORE_EMULATOR_HOST}`
+    : 'https://firestore.googleapis.com';
+  return `${base}/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/${docPath}`;
+}
+
 /**
  * Server-side check: is this authenticated user a REAL Administrator?
- * Mirrors firestore.rules' isMasterAdmin(): true for the original Master Admin email,
- * OR for any user promoted via promoteUserToAdmin() (has a document in /admins/{uid}).
+ * P0-08: only a document in /admins/{uid} counts (as in firestore.rules' isMasterAdmin()); the e-mail no longer does.
  * Uses the Firestore REST API with the requester's own ID token so Firestore Security
  * Rules evaluate the request exactly as they would for a normal client read.
  */
-async function isRealAdmin(uid: string, email: string, idToken: string): Promise<boolean> {
-  if (email.toLowerCase().trim() === MASTER_ADMIN_EMAIL.toLowerCase().trim()) {
-    return true;
-  }
+async function isRealAdmin(uid: string, idToken: string): Promise<boolean> {
+  if (!uid) return false;
   try {
-    const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
-    const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/admins/${uid}`;
-    const resp = await fetch(url, {
+    const resp = await fetch(firestoreDocUrl(`admins/${encodeURIComponent(uid)}`), {
       headers: { Authorization: `Bearer ${idToken}` }
     });
     return resp.ok;
@@ -78,6 +82,36 @@ async function isRealAdmin(uid: string, email: string, idToken: string): Promise
     console.warn('Erro ao verificar privilégios de administrador promovido:', err);
     return false;
   }
+}
+
+/** P0-08: one counter for the three AI routes (crónica, leitura de prints, exercício com IA). */
+const aiLimiter = createDailyLimiter();
+
+/**
+ * P0-08: the caller of an AI route must be signed in AND be an approved account of the coaching staff (or the
+ * Administrator). Reads users/{uid} with the caller's own sign-in, so the Firestore rules apply.
+ */
+async function aiCaller(
+  req: express.Request
+): Promise<{ ok: true; uid: string } | { ok: false; status: number; error: string }> {
+  const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  const verification = token && apiKey ? await verifyFirebaseIdToken(token, apiKey) : { valid: false, uid: '' };
+  if (!verification.valid || !verification.uid) {
+    return { ok: false, status: 401, error: 'Sessão expirada. Entre de novo na app.' };
+  }
+  const uid = verification.uid;
+  const asCaller = { headers: { Authorization: `Bearer ${token}` } };
+  const [isAdmin, userRes] = await Promise.all([
+    isRealAdmin(uid, token),
+    fetch(firestoreDocUrl(`users/${encodeURIComponent(uid)}`), asCaller).catch(() => null)
+  ]);
+  const userDoc =
+    userRes && userRes.ok ? fromRestFields(((await userRes.json()) as { fields?: Record<string, any> }).fields) : null;
+  const access = aiAccessFor(userDoc, isAdmin);
+  if (access.ok === false) return { ok: false, status: access.status, error: access.reason };
+  return { ok: true, uid };
 }
 
 /**
@@ -162,7 +196,7 @@ async function startServer() {
 
       // 3. Verify Requester is a REAL Administrator (Master Admin OR any promoted admin)
       const requesterEmail = tokenVerification.email.toLowerCase();
-      const requesterIsAdmin = await isRealAdmin(tokenVerification.uid || '', requesterEmail, idToken);
+      const requesterIsAdmin = await isRealAdmin(tokenVerification.uid || '', idToken);
       if (!requesterIsAdmin) {
         return res.status(403).json({
           success: false,
@@ -209,17 +243,12 @@ async function startServer() {
           errMsgUpper.includes('ADMIN_ONLY_OPERATION') ||
           errMsgUpper.includes('PASSWORD_LOGIN_DISABLED')
         ) {
-          // When Email/Password provider is disabled in Firebase Console, fallback seamlessly to creating
-          // a unique pre-authorized user in Firestore so admin workflow is NEVER blocked!
-          const preAuthUid = 'user_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
-          return res.json({
-            success: true,
-            uid: preAuthUid,
-            email: email.trim().toLowerCase(),
-            createdBy: requesterEmail,
-            createdAt: Date.now(),
-            isPreAuthorizedFallback: true,
-            message: 'Treinador pré-autorizado com sucesso na Base de Dados do Clube.'
+          // P0-08: no more invented uid. A profile under an id that no Firebase account has can never sign in, and
+          // it was approved without a real account behind it. The Administrator must turn on e-mail/password.
+          return res.status(503).json({
+            success: false,
+            error:
+              'Não foi possível criar a conta: o início de sessão por e-mail e palavra-passe está desligado no Firebase.'
           });
         }
         return res.status(400).json({ success: false, error: friendlyMsg, rawError: rawErrMsg });
@@ -273,13 +302,8 @@ async function startServer() {
   // users; the picture is not stored.
   app.post('/api/ler-jornada', async (req, res) => {
     try {
-      const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
-      const authHeader = req.headers.authorization || '';
-      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-      const verification = token && apiKey ? await verifyFirebaseIdToken(token, apiKey) : { valid: false };
-      if (!verification.valid) {
-        return res.status(401).json({ success: false, error: 'Sessão expirada. Entre de novo na app.' });
-      }
+      const caller = await aiCaller(req);
+      if (caller.ok === false) return res.status(caller.status).json({ success: false, error: caller.error });
       const geminiKey = process.env.GEMINI_API_KEY;
       if (!geminiKey) {
         return res
@@ -315,6 +339,8 @@ async function startServer() {
               ? cleanPrintExercises(parseModelJson(text))
               : cleanPrintGames(parseModelJson(text));
       if (!match) return res.status(400).json({ success: false, error: 'Imagem inválida.' });
+      const quota = aiLimiter.take(caller.uid);
+      if (quota.ok === false) return res.status(quota.status).json({ success: false, error: quota.reason });
 
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: geminiKey });
@@ -363,13 +389,8 @@ async function startServer() {
   // kind "resumo": the coach's note of the weekly summary for the parents (Comunicação → 📰 Resumo da semana).
   app.post('/api/cronica', async (req, res) => {
     try {
-      const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
-      const authHeader = req.headers.authorization || '';
-      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-      const verification = token && apiKey ? await verifyFirebaseIdToken(token, apiKey) : { valid: false };
-      if (!verification.valid) {
-        return res.status(401).json({ success: false, error: 'Sessão expirada. Entre de novo na app.' });
-      }
+      const caller = await aiCaller(req);
+      if (caller.ok === false) return res.status(caller.status).json({ success: false, error: caller.error });
       const geminiKey = process.env.GEMINI_API_KEY;
       if (!geminiKey)
         return res.status(503).json({ success: false, error: 'A escrita automática não está disponível.' });
@@ -379,6 +400,8 @@ async function startServer() {
       if (!facts || typeof facts !== 'object' || JSON.stringify(facts).length > 6000) {
         return res.status(400).json({ success: false, error: 'Dados do jogo inválidos.' });
       }
+      const quota = aiLimiter.take(caller.uid);
+      if (quota.ok === false) return res.status(quota.status).json({ success: false, error: quota.reason });
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: geminiKey });
       let lastError: unknown;
@@ -418,17 +441,14 @@ async function startServer() {
   // exercise read from a photo. Only for signed-in users.
   app.post('/api/exercicio-ia', async (req, res) => {
     try {
-      const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
-      const authHeader = req.headers.authorization || '';
-      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-      const verification = token && apiKey ? await verifyFirebaseIdToken(token, apiKey) : { valid: false };
-      if (!verification.valid) {
-        return res.status(401).json({ success: false, error: 'Sessão expirada. Entre de novo na app.' });
-      }
+      const caller = await aiCaller(req);
+      if (caller.ok === false) return res.status(caller.status).json({ success: false, error: caller.error });
       const geminiKey = process.env.GEMINI_API_KEY;
       if (!geminiKey) return res.status(503).json({ success: false, error: 'A criação com IA não está disponível.' });
       const request = cleanIdeaRequest(req.body);
       if (!request) return res.status(400).json({ success: false, error: 'Escreva o que quer trabalhar.' });
+      const quota = aiLimiter.take(caller.uid);
+      if (quota.ok === false) return res.status(quota.status).json({ success: false, error: quota.reason });
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: geminiKey });
       let lastError: unknown;
