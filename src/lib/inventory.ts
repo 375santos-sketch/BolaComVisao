@@ -116,7 +116,39 @@ export interface InventoryWorkspace {
   privateRecords: { live: number; deleted: number; byKind: Record<string, KindCount> };
   /** Public links switched on in the teams (calendar, coaches' calendar, assistant's plan, parents' live). */
   publicLinks: Record<string, number>;
+  /** P0-03: signs of one team's data kept in another team (counts and team names only). */
+  mixing: TeamMixingCheck;
   errors: string[];
+}
+
+/**
+ * P0-03 — Escalões misturados: what the old change of team and the old schedule copy may have left in the data. Only
+ * counts and team names (club · age group · season); never an athlete's or an opponent's name, never a date.
+ */
+export interface TeamMixingCheck {
+  /** Where the teams' data was read: the per-record storage, the old single document, or nothing to read. */
+  source: 'registos' | 'documento único' | 'nenhum';
+  /** Teams listed in the club document. */
+  knownTeams: number;
+  /** Games and scheduled games with no team written in them (kept where they are; the app no longer moves them). */
+  untagged: { match: number; schedule: number };
+  /** Games and scheduled games saved in one team but written as another team's (copies made by the old rules). */
+  inOtherTeam: {
+    match: number;
+    schedule: number;
+    /** Of those, how many also exist in the team they belong to (a duplicate of the original). */
+    duplicateOfOriginal: number;
+    /** By the team that holds the copies. */
+    byTeam: Record<string, number>;
+  };
+  /** Records (by kind) of a team that is not in the club's list of teams. */
+  inUnknownTeam: Record<string, number>;
+  /** The same game (same id) present in two or more teams. */
+  sameGameInSeveralTeams: { match: number; schedule: number };
+  /** Athletes (same athlete id) in two or more teams of the SAME season: possible copies, or playing up an age group. */
+  athletesInTwoTeamsSameSeason: number;
+  /** "sem sinais" when every count is 0. */
+  verdict: 'sem sinais' | 'a verificar';
 }
 
 export interface Inventory {
@@ -231,6 +263,113 @@ const jsonBytes = (value: unknown) => new TextEncoder().encode(JSON.stringify(va
 const teamLabel = (team: Data) =>
   [str(team.clubName), str(team.category), str(team.season)].filter(Boolean).join(' · ') || str(team.id);
 
+/** One game, scheduled game or athlete as found in the data: the team whose list holds it and its own fields. */
+interface HeldItem {
+  kind: 'match' | 'schedule' | 'player';
+  holder: string;
+  id: string;
+  data: Data;
+}
+
+const MIXING_KINDS = ['match', 'schedule', 'player'] as const;
+const LEGACY_LISTS: Record<HeldItem['kind'], string> = { match: 'matches', schedule: 'schedule', player: 'roster' };
+
+/**
+ * P0-03 — Counts the signs of escalões misturados in one club. Pure; reads only what the inventory already read (the
+ * live records, or the old single document's teams when the club has no records yet).
+ */
+export function teamMixingOf(
+  records: RawDoc[],
+  legacyState: Data | null,
+  clubLive: boolean,
+  teams: Data[]
+): TeamMixingCheck {
+  const items: HeldItem[] = [];
+  if (clubLive) {
+    records.forEach((r) => {
+      const kind = str(r.data.kind) as HeldItem['kind'];
+      if (!MIXING_KINDS.includes(kind) || r.data.deleted === true) return;
+      const data = asMap(r.data.data);
+      items.push({ kind, holder: str(r.data.teamId), id: str(r.data.entityId) || str(data.id), data });
+    });
+  } else if (legacyState) {
+    asList(legacyState.teams)
+      .map(asMap)
+      .forEach((t) =>
+        MIXING_KINDS.forEach((kind) =>
+          asList(t[LEGACY_LISTS[kind]])
+            .map(asMap)
+            .forEach((data) => items.push({ kind, holder: str(t.id), id: str(data.id), data }))
+        )
+      );
+  }
+
+  const known = new Map(teams.map((t) => [str(t.id), t] as const).filter(([id]) => Boolean(id)));
+  const labelOf = (id: string) => (known.has(id) ? teamLabel(known.get(id)!) : id || '(sem equipa)');
+  const check: TeamMixingCheck = {
+    source: clubLive ? 'registos' : legacyState ? 'documento único' : 'nenhum',
+    knownTeams: known.size,
+    untagged: { match: 0, schedule: 0 },
+    inOtherTeam: { match: 0, schedule: 0, duplicateOfOriginal: 0, byTeam: {} },
+    inUnknownTeam: {},
+    sameGameInSeveralTeams: { match: 0, schedule: 0 },
+    athletesInTwoTeamsSameSeason: 0,
+    verdict: 'sem sinais'
+  };
+
+  // Which teams hold each game (kind + id)
+  const holders = new Map<string, Set<string>>();
+  items.forEach((it) => {
+    if (it.kind === 'player' || !it.id) return;
+    const key = `${it.kind}|${it.id}`;
+    (holders.get(key) || holders.set(key, new Set()).get(key)!).add(it.holder);
+  });
+
+  items.forEach((it) => {
+    if (known.size > 0 && it.holder && !known.has(it.holder)) bump(check.inUnknownTeam, it.kind);
+    if (it.kind === 'player') return;
+    const writtenTeam = str(it.data.teamId);
+    if (!writtenTeam) {
+      check.untagged[it.kind] += 1;
+    } else if (writtenTeam !== it.holder) {
+      check.inOtherTeam[it.kind] += 1;
+      bump(check.inOtherTeam.byTeam, labelOf(it.holder));
+      if (holders.get(`${it.kind}|${it.id}`)?.has(writtenTeam)) check.inOtherTeam.duplicateOfOriginal += 1;
+    }
+  });
+  holders.forEach((set, key) => {
+    if (set.size > 1) check.sameGameInSeveralTeams[key.split('|')[0] as 'match' | 'schedule'] += 1;
+  });
+
+  // Athletes: the same person (athleteId, or the id before F4) in two teams of the same season
+  const bySeason = new Map<string, Set<string>>();
+  items.forEach((it) => {
+    if (it.kind !== 'player') return;
+    const person = str(it.data.athleteId) || it.id;
+    const season = str(known.get(it.holder)?.season);
+    if (!person || !season) return;
+    const key = `${season}|${person}`;
+    (bySeason.get(key) || bySeason.set(key, new Set()).get(key)!).add(it.holder);
+  });
+  bySeason.forEach((set) => {
+    if (set.size > 1) check.athletesInTwoTeamsSameSeason += 1;
+  });
+
+  check.inOtherTeam.byTeam = sortedObject(check.inOtherTeam.byTeam);
+  check.inUnknownTeam = sortedObject(check.inUnknownTeam);
+  const signs =
+    check.untagged.match +
+    check.untagged.schedule +
+    check.inOtherTeam.match +
+    check.inOtherTeam.schedule +
+    Object.values(check.inUnknownTeam).reduce((n, v) => n + v, 0) +
+    check.sameGameInSeveralTeams.match +
+    check.sameGameInSeveralTeams.schedule +
+    check.athletesInTwoTeamsSameSeason;
+  check.verdict = signs > 0 ? 'a verificar' : 'sem sinais';
+  return check;
+}
+
 function summarizeWorkspace(ws: RawWorkspace, accounts: InventoryAccount[]): InventoryWorkspace {
   const clubDoc = ws.records.find((r) => r.id === 'club');
   const clubLive = clubDoc && clubDoc.data.deleted !== true ? clubDoc : null;
@@ -315,6 +454,7 @@ function summarizeWorkspace(ws: RawWorkspace, accounts: InventoryAccount[]): Inv
       byKind: sortedObject(privateByKind)
     },
     publicLinks,
+    mixing: teamMixingOf(ws.records, legacyState, Boolean(clubLive), teamsSource),
     errors: ws.errors
   };
 }

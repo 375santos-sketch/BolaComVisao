@@ -109,6 +109,61 @@ const SharedDocLine: React.FC<{ title: string; doc: InventoryWorkspace['clubReco
   </div>
 );
 
+/** P0-03: signs of one team's data in another team (only counts and team names). */
+const MixingLine: React.FC<{ m: InventoryWorkspace['mixing'] }> = ({ m }) => {
+  if (m.source === 'nenhum') return null;
+  const ok = m.verdict === 'sem sinais';
+  const other = m.inOtherTeam;
+  const unknown = Object.entries(m.inUnknownTeam);
+  return (
+    <div className="ui-inset space-y-1 p-2.5 text-ui-caption" aria-label="Escalões misturados">
+      <p className={ok ? 'font-bold text-ui-text' : 'font-bold text-ui-warning'}>
+        Escalões misturados: {ok ? 'sem sinais' : 'a verificar'} ({m.knownTeams}{' '}
+        {m.knownTeams === 1 ? 'equipa' : 'equipas'}, lido do{' '}
+        {m.source === 'registos' ? 'formato de registos' : 'documento antigo'})
+      </p>
+      {!ok && (
+        <ul className="list-disc space-y-0.5 pl-4 text-ui-text">
+          {other.match + other.schedule > 0 && (
+            <li>
+              Noutra equipa: {other.schedule} da agenda e {other.match} jogos guardados numa equipa mas marcados como de
+              outra ({other.duplicateOfOriginal} {other.duplicateOfOriginal === 1 ? 'é cópia' : 'são cópias'} de um
+              original que existe) · onde estão:{' '}
+              {Object.entries(other.byTeam)
+                .map(([t, n]) => `${t} ${n}`)
+                .join(' · ')}
+            </li>
+          )}
+          {m.untagged.match + m.untagged.schedule > 0 && (
+            <li>
+              Sem equipa marcada: {m.untagged.schedule} da agenda e {m.untagged.match} jogos (ficam na equipa onde
+              estão)
+            </li>
+          )}
+          {m.sameGameInSeveralTeams.match + m.sameGameInSeveralTeams.schedule > 0 && (
+            <li>
+              O mesmo jogo em várias equipas: {m.sameGameInSeveralTeams.schedule} da agenda e{' '}
+              {m.sameGameInSeveralTeams.match} jogos
+            </li>
+          )}
+          {unknown.length > 0 && (
+            <li>
+              De equipas que já não existem: {unknown.map(([k, n]) => `${label(KIND_LABELS, k)} ${n}`).join(' · ')}
+            </li>
+          )}
+          {m.athletesInTwoTeamsSameSeason > 0 && (
+            <li>
+              Atletas em duas equipas da mesma época: {m.athletesInTwoTeamsSameSeason} (pode ser um atleta a jogar acima
+              do escalão, ou uma cópia)
+            </li>
+          )}
+        </ul>
+      )}
+      <p className="text-ui-muted">Só contagens: nada é corrigido aqui.</p>
+    </div>
+  );
+};
+
 const WorkspaceCard: React.FC<{ ws: InventoryWorkspace }> = ({ ws }) => (
   <Section title={`Espaço «${ws.id}»`}>
     <p className="text-ui-caption text-ui-muted">
@@ -134,6 +189,7 @@ const WorkspaceCard: React.FC<{ ws: InventoryWorkspace }> = ({ ws }) => (
           .join(' · ') || '—'
       ])}
     />
+    <MixingLine m={ws.mixing} />
     {ws.privateRecords.live + ws.privateRecords.deleted > 0 && (
       <Table
         label={`Dados privados dos atletas em ${ws.id}`}
