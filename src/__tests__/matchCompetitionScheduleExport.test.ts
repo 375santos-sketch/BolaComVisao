@@ -1,6 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { getMatchCompetitionDetails } from '../lib/utils';
 import { Match, ScheduledMatch, AppState } from '../types';
+
+// Outside the browser the SheetJS writeFile has nowhere to save the download: record the call instead of writing to disk
+const writeFileCalls = vi.hoisted(() => [] as string[]);
+vi.mock('xlsx', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('xlsx')>();
+  return { ...actual, writeFile: (_wb: unknown, name: string) => void writeFileCalls.push(name) };
+});
 
 describe('Match Competition Details from Agenda (Schedule)', () => {
   const baseMatch: Match = {
@@ -171,6 +178,7 @@ describe('Match Competition Details from Agenda (Schedule)', () => {
 
     // Export function should execute successfully
     await expect(exportMatchSheetExcel(baseMatch, state)).resolves.not.toThrow();
+    expect(writeFileCalls).toContain('FICHA_JOGO_BOLACOMVISAO_SPORTING_CP_2026-10-15.xlsx');
   });
 
   describe('Excel Modo Jogo Uppercase, No Symbols, Pure Number Minutes', () => {
