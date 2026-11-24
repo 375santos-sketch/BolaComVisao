@@ -348,8 +348,6 @@ function normalizeClubStateFields(raw: Partial<AppState>): AppState {
       : activeTeam?.staffUnavailability || [];
 
   // Normalize each team's trainings, schedule, and trainingNumber
-  const rawScheduleList = Array.isArray(raw.schedule) ? raw.schedule : [];
-
   const normalizedTeams = teams.map((t) => {
     const rawTeamTrainings = activeTeam && t.id === activeTeam.id ? finalTrainings : t.trainings || [];
     const { trainings: migratedTeamTrainings, maxNumber: teamMaxNumber } = normalizeAndMigrateTrainings(
@@ -390,25 +388,9 @@ function normalizeClubStateFields(raw: Partial<AppState>): AppState {
       };
     }
 
-    // Attach any matches from rawScheduleList tagged or identified for this team
-    rawScheduleList.forEach((s: any) => {
-      if (!s || !s.id) return;
-      const sTeamId = s.teamId;
-      const sTeamName = s.teamName?.toLowerCase().trim();
-      const tClubLower = (t.clubName || '').toLowerCase().trim();
-      if (
-        sTeamId === t.id ||
-        (sTeamName &&
-          tClubLower &&
-          (sTeamName === tClubLower || tClubLower.includes(sTeamName) || sTeamName.includes(tClubLower))) ||
-        (tClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
-      ) {
-        if (!teamScheduleMap.has(s.id)) {
-          teamScheduleMap.set(s.id, s);
-        }
-      }
-    });
-
+    // P0-02: another team's schedule is only its own list. The active team's games are no longer copied here by a
+    // similar club name (two age groups of the same club have the same name) nor, for "drag" clubs, when untagged.
+    // Nothing already in this team's list is removed (no change to stored data).
     return {
       ...t,
       roster: withoutDemoPlayers(t.roster),

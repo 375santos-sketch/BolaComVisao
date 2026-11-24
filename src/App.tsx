@@ -4,6 +4,7 @@ import { canPublishClubLibrary, isReadOnlyRole } from './lib/orgPermissions';
 import { hasPrivateData, readsPrivateData, stripPrivate } from './lib/privateRecords';
 import { withInactiveAbsences } from './lib/inactiveAbsences';
 import { liveMatchOf } from './lib/liveFollow';
+import { switchTeam } from './lib/teamSwitch';
 import { localDateISO } from './lib/trainingQuick';
 import { AppState, UserAccount, AppNotification } from './types';
 import {
@@ -1056,97 +1057,9 @@ export default function App() {
                 state={state}
                 onUpdateState={updateState}
                 onSelectTeam={(teamId) => {
-                  const target = state.teams?.find((t) => t.id === teamId);
-                  if (target) {
-                    const updatedTeams = (state.teams || []).map((t) => {
-                      if (t.id === state.activeTeamId) {
-                        return {
-                          ...t,
-                          roster: state.roster || [],
-                          staffMembers: state.staffMembers || [],
-                          matches: state.matches || [],
-                          trainings: state.trainings || [],
-                          schedule: state.schedule || [],
-                          tactics: state.tactics || [],
-                          tacticFormat: state.tacticFormat || 11,
-                          opponentScouting: state.opponentScouting || [],
-                          clubEvents: state.clubEvents || [],
-                          staffUnavailability: state.staffUnavailability || []
-                        };
-                      }
-                      return t;
-                    });
-
-                    const targetScheduleMap = new Map<string, any>();
-                    (target.schedule || []).forEach((s) => {
-                      if (s && s.id) targetScheduleMap.set(s.id, s);
-                    });
-                    (state.schedule || []).forEach((s) => {
-                      if (!s || !s.id) return;
-                      const sTeamId = (s as any).teamId;
-                      const sTeamName = (s as any).teamName?.toLowerCase().trim();
-                      const targetClubLower = (target.clubName || '').toLowerCase().trim();
-                      if (
-                        sTeamId === target.id ||
-                        (sTeamName &&
-                          targetClubLower &&
-                          (sTeamName === targetClubLower ||
-                            targetClubLower.includes(sTeamName) ||
-                            sTeamName.includes(targetClubLower))) ||
-                        (targetClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
-                      ) {
-                        if (!targetScheduleMap.has(s.id)) {
-                          targetScheduleMap.set(s.id, s);
-                        }
-                      }
-                    });
-                    const resolvedTargetSchedule = Array.from(targetScheduleMap.values());
-
-                    const targetMatchesMap = new Map<string, any>();
-                    (target.matches || []).forEach((m) => {
-                      if (m && m.id) targetMatchesMap.set(m.id, m);
-                    });
-                    (state.matches || []).forEach((m) => {
-                      if (!m || !m.id) return;
-                      const mTeamId = (m as any).teamId;
-                      const mTeamName = (m as any).teamName?.toLowerCase().trim();
-                      const targetClubLower = (target.clubName || '').toLowerCase().trim();
-                      if (
-                        mTeamId === target.id ||
-                        !mTeamId ||
-                        (mTeamName &&
-                          targetClubLower &&
-                          (mTeamName === targetClubLower ||
-                            targetClubLower.includes(mTeamName) ||
-                            mTeamName.includes(targetClubLower))) ||
-                        (targetClubLower.includes('drag') && (mTeamName?.includes('drag') || !mTeamId))
-                      ) {
-                        if (!targetMatchesMap.has(m.id)) {
-                          targetMatchesMap.set(m.id, m);
-                        }
-                      }
-                    });
-                    const resolvedTargetMatches = Array.from(targetMatchesMap.values());
-
-                    updateState({
-                      activeTeamId: teamId,
-                      teams: updatedTeams,
-                      myClubName: target.clubName,
-                      clubLogoUrl: target.clubLogoUrl,
-                      category: target.category,
-                      season: target.season,
-                      roster: target.roster && target.roster.length > 0 ? target.roster : state.roster || [],
-                      staffMembers: target.staffMembers || [],
-                      matches: resolvedTargetMatches.length > 0 ? resolvedTargetMatches : state.matches || [],
-                      trainings: target.trainings || [],
-                      schedule: resolvedTargetSchedule,
-                      tactics: target.tactics || [],
-                      tacticFormat: target.tacticFormat || 11,
-                      opponentScouting: target.opponentScouting || [],
-                      clubEvents: target.clubEvents || [],
-                      staffUnavailability: target.staffUnavailability || []
-                    });
-                  }
+                  // P0-02: the new team shows exactly its own data (see lib/teamSwitch.ts)
+                  const change = switchTeam(latestStateRef.current, teamId);
+                  if (change) updateState(change);
                   setCurrentTab('home');
                 }}
                 onOpenSettings={() => setShowSettings(true)}

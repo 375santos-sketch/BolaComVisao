@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { copyForNewTeam } from '../../lib/athleteIdentity';
 import { AppState, SquadProfile, Player } from '../../types';
 import { uid, defaultSeason } from '../../lib/utils';
+import { teamCounts } from '../../lib/teamSwitch';
 import logoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
 import { isAppAdmin } from '../../services/cloudAuthService';
 import { getUserAccessibleTeams, isAdminAccount } from '../../lib/permissionsEngine';
@@ -612,75 +613,13 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             const currentSeason = isActive ? state.season || team.season : team.season;
             const currentLogo = isActive ? state.clubLogoUrl || team.clubLogoUrl : team.clubLogoUrl;
 
-            // 1. Resolver Jogos Agendados da Equipa (a partir de team.schedule e state.schedule com filtros inteligentes)
-            const teamClubLower = (team.clubName || '').toLowerCase().trim();
-            const teamScheduleMap = new Map<string, any>();
-            (team.schedule || []).forEach((s) => {
-              if (s && s.id) teamScheduleMap.set(s.id, s);
-            });
-
-            (state.schedule || []).forEach((s) => {
-              if (!s || !s.id) return;
-              const sTeamId = (s as any).teamId;
-              const sTeamName = (s as any).teamName?.toLowerCase().trim();
-              if (
-                isActive ||
-                sTeamId === team.id ||
-                (sTeamName &&
-                  teamClubLower &&
-                  (sTeamName === teamClubLower ||
-                    teamClubLower.includes(sTeamName) ||
-                    sTeamName.includes(teamClubLower))) ||
-                (teamClubLower.includes('drag') && (sTeamName?.includes('drag') || !sTeamId))
-              ) {
-                if (!teamScheduleMap.has(s.id)) {
-                  teamScheduleMap.set(s.id, s);
-                }
-              }
-            });
-            const currentSchedule = Array.from(teamScheduleMap.values());
-
-            // 2. Resolver Jogos Realizados / Registados da Equipa
-            const teamMatchesMap = new Map<string, any>();
-            (team.matches || []).forEach((m) => {
-              if (m && m.id) teamMatchesMap.set(m.id, m);
-            });
-
-            (state.matches || []).forEach((m) => {
-              if (!m || !m.id) return;
-              const mTeamId = (m as any).teamId;
-              const mTeamName = (m as any).teamName?.toLowerCase().trim();
-              if (
-                isActive ||
-                mTeamId === team.id ||
-                (mTeamName &&
-                  teamClubLower &&
-                  (mTeamName === teamClubLower ||
-                    teamClubLower.includes(mTeamName) ||
-                    mTeamName.includes(teamClubLower))) ||
-                (teamClubLower.includes('drag') && (mTeamName?.includes('drag') || !mTeamId))
-              ) {
-                if (!teamMatchesMap.has(m.id)) {
-                  teamMatchesMap.set(m.id, m);
-                }
-              }
-            });
-            const currentMatches = Array.from(teamMatchesMap.values());
-
-            // 3. Resolver Plantel e Treinos
-            const currentRosterLen = isActive
-              ? (state.roster || []).filter((p) => p && p.active !== false).length
-              : (team.roster || []).filter((p) => p && p.active !== false).length;
-            const currentTrainingsLen = isActive
-              ? Math.max((state.trainings || []).length, (team.trainings || []).length)
-              : (team.trainings || []).length;
-
-            // Assumir tanto jogos já realizados como jogos agendados no total de jogos
-            const playedMatchIds = new Set(currentMatches.map((m) => m.id));
-            const distinctScheduled = currentSchedule.filter((s) => !playedMatchIds.has(s.id));
-            const totalMatchesLen = currentMatches.length + distinctScheduled.length;
-            const scheduledMatchesCount = distinctScheduled.length;
-            const playedMatchesCount = currentMatches.length;
+            // P0-02: only this team's own data (lib/teamSwitch.ts), never another team's by a similar club name
+            const counts = teamCounts(state, team);
+            const currentRosterLen = counts.athletes;
+            const currentTrainingsLen = counts.trainings;
+            const totalMatchesLen = counts.totalGames;
+            const scheduledMatchesCount = counts.scheduled;
+            const playedMatchesCount = counts.played;
 
             if (isEditing) {
               return (

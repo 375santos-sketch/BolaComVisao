@@ -1,5 +1,20 @@
 # Riscos e limitações conhecidos
 
+## Tarefa 02: P0-02
+
+1. **Cópias antigas continuam guardadas.**
+   - As cópias de agenda que a heurística já pôs noutros escalões (e enviou para a nuvem) **não são apagadas**.
+   - Continuam a aparecer nesses escalões até haver uma reparação de dados aprovada.
+   - Saber se existem em produção é a P0-03 (deteção, só leitura).
+2. **Um aparelho com a versão antiga da app** (em cache) continua a criar cópias até ser atualizado.
+   - Depois do Publish no AI Studio, fechar e reabrir a app nos telemóveis dos treinadores.
+3. **Os números dos cartões das equipas podem descer** nos clubes com vários escalões. Estavam inflacionados; os
+   novos são os certos.
+4. **Os jogos antigos sem equipa marcada** ficam na equipa onde estão (comportamento aprovado). Se algum estiver na
+   equipa errada, corrige-se por reparação de dados, não por esta alteração.
+5. **Não verificado no navegador:** o login Google não funciona em localhost. O teste de ecrã do CI cobre a escolha
+   de equipa.
+
 ## Tarefa 01: P0-04
 
 1. **Os testes "a corrigir" vão falhar de propósito** quando as tarefas P0-05, P0-06 e P0-07 mudarem as regras.
