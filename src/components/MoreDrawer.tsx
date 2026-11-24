@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppState } from '../types';
 import { isAppAdmin } from '../services/cloudAuthService';
 import { Icon, IconName } from './ui/Icon';
-import logoImg from '../assets/images/bolacomvisao_logo_1786622535530.jpg';
+import logoImg from '../assets/images/bolacomvisao_logo_256.jpg';
 import { defaultSeason } from '../lib/utils';
 import { careerOf, careerStatus } from '../lib/coachCareer';
 

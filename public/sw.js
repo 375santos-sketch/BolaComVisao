@@ -6,8 +6,9 @@ const PRE_CACHE_ASSETS = [
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/apple-touch-icon-180.png',
-  '/favicon.ico',
-  '/assets/images/bolacomvisao_logo_1786622535530.jpg'
+  // P1-06: the old 853 KB logo was listed here at a path that does not exist (the build renames it); the logo the
+  // screens use now is a 24 KB image bundled with them
+  '/favicon.ico'
 ];
 
 self.addEventListener('install', (event) => {
