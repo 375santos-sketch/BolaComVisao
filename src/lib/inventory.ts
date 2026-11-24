@@ -207,7 +207,8 @@ const PUBLIC_LINKS: Record<string, string> = {
   calendarToken: 'Calendário dos pais',
   coachCalendarToken: 'Calendário do treinador',
   planToken: 'Plano do adjunto',
-  liveToken: 'Jogo ao vivo para os pais'
+  liveToken: 'Jogo ao vivo para os pais',
+  newsletterToken: 'Resumo da semana para os pais'
 };
 
 /** Checks of a shared club document (counts and field names only). */

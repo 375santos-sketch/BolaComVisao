@@ -14,6 +14,12 @@ import {
   EXERCISES_SCHEMA
 } from './src/lib/printExercise';
 import { planFromRestDocument, renderPlanPage } from './src/lib/coachPlan';
+import {
+  LIMITS as NEWSLETTER_LIMITS,
+  newsletterFromRestDocument,
+  newsletterIntroPrompt,
+  renderNewsletterPage
+} from './src/lib/weeklyNewsletter';
 import webpush from 'web-push';
 import {
   VAPID_PUBLIC_KEY,
@@ -354,6 +360,7 @@ async function startServer() {
 
   // Resultados → "📰 Crónica do jogo": Gemini writes a short text from the game's facts (sent by the app: score,
   // goals in order, first names of scorers only when the coach chose so). Only for signed-in users.
+  // kind "resumo": the coach's note of the weekly summary for the parents (Comunicação → 📰 Resumo da semana).
   app.post('/api/cronica', async (req, res) => {
     try {
       const apiKey = firebaseConfig.apiKey || process.env.VITE_FIREBASE_API_KEY;
@@ -368,6 +375,7 @@ async function startServer() {
         return res.status(503).json({ success: false, error: 'A escrita automática não está disponível.' });
       const facts = req.body?.facts;
       const audience: ChronicleAudience = req.body?.audience === 'pais' ? 'pais' : 'clube';
+      const summary = req.body?.kind === 'resumo';
       if (!facts || typeof facts !== 'object' || JSON.stringify(facts).length > 6000) {
         return res.status(400).json({ success: false, error: 'Dados do jogo inválidos.' });
       }
@@ -378,10 +386,16 @@ async function startServer() {
         try {
           const response = await ai.models.generateContent({
             model,
-            contents: [{ role: 'user', parts: [{ text: chroniclePrompt(facts, audience) }] }],
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: summary ? newsletterIntroPrompt(facts) : chroniclePrompt(facts, audience) }]
+              }
+            ],
             config: { temperature: 0.9 }
           });
-          const text = cleanChronicle(response.text);
+          const clean = cleanChronicle(response.text);
+          const text = clean && summary ? clean.slice(0, NEWSLETTER_LIMITS.intro) : clean;
           if (text) return res.json({ success: true, text });
           lastError = new Error('Resposta vazia');
         } catch (err: any) {
@@ -657,6 +671,68 @@ async function startServer() {
     } catch (err) {
       console.error('Erro na rota /plano:', err);
       return res.status(502).type('text/plain').send('Plano temporariamente indisponível.');
+    }
+  });
+
+  // 📰 Parents' weekly summary (Mais → Comunicação → "Resumo da semana"): /semana/{token}, read from
+  // public_newsletters/{token}. The token is the secret; the document holds only what every parent of the team may see.
+  app.get('/semana/:token', async (req, res) => {
+    const token = /^[a-zA-Z0-9]{20,64}$/.test(req.params.token || '') ? req.params.token : '';
+    const notFound = () =>
+      res
+        .status(404)
+        .type('html')
+        .send(
+          '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><p style="font-family:sans-serif;padding:24px">Este resumo não existe ou foi desligado pelo treinador.</p>'
+        );
+    if (!token) return notFound();
+    try {
+      const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+      const base = process.env.FIRESTORE_EMULATOR_HOST
+        ? `http://${process.env.FIRESTORE_EMULATOR_HOST}`
+        : 'https://firestore.googleapis.com';
+      const key = firebaseConfig.apiKey ? `?key=${encodeURIComponent(firebaseConfig.apiKey)}` : '';
+      const resp = await fetch(
+        `${base}/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/public_newsletters/${token}${key}`
+      );
+      if (!resp.ok) return notFound();
+      const page = newsletterFromRestDocument(await resp.json());
+      if (!page) return notFound();
+      res.set('Cache-Control', 'no-store');
+      res.set('X-Robots-Tag', 'noindex');
+      // The full address, for the link's card in the parents' chat (og:url, og:image)
+      const proto = String(req.headers['x-forwarded-proto'] || req.protocol)
+        .split(',')[0]
+        .trim();
+      const origin = `${proto}://${req.get('host')}`;
+      return res.type('html').send(renderNewsletterPage(page, { origin, token }));
+    } catch (err) {
+      console.error('Erro na rota /semana:', err);
+      return res.status(502).type('text/plain').send('Resumo temporariamente indisponível.');
+    }
+  });
+
+  // 📰 The picture of the summary's card in the parents' chat: the JPEG the coach's phone drew when publishing.
+  app.get('/semana/:token/cartao.jpg', async (req, res) => {
+    const token = /^[a-zA-Z0-9]{20,64}$/.test(req.params.token || '') ? req.params.token : '';
+    if (!token) return res.status(404).end();
+    try {
+      const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
+      const base = process.env.FIRESTORE_EMULATOR_HOST
+        ? `http://${process.env.FIRESTORE_EMULATOR_HOST}`
+        : 'https://firestore.googleapis.com';
+      const key = firebaseConfig.apiKey ? `?key=${encodeURIComponent(firebaseConfig.apiKey)}` : '';
+      const resp = await fetch(
+        `${base}/v1/projects/${firebaseConfig.projectId}/databases/${dbId}/documents/public_newsletters/${token}${key}`
+      );
+      const page = resp.ok ? newsletterFromRestDocument(await resp.json()) : null;
+      if (!page?.card) return res.status(404).end();
+      res.set('Cache-Control', 'public, max-age=300');
+      res.set('X-Robots-Tag', 'noindex');
+      return res.type('image/jpeg').send(Buffer.from(page.card.slice(page.card.indexOf(',') + 1), 'base64'));
+    } catch (err) {
+      console.error('Erro na rota /semana/cartao:', err);
+      return res.status(502).end();
     }
   });
 

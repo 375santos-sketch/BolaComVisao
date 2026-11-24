@@ -381,6 +381,80 @@ describe('Link do jogo para os pais (link secreto)', () => {
   });
 });
 
+describe('Resumo da semana para os pais (link secreto)', () => {
+  const TOKEN = 'Sem7aBcDeFgHiJkLmNoPqRsT';
+  const news = (clubId: string, extra: Record<string, unknown> = {}) => ({
+    clubId,
+    teamId: 'sub11',
+    teamName: 'Leões Sub-11',
+    issue: {
+      from: '2026-11-16',
+      to: '2026-11-23',
+      intro: 'Boa semana!',
+      highlights: ['Fair-play'],
+      notices: '',
+      results: [
+        {
+          date: '2026-11-22',
+          opponent: 'FC Ribeira',
+          home: true,
+          ours: 4,
+          theirs: 2,
+          competition: '',
+          scorers: 'Tomás (2)'
+        }
+      ],
+      attendance: { trainings: 2, percent: 94 },
+      upcoming: [],
+      publishedAt: Date.now()
+    },
+    updatedAt: Date.now(),
+    ...extra
+  });
+  const newsDoc = (token = TOKEN) => fs.doc(fb.db, 'public_newsletters', token);
+  const url = `http://${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/public_newsletters`;
+
+  beforeAll(async () => {
+    await setRules(RULES_NOW);
+  });
+
+  it('a coach publishes the summary and anyone with the link reads it (nobody lists the links)', async () => {
+    await signInAs('coachA');
+    await fs.setDoc(newsDoc(), news('clubA'));
+    await fs.setDoc(newsDoc(), news('clubA', { issue: null }));
+    await fs.setDoc(newsDoc(), news('clubA', { archive: [{ from: '2026-11-09', to: '2026-11-15', results: [] }] }));
+    await fs.setDoc(newsDoc(), news('clubA', { card: 'data:image/jpeg;base64,/9j/AAAA' }));
+    await fs.setDoc(newsDoc(), news('clubA'));
+    const res = await fetch(`${url}/${TOKEN}`);
+    expect(res.status).toBe(200);
+    expect(JSON.stringify(await res.json())).toContain('FC Ribeira');
+    expect((await fetch(url)).status).toBe(403);
+  });
+
+  it('another club, an anonymous visitor or extra (personal) fields are refused', async () => {
+    await signInAs('coachB');
+    await expect(fs.setDoc(newsDoc(), news('clubB'))).rejects.toMatchObject(denied);
+    await expect(fs.deleteDoc(newsDoc())).rejects.toMatchObject(denied);
+    await signInAs('coachA');
+    await expect(fs.setDoc(newsDoc(), news('clubA', { emails: ['pai@exemplo.pt'] }))).rejects.toMatchObject(denied);
+    await expect(
+      fs.setDoc(newsDoc(), news('clubA', { archive: Array.from({ length: 9 }, () => ({ from: '2026-11-09' })) }))
+    ).rejects.toMatchObject(denied);
+    await expect(
+      fs.setDoc(newsDoc(), news('clubA', { card: 'data:text/html;base64,PHNjcmlwdD4=' }))
+    ).rejects.toMatchObject(denied);
+    await expect(fs.setDoc(newsDoc('curto'), news('clubA'))).rejects.toMatchObject(denied);
+    await fa.signOut(fb.auth);
+    await expect(fs.setDoc(newsDoc('AnonimoSemanaAbcdef1234'), news('clubA'))).rejects.toMatchObject(denied);
+  });
+
+  it('a coach of the club switches the link off', async () => {
+    await signInAs('colegaA');
+    await fs.deleteDoc(newsDoc());
+    expect((await fetch(`${url}/${TOKEN}`)).status).toBe(404);
+  });
+});
+
 describe('Votação dos pais no jogador do jogo (link secreto)', () => {
   const TOKEN = 'Vot7aBcDeFgHiJkLmNoPqRsT';
   const CLOSED = 'VotFechadaAbcDefGhiJkLmN';

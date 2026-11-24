@@ -9,6 +9,7 @@ interface CommunicationModalProps {
   state: AppState;
   onNavigate: (tab: TabType, targetId?: string) => void;
   onOpenParentsLink: () => void;
+  onOpenNewsletter: () => void;
   onOpenPushSettings: () => void;
   onShowToast: (msg: string) => void;
   onClose: () => void;
@@ -30,6 +31,7 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({
   state,
   onNavigate,
   onOpenParentsLink,
+  onOpenNewsletter,
   onOpenPushSettings,
   onShowToast,
   onClose
@@ -46,6 +48,7 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({
   };
   const channels: Array<[string, string, () => void]> = [
     ['📡 Link do jogo para os pais', 'O jogo em direto, sem conta nem app', () => onOpenParentsLink()],
+    ['📰 Resumo da semana', 'Resultados, destaques e próximos jogos num link para os pais', () => onOpenNewsletter()],
     [
       '📅 Calendário para os pais',
       'Jogos e treinos no telemóvel deles (Agenda → Calendário para os pais)',

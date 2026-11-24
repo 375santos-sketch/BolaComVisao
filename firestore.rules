@@ -597,6 +597,20 @@ service cloud.firestore {
         data.updatedAt is number;
     }
 
+    function isValidPublicNewsletter(data) {
+      return data is map &&
+        data.keys().hasAll(['clubId', 'teamId', 'teamName', 'updatedAt']) &&
+        data.keys().hasOnly(['clubId', 'teamId', 'teamName', 'issue', 'archive', 'card', 'updatedAt']) &&
+        data.clubId is string && data.clubId.size() > 0 && data.clubId.size() <= 128 &&
+        data.teamId is string && data.teamId.size() > 0 && data.teamId.size() <= 128 &&
+        data.teamName is string && data.teamName.size() <= 200 &&
+        (!data.keys().hasAny(['issue']) || data.issue == null || data.issue is map) &&
+        (!data.keys().hasAny(['archive']) || (data.archive is list && data.archive.size() <= 8)) &&
+        (!data.keys().hasAny(['card']) || (data.card is string && data.card.size() <= 400000 &&
+          data.card.matches('^data:image/jpeg;base64,.*'))) &&
+        data.updatedAt is number;
+    }
+
     function isValidPushSubscription(data) {
       return data is map &&
         data.keys().hasAll(['uid', 'endpoint', 'keys', 'prefs', 'teamIds', 'updatedAt']) &&
@@ -662,6 +676,19 @@ service cloud.firestore {
         isValidPublicLive(incoming()) && canAccessClubWorkspace(incoming().clubId);
       allow update: if canAccessClubWorkspace(resource.data.clubId) &&
         isValidPublicLive(incoming()) && incoming().clubId == resource.data.clubId;
+      allow delete: if canAccessClubWorkspace(resource.data.clubId);
+    }
+
+    // 📰 Parents' weekly summary (Mais → Comunicação → "Resumo da semana"): same model as the game link. Anyone with
+    // the secret link reads that one document (results, first names of the scorers, next events); only the club's
+    // coaches write it.
+    match /public_newsletters/{token} {
+      allow get: if token.size() >= 20;
+      allow list: if false;
+      allow create: if isValidId(token) && token.size() >= 20 &&
+        isValidPublicNewsletter(incoming()) && canAccessClubWorkspace(incoming().clubId);
+      allow update: if canAccessClubWorkspace(resource.data.clubId) &&
+        isValidPublicNewsletter(incoming()) && incoming().clubId == resource.data.clubId;
       allow delete: if canAccessClubWorkspace(resource.data.clubId);
     }
 

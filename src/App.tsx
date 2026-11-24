@@ -46,6 +46,7 @@ import { Navbar, TabType } from './components/Navbar';
 import { getActiveCategory } from './components/navCategory';
 import { PerformanceSubNav } from './components/PerformanceSubNav';
 import { BackupReminder } from './components/BackupReminder';
+import { NewsletterReminder } from './components/NewsletterReminder';
 import { getSyncView } from './lib/syncView';
 import { SessionExpiredBanner } from './components/SessionExpiredBanner';
 import { MoreDrawer } from './components/MoreDrawer';
@@ -81,6 +82,7 @@ const CoachCareerModal = lazyWithRetry(() => import('./components/CoachCareerMod
 const SeasonGrowthModal = lazyWithRetry(() => import('./components/SeasonGrowthModal'));
 const PushSettingsModal = lazyWithRetry(() => import('./components/PushSettingsModal'));
 const ParentsLinkModal = lazyWithRetry(() => import('./components/ParentsLinkModal'));
+const NewsletterModal = lazyWithRetry(() => import('./components/NewsletterModal'));
 const TacticsBoardModal = lazyWithRetry(() => import('./components/TacticsBoardModal'));
 const OpponentsModal = lazyWithRetry(() => import('./components/OpponentsModal'));
 const CommunicationModal = lazyWithRetry(() => import('./components/CommunicationModal'));
@@ -213,6 +215,7 @@ export default function App() {
   const [showSeasonGrowth, setShowSeasonGrowth] = useState<boolean>(false);
   const [showPushSettings, setShowPushSettings] = useState<boolean>(false);
   const [showParentsLink, setShowParentsLink] = useState<boolean>(false);
+  const [showNewsletter, setShowNewsletter] = useState<boolean>(false);
   const [showTacticsBoard, setShowTacticsBoard] = useState<boolean>(false);
   const [showOpponents, setShowOpponents] = useState<boolean>(false);
   const [showCommunication, setShowCommunication] = useState<boolean>(false);
@@ -1159,6 +1162,7 @@ export default function App() {
             {currentTab === 'home' && isAppAdmin(state.currentUser) && (
               <BackupReminder state={state} onShowToast={showToast} />
             )}
+            {currentTab === 'home' && <NewsletterReminder state={state} onOpen={() => setShowNewsletter(true)} />}
             {currentTab === 'home' && (
               <HomeView
                 state={state}
@@ -1406,6 +1410,10 @@ export default function App() {
                 setShowCommunication(false);
                 setShowParentsLink(true);
               }}
+              onOpenNewsletter={() => {
+                setShowCommunication(false);
+                setShowNewsletter(true);
+              }}
               onOpenPushSettings={() => {
                 setShowCommunication(false);
                 setShowPushSettings(true);
@@ -1453,6 +1461,16 @@ export default function App() {
               onUpdateState={updateState}
               onShowToast={showToast}
               onClose={() => setShowParentsLink(false)}
+            />
+          </Suspense>
+        )}
+        {showNewsletter && (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <NewsletterModal
+              state={state}
+              onUpdateState={updateState}
+              onShowToast={showToast}
+              onClose={() => setShowNewsletter(false)}
             />
           </Suspense>
         )}
