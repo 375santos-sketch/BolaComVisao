@@ -55,13 +55,13 @@ deste ramo, passa.
 
 Cópia de 24/11/2026, 17:52 (UTC), verificada pelo dono:
 
-| Clube | Escrita dupla | Atletas | Jogos | Cópias privadas esperadas                | Existentes |
-| ----- | ------------- | ------- | ----- | ---------------------------------------- | ---------- |
-|       | desligada     | 16      | 6     | 13 (12 de contactos e saúde, 1 de notas) | 0          |
+| Clube  | Escrita dupla | Atletas | Jogos | Cópias privadas esperadas                | Existentes |
+| ------ | ------------- | ------- | ----- | ---------------------------------------- | ---------- |
+| `main` | desligada     | 16      | 6     | 13 (12 de contactos e saúde, 1 de notas) | 0          |
 
 - **Nenhum clube tem a escrita dupla ligada,** por isso ainda não há cópias privadas para comparar. Não há nada
   desalinhado, e também nada foi copiado.
-- **O que o F3.4 vai criar em :** 13 cópias privadas. Não há avaliações, objetivos nem notas de jogos
+- **O que o F3.4 vai criar em `main`:** 13 cópias privadas. Não há avaliações, objetivos nem notas de jogos
   preenchidos.
 - **Depois do F3.4:** fazer uma cópia nova e voltar a correr este comando. O resultado tem de dar 13 iguais, 0 em
   falta e 0 diferentes.
