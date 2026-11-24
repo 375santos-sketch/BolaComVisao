@@ -2,6 +2,24 @@
 
 Registo por intervenção, a mais recente no topo.
 
+## Tarefa 02: P0-02, troca de equipa testada e unificada (24/11/2026)
+
+Ramo `fix/p0-02-troca-de-equipa`.
+
+| Ficheiro                                | Tipo         | O que mudou                                                                                                           |
+| --------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/teamSwitch.ts`                 | Novo         | `teamsWithActiveSaved`, `switchTeam` e `teamCounts`: funções puras, uma só fonte                                      |
+| `src/__tests__/teamSwitch.test.ts`      | Novo (teste) | 12 testes: agenda por equipa, troca de equipa, números dos cartões                                                    |
+| `src/lib/storage.ts`                    | Alterado     | `normalizeClubState` deixa de copiar a agenda da equipa ativa para as outras por nome do clube ou "drag" (−18 linhas) |
+| `src/App.tsx`                           | Alterado     | A troca de equipa usa `switchTeam` (−90 linhas de heurística)                                                         |
+| `src/components/views/TeamsHubView.tsx` | Alterado     | Os cartões usam `teamCounts` (−70 linhas)                                                                             |
+| `src/components/DatabaseModal.tsx`      | Alterado     | A lista de equipas usa `teamCounts` (−70 linhas)                                                                      |
+| `docs/desenvolvimento/*.md`             | Documentação | `TAREFA_02.md` e as secções da Tarefa 02                                                                              |
+
+O texto `'drag'` desapareceu do código da app.
+
+**Não alterados:** regras, dados guardados, dependências, configuração.
+
 ## Tarefa 01: P0-04, base de comparação dos acessos (24/11/2026)
 
 Ramo `test/p0-04-base-acessos`.

@@ -1,5 +1,31 @@
 # Testes executados
 
+## Tarefa 02: P0-02 (24/11/2026, Windows)
+
+| Teste                                                              | Comando                                           | Resultado                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Testes novos **contra o código antigo** (prova do problema)        | `npx vitest run src/__tests__/teamSwitch.test.ts` | ❌ 4/4 falharam como esperado: a agenda do Sub-11 aparecia no Sub-13 do mesmo clube, também com `teamId` do Sub-11; o clube "drag" recebia os jogos sem equipa; cada gravação voltava a copiar                                       |
+| Testes novos com a correção                                        | idem                                              | ✅ 12/12                                                                                                                                                                                                                             |
+| Testes da separação de jogos (já existiam)                         | `teamMatchSeparation.test.ts` (na bateria)        | ✅                                                                                                                                                                                                                                   |
+| Tipos                                                              | `npm run typecheck`                               | ✅                                                                                                                                                                                                                                   |
+| Lint (todo o projeto)                                              | `npm run lint`                                    | ✅                                                                                                                                                                                                                                   |
+| Formatação dos ficheiros alterados                                 | `npx prettier --check`                            | ✅                                                                                                                                                                                                                                   |
+| Unitários (toda a bateria)                                         | `npm test`                                        | ✅ 113 ficheiros, 695 testes                                                                                                                                                                                                         |
+| Build                                                              | `npm run build`                                   | ✅                                                                                                                                                                                                                                   |
+| Integração com emuladores (toda a bateria, sincronização incluída) | `npm run test:emulator`                           | ✅ 211/212. A única falha é a já conhecida de `clubCloud.emulator.ts`, de fins de linha no Windows, que também falha sem esta alteração (comparado com o código antigo: resultado igual). No CI (Linux) do PR 181 este teste passou. |
+
+**Nota:** numa primeira execução completa falharam mais 4 testes de `clubCloud` por **tempo** (a execução demorou 272 s;
+um teste parou no limite de 30 s). Comparei o ficheiro com e sem a alteração: o resultado foi igual. Uma segunda
+execução completa deu 211/212. Conclusão: lentidão da máquina, não regressão.
+
+**Testes de permissões:** esta tarefa não muda as regras. A base de acessos da P0-04 (`accessBaseline.emulator.ts`)
+continua a passar no CI.
+
+**Não executados localmente:**
+
+- testes de ecrã (Playwright): o CI corre-os no PR, incluindo "entrar: escolha da equipa e painel inicial";
+- a app aberta no navegador: o login Google não funciona em localhost. O fluxo está coberto pelo teste de ecrã do CI.
+
 ## Tarefa 01: P0-04 (24/11/2026, Windows, Node 26, Java 21, firebase-tools 13.35.1)
 
 | Teste                                      | Comando                                                                                                                 | Resultado                                                                                                   |
