@@ -5,7 +5,7 @@ import { copyForNewTeam } from '../../lib/athleteIdentity';
 import { AppState, SquadProfile, Player } from '../../types';
 import { uid, defaultSeason } from '../../lib/utils';
 import { teamCounts } from '../../lib/teamSwitch';
-import logoImg from '../../assets/images/bolacomvisao_logo_1786622535530.jpg';
+import logoImg from '../../assets/images/bolacomvisao_logo_256.jpg';
 import { isAppAdmin } from '../../services/cloudAuthService';
 import { getUserAccessibleTeams, isAdminAccount } from '../../lib/permissionsEngine';
 import { SyncStatusBadge } from '../ui/SyncStatusBadge';

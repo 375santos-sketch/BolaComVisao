@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import logoImg from '../assets/images/bolacomvisao_logo_1786622535530.jpg';
+import logoImg from '../assets/images/bolacomvisao_logo_256.jpg';
 
 export const InstallPwaBanner: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
