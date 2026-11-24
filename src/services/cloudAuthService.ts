@@ -719,6 +719,8 @@ export async function createCoachUserAsAdmin(
               success: false,
               error: 'Este endereço de email já se encontra registado no sistema.'
             };
+          } else if (data?.error) {
+            return { success: false, error: String(data.error) };
           }
         }
       } catch (apiErr) {
@@ -726,11 +728,9 @@ export async function createCoachUserAsAdmin(
       }
     }
 
-    // Step 2 Fallback: If Firebase Auth direct signup is restricted (e.g. OPERATION_NOT_ALLOWED),
-    // generate a unique ID and write directly to Firestore as the logged-in Administrator.
+    // P0-08: no more invented id. Without a real Firebase account the profile could never sign in.
     if (!uid) {
-      uid = 'user_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
-      noticeMsg = 'Treinador pré-autorizado com sucesso na Base de Dados do Clube.';
+      return { success: false, error: 'Não foi possível criar a conta no servidor. Tente outra vez.' };
     }
 
     // Step 3: As the logged-in Administrator, write the pre-approved user account to Firestore
