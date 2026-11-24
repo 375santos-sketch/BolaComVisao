@@ -11,6 +11,13 @@
 | Build                                                                                                                              | `npm run build`                                           | ✅                                                                                       |
 | Integração (toda a bateria)                                                                                                        | `npm run test:emulator`                                   | 228/229: só a falha antiga e local de `clubCloud.emulator.ts` (fins de linha no Windows) |
 
+**Correção depois do envio:**
+
+- o CI do PR 184 falhou no typecheck: `massDelete.emulator.ts` tinha um erro de tipos (os treinos do teste não
+  estavam tipados como `Training`);
+- o typecheck local tinha sido corrido **antes** de esse ficheiro existir;
+- corrigido no commit seguinte, com typecheck, lint, formatação e o teste do travão de novo a passar (3/3).
+
 **Não executados localmente:**
 
 - testes de ecrã: sem navegador do Playwright; nenhum deles usa as ações em massa (o único "Confirmar" simples, o do
