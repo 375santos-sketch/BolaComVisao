@@ -1,5 +1,8 @@
 // BolaComVisão Service Worker - High-Performance Mobile & Offline PWA
-const CACHE_NAME = 'bolacomvisao-cache-v5';
+// P1-01: registered as /sw.js?v=<build id> (src/main.tsx): each Publish installs a new worker with its own cache,
+// filled with the build's list of files (precache-manifest.json, see src/lib/precache.ts), and the old cache goes.
+const BUILD_VERSION = new URL(self.location.href).searchParams.get('v') || 'dev';
+const CACHE_NAME = `bolacomvisao-cache-${BUILD_VERSION}`;
 const PRE_CACHE_ASSETS = [
   '/',
   '/index.html',
@@ -16,9 +19,27 @@ self.addEventListener('install', (event) => {
     caches
       .open(CACHE_NAME)
       .then(async (cache) => {
+        // P1-01: the build's files (every screen, without the PDF/Excel libraries), so the app opens without network
+        let buildFiles = [];
+        try {
+          const res = await fetch('/precache-manifest.json', { cache: 'no-cache' });
+          if (res.ok) buildFiles = ((await res.json()).files || []).filter((f) => typeof f === 'string');
+        } catch {
+          // No list (development, or no network now): the files are kept as they are opened, as before
+        }
+        // P1-01: a build file already kept by an older version is the same file (its content is in its name): copy
+        // it from the old cache instead of downloading it again, so a Publish only costs the files that changed
+        const fresh = [];
+        await Promise.allSettled(
+          buildFiles.map(async (asset) => {
+            const kept = await caches.match(asset, { ignoreVary: true });
+            if (kept) return cache.put(asset, kept);
+            fresh.push(asset);
+          })
+        );
         // Cache assets gracefully one by one to avoid total failure if one fails
         await Promise.allSettled(
-          PRE_CACHE_ASSETS.map((asset) =>
+          [...PRE_CACHE_ASSETS, ...fresh].map((asset) =>
             fetch(asset, { cache: 'no-cache' })
               .then((resp) => {
                 if (resp && resp.status === 200) {
@@ -115,6 +136,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // P1-01: the build's files have their content in their name (/assets/main-AbC123.js): a copy kept on the phone is
+  // always right, so it is used first — no wait for a weak signal at the pitch, and it works without network
+  if (url.origin === self.location.origin && url.pathname.startsWith('/assets/')) {
+    // ignoreVary: the server answers "Vary: Origin", so a copy kept from a module request (with an Origin header)
+    // would not be found for a request without it — and the file is the same either way (its name is its content)
+    event.respondWith(
+      caches.match(url.pathname, { ignoreVary: true }).then(
+        (cached) =>
+          cached ||
+          fetch(request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const copy = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(url.pathname, copy));
+            }
+            return networkResponse;
+          })
+      )
+    );
+    return;
+  }
+
   // Static Assets, scripts, styles, images: Network First with Cache fallback
   event.respondWith(
     fetch(request)
@@ -128,7 +170,7 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(async () => {
-        const cached = await caches.match(request);
+        const cached = await caches.match(request, { ignoreVary: true });
         if (cached) {
           return cached;
         }

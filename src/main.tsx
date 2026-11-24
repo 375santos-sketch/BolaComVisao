@@ -17,7 +17,8 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   if (import.meta.env.PROD) {
     window.addEventListener('load', () => {
       navigator.serviceWorker
-        .register('/sw.js')
+        // P1-01: the build id makes each Publish install the new list of files kept for offline use
+        .register(`/sw.js?v=${encodeURIComponent(__BCV_BUILD__)}`)
         .then((reg) => {
           console.log('⚡ BolaComVisão Service Worker registrado com sucesso (Modo Offline ativo):', reg.scope);
         })
