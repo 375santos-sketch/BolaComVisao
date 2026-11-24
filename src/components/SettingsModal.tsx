@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import type { ShowConfirm } from './ConfirmModal';
+import { ERASE_WORD, REPLACE_WORD } from '../lib/destructiveActions';
 
 type Part = 'clube' | 'jogos' | 'treinos' | 'dados' | 'admin';
 import { ClubSettingsSection } from './ClubSettingsSection';
@@ -18,7 +20,7 @@ interface SettingsModalProps {
   onUpdateState: (updates: Partial<AppState>) => void;
   onClose: () => void;
   onShowToast?: (msg: string) => void;
-  onShowConfirm?: (msg: string, cb: () => void) => void;
+  onShowConfirm?: ShowConfirm;
   onOpenAdminUsers?: () => void;
   pendingUsersCount?: number;
 }
@@ -72,7 +74,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         };
 
         if (onShowConfirm) {
-          onShowConfirm(t(state.lang, 'msg_overwrite'), doImport);
+          onShowConfirm(t(state.lang, 'msg_overwrite'), doImport, { confirmWord: REPLACE_WORD });
         } else {
           doImport();
         }
@@ -272,7 +274,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     () => {
                       onUpdateState(clearedAgenda(state));
                       onShowToast?.('Agenda limpa 📅');
-                    }
+                    },
+                    { confirmWord: ERASE_WORD }
                   )
                 }
                 className="ui-btn ui-btn-soft-danger mt-2 px-3 py-2 text-ui-caption"

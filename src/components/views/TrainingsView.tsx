@@ -1,4 +1,6 @@
 import React, { lazy, Suspense, useState } from 'react';
+import type { ShowConfirm } from '../ConfirmModal';
+import { ERASE_WORD } from '../../lib/destructiveActions';
 import { AppState, Training } from '../../types';
 import { t } from '../../i18n/dict';
 import { playerLabel, uid } from '../../lib/utils';
@@ -34,7 +36,7 @@ interface TrainingsViewProps {
   onOpenSettings: () => void;
   onOpenNotifications?: () => void;
   onOpenSync?: () => void;
-  onShowConfirm: (msg: string, cb: () => void) => void;
+  onShowConfirm: ShowConfirm;
   onShowToast: (msg: string) => void;
   initialTab?: TrainingsTab;
   /** Opens "Treino de hoje" straight away (shortcut on the home screen). */
@@ -439,10 +441,14 @@ export const TrainingsView: React.FC<TrainingsViewProps> = ({
               onShowConfirm('Tens a certeza que queres eliminar este treino?', () => handleDeleteTraining(id));
             }}
             onClearAllTrainings={() => {
-              onShowConfirm(`Tens a certeza que queres eliminar os ${totalTrainings} treinos desta equipa?`, () => {
-                onUpdateState({ trainings: [] });
-                onShowToast('Todos os treinos foram eliminados.');
-              });
+              onShowConfirm(
+                `Eliminar os ${totalTrainings} treinos desta equipa, com as presenças e os planos?`,
+                () => {
+                  onUpdateState({ trainings: [] });
+                  onShowToast('Todos os treinos foram eliminados.');
+                },
+                { confirmWord: ERASE_WORD }
+              );
             }}
             onShowToast={onShowToast}
             onUpdateState={onUpdateState}

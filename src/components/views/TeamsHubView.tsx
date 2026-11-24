@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import type { ShowConfirm } from '../ConfirmModal';
+import { ERASE_WORD } from '../../lib/destructiveActions';
 import { copyForNewTeam } from '../../lib/athleteIdentity';
 import { AppState, SquadProfile, Player } from '../../types';
 import { uid, defaultSeason } from '../../lib/utils';
@@ -19,7 +21,7 @@ interface TeamsHubViewProps {
   onOpenAdminUsers?: () => void;
   pendingUsersCount?: number;
   onLogout?: () => void;
-  onShowConfirm: (msg: string, cb: () => void) => void;
+  onShowConfirm: ShowConfirm;
   onShowToast: (msg: string) => void;
 }
 
@@ -270,7 +272,8 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           onUpdateState({ teams: remainingTeams });
         }
         onShowToast(`Equipa "${targetName}" apagada.`);
-      }
+      },
+      { confirmWord: ERASE_WORD }
     );
   };
 

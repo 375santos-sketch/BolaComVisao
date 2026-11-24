@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import type { ShowConfirm } from '../../ConfirmModal';
+import { ERASE_WORD } from '../../../lib/destructiveActions';
 import { AppState } from '../../../types';
 import { SquadSortBy, SquadSortDirection, SquadViewMode } from './types';
 import { Icon, IconName } from '../../ui/Icon';
@@ -24,7 +26,7 @@ interface SquadToolbarProps {
   onOpenCreateModal: () => void;
   onOpenImportExcel: () => void;
   onUpdateState: (updates: Partial<AppState>) => void;
-  onShowConfirm: (msg: string, cb: () => void) => void;
+  onShowConfirm: ShowConfirm;
   onShowToast: (msg: string) => void;
 }
 
@@ -127,10 +129,14 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
           [
             'Limpar o plantel',
             () =>
-              onShowConfirm('Tens a certeza que queres limpar todos os jogadores do plantel desta equipa?', () => {
-                onUpdateState({ roster: [] });
-                onShowToast('Plantel limpo.');
-              })
+              onShowConfirm(
+                'Limpar todos os atletas do plantel desta equipa, com as fichas, avaliações e testes?',
+                () => {
+                  onUpdateState({ roster: [] });
+                  onShowToast('Plantel limpo.');
+                },
+                { confirmWord: ERASE_WORD }
+              )
           ]
         ] as [string, () => void][])
       : [])

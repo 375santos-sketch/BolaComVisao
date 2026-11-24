@@ -1,4 +1,5 @@
 import React, { lazy, Suspense } from 'react';
+import type { ShowConfirm } from '../ConfirmModal';
 import { AppState } from '../../types';
 import { TabType } from '../Navbar';
 import { t } from '../../i18n/dict';
@@ -28,7 +29,7 @@ interface SquadViewProps {
   onOpenSettings: () => void;
   onOpenNotifications: () => void;
   onOpenSync: () => void;
-  onShowConfirm: (msg: string, cb: () => void) => void;
+  onShowConfirm: ShowConfirm;
   onShowToast: (msg: string) => void;
   initialSquadTab?: SquadTab;
 }

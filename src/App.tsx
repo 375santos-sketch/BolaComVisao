@@ -5,6 +5,7 @@ import { hasPrivateData, readsPrivateData, stripPrivate } from './lib/privateRec
 import { withInactiveAbsences } from './lib/inactiveAbsences';
 import { liveMatchOf } from './lib/liveFollow';
 import { switchTeam } from './lib/teamSwitch';
+import { massDeleteNotice } from './lib/destructiveActions';
 import { localDateISO } from './lib/trainingQuick';
 import { AppState, UserAccount, AppNotification } from './types';
 import {
@@ -52,7 +53,7 @@ import { getSyncView } from './lib/syncView';
 import { SessionExpiredBanner } from './components/SessionExpiredBanner';
 import { MoreDrawer } from './components/MoreDrawer';
 import { useBackClosesWindows } from './hooks/useBackClosesWindows';
-import { ConfirmModal } from './components/ConfirmModal';
+import { ConfirmModal, ShowConfirm } from './components/ConfirmModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
 import { ViewLoadingFallback } from './components/ViewLoadingFallback';
 import { lazyWithRetry } from './lib/lazyWithRetry';
@@ -154,6 +155,8 @@ export default function App() {
 
   const pushInFlightRef = useRef(false);
   const pushAgainRef = useRef(false);
+  // P0-09: the last number of deletions held back by the guard that was already shown (each save retries them)
+  const shownBlockedRef = useRef(0);
 
   const pushStateToCloud = async (s: AppState, forceOverwrite = false): Promise<void> => {
     if (!s.currentUser?.id) return;
@@ -178,6 +181,15 @@ export default function App() {
       if (res.success) {
         markCloudSaved(s.lastLocalMutationAt || 0);
         setCloudSaveError(undefined);
+        // P0-09: deletions held back by the guard against broken loads are told to the coach, once per case
+        const held = res.blockedDeletions || 0;
+        if (held > 0 && held !== shownBlockedRef.current) {
+          shownBlockedRef.current = held;
+          setToastMessage(massDeleteNotice(held));
+          setTimeout(() => setToastMessage(null), 10000);
+        } else if (held === 0) {
+          shownBlockedRef.current = 0;
+        }
       } else {
         setCloudSaveError(res.message || 'Não foi possível guardar na nuvem.');
       }
@@ -234,7 +246,14 @@ export default function App() {
   const [pendingUsersCount, setPendingUsersCount] = useState<number>(0);
   const [latestPendingUser, setLatestPendingUser] = useState<UserAccount | null>(null);
   const prevPendingCountRef = useRef<number>(-1);
-  const [confirmModalConfig, setConfirmModalConfig] = useState<{ message: string; onConfirm: () => void } | null>(null);
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    message: string;
+    onConfirm: () => void;
+    confirmWord?: string;
+  } | null>(null);
+  // P0-09: one way to ask for a confirmation; a mass erase passes the word to type (options.confirmWord)
+  const showConfirm: ShowConfirm = (message, onConfirm, options) =>
+    setConfirmModalConfig({ message, onConfirm, confirmWord: options?.confirmWord });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const isRemoteSyncRef = useRef<boolean>(false);
@@ -1067,7 +1086,7 @@ export default function App() {
                 onOpenAdminUsers={() => setShowAdminUsers(true)}
                 pendingUsersCount={pendingUsersCount}
                 onLogout={handleLogout}
-                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowConfirm={showConfirm}
                 onShowToast={showToast}
               />
             )}
@@ -1104,7 +1123,7 @@ export default function App() {
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
                 onOpenSync={() => showSyncStatus()}
-                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowConfirm={showConfirm}
                 onShowToast={showToast}
               />
             )}
@@ -1117,7 +1136,7 @@ export default function App() {
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
                 onOpenSync={() => showSyncStatus()}
-                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowConfirm={showConfirm}
                 onShowToast={showToast}
               />
             )}
@@ -1159,7 +1178,7 @@ export default function App() {
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
                 onOpenSync={() => showSyncStatus()}
-                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowConfirm={showConfirm}
                 onShowToast={showToast}
                 initialTab="list"
                 openToday={openTodayTraining}
@@ -1176,7 +1195,7 @@ export default function App() {
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
                 onOpenSync={() => showSyncStatus()}
-                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowConfirm={showConfirm}
                 onShowToast={showToast}
               />
             )}
@@ -1231,7 +1250,7 @@ export default function App() {
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenNotifications={() => setShowNotifications(true)}
                 onOpenSync={() => showSyncStatus()}
-                onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+                onShowConfirm={showConfirm}
                 onShowToast={showToast}
               />
             )}
@@ -1483,7 +1502,7 @@ export default function App() {
               onUpdateState={updateState}
               onClose={() => setShowDatabase(false)}
               onShowToast={showToast}
-              onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+              onShowConfirm={showConfirm}
             />
           </Suspense>
         )}
@@ -1499,7 +1518,7 @@ export default function App() {
             onUpdateState={updateState}
             onClose={() => setShowSettings(false)}
             onShowToast={showToast}
-            onShowConfirm={(msg, cb) => setConfirmModalConfig({ message: msg, onConfirm: cb })}
+            onShowConfirm={showConfirm}
             onOpenAdminUsers={() => setShowAdminUsers(true)}
             pendingUsersCount={pendingUsersCount}
           />
@@ -1554,7 +1573,9 @@ export default function App() {
         {/* Global Confirmation Modal */}
         {confirmModalConfig && (
           <ConfirmModal
+            key={confirmModalConfig.message}
             message={confirmModalConfig.message}
+            confirmWord={confirmModalConfig.confirmWord}
             lang="pt"
             onConfirm={() => {
               confirmModalConfig.onConfirm();
