@@ -1,5 +1,11 @@
 # Instruções de reversão
 
+## Tarefa 04: P0-09
+
+- **Antes do merge:** fechar o PR e apagar o ramo `fix/p0-09-proteger-historico`.
+- **Depois do merge:** `git revert <commit do merge>` num ramo novo, PR e merge; AI Studio → Pull → Publish.
+- **Efeito nos dados:** nenhum. O travão tem as mesmas regras; só passa a avisar.
+
 ## Tarefa 03: P0-03
 
 - **Antes do merge:** fechar o PR e apagar o ramo `feat/p0-03-detecao-escaloes`.

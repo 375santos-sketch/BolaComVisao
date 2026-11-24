@@ -2,6 +2,22 @@
 
 Registo por intervenção, a mais recente no topo.
 
+## Tarefa 04: P0-09, proteção do histórico (24/11/2026)
+
+Ramo `fix/p0-09-proteger-historico`. Pormenor em `TAREFA_04.md`.
+
+| Ficheiro                                                                                       | Tipo           | O que mudou                                                                               |
+| ---------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------- |
+| `src/lib/destructiveActions.ts`                                                                | Novo           | Palavras de confirmação, travão de apagamentos (mesmas regras de antes) e texto do aviso  |
+| `src/components/ConfirmModal.tsx`                                                              | Alterado       | Opção `confirmWord`: o botão só funciona depois de escrever a palavra; tipo `ShowConfirm` |
+| `src/App.tsx`                                                                                  | Alterado       | Uma só função `showConfirm`; aviso quando o travão retém apagamentos (uma vez por caso)   |
+| `src/services/clubCloud.ts`, `src/services/firebase.ts`                                        | Alterado       | O travão usa a função pura e devolve `blockedDeletions`                                   |
+| `TrainingsView`, `SquadToolbar`, `SquadView`, `TeamsHubView`, `DatabaseModal`, `SettingsModal` | Alterado       | ELIMINAR / SUBSTITUIR nas 6 ações em massa                                                |
+| `PlayerEvolutionSection.tsx`                                                                   | Alterado       | Apagar uma avaliação antiga (1–5) pede duas confirmações                                  |
+| `src/__tests__/destructiveActions.test.ts`, `src/__emulator__/massDelete.emulator.ts`          | Novos (testes) | 6 unitários e 3 de integração                                                             |
+
+**Não alterados:** regras, dados, dependências.
+
 ## Tarefa 03: P0-03, deteção de escalões misturados (24/11/2026)
 
 Ramo `feat/p0-03-detecao-escaloes`.
