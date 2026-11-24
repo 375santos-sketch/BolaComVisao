@@ -34,6 +34,7 @@ import {
 } from '../lib/recordSync';
 import { PrivateKind, extractPrivateRecords } from '../lib/privateRecords';
 import { legacySyncedKey, syncedKeyFor } from '../lib/deviceCache';
+import { isSuspiciousMassDelete } from '../lib/destructiveActions';
 
 /**
  * Cloud storage of a club, one Firestore document per record (club_workspace/{club}/records/{docId}).
@@ -69,8 +70,8 @@ const RECORD_KINDS: RecordKind[] = [
 ];
 const MAX_BATCH_WRITES = 400;
 const MAX_BATCH_BYTES = 4_000_000;
-/** A save that would delete more than this share of the club's records is treated as a broken load. */
-const MASS_DELETE_GUARD = 0.5;
+// A save that would delete more than 20 records and more than half of the club's records is treated as a broken
+// load: see isSuspiciousMassDelete (lib/destructiveActions.ts).
 
 const modeByWorkspace = new Map<string, CloudMode>();
 const remoteByWorkspace = new Map<string, Map<string, CloudRecord>>();
@@ -330,8 +331,11 @@ export async function pushClubRecords(
   }
   const deletions = pending.filter((id) => !local.has(id));
   const entityCount = Object.keys(synced).filter((id) => isRecordKey(id) && id !== CLUB_DOC_ID).length;
-  if (!options.allowMassDelete && deletions.length > 20 && deletions.length > entityCount * MASS_DELETE_GUARD) {
+  // P0-09: the deletions held back are reported to the app (before, only the console said it)
+  let blockedDeletions = 0;
+  if (!options.allowMassDelete && isSuspiciousMassDelete(deletions.length, entityCount)) {
     console.warn(`Proteção de dados: ${deletions.length} registos por apagar ignorados (carregamento incompleto?).`);
+    blockedDeletions = deletions.length;
     pending = pending.filter((id) => local.has(id));
   }
 
@@ -377,7 +381,11 @@ export async function pushClubRecords(
 
     if (options.migrating) saveSyncedHashes(ws, nextSynced);
     if (writes.some(([id]) => id === CLUB_DOC_ID)) modeByWorkspace.set(ws, 'records');
-    return { success: true, message: `Nuvem atualizada (${writes.length} registos).` };
+    return {
+      success: true,
+      message: `Nuvem atualizada (${writes.length} registos).`,
+      ...(blockedDeletions ? { blockedDeletions } : {})
+    };
   } catch (err) {
     if (isQuotaExceededError(err)) {
       markQuotaExhausted(15);

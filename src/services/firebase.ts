@@ -189,6 +189,8 @@ export interface CloudSyncResult {
   success: boolean;
   message: string;
   isQuotaExceeded?: boolean;
+  /** P0-09: deletions this save held back because they looked like a broken load (they stay in the cloud). */
+  blockedDeletions?: number;
 }
 
 import { normalizeClubState } from '../lib/storage';

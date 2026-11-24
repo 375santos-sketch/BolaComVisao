@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import type { ShowConfirm } from './ConfirmModal';
+import { ERASE_WORD } from '../lib/destructiveActions';
 import { copyForNewTeam } from '../lib/athleteIdentity';
 import { datePT } from '../lib/planningSummary';
 import { teamCounts } from '../lib/teamSwitch';
@@ -14,7 +16,7 @@ interface DatabaseModalProps {
   onUpdateState: (updates: Partial<AppState>) => void;
   onClose: () => void;
   onShowToast: (msg: string) => void;
-  onShowConfirm: (msg: string, cb: () => void) => void;
+  onShowConfirm: ShowConfirm;
 }
 
 export const DatabaseModal: React.FC<DatabaseModalProps> = ({
@@ -266,7 +268,8 @@ export const DatabaseModal: React.FC<DatabaseModalProps> = ({
           onUpdateState({ teams: remainingTeams });
         }
         onShowToast(`Equipa "${targetName}" apagada.`);
-      }
+      },
+      { confirmWord: ERASE_WORD }
     );
   };
 

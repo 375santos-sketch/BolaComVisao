@@ -1,5 +1,16 @@
 # Riscos e limitações conhecidos
 
+## Tarefa 04: P0-09
+
+1. **Uma ação em massa confirmada pode ficar retida pelo travão.** Acontece quando apaga mais de 20 registos e mais
+   de metade do clube (por exemplo, todos os treinos de um clube pequeno). Agora o treinador vê o aviso, que sugere
+   apagar em partes de até 20. Deixar passar os apagamentos confirmados com a palavra é uma melhoria possível, numa
+   tarefa à parte.
+2. **O aviso aparece uma vez por caso.** Se o número retido mudar, volta a aparecer. Os apagamentos retidos ficam no
+   aparelho e são tentados de novo a cada gravação.
+3. **A decisão 9 continua pendente:** o apagar das avaliações antigas foi protegido, não retirado.
+4. **Sem verificação visual** do novo ecrã de confirmação no navegador.
+
 ## Tarefa 03: P0-03
 
 1. **A deteção não corrige nada.** Mostra contagens; a reparação dos dados (se for precisa) é uma tarefa à parte,

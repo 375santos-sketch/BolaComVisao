@@ -1,5 +1,22 @@
 # Testes executados
 
+## Tarefa 04: P0-09 (24/11/2026, Windows)
+
+| Teste                                                                                                                              | Comando                                                   | Resultado                                                                                |
+| ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Lógica (palavra de confirmação, travão, aviso)                                                                                     | `npx vitest run src/__tests__/destructiveActions.test.ts` | ✅ 6/6                                                                                   |
+| Travão com as regras reais (30 retidos e devolvidos em `blockedDeletions`, a nuvem mantém-nos; 10 passam; `allowMassDelete` passa) | `emulators:exec … massDelete.emulator.ts`                 | ✅ 3/3                                                                                   |
+| Tipos, lint, formatação                                                                                                            | `typecheck`, `lint`, `prettier --check`                   | ✅                                                                                       |
+| Unitários (toda a bateria)                                                                                                         | `npm test`                                                | ✅ 115 ficheiros, 710 testes                                                             |
+| Build                                                                                                                              | `npm run build`                                           | ✅                                                                                       |
+| Integração (toda a bateria)                                                                                                        | `npm run test:emulator`                                   | 228/229: só a falha antiga e local de `clubCloud.emulator.ts` (fins de linha no Windows) |
+
+**Não executados localmente:**
+
+- testes de ecrã: sem navegador do Playwright; nenhum deles usa as ações em massa (o único "Confirmar" simples, o do
+  intervalo, não muda). Correm no CI;
+- ecrã da confirmação escrita no navegador: falta a verificação visual.
+
 ## Tarefa 03: P0-03 (24/11/2026, Windows)
 
 | Teste                                                                                                                    | Comando                                                | Resultado                    |

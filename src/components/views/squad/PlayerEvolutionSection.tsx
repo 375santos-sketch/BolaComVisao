@@ -167,7 +167,13 @@ export const PlayerEvolutionSection: React.FC<{
                             type="button"
                             aria-label={`Apagar a avaliação de ${ddmm(e.date)}`}
                             onClick={() => {
-                              if (window.confirm(`Apagar a avaliação de ${ddmm(e.date)}?`))
+                              // P0-09: an old evaluation (1–5) can no longer be made again: two confirmations
+                              if (
+                                window.confirm(`Apagar a avaliação de ${ddmm(e.date)}?`) &&
+                                window.confirm(
+                                  'É uma avaliação antiga (escala 1–5), que já não se pode voltar a criar. Apagada, só volta com uma cópia de segurança. Apagar mesmo?'
+                                )
+                              )
                                 save(withoutEvaluation(player, e.id), 'Avaliação apagada');
                             }}
                             className="px-1 text-xs text-ui-muted hover:text-ui-danger"
