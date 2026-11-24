@@ -1083,7 +1083,7 @@ export default function App() {
             )}
 
             {currentTab === 'home' && isAppAdmin(state.currentUser) && (
-              <BackupReminder state={state} onShowToast={showToast} />
+              <BackupReminder onOpenEncryptedBackup={() => setShowEncryptedBackup(true)} />
             )}
             {currentTab === 'home' && <NewsletterReminder state={state} onOpen={() => setShowNewsletter(true)} />}
             {currentTab === 'home' && (

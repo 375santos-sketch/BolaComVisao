@@ -127,3 +127,37 @@ export const isBackupDue = (last: number | null, now = Date.now()) => {
   const days = daysSinceBackup(last, now);
   return days === null || days >= BACKUP_INTERVAL_DAYS;
 };
+
+// ---------- P1-03 (free plan, decisão 12): weekly reminder of the ENCRYPTED copy (.bcvbak) ----------
+
+const LAST_ENCRYPTED_BACKUP_KEY = 'bcv-last-encrypted-backup-at';
+
+export function getLastEncryptedBackupAt(): number | null {
+  try {
+    const v = Number(localStorage.getItem(LAST_ENCRYPTED_BACKUP_KEY));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Called only after the encrypted file was created AND opened again with the same passphrase. */
+export function setLastEncryptedBackupAt(when = Date.now()): void {
+  try {
+    localStorage.setItem(LAST_ENCRYPTED_BACKUP_KEY, String(when));
+  } catch {
+    // Storage unavailable: the reminder simply shows again.
+  }
+}
+
+/**
+ * How strongly to remind: "ok" (copy of less than a week), "due" (one week or more), "overdue" (two weeks or more,
+ * or never on this device).
+ */
+export type BackupUrgency = 'ok' | 'due' | 'overdue';
+
+export function backupUrgency(last: number | null, now = Date.now()): BackupUrgency {
+  const days = daysSinceBackup(last, now);
+  if (days === null || days >= BACKUP_INTERVAL_DAYS * 2) return 'overdue';
+  return days >= BACKUP_INTERVAL_DAYS ? 'due' : 'ok';
+}

@@ -14,6 +14,7 @@ import {
   passphraseProblem
 } from '../../lib/encryptedBackup';
 import { readBackupDocuments } from '../../services/backupReader';
+import { setLastEncryptedBackupAt } from '../../lib/backup';
 
 const ManifestSummary: React.FC<{ manifest: BackupManifest; label: string }> = ({ manifest, label }) => (
   <section aria-label={label} className="ui-card space-y-2 p-3.5 text-ui-caption">
@@ -74,6 +75,8 @@ const EncryptedBackupModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       setCreated(check.payload.manifest);
+      // P1-03: the weekly reminder counts from this copy (made and checked)
+      setLastEncryptedBackupAt();
       setPass('');
       setConfirm('');
     } catch (err) {
