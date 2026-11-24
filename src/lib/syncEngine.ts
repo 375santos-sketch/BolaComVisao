@@ -1,13 +1,10 @@
-import { AppState, SyncState, OfflineMutation } from '../types';
-import { workspaceIdOf } from './deviceCache';
+import { SyncState } from '../types';
 import { uid } from './utils';
 import { isClubDataKey } from './deviceCache';
-import { saveMasterClubState } from '../services/firebase';
 
 const IDB_NAME = 'BolaComVisao_DB';
 const IDB_VERSION = 1;
 const STORE_NAME = 'coach_state_store';
-const QUEUE_STORAGE_KEY = 'bolacomvisao_mutations_queue_v1';
 
 // Default initial sync state
 export const defaultSyncState: SyncState = {
@@ -115,93 +112,48 @@ export async function clearDeviceClubData(): Promise<void> {
   }
 }
 
-// Offline Mutations Queue Operations
-function getOfflineQueue(): OfflineMutation[] {
+/**
+ * P1-02 — Copies of the whole club that older versions kept on the device and nothing ever read: the state written
+ * by syncStateWithCloud on each return of the network ("offline_state_backup", "latest_cloud_synced_state"), the
+ * archives of an offline queue that was never filled ("archived_mutations_<time>", "processed_queue_<time>") and the
+ * queue itself. The app's own copy ("coach_active_state" and the per-account keys) is NOT one of them.
+ */
+export const OLD_OFFLINE_QUEUE_KEY = 'bolacomvisao_mutations_queue_v1';
+export function isUnusedOfflineCopy(key: string): boolean {
+  return (
+    key === 'offline_state_backup' ||
+    key === 'latest_cloud_synced_state' ||
+    /^archived_mutations_\d+$/.test(key) ||
+    /^processed_queue_\d+$/.test(key)
+  );
+}
+
+/** Removes those copies from this device (once per start; nothing to do after the first time). Returns how many. */
+export async function removeUnusedOfflineCopies(): Promise<number> {
   try {
-    const raw = localStorage.getItem(QUEUE_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    localStorage.removeItem(OLD_OFFLINE_QUEUE_KEY);
   } catch {
-    return [];
+    // Storage unavailable: nothing kept there either
   }
-}
-
-function saveOfflineQueue(queue: OfflineMutation[]): void {
   try {
-    localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
-  } catch (e) {
-    console.warn('Erro ao guardar fila offline:', e);
-  }
-}
-
-// Perform sync directly against official Firestore cloud database & process queue
-export async function syncStateWithCloud(
-  state: AppState,
-  _syncId: string
-): Promise<{ success: boolean; message: string; remoteState?: Partial<AppState> }> {
-  // If currently offline according to browser, store in IndexedDB and queue
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
-    await saveToIndexedDB('offline_state_backup', state);
-    await saveToIndexedDB('latest_cloud_synced_state', state);
-    const queue = getOfflineQueue();
-    return {
-      success: false,
-      message: `Modo Offline: ${queue.length} alteraç${queue.length === 1 ? 'ão' : 'ões'} guardadas em base de dados local.`
-    };
-  }
-
-  try {
-    const queue = getOfflineQueue();
-
-    // 1. Save local snapshot to IndexedDB
-    await saveToIndexedDB('latest_cloud_synced_state', state);
-
-    // 2. Direct write to official Firestore database
-    const authorId = state.currentUser?.id;
-    const authorName = state.currentUser?.name || state.currentUser?.username || 'Treinador';
-    const workspaceId = workspaceIdOf(state.currentUser);
-    const result = await saveMasterClubState(workspaceId, state, authorId, authorName);
-
-    if (result.success) {
-      // Clear processed mutations queue upon successful Firestore write
-      if (queue.length > 0) {
-        await saveToIndexedDB(`archived_mutations_${Date.now()}`, queue);
-        saveOfflineQueue([]);
-      }
-      return {
-        success: true,
-        message: 'Base de dados oficial (Firestore) sincronizada com sucesso! ☁️'
+    const db = await openDB();
+    return await new Promise<number>((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.getAllKeys();
+      let removed = 0;
+      req.onsuccess = () => {
+        (req.result || []).forEach((k) => {
+          if (typeof k === 'string' && isUnusedOfflineCopy(k)) {
+            store.delete(k);
+            removed++;
+          }
+        });
       };
-    } else {
-      return {
-        success: false,
-        message: result.message || 'Falha ao sincronizar com Firestore. Guardado localmente.'
-      };
-    }
+      tx.oncomplete = () => resolve(removed);
+      tx.onerror = () => resolve(removed);
+    });
   } catch {
-    await saveToIndexedDB('offline_state_backup', state);
-    return {
-      success: true,
-      message: 'Guardado em base de dados offline local (IndexedDB).'
-    };
-  }
-}
-
-// Process and flush offline queued mutations when connection is restored
-export async function processOfflineMutationsQueue(): Promise<{ processed: number; success: boolean }> {
-  const queue = getOfflineQueue();
-  if (queue.length === 0) {
-    return { processed: 0, success: true };
-  }
-
-  const count = queue.length;
-  try {
-    // Save queue items to IndexedDB archive
-    await saveToIndexedDB(`processed_queue_${Date.now()}`, queue);
-    // Clear pending queue
-    saveOfflineQueue([]);
-    return { processed: count, success: true };
-  } catch (err) {
-    console.warn('Erro ao processar fila offline:', err);
-    return { processed: 0, success: false };
+    return 0;
   }
 }
