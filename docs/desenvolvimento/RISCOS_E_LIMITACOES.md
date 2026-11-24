@@ -1,5 +1,23 @@
 # Riscos e limitações conhecidos
 
+## Tarefa 03: P0-03
+
+1. **A deteção não corrige nada.** Mostra contagens; a reparação dos dados (se for precisa) é uma tarefa à parte,
+   com aprovação.
+2. **"A verificar" não quer dizer erro.**
+   - Um atleta em duas equipas da mesma época pode estar a jogar acima do escalão.
+   - Um jogo sem equipa marcada pode estar na equipa certa.
+   - Os números dizem onde olhar, não o que fazer.
+3. **Só vê o que o Administrador consegue ler.** O inventário lê como Administrador da plataforma; os erros de
+   leitura aparecem no cartão do espaço, nunca escondidos.
+4. **Clubes ainda no documento antigo:** a verificação lê as listas de cada equipa desse documento. As cópias de topo
+   (equipa ativa) não são contadas à parte, para não contar o mesmo duas vezes.
+5. **Só deteta o que fica marcado nos dados.** Uma cópia antiga **sem** `teamId` dentro de outra equipa não se
+   distingue de um jogo que sempre lá esteve. Aparece só em "sem equipa marcada" ou em "o mesmo jogo em várias
+   equipas".
+6. **O PR 182 (P0-02) foi integrado antes de os testes de ecrã e de integração do CI terminarem.** Ver o resultado
+   do CI do `main` desse merge.
+
 ## Tarefa 02: P0-02
 
 1. **Cópias antigas continuam guardadas.**

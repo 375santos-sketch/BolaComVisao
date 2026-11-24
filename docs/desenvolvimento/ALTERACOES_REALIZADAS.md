@@ -2,6 +2,19 @@
 
 Registo por intervenção, a mais recente no topo.
 
+## Tarefa 03: P0-03, deteção de escalões misturados (24/11/2026)
+
+Ramo `feat/p0-03-detecao-escaloes`.
+
+| Ficheiro                                  | Tipo            | O que mudou                                                                                      |
+| ----------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------ |
+| `src/lib/inventory.ts`                    | Alterado (+140) | Tipo `TeamMixingCheck`, função pura `teamMixingOf` e campo `mixing` em cada espaço do inventário |
+| `src/components/admin/InventoryModal.tsx` | Alterado (+56)  | Linha "Escalões misturados" no cartão de cada espaço (só para o Administrador)                   |
+| `src/__tests__/inventoryMixing.test.ts`   | Novo (teste)    | 9 testes: cada sinal, registos apagados, documento antigo, privacidade                           |
+| `docs/desenvolvimento/*.md`               | Documentação    | `TAREFA_03.md` e as secções da Tarefa 03                                                         |
+
+**Não alterados:** `services/inventoryReader.ts` (a leitura), regras, dados, dependências.
+
 ## Tarefa 02: P0-02, troca de equipa testada e unificada (24/11/2026)
 
 Ramo `fix/p0-02-troca-de-equipa`.

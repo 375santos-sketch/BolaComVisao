@@ -1,5 +1,38 @@
 # Testes executados
 
+## Tarefa 03: P0-03 (24/11/2026, Windows)
+
+| Teste                                                                                                                    | Comando                                                | Resultado                    |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ---------------------------- |
+| Testes novos                                                                                                             | `npx vitest run src/__tests__/inventoryMixing.test.ts` | ✅ 9/9                       |
+| Inventário existente (incluindo "nenhuma função de escrita nos ficheiros do inventário" e "nunca leva dados de atletas") | `src/__tests__/inventory.test.ts`                      | ✅ 11/11                     |
+| Tipos                                                                                                                    | `npm run typecheck`                                    | ✅                           |
+| Lint (todo o projeto)                                                                                                    | `npm run lint`                                         | ✅                           |
+| Formatação dos ficheiros alterados                                                                                       | `npx prettier --check`                                 | ✅                           |
+| Unitários (toda a bateria)                                                                                               | `npm test`                                             | ✅ 114 ficheiros, 704 testes |
+| Build                                                                                                                    | `npm run build`                                        | ✅                           |
+
+**O que os testes novos verificam:**
+
+- um clube sem misturas dá "sem sinais";
+- conta as cópias da agenda num escalão do mesmo clube, quantas duplicam um original e em que equipa estão;
+- conta os jogos e a agenda sem equipa, e os registos de equipas inexistentes;
+- conta os atletas em duas equipas da **mesma** época, e não os de épocas diferentes;
+- ignora os registos apagados;
+- lê os clubes ainda no documento antigo;
+- o JSON do inventário não leva nomes de atletas, adversários, datas nem contactos.
+
+**Não executados localmente:**
+
+- **Testes de ecrã:** o Playwright não tem o navegador instalado nesta máquina, e instalá-lo seria instalar
+  dependências. O teste `inventario.e2e.ts` (só o Administrador vê; a base de dados fica **igual** antes e depois)
+  corre no CI do PR.
+- **Ecrã do Inventário no navegador:** precisa de emuladores, dados de teste e uma conta de Administrador. Fica
+  coberto pelo teste de ecrã do CI.
+- **Integração com emuladores:** não se aplica. A leitura (`inventoryReader.ts`) não mudou; a verificação é uma
+  função pura.
+- **Produção:** és tu que corres o inventário depois do Publish (só leitura).
+
 ## Tarefa 02: P0-02 (24/11/2026, Windows)
 
 | Teste                                                              | Comando                                           | Resultado                                                                                                                                                                                                                            |

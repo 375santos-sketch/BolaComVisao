@@ -1,5 +1,13 @@
 # Instruções de reversão
 
+## Tarefa 03: P0-03
+
+- **Antes do merge:** fechar o PR e apagar o ramo `feat/p0-03-detecao-escaloes`.
+- **Depois do merge:** `git revert <commit do merge>` num ramo novo, PR e merge; AI Studio → Pull → Publish.
+- **Efeito nos dados:** nenhum. A verificação só lê.
+- **Ficheiros de inventário já descarregados:** continuam válidos (`version: 1`). Os antigos só não têm o campo
+  `mixing`.
+
 ## Tarefa 02: P0-02
 
 - **Antes do merge:** fechar o PR e apagar o ramo `fix/p0-02-troca-de-equipa`.
