@@ -364,7 +364,7 @@ export const MoreDrawer: React.FC<MoreDrawerProps> = ({
             (g) =>
               g.items.length > 0 && (
                 <section key={g.title} aria-label={g.title} className="pt-3">
-                  <h4 className="mb-1 text-[11px] font-bold uppercase tracking-wide text-ui-muted">{g.title}</h4>
+                  <h4 className="mb-1.5 px-1 text-ui-body font-bold text-ui-text">{g.title}</h4>
                   <div className="divide-y divide-ui-line">{g.items.map(row)}</div>
                 </section>
               )
