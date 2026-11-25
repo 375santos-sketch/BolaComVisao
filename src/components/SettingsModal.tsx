@@ -14,6 +14,7 @@ import { defaultNotificationSettings } from '../lib/notificationEngine';
 import { clearedAgenda } from '../lib/agendaReset';
 import { isAppAdmin } from '../services/cloudAuthService';
 import { Sheet } from './ui/Sheet';
+import { Icon } from './ui/Icon';
 import { SectionNav } from './ui/SectionNav';
 
 interface SettingsModalProps {
@@ -130,12 +131,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 {state.clubLogoUrl ? (
                   <img src={state.clubLogoUrl} alt="Símbolo" className="h-full w-full object-contain" />
                 ) : (
-                  <span className="text-lg">🛡️</span>
+                  <Icon name="image" className="h-5 w-5 text-ui-muted" />
                 )}
               </div>
               <div className="flex flex-1 justify-end gap-2">
-                <label className="ui-btn ui-btn-secondary cursor-pointer px-2.5 py-1 text-ui-caption">
-                  📷 {state.clubLogoUrl ? 'Alterar' : 'Carregar'}
+                <label className="ui-btn ui-btn-secondary min-h-10 cursor-pointer px-3 text-ui-body">
+                  <Icon name="image" className="h-4 w-4" />
+                  {state.clubLogoUrl ? 'Alterar' : 'Carregar'}
                   <input
                     type="file"
                     accept="image/*"
@@ -304,9 +306,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     { confirmWord: ERASE_WORD }
                   )
                 }
-                className="ui-btn ui-btn-soft-danger mt-2 px-3 py-2 text-ui-caption"
+                className="ui-btn ui-btn-soft-danger mt-2 min-h-10 px-3 text-ui-body"
               >
-                🗑️ Limpar a agenda
+                <Icon name="trash" className="h-4 w-4" />
+                Limpar a agenda
               </button>
             </section>
           )}
@@ -347,9 +350,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               onClose();
               onOpenAdminUsers();
             }}
-            className="ui-btn ui-btn-primary w-full px-3 py-2.5 text-ui-caption"
+            className="ui-btn ui-btn-primary min-h-11 w-full px-3 text-ui-body"
           >
-            👥 Abrir o painel de treinadores
+            <Icon name="users" className="h-4 w-4" />
+            Abrir o painel de treinadores
             {pendingUsersCount > 0 && <span> ({pendingUsersCount} por aprovar)</span>}
           </button>
         </div>

@@ -2012,8 +2012,8 @@ html.sol .modo-jogo {
   overflow: hidden;
   font-size: 22px;
   font-weight: 900;
-  color: #fff;
-  background: linear-gradient(135deg, #1e88e5, #0d47a1);
+  color: var(--color-ui-brand-ink);
+  background: var(--color-ui-brand);
   clip-path: polygon(50% 0, 100% 14%, 100% 58%, 50% 100%, 0 58%, 0 14%);
   filter: drop-shadow(0 8px 14px rgb(0 0 0 / 0.5));
 }
@@ -2201,8 +2201,8 @@ html.sol .bcv-cta {
   overflow: hidden;
   font-size: 30px;
   font-weight: 900;
-  color: #fff;
-  background: linear-gradient(135deg, #1e88e5, #0d47a1);
+  color: var(--color-ui-brand-ink);
+  background: var(--color-ui-brand);
   clip-path: polygon(50% 0, 100% 14%, 100% 58%, 50% 100%, 0 58%, 0 14%);
   filter: drop-shadow(0 20px 40px rgb(0 0 0 / 0.6));
 }
@@ -2631,8 +2631,8 @@ html.sol .live-head {
   justify-content: center;
   overflow: hidden;
   font-weight: 900;
-  color: #fff;
-  background: linear-gradient(135deg, #1e88e5, #0d47a1);
+  color: var(--color-ui-brand-ink);
+  background: var(--color-ui-brand);
   clip-path: polygon(50% 0, 100% 14%, 100% 58%, 50% 100%, 0 58%, 0 14%);
 }
 .club-crest:has(img) {
