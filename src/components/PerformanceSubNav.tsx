@@ -26,7 +26,7 @@ export const PerformanceSubNav: React.FC<PerformanceSubNavProps> = ({ currentTab
   }, [currentTab]);
 
   return (
-    <nav ref={navRef} aria-label="Performance" className="mb-3 lg:hidden">
+    <nav ref={navRef} aria-label="Performance" className="mb-4 lg:hidden">
       <SubNavTabs
         tabs={TABS}
         activeTab={currentTab === 'stats' ? 'analise_jogos' : currentTab}

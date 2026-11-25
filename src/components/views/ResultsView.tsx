@@ -1,4 +1,5 @@
 import { PostMatchSummaryModal } from './gameCenter/PostMatchSummaryModal';
+import { Icon } from '../ui/Icon';
 import React, { lazy, Suspense, useState } from 'react';
 import { AppState, Match, GoalEvent, CardEvent, SubEvent } from '../../types';
 import { t } from '../../i18n/dict';
@@ -168,18 +169,25 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           <button
             type="button"
             onClick={() => setShowLeague(true)}
-            className="ui-btn ui-btn-soft mb-3 w-full py-2.5 text-ui-caption"
+            className="ui-btn ui-btn-secondary mb-3 min-h-11 w-full px-4 text-ui-body sm:w-auto"
           >
+            <Icon name="trophy" className="h-[18px] w-[18px]" />
             Classificação do campeonato
           </button>
-          <div className="field">
+          <label className="relative mb-3 block">
+            <span className="sr-only">{t(state.lang, 'res_search')}</span>
+            <Icon
+              name="search"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ui-muted"
+            />
             <input
               type="text"
               placeholder={t(state.lang, 'res_search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="ui-input min-h-11 !pl-9"
             />
-          </div>
+          </label>
 
           {seasonsList.length > 1 && (
             <div className="seg mb-3.5">
@@ -302,7 +310,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             m.type === 'campeonato'
               ? `${t(state.lang, 'sch_champ')}${m.phase ? ' · ' + m.phase : ''}`
               : m.type === 'torneio'
-                ? `🏆 ${m.tournamentName || t(state.lang, 'sch_tour')}${m.phase ? ' · ' + m.phase : ''}`
+                ? `${m.tournamentName || t(state.lang, 'sch_tour')}${m.phase ? ' · ' + m.phase : ''}`
                 : t(state.lang, 'sch_friendly');
 
           const locLabel =
@@ -318,7 +326,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           return (
             <div
               key={m.id}
-              className="ui-card p-2.5 mb-2 cursor-pointer"
+              className="ui-card mb-2 cursor-pointer px-3.5 py-3 transition-colors hover:bg-ui-surface-2"
               onClick={(e) => {
                 const target = e.target as HTMLElement;
                 if (!pageMatch && !target.closest('button') && !target.closest('textarea')) {
@@ -349,17 +357,28 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                     {(m.date || '').slice(8, 10)}/{(m.date || '').slice(5, 7)} · {locLabel} · {typeLabel}
                   </div>
                 </div>
-                <span
-                  className={`shrink-0 rounded-lg px-2.5 py-1 text-sm font-bold tabular-nums ${
-                    sc > co
-                      ? 'bg-ui-success/15 text-ui-success'
-                      : sc === co
-                        ? 'bg-ui-warning/15 text-ui-warning'
-                        : 'bg-ui-danger/15 text-ui-danger'
-                  }`}
-                  aria-label={`Resultado ${(m.location || 'casa') === 'casa' ? `${sc}-${co}` : `${co}-${sc}`}`}
-                >
-                  {(m.location || 'casa') === 'casa' ? `${sc} – ${co}` : `${co} – ${sc}`}
+                {/* The result: the score in white and a V / E / D in colour (never the colour alone) */}
+                <span className="flex shrink-0 items-center gap-2">
+                  <span
+                    className="text-ui-lead font-bold tabular-nums text-ui-text"
+                    aria-label={`Resultado ${(m.location || 'casa') === 'casa' ? `${sc}-${co}` : `${co}-${sc}`}`}
+                  >
+                    {(m.location || 'casa') === 'casa' ? `${sc} – ${co}` : `${co} – ${sc}`}
+                  </span>
+                  {m.finished && (
+                    <span
+                      title={sc > co ? 'Vitória' : sc === co ? 'Empate' : 'Derrota'}
+                      className={`flex h-6 w-6 items-center justify-center rounded-ui-sm text-ui-caption font-bold ${
+                        sc > co
+                          ? 'bg-ui-success-soft text-ui-success'
+                          : sc === co
+                            ? 'bg-ui-warning-soft text-ui-warning'
+                            : 'bg-ui-danger-soft text-ui-danger'
+                      }`}
+                    >
+                      {sc > co ? 'V' : sc === co ? 'E' : 'D'}
+                    </span>
+                  )}
                 </span>
               </div>
 
