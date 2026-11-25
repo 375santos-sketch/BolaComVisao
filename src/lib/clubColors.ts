@@ -1,13 +1,14 @@
 import { DEFAULT_CLUB_COLOR } from './teamSettings';
 
 /**
- * Club colours (Definições → Clube): the app's accent (the cyan of buttons, tabs, titles…) becomes the club's main
+ * Club colours (Definições → Clube): the app's accent (the green of buttons, tabs, titles…, the "cyan" scale in the
+ * code) becomes the club's main
  * colour. Tailwind reads its colours from CSS variables, so the whole cyan scale (50…950) and the design-system
  * brand tokens are replaced by shades of the chosen colour; the default colour leaves the original palette.
  */
 
 export const CLUB_COLOR_PRESETS: { name: string; hex: string }[] = [
-  { name: 'Azul BolaComVisão', hex: DEFAULT_CLUB_COLOR },
+  { name: 'Verde BolaComVisão', hex: DEFAULT_CLUB_COLOR },
   { name: 'Azul', hex: '#2f7cf6' },
   { name: 'Vermelho', hex: '#e23b3b' },
   { name: 'Verde', hex: '#1fae5b' },

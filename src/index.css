@@ -12,44 +12,72 @@
   --font-mono: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-display: 'Chakra Petch', 'Plus Jakarta Sans', sans-serif;
 
-  /* Dark Premium: three surface levels give depth (no decorative gradients); colour always means something:
-     brand = actions and selection, success = OK/evolution, warning = attention, danger = critical only. */
-  --color-ui-bg: #0b1220;
-  --color-ui-surface: #111a2b;
-  --color-ui-surface-2: #162238;
-  --color-ui-surface-3: #1c2a44;
-  --color-ui-inset: #0d1626;
-  --color-ui-line: #22324d;
-  --color-ui-line-strong: #2f4466;
-  --color-ui-text: #e7eef7;
-  --color-ui-muted: #8b9bb4;
-  --color-ui-brand: #22c3ee;
-  --color-ui-brand-strong: #0ea5d0;
-  --color-ui-brand-ink: #04202b;
-  --color-ui-danger: #ef4444;
-  --color-ui-success: #22c55e;
-  --color-ui-warning: #f5b301;
+  /* Preto, verde e branco (docs/design/DESIGN_SYSTEM.md): neutral black surfaces (three levels give depth, no
+     decorative gradients); colour always means something: brand green = actions, active and focus; success
+     (blue-green, so it never reads as the brand) = OK/win; warning = attention/draw; danger = error, loss, delete. */
+  --color-ui-bg: #0a0b0c;
+  --color-ui-surface: #131517;
+  --color-ui-surface-2: #1b1e21;
+  --color-ui-surface-3: #24282c;
+  --color-ui-inset: #0e1011;
+  --color-ui-line: #262a2e;
+  --color-ui-line-strong: #363b40;
+  --color-ui-text: #f5f7f6;
+  --color-ui-muted: #9ba3a0;
+  --color-ui-subtle: #6b7370;
+  --color-ui-brand: #2edb74;
+  --color-ui-brand-strong: #22b860;
+  --color-ui-brand-ink: #05210f;
+  --color-ui-danger: #f0605a;
+  --color-ui-success: #34c3a0;
+  --color-ui-warning: #f2b33d;
 
   /* The dark end of the neutral scales follows the same surfaces, so every screen gets the new look at once
      (the "Modo sol" below turns these scales around for the light theme, as before). */
-  --color-slate-950: #0b1220;
-  --color-slate-900: #111a2b;
-  --color-slate-800: #1c2a44;
-  --color-slate-700: #2c3f5f;
-  --color-slate-600: #475a78;
-  --color-slate-500: #66789a;
-  --color-slate-400: #8b9bb4;
-  --color-slate-300: #c3cede;
-  --color-gray-950: #0b1220;
-  --color-gray-900: #111a2b;
-  --color-gray-800: #1c2a44;
-  --color-gray-700: #2c3f5f;
+  --color-slate-950: #0a0b0c;
+  --color-slate-900: #131517;
+  --color-slate-800: #24282c;
+  --color-slate-700: #363b40;
+  --color-slate-600: #4f5652;
+  --color-slate-500: #6b7370;
+  --color-slate-400: #9ba3a0;
+  --color-slate-300: #c9cfcc;
+  --color-gray-950: #0a0b0c;
+  --color-gray-900: #131517;
+  --color-gray-800: #24282c;
+  --color-gray-700: #363b40;
+
+  /* The accent scale: every "cyan" in the screens is the brand colour. Green by default; the club colour
+     (Definições do clube) replaces it, see src/lib/clubColors.ts (same shades, same formula). */
+  --color-cyan-50: #eafbf1;
+  --color-cyan-100: #d5f8e3;
+  --color-cyan-200: #abf1c7;
+  --color-cyan-300: #82e9ac;
+  --color-cyan-400: #58e290;
+  --color-cyan-500: #2edb74;
+  --color-cyan-600: #28bc65;
+  --color-cyan-700: #219c57;
+  --color-cyan-800: #1b7d48;
+  --color-cyan-900: #155e39;
+  --color-cyan-950: #0f3e2b;
+  /* "emerald" marks success in the screens: blue-green, so success never looks like the brand */
+  --color-emerald-50: #f0fdfa;
+  --color-emerald-100: #ccfbf1;
+  --color-emerald-200: #99f6e4;
+  --color-emerald-300: #7fe0c6;
+  --color-emerald-400: #4fd1b0;
+  --color-emerald-500: #34c3a0;
+  --color-emerald-600: #23a386;
+  --color-emerald-700: #1a7f69;
+  --color-emerald-800: #156553;
+  --color-emerald-900: #134e43;
+  --color-emerald-950: #08302a;
 
   /* Soft fills of the meaning colours (badges, highlighted rows, the icon of a tile) */
-  --color-ui-brand-soft: rgb(34 195 238 / 0.12);
-  --color-ui-success-soft: rgb(34 197 94 / 0.12);
-  --color-ui-warning-soft: rgb(245 179 1 / 0.12);
-  --color-ui-danger-soft: rgb(239 68 68 / 0.12);
+  --color-ui-brand-soft: color-mix(in srgb, var(--color-ui-brand) 12%, transparent);
+  --color-ui-success-soft: rgb(52 195 160 / 0.12);
+  --color-ui-warning-soft: rgb(242 179 61 / 0.12);
+  --color-ui-danger-soft: rgb(240 96 90 / 0.12);
 
   /* Type scale (M1): six sizes for the whole app, each with its line height.
      caption 12 · body 14 · lead 16 · title 20 · headline 24 · display 32 */
@@ -66,12 +94,13 @@
   --text-ui-display: 2rem;
   --text-ui-display--line-height: 2.25rem;
 
-  /* Shape and depth: three corners (8 · 12 · 20) and two elevations */
+  /* Shape and depth: three corners (8 · 12 · 16) and two elevations (a 1 px line for cards; a soft shadow only
+     for windows, menus and floating sheets) */
   --radius-ui-sm: 0.5rem;
   --radius-ui: 0.75rem;
-  --radius-ui-lg: 1.25rem;
-  --shadow-ui-1: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px rgb(0 0 0 / 0.3);
-  --shadow-ui-2: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 8px 24px rgb(0 0 0 / 0.28);
+  --radius-ui-lg: 1rem;
+  --shadow-ui-1: 0 1px 0 rgb(255 255 255 / 0.03) inset;
+  --shadow-ui-2: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px rgb(0 0 0 / 0.45);
 }
 
 @layer base {
@@ -93,7 +122,7 @@
     justify-content: center;
     gap: 0.4rem;
     padding: 0.5rem 0.875rem;
-    border-radius: 0.625rem;
+    border-radius: var(--radius-ui);
     border: 1px solid transparent;
     font-family: var(--font-sans);
     font-size: 0.8125rem;
@@ -118,23 +147,24 @@
     outline-offset: 2px;
   }
   .ui-btn:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
     transform: none;
   }
+  /* The main action of a screen (one per screen): solid green, no glow */
   .ui-btn-primary {
     background: var(--color-ui-brand);
     color: var(--color-ui-brand-ink);
-    box-shadow:
-      0 1px 0 rgb(255 255 255 / 0.25) inset,
-      0 4px 14px color-mix(in srgb, var(--color-ui-brand) 22%, transparent);
   }
   .ui-btn-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-ui-brand) 85%, white);
+    background: color-mix(in srgb, var(--color-ui-brand) 88%, white);
+  }
+  .ui-btn-primary:active:not(:disabled) {
+    background: var(--color-ui-brand-strong);
   }
   .ui-btn-success {
     background: var(--color-ui-success);
-    color: #03170a;
+    color: #032119;
   }
   .ui-btn-danger {
     background: var(--color-ui-danger);
@@ -150,7 +180,7 @@
     color: var(--color-ui-text);
   }
   .ui-btn-secondary:hover:not(:disabled) {
-    border-color: var(--color-ui-brand);
+    background: var(--color-ui-surface-3);
   }
   .ui-btn-ghost {
     background: transparent;
@@ -168,12 +198,12 @@
   .ui-btn-soft-success {
     background: color-mix(in srgb, var(--color-ui-success) 12%, transparent);
     border-color: color-mix(in srgb, var(--color-ui-success) 35%, transparent);
-    color: #86efac;
+    color: #7fe0c6;
   }
   .ui-btn-soft-danger {
     background: color-mix(in srgb, var(--color-ui-danger) 12%, transparent);
     border-color: color-mix(in srgb, var(--color-ui-danger) 35%, transparent);
-    color: #fca5a5;
+    color: #f8a5a1;
   }
   .ui-btn-soft-warning {
     background: color-mix(in srgb, var(--color-ui-warning) 12%, transparent);
@@ -184,15 +214,15 @@
   .ui-card {
     background: var(--color-ui-surface);
     border: 1px solid var(--color-ui-line);
-    border-radius: var(--radius-ui);
+    border-radius: var(--radius-ui-lg);
     box-shadow: var(--shadow-ui-1);
   }
   /* A card that stands out from the ones around it (next game, the main figure of a screen) */
   .ui-card-raised {
     background: var(--color-ui-surface-2);
     border: 1px solid var(--color-ui-line-strong);
-    border-radius: var(--radius-ui);
-    box-shadow: var(--shadow-ui-2);
+    border-radius: var(--radius-ui-lg);
+    box-shadow: var(--shadow-ui-1);
   }
   .ui-inset {
     background: var(--color-ui-inset);
@@ -223,7 +253,7 @@
     align-items: center;
     gap: 0.3rem;
     padding: 0.125rem 0.5rem;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-ui-sm);
     font-size: 0.6875rem;
     font-weight: 800;
     line-height: 1.4;
@@ -233,11 +263,11 @@
   }
   .ui-badge-brand {
     background: color-mix(in srgb, var(--color-ui-brand) 14%, transparent);
-    color: #7dd3fc;
+    color: var(--color-cyan-300);
   }
   .ui-badge-success {
     background: color-mix(in srgb, var(--color-ui-success) 14%, transparent);
-    color: #86efac;
+    color: #7fe0c6;
   }
   .ui-badge-warning {
     background: color-mix(in srgb, var(--color-ui-warning) 14%, transparent);
@@ -245,7 +275,7 @@
   }
   .ui-badge-danger {
     background: color-mix(in srgb, var(--color-ui-danger) 15%, transparent);
-    color: #fca5a5;
+    color: #f8a5a1;
   }
 
   /* While something loads: a calm shimmer instead of an empty space */
@@ -276,7 +306,7 @@
 
   .ui-input {
     width: 100%;
-    background: var(--color-ui-inset);
+    background: var(--color-ui-surface-2);
     border: 1px solid var(--color-ui-line-strong);
     border-radius: 0.75rem;
     padding: 0.55rem 0.75rem;
@@ -289,19 +319,19 @@
       box-shadow 0.15s ease;
   }
   .ui-input::placeholder {
-    color: var(--color-slate-500);
+    color: var(--color-ui-subtle);
   }
   .ui-input:focus {
     outline: none;
     border-color: var(--color-ui-brand);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ui-brand) 18%, transparent);
+    box-shadow: 0 0 0 1px var(--color-ui-brand);
   }
   .ui-input:disabled {
     opacity: 0.55;
   }
 
   .ui-overlay {
-    background: rgb(5 9 18 / 0.72);
+    background: rgb(0 0 0 / 0.72);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
@@ -312,18 +342,18 @@
   --surface: var(--color-ui-surface);
   --surface-2: var(--color-ui-surface-2);
   --chalk: #ffffff;
-  --muted: #8aa4bb;
-  --gold: #22c3ee;
-  --gold-dim: #093f58;
+  --muted: var(--color-ui-muted);
+  --gold: #2edb74;
+  --gold-dim: #0f3e2b;
   --red: var(--color-ui-danger);
   --red-dim: #450a0a;
   --yellow: var(--color-ui-warning);
   --green: var(--color-ui-success);
-  --green-dim: #084d2a;
+  --green-dim: #134e43;
   --line: var(--color-ui-line);
-  --btn-gold-txt: #041525;
+  --btn-gold-txt: #05210f;
   --btn-red-txt: #ffffff;
-  --btn-green-txt: #041525;
+  --btn-green-txt: #032119;
 
   /* Safe Area Insets for iOS & Android Edge-to-Edge display */
   --sat: env(safe-area-inset-top, 0px);
@@ -837,7 +867,7 @@ select {
 .field select:focus {
   outline: none;
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgb(34 195 238 / 0.18);
+  box-shadow: 0 0 0 1px var(--color-ui-brand);
 }
 
 .field textarea {
@@ -1554,27 +1584,27 @@ html.compact .chip {
 html.sol {
   font-size: 17px;
   color-scheme: light;
-  --color-white: oklch(16% 0.03 260);
-  --color-ui-bg: #eef2f6;
+  --color-white: #0b0c0d;
+  --color-ui-bg: #f4f6f5;
   --color-ui-surface: #ffffff;
-  --color-ui-surface-2: #e3e9ef;
-  --color-ui-surface-3: #d6dee8;
-  --color-ui-inset: #f3f6f9;
-  --color-ui-line: #c5d0db;
-  --color-ui-line-strong: #8a9bb0;
-  --color-ui-text: #0b1620;
-  --color-ui-muted: #334155;
-  --color-ui-brand: #0284c7;
-  --color-ui-brand-strong: #0369a1;
+  --color-ui-surface-2: #e9edeb;
+  --color-ui-surface-3: #dce2df;
+  --color-ui-inset: #f7f9f8;
+  --color-ui-line: #cdd4d0;
+  --color-ui-line-strong: #8e9893;
+  --color-ui-text: #0b0c0d;
+  --color-ui-muted: #5e6662;
+  --color-ui-subtle: #7a827e;
+  --color-ui-brand: #0e7a3a;
+  --color-ui-brand-strong: #0a5f2d;
   --color-ui-brand-ink: #ffffff;
-  --color-ui-brand-soft: rgb(2 132 199 / 0.12);
   /* Status colours dark enough to read on white in the sun (text 4.5:1 or more) */
-  --color-ui-success: #15803d;
-  --color-ui-warning: #b45309;
-  --color-ui-danger: #b91c1c;
-  --color-ui-success-soft: rgb(21 128 61 / 0.12);
-  --color-ui-warning-soft: rgb(180 83 9 / 0.12);
-  --color-ui-danger-soft: rgb(185 28 28 / 0.1);
+  --color-ui-success: #0b735a;
+  --color-ui-warning: #8a5b0a;
+  --color-ui-danger: #c2362f;
+  --color-ui-success-soft: rgb(11 115 90 / 0.12);
+  --color-ui-warning-soft: rgb(138 91 10 / 0.12);
+  --color-ui-danger-soft: rgb(194 54 47 / 0.1);
   --color-slate-50: oklch(12.9% 0.042 264.695);
   --color-slate-100: oklch(20.8% 0.042 265.755);
   --color-slate-200: oklch(27.9% 0.041 260.031);
@@ -1655,16 +1685,16 @@ html.sol {
   --color-green-800: oklch(92.5% 0.084 155.995);
   --color-green-900: oklch(96.2% 0.044 156.743);
   --color-green-950: oklch(98.2% 0.018 155.826);
-  --color-emerald-50: oklch(26.2% 0.051 172.552);
-  --color-emerald-100: oklch(37.8% 0.077 168.94);
-  --color-emerald-200: oklch(43.2% 0.095 166.913);
-  --color-emerald-300: oklch(50.8% 0.118 165.612);
-  --color-emerald-400: oklch(59.6% 0.145 163.225);
-  --color-emerald-600: oklch(76.5% 0.177 163.223);
-  --color-emerald-700: oklch(84.5% 0.143 164.978);
-  --color-emerald-800: oklch(90.5% 0.093 164.15);
-  --color-emerald-900: oklch(95% 0.052 163.051);
-  --color-emerald-950: oklch(97.9% 0.021 166.113);
+  --color-emerald-50: oklch(27.7% 0.046 192.524);
+  --color-emerald-100: oklch(38.6% 0.063 188.416);
+  --color-emerald-200: oklch(43.7% 0.078 188.216);
+  --color-emerald-300: oklch(51.1% 0.096 186.391);
+  --color-emerald-400: oklch(60% 0.118 184.704);
+  --color-emerald-600: oklch(77.7% 0.152 181.912);
+  --color-emerald-700: oklch(85.5% 0.138 181.071);
+  --color-emerald-800: oklch(91% 0.096 180.426);
+  --color-emerald-900: oklch(95.3% 0.051 180.801);
+  --color-emerald-950: oklch(98.4% 0.014 180.72);
   --color-teal-50: oklch(27.7% 0.046 192.524);
   --color-teal-100: oklch(38.6% 0.063 188.416);
   --color-teal-200: oklch(43.7% 0.078 188.216);
@@ -1675,16 +1705,16 @@ html.sol {
   --color-teal-800: oklch(91% 0.096 180.426);
   --color-teal-900: oklch(95.3% 0.051 180.801);
   --color-teal-950: oklch(98.4% 0.014 180.72);
-  --color-cyan-50: oklch(30.2% 0.056 229.695);
-  --color-cyan-100: oklch(39.8% 0.07 227.392);
-  --color-cyan-200: oklch(45% 0.085 224.283);
-  --color-cyan-300: oklch(52% 0.105 223.128);
-  --color-cyan-400: oklch(60.9% 0.126 221.723);
-  --color-cyan-600: oklch(78.9% 0.154 211.53);
-  --color-cyan-700: oklch(86.5% 0.127 207.078);
-  --color-cyan-800: oklch(91.7% 0.08 205.041);
-  --color-cyan-900: oklch(95.6% 0.045 203.388);
-  --color-cyan-950: oklch(98.4% 0.019 200.873);
+  --color-cyan-50: oklch(26.6% 0.065 152.934);
+  --color-cyan-100: oklch(39.3% 0.095 152.535);
+  --color-cyan-200: oklch(44.8% 0.119 151.328);
+  --color-cyan-300: oklch(52.7% 0.154 150.069);
+  --color-cyan-400: oklch(62.7% 0.194 149.214);
+  --color-cyan-600: oklch(79.2% 0.209 151.711);
+  --color-cyan-700: oklch(87.1% 0.15 154.449);
+  --color-cyan-800: oklch(92.5% 0.084 155.995);
+  --color-cyan-900: oklch(96.2% 0.044 156.743);
+  --color-cyan-950: oklch(98.2% 0.018 155.826);
   --color-sky-50: oklch(29.3% 0.066 243.157);
   --color-sky-100: oklch(39.1% 0.09 240.876);
   --color-sky-200: oklch(44.3% 0.11 240.79);
@@ -1787,11 +1817,11 @@ html.sol .ui-card {
 }
 /* Labels and soft buttons in the light theme: darker text so they read in the sun */
 html.sol .ui-badge-brand {
-  color: #075985;
+  color: #0a5f2d;
 }
 html.sol .ui-badge-success,
 html.sol .ui-btn-soft-success {
-  color: #166534;
+  color: #08594a;
 }
 html.sol .ui-badge-warning,
 html.sol .ui-btn-soft-warning {
