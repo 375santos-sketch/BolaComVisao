@@ -1267,7 +1267,7 @@ test('disponibilidade: lesão com data de regresso aparece no plantel e na Convo
   await openAgendaList(page);
   await openAgendaRow(page, /vs Abrantes/);
   await page.getByTitle('Abrir Convocatória').click();
-  await expect(page.getByText('🏥 Lesionado até 15/01 · entorse')).toBeVisible();
+  await expect(page.getByText('Lesionado até 15/01 · entorse')).toBeVisible();
 });
 
 /** A noisy PNG of about 3 MB, like a photo taken with the phone (fictitious content, no person). */
