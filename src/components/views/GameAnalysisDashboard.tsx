@@ -6,6 +6,7 @@ import { seasonMatches } from '../../lib/homeSummary';
 import { AppState } from '../../types';
 import { t } from '../../i18n/dict';
 import { Header } from '../Header';
+import { Icon, IconName } from '../ui/Icon';
 import {
   AnalysisFilters as IAnalysisFilters,
   AggregatedAnalysis,
@@ -272,7 +273,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
   };
 
   return (
-    <div className="analysis-360 pb-28 animate-fadeIn max-w-6xl mx-auto px-2 sm:px-4" id="game-analysis-dashboard">
+    <div className="pb-28 animate-fadeIn" id="game-analysis-dashboard">
       <Header
         title="Análise"
         lang={state.lang}
@@ -291,31 +292,22 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
         }}
       />
 
-      {/* Análise 360°: the title over the stadium, and Exportar always at hand */}
-      <div className="squad-hero analysis-hero mb-3 !flex-row !items-end">
-        <div className="min-w-0 flex-1">
-          <h2 className="bcv-title text-[28px] sm:text-[36px]">
-            Análise <span className="analysis-360-mark">360°</span>
-          </h2>
-          <p className="truncate text-ui-caption text-ui-muted">
-            {[
-              myClub,
-              state.category,
-              state.season ? `Época ${state.season}` : '',
-              `${analysis.filteredMatches.length} jogos`
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </p>
-        </div>
+      {/* What is being analysed, and Exportar always at hand (no hero: the title is in the bar above) */}
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="min-w-0 truncate text-ui-body text-ui-muted">
+          {[state.season ? `Época ${state.season}` : '', `${analysis.filteredMatches.length} jogos`]
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
         <div className="relative">
           <button
             type="button"
             aria-expanded={showExport}
             onClick={() => setShowExport((v) => !v)}
-            className="ui-btn ui-btn-secondary w-full px-3 py-2 text-ui-caption"
+            className="ui-btn ui-btn-secondary min-h-10 px-3.5 text-ui-body"
           >
-            ⤓ Exportar
+            <Icon name="download" className="h-4 w-4" />
+            Exportar
           </button>
           {showExport && (
             <div className="ui-card absolute right-0 top-11 z-30 w-56 space-y-1 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.4)]">
@@ -346,7 +338,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
         </div>
       </div>
 
-      <div role="group" aria-label="Partes da análise" className="analysis-tabs mb-3">
+      <div role="group" aria-label="Partes da análise" className="analysis-tabs mb-4">
         {(
           [
             ['equipa', 'Visão geral'],
@@ -451,7 +443,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
             {(
               [
                 [
-                  '✦',
+                  'search',
                   'Perguntar aos dados',
                   '«Quem marcou mais fora?» · respostas com os jogos guardados',
                   () => setShowAsk((v) => !v)
@@ -459,16 +451,21 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                 ...(onOpenMonthlyReport
                   ? ([
                       [
-                        '📑',
+                        'file',
                         'Relatório mensal',
                         'Atividade e desenvolvimento do mês, para o coordenador · PDF A4',
                         onOpenMonthlyReport
                       ]
                     ] as const)
                   : []),
-                ['📋', 'Relatório do treinador', 'Conclusões da época em texto', () => setShowCoachReportModal(true)],
                 [
-                  '▦',
+                  'clipboard',
+                  'Relatório do treinador',
+                  'Conclusões da época em texto',
+                  () => setShowCoachReportModal(true)
+                ],
+                [
+                  'chart',
                   'Abrir painel',
                   'Equipa ou atleta, por jogo, confronto, fase, época ou período · Power BI',
                   () => setShowPanel(true)
@@ -483,24 +480,22 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                 aria-pressed={title === 'Perguntar aos dados' ? showAsk : undefined}
               >
                 <span aria-hidden className="analysis-row-icon">
-                  {icon}
+                  <Icon name={icon as IconName} className="h-5 w-5" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <b className="block text-ui-body text-ui-text">{title}</b>
                   <span className="block truncate text-ui-caption text-ui-muted">{detail}</span>
                 </span>
-                <span aria-hidden className="text-ui-brand">
-                  ›
-                </span>
+                <Icon name="chevronRight" className="h-4 w-4 shrink-0 text-ui-muted" />
               </button>
             ))}
             {showAsk && <AskDataSection state={state} />}
           </section>
           <section aria-label="Exportar" className="space-y-2">
-            <h3 className="ui-kicker px-1">Exportar</h3>
+            <h3 className="px-1 text-ui-lead font-bold text-ui-text">Exportar</h3>
             <button type="button" disabled={exporting} onClick={handleExportPDF} className="analysis-row">
               <span aria-hidden className="analysis-row-icon">
-                ⤓
+                <Icon name="download" className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
                 <b className="block text-ui-body text-ui-text">PDF da análise</b>
@@ -508,21 +503,17 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                   {analysis.filteredMatches.length} jogos, com os filtros escolhidos
                 </span>
               </span>
-              <span aria-hidden className="text-ui-brand">
-                ›
-              </span>
+              <Icon name="chevronRight" className="h-4 w-4 shrink-0 text-ui-muted" />
             </button>
             <button type="button" disabled={exporting} onClick={handleExportExcel} className="analysis-row">
               <span aria-hidden className="analysis-row-icon">
-                ⊞
+                <Icon name="chart" className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
                 <b className="block text-ui-body text-ui-text">Excel</b>
                 <span className="block text-ui-caption text-ui-muted">O mesmo ficheiro de sempre</span>
               </span>
-              <span aria-hidden className="text-ui-brand">
-                ›
-              </span>
+              <Icon name="chevronRight" className="h-4 w-4 shrink-0 text-ui-muted" />
             </button>
           </section>
         </div>
@@ -556,10 +547,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
           <div className="ui-card p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto animate-scaleUp">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-ui-line">
               <div>
-                <h4 className="text-base font-['Chakra_Petch'] font-bold text-ui-text flex items-center gap-2">
-                  <span>⏱️</span>
-                  <span>Período: {selectedPeriodModal.label}</span>
-                </h4>
+                <h4 className="text-ui-lead font-bold text-ui-text">Período: {selectedPeriodModal.label}</h4>
                 <p className="text-xs text-ui-muted mt-0.5">
                   Marcados: <strong className="text-ui-success">{selectedPeriodModal.scored}</strong> • Sofridos:{' '}
                   <strong className="text-ui-danger">{selectedPeriodModal.conceded}</strong>
@@ -568,9 +556,10 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedPeriodModal(null)}
-                className="text-ui-muted hover:text-ui-text text-lg font-bold cursor-pointer"
+                aria-label="Fechar"
+                className="flex h-10 w-10 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
               >
-                ✕
+                <Icon name="x" className="h-5 w-5" />
               </button>
             </div>
 
@@ -586,7 +575,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                       </span>
                       <div>
                         <div className="text-xs font-bold text-ui-text flex items-center gap-1.5">
-                          <span>⚽ Golo Marcado</span>
+                          <span>Golo marcado</span>
                           {ev.goal.goalType && (
                             <span className="text-[10px] text-ui-success font-normal">({ev.goal.goalType})</span>
                           )}
@@ -606,7 +595,7 @@ export const GameAnalysisDashboard: React.FC<GameAnalysisDashboardProps> = ({
                       </span>
                       <div>
                         <div className="text-xs font-bold text-ui-text flex items-center gap-1.5">
-                          <span>🥅 Golo Sofrido</span>
+                          <span>Golo sofrido</span>
                           {ev.goal.goalType && (
                             <span className="text-[10px] text-ui-danger font-normal">({ev.goal.goalType})</span>
                           )}

@@ -25,11 +25,9 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
   const below = withGames.filter((r) => r.fewestMinutes);
 
   return (
-    <div className="card mb-3">
+    <div className="ui-card mb-3 p-4">
       <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="card-title" style={{ marginBottom: 0 }}>
-          ⏱️ Minutos de jogo
-        </div>
+        <h3 className="text-ui-lead font-bold text-ui-text">Minutos de jogo</h3>
         <span className="text-[10px] font-mono text-ui-muted">
           % conv. = minutos ÷ minutos dos jogos em que foi convocado
         </span>
@@ -48,7 +46,7 @@ export const PlayingTimeSection: React.FC<PlayingTimeSectionProps> = ({ matches,
           data-testid="missing-starters"
         >
           <p>
-            ⚠️ Os minutos não estão completos: {missing.length === 1 ? 'este jogo não tem' : 'estes jogos não têm'} os
+            Os minutos não estão completos: {missing.length === 1 ? 'este jogo não tem' : 'estes jogos não têm'} os
             titulares da 1.ª parte registados (por exemplo, jogos importados de uma ficha sem titulares). Sem eles, quem
             começou o jogo perde os minutos até ser substituído.
           </p>

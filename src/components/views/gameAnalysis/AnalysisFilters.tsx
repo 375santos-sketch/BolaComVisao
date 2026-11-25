@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from '../../ui/Icon';
 import { AnalysisFilters as IAnalysisFilters, EventTypeFilter } from '../../../lib/gameAnalysis';
 import { MatchType, MatchLocation } from '../../../types';
 
@@ -28,29 +29,33 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
   categoryDefaultHalfDuration
 }) => {
   return (
-    <div className="ui-card p-4 sm:p-5 mb-6">
+    <div className="mb-5">
       {/* Top Quick Bar: Search + Event Type + Filter Toggle + Reset */}
       <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         {/* Search & Event Quick Select */}
         <div className="flex-1 flex flex-col sm:flex-row gap-2.5">
           {/* Search Query */}
           <div className="relative flex-1">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ui-muted text-sm">🔍</span>
+            <Icon
+              name="search"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ui-muted"
+            />
             <input
               type="text"
               placeholder="Pesquisar por adversário, torneio..."
               value={filters.searchQuery || ''}
               onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
-              className="ui-input w-full text-xs"
-              style={{ paddingLeft: '2.5rem' }}
+              aria-label="Pesquisar jogos"
+              className="ui-input min-h-11 w-full !pl-9 text-ui-body"
             />
             {filters.searchQuery && (
               <button
                 type="button"
                 onClick={() => onFilterChange({ searchQuery: '' })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-ui-muted hover:text-ui-text text-xs font-bold"
+                aria-label="Limpar pesquisa"
+                className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-ui-sm text-ui-muted hover:text-ui-text"
               >
-                ✕
+                <Icon name="x" className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -60,37 +65,36 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
             <select
               value={filters.eventType}
               onChange={(e) => onFilterChange({ eventType: e.target.value as EventTypeFilter })}
-              className={`w-full bg-ui-inset/80 border rounded-2xl px-3.5 py-2.5 text-xs font-bold outline-none transition-all ${
-                filters.eventType !== 'todos'
-                  ? 'border-ui-brand text-ui-brand ring-1 ring-ui-brand/30'
-                  : 'border-ui-line-strong/80 text-ui-text focus:border-ui-brand'
+              aria-label="Tipo de acontecimento"
+              className={`ui-input min-h-11 w-full text-ui-body font-semibold ${
+                filters.eventType !== 'todos' ? '!border-ui-brand text-ui-brand' : ''
               }`}
             >
-              <optgroup label="📋 Todos">
+              <optgroup label="Todos">
                 <option value="todos">Todos os Acontecimentos</option>
               </optgroup>
-              <optgroup label="⚽ Golos Marcados (Origem)">
-                <option value="golos">⚽ Todos os Golos Marcados</option>
-                <option value="golos_bola_jogada">🎯 Golos: Bola Jogada</option>
-                <option value="golos_recuperacao">⚡ Golos: Recuperação de Bola</option>
-                <option value="golos_canto">🚩 Golos: Canto</option>
-                <option value="golos_livre">📐 Golos: Livre</option>
-                <option value="golos_penalti">🎯 Golos: Penálti</option>
-                <option value="golos_pontape_baliza">🥅 Golos: Pontapé de Baliza</option>
-                <option value="golos_ressalto">🔄 Golos: Ressalto</option>
+              <optgroup label="Golos Marcados (Origem)">
+                <option value="golos">Todos os Golos Marcados</option>
+                <option value="golos_bola_jogada">Golos: Bola Jogada</option>
+                <option value="golos_recuperacao">Golos: Recuperação de Bola</option>
+                <option value="golos_canto">Golos: Canto</option>
+                <option value="golos_livre">Golos: Livre</option>
+                <option value="golos_penalti">Golos: Penálti</option>
+                <option value="golos_pontape_baliza">Golos: Pontapé de Baliza</option>
+                <option value="golos_ressalto">Golos: Ressalto</option>
               </optgroup>
-              <optgroup label="🛡️ Defensivo">
-                <option value="golos_sofridos">🥅 Golos Sofridos</option>
+              <optgroup label="Defensivo">
+                <option value="golos_sofridos">Golos Sofridos</option>
               </optgroup>
-              <optgroup label="🚩 Bolas Paradas & Faltas">
-                <option value="cantos">🚩 Cantos (Favor/Contra)</option>
-                <option value="faltas_cometidas">⚠️ Faltas Cometidas</option>
-                <option value="faltas_sofridas">🩹 Faltas Sofridas</option>
+              <optgroup label="Bolas Paradas & Faltas">
+                <option value="cantos">Cantos (Favor/Contra)</option>
+                <option value="faltas_cometidas">Faltas Cometidas</option>
+                <option value="faltas_sofridas">Faltas Sofridas</option>
               </optgroup>
-              <optgroup label="⚖️ Disciplina & Gestão">
-                <option value="amarelos">🟨 Cartões Amarelos</option>
-                <option value="vermelhos">🟥 Cartões Vermelhos</option>
-                <option value="substituicoes">🔄 Substituições</option>
+              <optgroup label="Disciplina & Gestão">
+                <option value="amarelos">Cartões Amarelos</option>
+                <option value="vermelhos">Cartões Vermelhos</option>
+                <option value="substituicoes">Substituições</option>
               </optgroup>
             </select>
           </div>
@@ -101,19 +105,18 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
           <button
             type="button"
             onClick={onTogglePanel}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold border transition-all ${
-              showPanel || activeFiltersCount > 0
-                ? 'bg-ui-brand/10 border-ui-brand/60 text-ui-brand shadow-sm'
-                : 'bg-ui-inset/60 border-ui-line-strong/80 text-ui-text hover:bg-ui-surface-2'
+            aria-expanded={showPanel}
+            className={`ui-btn ui-btn-secondary min-h-11 flex-1 px-4 text-ui-body sm:flex-none ${
+              showPanel || activeFiltersCount > 0 ? '!border-ui-brand/60 text-ui-brand' : ''
             }`}
           >
-            <span>⚙️ Filtros Avançados</span>
+            <span>Mais filtros</span>
             {activeFiltersCount > 0 && (
-              <span className="bg-ui-brand text-ui-brand-ink text-[10px] font-black px-2 py-0.5 rounded-full">
+              <span className="rounded-full bg-ui-brand px-2 py-0.5 text-ui-caption font-bold tabular-nums text-ui-brand-ink">
                 {activeFiltersCount}
               </span>
             )}
-            <span className="text-[10px]">{showPanel ? '▲' : '▼'}</span>
+            <Icon name="chevronDown" className={`h-4 w-4 transition-transform ${showPanel ? 'rotate-180' : ''}`} />
           </button>
 
           {activeFiltersCount > 0 && (
@@ -121,9 +124,10 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
               type="button"
               onClick={onResetFilters}
               title="Repor todos os filtros"
-              className="ui-btn ui-btn-soft-danger px-3 py-2.5 text-xs"
+              className="ui-btn ui-btn-secondary min-h-11 px-3 text-ui-body"
             >
-              ✕ Repor
+              <Icon name="x" className="h-4 w-4" />
+              Repor
             </button>
           )}
         </div>
@@ -131,12 +135,10 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
       {/* Expanded Filter Panel */}
       {showPanel && (
-        <div className="mt-4 pt-4 border-t border-ui-line/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 animate-fadeIn">
+        <div className="ui-card mt-3 grid grid-cols-1 gap-3 p-4 animate-fadeIn sm:grid-cols-2 lg:grid-cols-4">
           {/* Season Filter */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
-              📅 Época
-            </label>
+            <label className="mb-1.5 block text-ui-caption font-semibold text-ui-muted">Época</label>
             <select
               value={filters.season}
               onChange={(e) => onFilterChange({ season: e.target.value })}
@@ -153,7 +155,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Month Filter */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">📆 Mês</label>
+            <label className="mb-1.5 block text-ui-caption font-semibold text-ui-muted">Mês</label>
             <select
               value={filters.month}
               onChange={(e) => onFilterChange({ month: e.target.value })}
@@ -170,9 +172,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Opponent Filter */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
-              ⚔️ Adversário
-            </label>
+            <label className="mb-1.5 block text-ui-caption font-semibold text-ui-muted">Adversário</label>
             <select
               value={filters.opponent}
               onChange={(e) => onFilterChange({ opponent: e.target.value })}
@@ -189,9 +189,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Competition Type */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
-              🏆 Competição
-            </label>
+            <label className="mb-1.5 block text-ui-caption font-semibold text-ui-muted">Competição</label>
             <select
               value={filters.matchType}
               onChange={(e) => onFilterChange({ matchType: e.target.value as MatchType | 'todos' })}
@@ -206,14 +204,12 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Location (Home / Away) */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
-              🏟️ Condição do Jogo
-            </label>
+            <label className="mb-1.5 block text-ui-caption font-semibold text-ui-muted">Condição do Jogo</label>
             <div className="grid grid-cols-3 gap-1">
               {[
                 { id: 'todos', label: 'Todos' },
-                { id: 'casa', label: '🏠 Casa' },
-                { id: 'fora', label: '✈️ Fora' }
+                { id: 'casa', label: 'Casa' },
+                { id: 'fora', label: 'Fora' }
               ].map((loc) => (
                 <button
                   key={loc.id}
@@ -221,7 +217,7 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
                   onClick={() => onFilterChange({ location: loc.id as MatchLocation | 'todos' })}
                   className={`py-2 rounded-xl text-xs font-bold transition-all ${
                     filters.location === loc.id
-                      ? 'bg-ui-brand text-ui-brand-ink font-black shadow-sm'
+                      ? 'bg-ui-brand text-ui-brand-ink font-bold shadow-sm'
                       : 'bg-ui-inset/80 text-ui-text hover:bg-ui-surface-2'
                   }`}
                 >
@@ -233,8 +229,8 @@ export const AnalysisFilters: React.FC<AnalysisFiltersProps> = ({
 
           {/* Half Duration Setting (Item 2) */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-ui-muted mb-1.5">
-              ⏱️ Duração por Parte ({filters.halfDurationMinutes || categoryDefaultHalfDuration} min)
+            <label className="mb-1.5 block text-ui-caption font-semibold text-ui-muted">
+              Duração por Parte ({filters.halfDurationMinutes || categoryDefaultHalfDuration} min)
             </label>
             <select
               value={filters.halfDurationMinutes || categoryDefaultHalfDuration}

@@ -24,31 +24,31 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
     switch (ev.kind) {
       case 'golo_marcado':
         return {
-          icon: '⚽',
+          icon: '',
           label: ev.goalType ? `Golo (${ev.goalType})` : 'Golo Marcado',
           color: 'bg-ui-success/20 text-ui-success border-ui-success/30'
         };
       case 'golo_sofrido':
         return {
-          icon: '🥅',
+          icon: '',
           label: ev.goalType ? `Golo Sofrido (${ev.goalType})` : 'Golo Sofrido',
           color: 'bg-ui-danger/20 text-ui-danger border-ui-danger/30'
         };
       case 'canto':
         return {
-          icon: '🚩',
+          icon: '',
           label: 'Canto',
           color: 'bg-ui-brand/20 text-ui-brand border-ui-brand/30'
         };
       case 'falta':
         return {
-          icon: '⚠️',
+          icon: '',
           label: 'Falta',
           color: 'bg-ui-warning/20 text-ui-warning border-ui-warning/30'
         };
       case 'cartao':
         return {
-          icon: ev.cardColor === 'Vermelho' ? '🟥' : '🟨',
+          icon: '',
           label: ev.cardColor === 'Vermelho' ? 'Cartão Vermelho' : 'Cartão Amarelo',
           color:
             ev.cardColor === 'Vermelho'
@@ -57,13 +57,13 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
         };
       case 'sub':
         return {
-          icon: '🔄',
+          icon: '',
           label: 'Substituição',
           color: 'bg-ui-brand/20 text-ui-brand border-ui-brand/30'
         };
       default:
         return {
-          icon: '📋',
+          icon: '',
           label: 'Lance',
           color: 'bg-ui-surface-3/50 text-ui-text border-ui-line-strong/30'
         };
@@ -74,8 +74,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
     <div className="ui-card p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-ui-line">
         <div>
-          <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-            <span>📋</span>
+          <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
             <span>Registo Cronológico de Acontecimentos</span>
           </h3>
           <p className="text-xs text-ui-muted mt-0.5">
@@ -103,14 +102,14 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
               >
                 <div className="flex items-center gap-3">
                   {/* Minute Pill */}
-                  <div className="ui-card text-ui-brand font-mono font-black text-xs px-2.5 py-1.5 text-center min-w-[50px]">
+                  <div className="ui-card text-ui-brand font-mono font-bold text-xs px-2.5 py-1.5 text-center min-w-[50px]">
                     {ev.minute ? `${ev.minute}'` : '—'}
                   </div>
 
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${badge.color}`}>
-                        {badge.icon} {badge.label}
+                        {badge.label}
                       </span>
                       <span className="text-[10px] text-ui-muted font-mono">
                         {ev.period || (ev.half ? `${ev.half}.ª Parte` : '')}
@@ -137,7 +136,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
                     </div>
 
                     <div className="text-[10px] text-ui-muted mt-0.5">
-                      vs {ev.match.opponent} • {ev.match.location === 'casa' ? '🏠 Casa' : '✈️ Fora'} •{' '}
+                      vs {ev.match.opponent} • {ev.match.location === 'casa' ? 'Casa' : 'Fora'} •{' '}
                       {datePT(ev.match.date)}
                     </div>
                   </div>
@@ -146,7 +145,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
                 <div className="flex items-center gap-2">
                   {ev.notes && (
                     <span className="text-[10px] bg-ui-surface-2 text-ui-text px-2 py-0.5 rounded max-w-[120px] truncate hidden md:inline-block">
-                      📝 {ev.notes}
+                      {ev.notes}
                     </span>
                   )}
                   <span className="text-ui-muted text-xs">›</span>
@@ -163,7 +162,6 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
           <div className="ui-card p-5 w-full max-w-md animate-scaleUp">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-ui-line">
               <div className="text-base font-['Chakra_Petch'] font-bold text-ui-text flex items-center gap-2">
-                <span>{getEventBadge(selectedEvent).icon}</span>
                 <span>Detalhe do Acontecimento</span>
               </div>
               <button
@@ -177,7 +175,7 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
 
             <div className="space-y-3.5 text-xs text-ui-text">
               <div className="ui-inset p-3.5">
-                <span className="text-[10px] text-ui-muted uppercase font-bold block mb-1">Tipo de Lance</span>
+                <span className="text-[10px] text-ui-muted font-bold block mb-1">Tipo de Lance</span>
                 <div className="text-sm font-bold text-ui-text flex items-center gap-2">
                   <span>{getEventBadge(selectedEvent).label}</span>
                 </div>
@@ -185,14 +183,14 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="ui-inset p-3">
-                  <span className="text-[10px] text-ui-muted uppercase font-bold block mb-1">⏱️ Minuto</span>
+                  <span className="text-[10px] text-ui-muted font-bold block mb-1">Minuto</span>
                   <span className="text-sm font-mono font-bold text-ui-brand">
                     {selectedEvent.minute ? `${selectedEvent.minute}'` : 'N/D'} (Abs: {selectedEvent.absoluteMinute}')
                   </span>
                 </div>
 
                 <div className="ui-inset p-3">
-                  <span className="text-[10px] text-ui-muted uppercase font-bold block mb-1">Período</span>
+                  <span className="text-[10px] text-ui-muted font-bold block mb-1">Período</span>
                   <span className="text-sm font-bold text-ui-text">
                     {selectedEvent.period || `${selectedEvent.half}.ª Parte`}
                   </span>
@@ -201,15 +199,15 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
 
               {getPlayerName(selectedEvent.playerPrimaryId) && (
                 <div className="ui-inset p-3">
-                  <span className="text-[10px] text-ui-muted uppercase font-bold block mb-1">👤 Jogador Principal</span>
+                  <span className="text-[10px] text-ui-muted font-bold block mb-1">Jogador Principal</span>
                   <span className="text-sm font-bold text-ui-text">{getPlayerName(selectedEvent.playerPrimaryId)}</span>
                 </div>
               )}
 
               {getPlayerName(selectedEvent.playerSecondaryId) && (
                 <div className="ui-inset p-3">
-                  <span className="text-[10px] text-ui-muted uppercase font-bold block mb-1">
-                    👟 Secundário / Assistência / Entrada
+                  <span className="text-[10px] text-ui-muted font-bold block mb-1">
+                    Secundário / Assistência / Entrada
                   </span>
                   <span className="text-sm font-bold text-ui-brand">
                     {getPlayerName(selectedEvent.playerSecondaryId)}
@@ -219,13 +217,13 @@ export const EventDrilldown: React.FC<EventDrilldownProps> = ({ analysis, player
 
               {selectedEvent.notes && (
                 <div className="ui-inset p-3">
-                  <span className="text-[10px] text-ui-muted uppercase font-bold block mb-1">📝 Observações</span>
+                  <span className="text-[10px] text-ui-muted font-bold block mb-1">Observações</span>
                   <span className="text-xs text-ui-text">{selectedEvent.notes}</span>
                 </div>
               )}
 
               <div className="ui-inset p-3">
-                <span className="text-[10px] text-ui-muted uppercase font-bold block mb-1">🏟️ Contexto do Jogo</span>
+                <span className="text-[10px] text-ui-muted font-bold block mb-1">Contexto do Jogo</span>
                 <div className="text-xs font-bold text-ui-text">
                   vs {selectedEvent.match.opponent} ({selectedEvent.match.location === 'casa' ? 'Casa' : 'Fora'})
                 </div>

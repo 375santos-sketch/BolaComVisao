@@ -13,9 +13,8 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insights, comp
     <section className="space-y-3" id="insights-section">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <span className="text-base sm:text-lg">🧠</span>
           <div>
-            <h2 className="text-sm font-black uppercase tracking-wider text-ui-text font-['Chakra_Petch'] flex items-center gap-2">
+            <h2 className="text-sm font-bold text-ui-text flex items-center gap-2">
               O que os dados nos dizem
               <span className="text-[10px] font-bold font-mono text-ui-brand bg-ui-brand/10 border border-ui-brand/20 px-2 py-0.5 rounded-full lowercase tracking-normal">
                 insights automáticos
@@ -71,10 +70,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insights, comp
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-base sm:text-lg">{insight.icon}</span>
-                    <span
-                      className={`text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${badgeBg}`}
-                    >
+                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${badgeBg}`}>
                       {insight.badgeText}
                     </span>
                     <span className="text-xs font-bold text-ui-text hidden sm:inline font-['Chakra_Petch']">
@@ -82,7 +78,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insights, comp
                     </span>
                   </div>
                   {insight.stat && (
-                    <span className={`text-xs font-black font-mono px-2 py-0.5 rounded-md bg-ui-inset/60 ${statColor}`}>
+                    <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-md bg-ui-inset/60 ${statColor}`}>
                       {insight.stat}
                     </span>
                   )}
