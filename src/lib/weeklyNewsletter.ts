@@ -2,6 +2,7 @@ import { AppState, Match, Player, ScheduledMatch, Training } from '../types';
 import { fromRest } from './calendarFeed';
 import { liveScore } from './liveFollow';
 import { addDaysISO } from './trainingQuick';
+import { makePseudonyms } from './aiPseudonyms';
 
 /**
  * 📰 Resumo da semana para os pais (Mais → Comunicação): weeks run from Monday to Sunday and the summary goes out on
@@ -340,13 +341,41 @@ export function newsletterFacts(teamName: string, auto: AutoIssue, highlights: s
   };
 }
 
+/**
+ * P1-05 — The facts as they go to the AI: the scorers and any roster name in the highlights as codes (J1, J2…).
+ * `restore` puts the names back in the note that comes back, on the device.
+ */
+export function pseudonymizeNewsletterFacts(
+  facts: ReturnType<typeof newsletterFacts>,
+  roster: Player[]
+): { facts: ReturnType<typeof newsletterFacts>; restore: (text: string) => string } {
+  const p = makePseudonyms(roster);
+  const codeScorers = (s: string) =>
+    (s || '')
+      .split(', ')
+      .filter(Boolean)
+      .map((part) => {
+        const m = part.match(/^(.*?)( \(\d+\))?$/);
+        return `${p.code(m?.[1] || part)}${m?.[2] || ''}`;
+      })
+      .join(', ');
+  return {
+    facts: {
+      ...facts,
+      resultados: facts.resultados.map((r) => ({ ...r, marcadores: codeScorers(r.marcadores) })),
+      destaques: facts.destaques.map((d) => p.mask(d))
+    },
+    restore: p.restore
+  };
+}
+
 /** The prompt for the coach's note (Gemini, through /api/cronica with kind "resumo"). */
 export function newsletterIntroPrompt(facts: unknown): string {
   return `Escreve em português de Portugal a mensagem de abertura do resumo semanal que o treinador de uma equipa de futebol de formação (crianças) envia aos pais.
 Regras:
 - Usa só os factos do JSON abaixo. Não inventes lances, nomes, minutos nem estatísticas.
 - Tom próximo, positivo e educativo: valoriza o esforço e a atitude de toda a equipa, mais do que o resultado.
-- Só nomeia jogadores que aparecem em "marcadores" ou "destaques" (primeiro nome). Sem críticas a jogadores, ao árbitro ou ao adversário.
+- Só nomeia jogadores que aparecem em "marcadores" ou "destaques". Vêm como códigos (J1, J2…): escreve o código tal e qual, sem artigo antes ("golo de J1", nunca "do J1"), e nunca inventes nomes. Sem críticas a jogadores, ao árbitro ou ao adversário.
 - Se houver "proximosJogos", termina com uma frase a convidar os pais para o próximo jogo.
 - Até 80 palavras, 1 ou 2 parágrafos curtos, no máximo 2 emojis. Texto simples, sem markdown, sem saudação final nem assinatura.
 Factos: ${JSON.stringify(facts)}`;

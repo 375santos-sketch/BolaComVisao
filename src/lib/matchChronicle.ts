@@ -3,6 +3,7 @@ import { calcPlayerMinutes, getMatchCompetitionDetails, parseMinuteOrder } from 
 import { getMatchShots } from './matchShots';
 import { getCalledUpPlayers } from './playingTime';
 import { playerName } from './parentsShare';
+import { makePseudonyms } from './aiPseudonyms';
 
 /**
  * 📰 Crónica do jogo: a short, warm text about a finished game for the club's page or the parents' group. The app
@@ -124,6 +125,24 @@ export function chronicleFacts(match: Match, state: AppState, withScorers: boole
   };
 }
 
+/**
+ * P1-05 — The facts as they go to the AI: every scorer as a code (J1, J2…), never the name. `restore` puts the
+ * names back in the text that comes back. The fallback text, made on the device, keeps using the real facts.
+ */
+export function pseudonymizeChronicle(
+  facts: ChronicleFacts,
+  roster: Player[]
+): { facts: ChronicleFacts; restore: (text: string) => string } {
+  const p = makePseudonyms(roster);
+  return {
+    facts: {
+      ...facts,
+      goals: facts.goals.map((g) => (g.scorer && g.scorer !== 'autogolo' ? { ...g, scorer: p.code(g.scorer) } : g))
+    },
+    restore: p.restore
+  };
+}
+
 const AUDIENCE: Record<ChronicleAudience, string> = {
   clube:
     'para a página de Facebook do clube: tom de notícia de futebol de formação, entusiasta mas sóbrio, com um título curto na primeira linha e 2 a 3 parágrafos curtos; no máximo 2 emojis',
@@ -136,7 +155,7 @@ export function chroniclePrompt(facts: ChronicleFacts, audience: ChronicleAudien
 Regras:
 - Usa só os factos do JSON abaixo. Não inventes lances, nomes, minutos, tempo, público nem estatísticas.
 - "goals" está pela ordem do jogo: "nós" são golos do ${facts.club}, "eles" do adversário. Conta a história do resultado (quem abriu o marcador, reviravolta, intervalo) só com o que lá está.
-- Só nomeia jogadores que aparecem em "scorer" (primeiro nome). Sem notas individuais, sem críticas a jogadores, ao árbitro ou ao adversário.
+- Só nomeia jogadores que aparecem em "scorer". Vêm como códigos (J1, J2…): escreve o código tal e qual, sem artigo antes ("golo de J1", nunca "do J1"), e nunca inventes nomes. Sem notas individuais, sem críticas a jogadores, ao árbitro ou ao adversário.
 - Termina a valorizar o esforço e a atitude de toda a equipa e, se houver "next", diz qual é o próximo jogo.
 - Até 120 palavras. Texto simples, sem markdown, sem asteriscos nem cardinais.
 Factos: ${JSON.stringify(facts)}`;
