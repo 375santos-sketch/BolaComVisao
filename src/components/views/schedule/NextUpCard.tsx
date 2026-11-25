@@ -19,22 +19,19 @@ const Item: React.FC<{
 }> = ({ kicker, icon, tone, title, when, detail, onOpen, empty, thumb }) => {
   const look = tone === 'success' ? 'bg-ui-success-soft text-ui-success' : 'bg-ui-brand-soft text-ui-brand';
   if (empty) {
+    // Nothing planned: one quiet line (adding is done on the day below or with the "+")
     return (
-      <div className="ui-inset flex items-center gap-3 p-3">
-        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-ui ${look}`} aria-hidden>
-          <Icon name={icon} className="h-5 w-5" />
+      <div className="ui-card flex min-h-14 items-center gap-3 px-4 py-3">
+        <span
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-sm bg-ui-surface-3 text-ui-muted"
+          aria-hidden
+        >
+          <Icon name={icon} className="h-[18px] w-[18px]" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="ui-kicker">{kicker}</p>
-          <p className="text-ui-caption text-ui-muted">{empty.text}</p>
+          <p className="text-ui-caption font-bold text-ui-muted">{kicker}</p>
+          <p className="text-ui-body text-ui-muted">{empty.text}</p>
         </div>
-        <button
-          type="button"
-          onClick={empty.onClick}
-          className="ui-btn ui-btn-soft shrink-0 px-2.5 py-1.5 text-ui-caption"
-        >
-          {empty.action}
-        </button>
       </div>
     );
   }
@@ -42,7 +39,7 @@ const Item: React.FC<{
     <button
       type="button"
       onClick={onOpen}
-      className="ui-inset flex w-full items-center gap-3 p-3 text-left transition-colors hover:border-ui-line-strong"
+      className="ui-card flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-ui-surface-2"
     >
       {thumb || (
         <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-ui ${look}`} aria-hidden>
@@ -50,15 +47,15 @@ const Item: React.FC<{
         </span>
       )}
       <span className="min-w-0 flex-1">
-        <span className="ui-kicker block">{kicker}</span>
+        <span className={`block text-ui-caption font-bold ${tone === 'success' ? 'text-ui-success' : 'text-ui-brand'}`}>
+          {kicker}
+        </span>
         <span className="block truncate text-ui-body font-extrabold text-ui-text">{title}</span>
         <span className="block truncate text-ui-caption text-ui-muted">
           <strong className="text-ui-text">{when}</strong> · {detail}
         </span>
       </span>
-      <span className="text-ui-muted" aria-hidden>
-        ›
-      </span>
+      <Icon name="chevronRight" className="h-[18px] w-[18px] shrink-0 text-ui-subtle" />
     </button>
   );
 };
