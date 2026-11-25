@@ -1165,6 +1165,8 @@ export interface AppState {
   tacticFormat: 3 | 5 | 7 | 9 | 11;
   lastBackupDate: number | null;
   trackSubs: boolean;
+  /** P1-05: the club's AI switch (Definições → Clube). Not saved = on; false = no request goes to the AI. */
+  aiEnabled?: boolean;
   theme: ThemeName;
   lang: Language;
   myClubName: string;

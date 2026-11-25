@@ -105,6 +105,7 @@ import { AppearanceSheet } from './components/AppearanceSheet';
 import { TeamInviteModal } from './components/TeamInviteModal';
 import { SeasonSelectorModal } from './components/SeasonSelectorModal';
 import { NotificationModal } from './components/NotificationModal';
+import { isAiEnabled, setAiSwitch } from './lib/aiSwitch';
 
 /** F2.5: the data a read-only role (staff) may not change. */
 const READ_ONLY_BLOCKED_FIELDS: Array<keyof AppState> = [
@@ -267,6 +268,10 @@ export default function App() {
     applyThemeCSS(sunMode ? 'luzsolar' : state.theme === 'luzsolar' ? 'original' : state.theme || 'original');
     applyClubColor(clubColor);
   }, [state.theme, clubColor, sunMode]);
+
+  // P1-05: the club's AI switch (Definições → Clube) decides whether any request may go to the AI
+  const aiOn = isAiEnabled(state);
+  useEffect(() => setAiSwitch(aiOn), [aiOn]);
 
   // The club's look for the entrance screen of this phone (next time the app opens)
   useEffect(() => {

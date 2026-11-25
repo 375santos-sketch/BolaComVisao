@@ -4,6 +4,7 @@ import { ERASE_WORD, REPLACE_WORD } from '../lib/destructiveActions';
 
 type Part = 'clube' | 'jogos' | 'treinos' | 'dados' | 'admin';
 import { ClubSettingsSection } from './ClubSettingsSection';
+import { isAiEnabled } from '../lib/aiSwitch';
 import { AppState, NotificationSettings } from '../types';
 import { t } from '../i18n/dict';
 import { exportJSONBackup, exportCSVStats, exportTXTReport } from '../lib/exportUtils';
@@ -166,6 +167,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           <ClubSettingsSection state={state} onUpdateState={onUpdateState} onShowToast={onShowToast} part="clube" />
+          <div role="group" aria-label="Funções de IA" className="space-y-1.5">
+            <div className={label}>Funções de IA</div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                aria-pressed={isAiEnabled(state)}
+                className={choice(isAiEnabled(state))}
+                onClick={() => onUpdateState({ aiEnabled: true })}
+              >
+                Ligadas
+              </button>
+              <button
+                type="button"
+                aria-pressed={!isAiEnabled(state)}
+                className={choice(!isAiEnabled(state))}
+                onClick={() => onUpdateState({ aiEnabled: false })}
+              >
+                Desligadas
+              </button>
+            </div>
+            <p className="text-ui-caption text-ui-muted">
+              Crónica do jogo, mensagem do resumo da semana, leitura de prints e exercício com IA. Desligadas, a app não
+              envia nada para a IA. Vale para todo o clube.
+            </p>
+          </div>
           <p className="text-ui-caption text-ui-muted">
             O tema, o modo sol, o idioma e o modo compacto estão agora em Mais → A minha conta → Aparência.
           </p>
