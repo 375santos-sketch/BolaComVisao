@@ -28,8 +28,7 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({ analysis, player
         <div className="ui-card p-5">
           <div className="flex items-center justify-between pb-4 mb-4 border-b border-ui-line">
             <div>
-              <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-                <span>🟨🟥</span>
+              <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
                 <span>Registo Disciplinar por Atleta</span>
               </h3>
               <p className="text-xs text-ui-muted mt-0.5">Jogadores advertidos com cartões amarelos e vermelhos</p>
@@ -59,12 +58,22 @@ export const PlayerAnalysis: React.FC<PlayerAnalysisProps> = ({ analysis, player
                   <div className="flex items-center gap-2 font-mono text-xs">
                     {cp.yellow > 0 && (
                       <span className="bg-ui-warning/20 text-ui-warning px-2 py-0.5 rounded-md font-bold">
-                        🟨 {cp.yellow}
+                        <span
+                          role="img"
+                          aria-label="Amarelos"
+                          className="mr-1 inline-block h-3 w-2 rounded-[2px] bg-ui-warning align-[-1px]"
+                        />
+                        {cp.yellow}
                       </span>
                     )}
                     {cp.red > 0 && (
                       <span className="bg-ui-danger/20 text-ui-danger px-2 py-0.5 rounded-md font-bold">
-                        🟥 {cp.red}
+                        <span
+                          role="img"
+                          aria-label="Vermelhos"
+                          className="mr-1 inline-block h-3 w-2 rounded-[2px] bg-ui-danger align-[-1px]"
+                        />
+                        {cp.red}
                       </span>
                     )}
                   </div>

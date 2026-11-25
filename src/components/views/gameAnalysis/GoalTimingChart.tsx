@@ -25,8 +25,7 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
       <div className="ui-card p-5">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-ui-line">
           <div>
-            <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-              <span>⏱️</span>
+            <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
               <span>Distribuição por Partes ({configuredHalfDuration * 2}' Jogo)</span>
             </h3>
             <p className="text-xs text-ui-muted mt-0.5">Comparação direta de rendimento entre a 1.ª e a 2.ª parte</p>
@@ -57,14 +56,14 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
 
             <div className="flex items-center justify-around py-2">
               <div className="text-center">
-                <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-success">{half1Scored}</span>
+                <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-success">{half1Scored}</span>
                 <span className="text-[10px] text-ui-muted block">
                   Marcados ({goalsScored > 0 ? Math.round((half1Scored / goalsScored) * 100) : 0}%)
                 </span>
               </div>
               <div className="text-xl text-ui-muted font-bold">:</div>
               <div className="text-center">
-                <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-danger">{half1Conceded}</span>
+                <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-danger">{half1Conceded}</span>
                 <span className="text-[10px] text-ui-muted block">
                   Sofridos ({goalsConceded > 0 ? Math.round((half1Conceded / goalsConceded) * 100) : 0}%)
                 </span>
@@ -88,14 +87,14 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
 
             <div className="flex items-center justify-around py-2">
               <div className="text-center">
-                <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-success">{half2Scored}</span>
+                <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-success">{half2Scored}</span>
                 <span className="text-[10px] text-ui-muted block">
                   Marcados ({goalsScored > 0 ? Math.round((half2Scored / goalsScored) * 100) : 0}%)
                 </span>
               </div>
               <div className="text-xl text-ui-muted font-bold">:</div>
               <div className="text-center">
-                <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-danger">{half2Conceded}</span>
+                <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-danger">{half2Conceded}</span>
                 <span className="text-[10px] text-ui-muted block">
                   Sofridos ({goalsConceded > 0 ? Math.round((half2Conceded / goalsConceded) * 100) : 0}%)
                 </span>
@@ -109,15 +108,14 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
       <div className="ui-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-ui-line">
           <div>
-            <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-              <span>📊</span>
+            <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
               <span>Golos por Período de Jogo</span>
             </h3>
             <p className="text-xs text-ui-muted mt-0.5">Clique em qualquer período para consultar todos os lances</p>
           </div>
 
           <div className="ui-inset text-xs text-ui-muted font-bold px-3 py-1.5">
-            Duração configurada: <span className="text-ui-brand font-black">{configuredHalfDuration}m / parte</span>
+            Duração configurada: <span className="text-ui-brand font-bold">{configuredHalfDuration}m / parte</span>
           </div>
         </div>
 
@@ -144,19 +142,19 @@ export const GoalTimingChart: React.FC<GoalTimingChartProps> = ({ analysis, onSe
                     <span className="font-bold text-ui-text font-mono">{p.label}</span>
                     {isBestScored && (
                       <span className="text-[10px] bg-ui-success/20 text-ui-success font-bold px-2 py-0.5 rounded-md">
-                        🔥 Janela mais eficaz
+                        Janela mais eficaz
                       </span>
                     )}
                     {isWorstConceded && (
                       <span className="text-[10px] bg-ui-danger/20 text-ui-danger font-bold px-2 py-0.5 rounded-md">
-                        ⚠️ Janela mais frágil
+                        Janela mais frágil
                       </span>
                     )}
                   </div>
 
                   <div className="flex items-center gap-3 font-mono text-xs">
-                    <span className="text-ui-success font-bold">⚽ {p.scored} marcados</span>
-                    <span className="text-ui-danger font-bold">🥅 {p.conceded} sofridos</span>
+                    <span className="text-ui-success font-bold">{p.scored} marcados</span>
+                    <span className="text-ui-danger font-bold">{p.conceded} sofridos</span>
                     <span className="text-ui-muted">›</span>
                   </div>
                 </div>

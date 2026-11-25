@@ -16,8 +16,7 @@ export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSele
       <div className="ui-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-ui-line">
           <div>
-            <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-              <span>⚽</span>
+            <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
               <span>Origem dos Golos Marcados ({goalsScored})</span>
             </h3>
             <p className="text-xs text-ui-muted mt-0.5">Classificação centralizada: Bola Corrida vs Bolas Paradas</p>
@@ -80,7 +79,7 @@ export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSele
                   </div>
                   <div className="flex items-center gap-2 font-mono">
                     <span className="text-ui-text font-bold">{gt.count} golos</span>
-                    <span className="text-ui-brand font-black text-xs w-10 text-right">{gt.percentage}%</span>
+                    <span className="text-ui-brand font-bold text-xs w-10 text-right">{gt.percentage}%</span>
                   </div>
                 </div>
 
@@ -100,8 +99,7 @@ export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSele
       <div className="ui-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-ui-line">
           <div>
-            <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-danger flex items-center gap-2">
-              <span>🛡️</span>
+            <h3 className="text-base font-bold text-ui-danger flex items-center gap-2">
               <span>Como Sofremos os Golos ({goalsConceded})</span>
             </h3>
             <p className="text-xs text-ui-muted mt-0.5">Análise detalhada de golos sofridos por tipo e contexto</p>
@@ -161,7 +159,7 @@ export const GoalTypesChart: React.FC<GoalTypesChartProps> = ({ analysis, onSele
                   </div>
                   <div className="flex items-center gap-2 font-mono">
                     <span className="text-ui-text font-bold">{gt.count} golos</span>
-                    <span className="text-ui-danger font-black text-xs w-10 text-right">{gt.percentage}%</span>
+                    <span className="text-ui-danger font-bold text-xs w-10 text-right">{gt.percentage}%</span>
                   </div>
                 </div>
 

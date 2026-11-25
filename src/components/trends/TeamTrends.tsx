@@ -47,7 +47,7 @@ const TrendCard: React.FC<{ trend: TeamTrend; onPlan?: () => void }> = ({ trend,
       <p className="mt-0.5 text-xs text-ui-muted">{trend.detail}</p>
       <TrendBars trend={trend} />
       <div className="mt-2 rounded-lg border border-ui-brand/30 bg-ui-brand/10 p-2.5 text-xs leading-relaxed text-ui-text">
-        💡 <b>O que fazer:</b> {trend.recommendation}
+        <b>O que fazer:</b> {trend.recommendation}
         {onPlan && trend.level !== 'evolucao' && (
           <button type="button" onClick={onPlan} className="ml-1 font-extrabold text-ui-brand underline">
             Planear no treino
@@ -79,7 +79,7 @@ export const TrendsSection: React.FC<{ matches: Match[] | undefined; onPlan?: ()
         <p className="ui-inset p-3 text-xs text-ui-muted">
           {finished < 6
             ? `As tendências aparecem com pelo menos 6 jogos terminados (há ${finished}).`
-            : 'Sem mudanças claras entre os últimos jogos e os anteriores. 👍'}
+            : 'Sem mudanças claras entre os últimos jogos e os anteriores.'}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
