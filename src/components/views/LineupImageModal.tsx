@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Icon } from '../ui/Icon';
 import { AppState, Player, ScheduledMatch } from '../../types';
 import { LINEUP_SIZE } from '../../lib/constants';
 import { sortPlayerObjs } from '../../lib/utils';
@@ -167,18 +168,23 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-white font-['Chakra_Petch'] uppercase">🖼️ Equipa inicial</h3>
-          <button type="button" onClick={onClose} aria-label="Fechar equipa inicial" className="text-slate-400 text-lg">
-            ✕
+          <h3 className="text-base font-bold text-ui-text">Equipa inicial</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar equipa inicial"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+          >
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
 
         {called.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center py-6">Convoque primeiro os atletas para este jogo.</p>
+          <p className="text-xs text-ui-muted text-center py-6">Convoque primeiro os atletas para este jogo.</p>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block text-[11px] text-slate-400">
+              <label className="block text-[11px] text-ui-muted">
                 Jogadores em campo
                 <select
                   aria-label="Jogadores em campo"
@@ -193,7 +199,7 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
                   ))}
                 </select>
               </label>
-              <label className="block text-[11px] text-slate-400">
+              <label className="block text-[11px] text-ui-muted">
                 Sistema
                 <select
                   aria-label="Sistema"
@@ -211,7 +217,7 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
             </div>
 
             <div>
-              <div className="text-[11px] text-slate-400 mb-1">
+              <div className="text-[11px] text-ui-muted mb-1">
                 Titulares ({starters.length}/{size}): toque para escolher
               </div>
               <div role="group" aria-label="Titulares" className="flex flex-wrap gap-1.5">
@@ -232,20 +238,20 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
 
             <div>
               <div className="flex items-center justify-between gap-2 mb-1">
-                <div className="text-[11px] text-slate-400">Lugares no campo: escolha quem joga em cada posição</div>
+                <div className="text-[11px] text-ui-muted">Lugares no campo: escolha quem joga em cada posição</div>
                 <button
                   type="button"
                   onClick={() => autoArrange()}
                   className="ui-btn ui-btn-ghost px-2 py-0.5 text-[10px] shrink-0"
                   title="Arrumar pelas posições do plantel"
                 >
-                  🔄 Arrumar
+                  Arrumar
                 </button>
               </div>
               <div role="group" aria-label="Lugares no campo" className="space-y-1.5">
                 {slots.map((id, i) => (
                   <label key={i} className="flex items-center gap-2 text-[11px]">
-                    <span className="w-32 shrink-0 text-slate-300">{names[i]}</span>
+                    <span className="w-32 shrink-0 text-ui-text">{names[i]}</span>
                     <select
                       aria-label={names[i]}
                       className="ui-input flex-1 py-1.5 text-xs"
@@ -269,7 +275,7 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
               </div>
             </div>
 
-            <label className="block text-[11px] text-slate-400">
+            <label className="block text-[11px] text-ui-muted">
               Capitão
               <select
                 aria-label="Capitão"
@@ -292,7 +298,7 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
               height={LINEUP_CARD_SIZE.height}
               role="img"
               aria-label="Imagem da equipa inicial"
-              className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-slate-800"
+              className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-ui-line"
             />
 
             <div className="grid grid-cols-2 gap-2">
@@ -307,7 +313,8 @@ export const LineupImageModal: React.FC<LineupImageModalProps> = ({ game, state,
                 Guardar
               </button>
               <button type="button" onClick={share} className="ui-btn ui-btn-primary py-2.5 text-xs">
-                📲 Partilhar imagem
+                <Icon name="message" className="h-4 w-4 shrink-0" />
+                Partilhar imagem
               </button>
             </div>
           </>

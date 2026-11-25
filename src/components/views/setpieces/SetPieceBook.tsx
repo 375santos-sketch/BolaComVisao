@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Icon } from '../../ui/Icon';
 import { AppState, SetPiece, SetPieceType } from '../../../types';
 import { compressImageFile } from '../../../lib/imageCompress';
 import { newSetPiece, SET_PIECE_TYPES, setPieceTitle, setPieceType } from '../../../lib/setPieces';
@@ -74,13 +75,18 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
       <div
         role="dialog"
         aria-label="Caderno de bolas paradas"
-        className="w-full max-w-lg bg-ui-surface border border-ui-brand/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-3 max-h-[94dvh] overflow-y-auto"
+        className="w-full max-w-lg bg-ui-surface border border-ui-line rounded-t-ui-lg sm:rounded-ui-lg p-4 space-y-3 max-h-[94dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-ui-text font-['Chakra_Petch'] uppercase">🎯 Bolas paradas</h3>
-          <button type="button" onClick={onClose} aria-label="Fechar bolas paradas" className="text-ui-muted text-lg">
-            ✕
+          <h3 className="text-base font-bold text-ui-text">Bolas paradas</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar bolas paradas"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+          >
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
 
@@ -177,7 +183,8 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
                 className="text-[11px] text-ui-brand font-bold"
                 onClick={() => setEditing({ ...editing, roles: [...editing.roles, { label: '', playerId: null }] })}
               >
-                ➕ Função
+                <Icon name="plus" className="h-4 w-4 shrink-0" />
+                Função
               </button>
             </div>
 
@@ -210,7 +217,8 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
                 </div>
               )}
               <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-ui-brand/50 text-ui-brand text-xs font-bold cursor-pointer">
-                📷 {loadingImage ? 'A preparar…' : editing.image ? 'Trocar desenho' : 'Importar desenho ou foto'}
+                <Icon name="image" className="h-4 w-4 shrink-0" />
+                {loadingImage ? 'A preparar…' : editing.image ? 'Trocar desenho' : 'Importar desenho ou foto'}
                 <input
                   type="file"
                   accept="image/*"
@@ -249,7 +257,8 @@ export const SetPieceBook: React.FC<SetPieceBookProps> = ({ state, onUpdateState
               onClick={() => setEditing(newSetPiece())}
               className="ui-btn ui-btn-primary w-full py-2.5 text-xs"
             >
-              ➕ Nova bola parada
+              <Icon name="plus" className="h-4 w-4 shrink-0" />
+              Nova bola parada
             </button>
             {setPieces.length === 0 ? (
               <p className="text-xs text-ui-muted text-center py-6">

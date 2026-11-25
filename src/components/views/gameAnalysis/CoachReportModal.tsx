@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from '../../ui/Icon';
 import { CoachReportData, CoachViewPlayerStat } from '../../../lib/gameAnalysis';
 
 interface CoachReportModalProps {
@@ -43,14 +44,11 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
         {/* HEADER DO RELATÓRIO */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-ui-line">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-ui-brand to-ui-brand flex items-center justify-center text-2xl shadow-lg">
-              🧠
-            </div>
             <div>
-              <div className="text-[11px] font-black uppercase tracking-widest text-ui-brand font-mono">
+              <div className="text-[11px] font-bold text-ui-brand font-mono">
                 Relatório do Treinador • Análise da Equipa
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-ui-text font-['Chakra_Petch']">
+              <h2 className="text-xl sm:text-2xl font-bold text-ui-text">
                 {clubName} {category ? `(${category})` : ''}
               </h2>
               <div className="text-xs text-ui-muted font-mono">
@@ -68,7 +66,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                 onClick={onPrint}
                 className="ui-btn ui-btn-secondary px-3 py-1.5 text-xs flex items-center gap-1.5"
               >
-                <span>🖨️</span>
+                <Icon name="file" className="h-4 w-4 shrink-0" />
                 <span>Imprimir / PDF</span>
               </button>
             )}
@@ -77,7 +75,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
               onClick={onClose}
               className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
             >
-              ✕
+              <Icon name="x" className="h-5 w-5 shrink-0" />
             </button>
           </div>
         </div>
@@ -86,28 +84,22 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
           {/* 1. Ataque */}
           <div className="ui-inset p-3.5">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-success mb-1">
-              <span>⚽</span> Ataque
-            </div>
-            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-ui-text">{avgGoalsScored}</div>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-success mb-1"> Ataque</div>
+            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-bold text-ui-text">{avgGoalsScored}</div>
             <div className="text-[11px] text-ui-muted mt-0.5">golos marcados / jogo</div>
           </div>
 
           {/* 2. Defesa */}
           <div className="ui-inset p-3.5">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-danger mb-1">
-              <span>🛡️</span> Defesa
-            </div>
-            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-ui-text">{avgGoalsConceded}</div>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-danger mb-1"> Defesa</div>
+            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-bold text-ui-text">{avgGoalsConceded}</div>
             <div className="text-[11px] text-ui-muted mt-0.5">golos sofridos / jogo</div>
           </div>
 
           {/* 3. Bola Parada */}
           <div className="ui-inset p-3.5">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-warning mb-1">
-              <span>🚩</span> Bola Parada
-            </div>
-            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-ui-text">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-warning mb-1"> Bola Parada</div>
+            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-bold text-ui-text">
               {setPieces.scoredRate}%
             </div>
             <div className="text-[11px] text-ui-muted mt-0.5">dos golos marcados ({setPieces.scoredTotal} golos)</div>
@@ -115,10 +107,8 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
 
           {/* 4. Maior Produção */}
           <div className="ui-inset p-3.5">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-brand mb-1">
-              <span>⏱️</span> Maior Produção
-            </div>
-            <div className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-ui-text">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-brand mb-1"> Maior Produção</div>
+            <div className="text-xl sm:text-2xl font-['Chakra_Petch'] font-bold text-ui-text">
               {peakScoringPeriod ? peakScoringPeriod.label : "0–30'"}
             </div>
             <div className="text-[11px] text-ui-muted mt-0.5">
@@ -131,9 +121,10 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
           {/* 5. Maior Vulnerabilidade */}
           <div className="ui-inset p-3.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-ui-danger mb-1">
-              <span>⚠️</span> Maior Vulnerabilidade
+              {' '}
+              Maior Vulnerabilidade
             </div>
-            <div className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-ui-text">
+            <div className="text-xl sm:text-2xl font-['Chakra_Petch'] font-bold text-ui-text">
               {peakVulnerabilityPeriod ? peakVulnerabilityPeriod.label : 'Sem alerta'}
             </div>
             <div className="text-[11px] text-ui-muted mt-0.5">
@@ -145,10 +136,8 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
 
           {/* 6. Disciplina */}
           <div className="ui-inset p-3.5">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-text mb-1">
-              <span>🟨</span> Disciplina
-            </div>
-            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-black text-ui-text">{avgCardsTotal}</div>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-ui-text mb-1"> Disciplina</div>
+            <div className="text-2xl sm:text-3xl font-['Chakra_Petch'] font-bold text-ui-text">{avgCardsTotal}</div>
             <div className="text-[11px] text-ui-muted mt-0.5">cartões / jogo</div>
           </div>
         </div>
@@ -157,7 +146,6 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
         {firstGoalImpact.scoredFirstMatches > 0 && (
           <div className="ui-inset p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
-              <span className="text-xl">🎯</span>
               <div>
                 <strong className="text-ui-text">
                   Quando marcámos primeiro ({firstGoalImpact.scoredFirstMatches} jogos):
@@ -180,11 +168,8 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
           <div className="ui-inset p-4">
             <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-ui-line">
               <div className="flex items-center gap-2">
-                <span className="text-base">⚽</span>
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-ui-success font-['Chakra_Petch']">
-                    Melhores Marcadores
-                  </h4>
+                  <h4 className="text-xs font-bold text-ui-success">Melhores Marcadores</h4>
                   <p className="text-[10px] text-ui-muted">Os 3 melhores marcadores e a quantidade de golos</p>
                 </div>
               </div>
@@ -195,7 +180,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
             <div className="space-y-1.5">
               {[0, 1, 2].map((idx) => {
                 const s = topScorers[idx];
-                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+                const medal = `${idx + 1}.º`;
                 if (!s) {
                   return (
                     <div
@@ -237,11 +222,8 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
           <div className="ui-inset p-4">
             <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-ui-line">
               <div className="flex items-center gap-2">
-                <span className="text-base">🎯</span>
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-ui-brand font-['Chakra_Petch']">
-                    Melhores Assistentes
-                  </h4>
+                  <h4 className="text-xs font-bold text-ui-brand">Melhores Assistentes</h4>
                   <p className="text-[10px] text-ui-muted">Os 3 melhores assistentes e a quantidade de assistência</p>
                 </div>
               </div>
@@ -252,7 +234,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
             <div className="space-y-1.5">
               {[0, 1, 2].map((idx) => {
                 const a = topAssisters[idx];
-                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+                const medal = `${idx + 1}.º`;
                 if (!a) {
                   return (
                     <div
@@ -292,12 +274,9 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
         </div>
 
         {/* PRINCIPAIS CONCLUSÕES AUTOMÁTICAS (3 a 5 frases automáticas de síntese tática) */}
-        <div className="bg-gradient-to-br from-ui-inset via-ui-surface to-ui-brand/20 border border-ui-brand/30 rounded-3xl p-5 sm:p-6 shadow-xl space-y-3.5">
+        <div className="ui-card border-ui-brand/30 p-5 sm:p-6 space-y-3.5">
           <div className="flex items-center gap-2 pb-2 border-b border-ui-line">
-            <span className="text-lg">📋</span>
-            <h3 className="text-sm font-black uppercase tracking-wider text-ui-brand font-['Chakra_Petch']">
-              Principais Conclusões Táticas
-            </h3>
+            <h3 className="text-sm font-bold text-ui-brand">Principais Conclusões Táticas</h3>
           </div>
 
           <div className="space-y-2.5">
@@ -306,7 +285,7 @@ export const CoachReportModal: React.FC<CoachReportModalProps> = ({
                 key={idx}
                 className="ui-card p-3 text-xs sm:text-[13px] text-ui-text leading-relaxed font-medium flex items-start gap-3"
               >
-                <span className="w-5 h-5 rounded-full bg-ui-brand/15 text-ui-brand border border-ui-brand/30 flex items-center justify-center text-[10px] font-black font-mono shrink-0 mt-0.5">
+                <span className="w-5 h-5 rounded-full bg-ui-brand/15 text-ui-brand border border-ui-brand/30 flex items-center justify-center text-[10px] font-bold font-mono shrink-0 mt-0.5">
                   {idx + 1}
                 </span>
                 <span>{conclusion}</span>

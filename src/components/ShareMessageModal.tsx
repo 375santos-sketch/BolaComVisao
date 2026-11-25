@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from './ui/Icon';
 
 interface ShareMessageModalProps {
   /** Dialog name, e.g. "Partilhar com os pais". */
@@ -16,7 +17,6 @@ interface ShareMessageModalProps {
 /** A message for a WhatsApp group, editable before sending: WhatsApp, the phone's share sheet or copy. */
 export const ShareMessageModal: React.FC<ShareMessageModalProps> = ({
   title,
-  icon = '📲',
   text,
   onTextChange,
   onClose,
@@ -41,17 +41,20 @@ export const ShareMessageModal: React.FC<ShareMessageModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="ui-inset w-full max-w-md p-4 space-y-3 text-left"
+        className="ui-card w-full max-w-md space-y-3 p-4 text-left"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label={title}
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-white text-sm">
-            {icon} {title}
-          </h2>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-white px-2" aria-label="Fechar">
-            ✕
+          <h2 className="text-ui-lead font-bold text-ui-text">{title}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+            aria-label="Fechar"
+          >
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
 
@@ -69,7 +72,7 @@ export const ShareMessageModal: React.FC<ShareMessageModalProps> = ({
           <button
             type="button"
             onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank')}
-            className="ui-btn ui-btn-success py-2 text-xs"
+            className="ui-btn ui-btn-success min-h-11 text-ui-body"
           >
             WhatsApp
           </button>
@@ -77,11 +80,11 @@ export const ShareMessageModal: React.FC<ShareMessageModalProps> = ({
             type="button"
             disabled={!canShare}
             onClick={() => navigator.share?.({ text }).catch(() => {})}
-            className="ui-btn ui-btn-secondary py-2 text-xs"
+            className="ui-btn ui-btn-secondary min-h-11 text-ui-body"
           >
             Partilhar
           </button>
-          <button type="button" onClick={copy} className="ui-btn ui-btn-secondary py-2 text-xs">
+          <button type="button" onClick={copy} className="ui-btn ui-btn-secondary min-h-11 text-ui-body">
             Copiar
           </button>
         </div>

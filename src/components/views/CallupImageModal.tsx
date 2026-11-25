@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
+import { Icon } from '../ui/Icon';
 import { AppState, ScheduledMatch } from '../../types';
 import { sortPlayerObjs } from '../../lib/utils';
 import { teamSettings } from '../../lib/teamSettings';
@@ -85,18 +86,18 @@ export const CallupImageModal: React.FC<CallupImageModalProps> = ({ game, state,
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-white">🖼️ Imagem para os pais</h3>
+          <h3 className="text-base font-bold text-ui-text">Imagem para os pais</h3>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar imagem da convocatória"
-            className="text-slate-400 text-lg"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
           >
-            ✕
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
         {players.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center py-6">Convoque primeiro os atletas para este jogo.</p>
+          <p className="text-xs text-ui-muted text-center py-6">Convoque primeiro os atletas para este jogo.</p>
         ) : (
           <>
             <canvas
@@ -105,11 +106,12 @@ export const CallupImageModal: React.FC<CallupImageModalProps> = ({ game, state,
               height={CALLUP_CARD_SIZE.height}
               role="img"
               aria-label="Imagem da convocatória para os pais"
-              className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-slate-800"
+              className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-ui-line"
             />
-            <p className="text-[11px] text-slate-400">Só leva os números e os nomes dos atletas (sem fotos).</p>
+            <p className="text-[11px] text-ui-muted">Só leva os números e os nomes dos atletas (sem fotos).</p>
             <button type="button" onClick={share} className="ui-btn ui-btn-primary w-full py-3 text-sm">
-              📲 Partilhar imagem
+              <Icon name="message" className="h-4 w-4 shrink-0" />
+              Partilhar imagem
             </button>
           </>
         )}
