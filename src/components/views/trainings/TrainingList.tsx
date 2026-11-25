@@ -1,3 +1,4 @@
+import { Icon } from '../../ui/Icon';
 import React, { lazy, Suspense, useState } from 'react';
 import { AbsenceReason, AppState, Player, Training } from '../../../types';
 import { t } from '../../../i18n/dict';
@@ -75,33 +76,36 @@ export const TrainingList: React.FC<TrainingListProps> = ({
         <button
           type="button"
           onClick={onOpenToday}
-          className="ui-btn ui-btn-primary flex-1 py-3 text-sm flex items-center justify-center gap-1.5"
+          className="ui-btn ui-btn-primary min-h-11 flex-1 px-4 text-ui-body sm:flex-none"
         >
-          ✓ Treino de hoje
+          <Icon name="check" className="h-[18px] w-[18px]" />
+          Treino de hoje
         </button>
         <button
           type="button"
-          className="ui-btn ui-btn-secondary px-3 py-3 text-xs"
+          className="ui-btn ui-btn-secondary min-h-11 px-3.5 text-ui-body"
           aria-label="Inserir Treino Único"
           title="Inserir um treino"
           onClick={() => onOpenCreateForm('single')}
         >
-          + Novo
+          <Icon name="plus" className="h-[18px] w-[18px]" />
+          Novo
         </button>
         <button
           type="button"
-          className="ui-btn ui-btn-secondary px-3 py-3 text-xs"
+          className="ui-btn ui-btn-secondary min-h-11 px-3.5 text-ui-body"
           aria-label="Adicionar Vários Treinos (Período)"
           title="Adicionar vários treinos de uma vez (período)"
           onClick={() => onOpenCreateForm('batch')}
         >
-          + Vários
+          <Icon name="calendar" className="h-[18px] w-[18px]" />
+          Vários
         </button>
       </div>
       <button
         type="button"
         onClick={() => setShowPlanShare(true)}
-        className="text-xs font-semibold text-ui-brand hover:text-ui-brand"
+        className="min-h-9 text-ui-body font-semibold text-ui-brand"
       >
         Plano para o adjunto (link)
       </button>
