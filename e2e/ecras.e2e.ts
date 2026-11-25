@@ -747,7 +747,9 @@ test('votação dos pais: link anónimo, um voto por telemóvel e os dois mais v
 
 test('assistente: perguntas sobre a equipa respondidas com os dados da app', async ({ page }) => {
   await signedIn(page);
-  const card = page.getByRole('region', { name: 'Pergunte à app' });
+  // The questions live in Mais → Assistente (they left the Início in design · etapa 1)
+  await openMore(page, /Assistente/);
+  const card = page.getByRole('dialog', { name: 'Assistente' }).getByRole('region', { name: 'Pergunte à app' });
   await card.getByLabel('Pergunta').fill('Quem é o melhor marcador?');
   await card.getByRole('button', { name: 'Perguntar' }).click();
   const answer = card.getByRole('status', { name: 'Resposta' });

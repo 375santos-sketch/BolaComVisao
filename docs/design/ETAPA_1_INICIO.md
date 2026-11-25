@@ -74,7 +74,8 @@ uso: `DashboardHeader`, `DashboardHighlights`, `HomeOverview` e `NewsletterRemin
 - **Atualizado:** `e2e/ecras.e2e.ts`, no teste "entrar: escolha da equipa e painel inicial":
   - a região "Avisos" passa a "Tarefas";
   - a região "Resumo da época" passa a "A equipa";
-  - o botão "Ver estatísticas" passa a "Estatísticas".
+  - o botão "Ver estatísticas" passa a "Estatísticas";
+  - no teste do assistente, o "Pergunte à app" passa a abrir-se em Mais → Assistente.
 
 ## Capturas
 
