@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Início do treinador · proposta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Proposta do Design System BolaComVisão (docs/design/DESIGN_SYSTEM.md). Maqueta estática: dados fictícios. */
+      :root {
+        --bg: #0a0b0c;
+        --surface: #131517;
+        --surface-2: #1b1e21;
+        --surface-3: #24282c;
+        --inset: #0e1011;
+        --line: #262a2e;
+        --line-strong: #363b40;
+        --text: #f5f7f6;
+        --muted: #9ba3a0;
+        --subtle: #6b7370;
+        --brand: #2edb74;
+        --brand-strong: #22b860;
+        --brand-ink: #05210f;
+        --brand-soft: rgb(46 219 116 / 0.12);
+        --success: #34c3a0;
+        --success-soft: rgb(52 195 160 / 0.12);
+        --warning: #f2b33d;
+        --warning-soft: rgb(242 179 61 / 0.12);
+        --danger: #f0605a;
+        --danger-soft: rgb(240 96 90 / 0.12);
+        --r-sm: 8px;
+        --r: 12px;
+        --r-lg: 16px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font:
+          450 14px/20px 'Plus Jakarta Sans',
+          system-ui,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+      .caption {
+        font-size: 12px;
+        line-height: 16px;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      .title {
+        font-size: 18px;
+        line-height: 24px;
+        font-weight: 650;
+      }
+      .lead {
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: 500;
+      }
+
+      /* Layout */
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      .side {
+        display: none;
+      }
+      .main {
+        padding: 0 16px 96px;
+        max-width: 1120px;
+        width: 100%;
+        margin: 0 auto;
+      }
+
+      /* Header */
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 64px;
+      }
+      .logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        background: var(--brand);
+        color: var(--brand-ink);
+        display: grid;
+        place-items: center;
+        font: 700 15px 'Chakra Petch';
+      }
+      .team {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px 6px 6px;
+        border-radius: var(--r);
+        background: transparent;
+        border: 0;
+        color: var(--text);
+        font: inherit;
+      }
+      .crest {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .team b {
+        font-weight: 650;
+        font-size: 15px;
+      }
+      .team svg {
+        width: 16px;
+        height: 16px;
+        color: var(--muted);
+      }
+      .spacer {
+        flex: 1;
+      }
+      .icon-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--r);
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        background: transparent;
+        border: 0;
+        position: relative;
+      }
+      .dot {
+        position: absolute;
+        top: 11px;
+        right: 12px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--brand);
+        box-shadow: 0 0 0 2px var(--bg);
+      }
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--surface-3);
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .greet {
+        margin: 8px 0 20px;
+      }
+      .greet h1 {
+        font-size: 24px;
+        line-height: 30px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .greet p {
+        margin-top: 2px;
+      }
+
+      /* Sections */
+      section {
+        margin-bottom: 24px;
+      }
+      .sec-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .sec-head h2 {
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: 650;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .link {
+        color: var(--brand);
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+      }
+
+      /* Today */
+      .today {
+        padding: 20px;
+      }
+      .kicker {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--brand);
+        text-transform: uppercase;
+      }
+      .match {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 12px 0 4px;
+      }
+      .time {
+        font: 700 32px/36px 'Chakra Petch';
+      }
+      .vs {
+        font-size: 20px;
+        line-height: 26px;
+        font-weight: 700;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 16px;
+      }
+      .badge {
+        height: 24px;
+        padding: 0 8px;
+        border-radius: var(--r-sm);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--surface-2);
+        color: var(--muted);
+      }
+      .badge svg {
+        width: 14px;
+        height: 14px;
+      }
+      .b-warning {
+        background: var(--warning-soft);
+        color: var(--warning);
+      }
+      .b-success {
+        background: var(--success-soft);
+        color: var(--success);
+      }
+      .b-danger {
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+      .b-brand {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .btn {
+        height: 48px;
+        border-radius: var(--r);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font: 600 15px 'Plus Jakarta Sans';
+        border: 1px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .btn-primary {
+        background: var(--brand);
+        color: var(--brand-ink);
+      }
+      .btn-secondary {
+        background: var(--surface-2);
+        color: var(--text);
+        border-color: var(--line-strong);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text);
+        height: 36px;
+        padding: 0 10px;
+        font-size: 13px;
+      }
+
+      /* Lists */
+      .list {
+        list-style: none;
+        padding: 0;
+      }
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 64px;
+        padding: 10px 16px;
+      }
+      .item + .item {
+        border-top: 1px solid var(--line);
+      }
+      .ico {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        background: var(--surface-2);
+        color: var(--muted);
+      }
+      .ico.w {
+        background: var(--warning-soft);
+        color: var(--warning);
+      }
+      .ico.b {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+      .item .txt {
+        flex: 1;
+        min-width: 0;
+      }
+      .item .txt b {
+        display: block;
+        font-weight: 600;
+        font-size: 15px;
+        line-height: 22px;
+      }
+      .chev {
+        color: var(--subtle);
+      }
+      .count {
+        min-width: 22px;
+        height: 22px;
+        padding: 0 6px;
+        border-radius: 8px;
+        background: var(--warning-soft);
+        color: var(--warning);
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-grid;
+        place-items: center;
+      }
+      .date {
+        width: 44px;
+        text-align: center;
+      }
+      .date .d {
+        font: 700 20px/22px 'Chakra Petch';
+      }
+      .date .w {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      /* Shortcuts */
+      .shortcuts {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+      .sc {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        min-height: 76px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        padding: 8px 4px;
+        text-decoration: none;
+      }
+      .sc svg {
+        width: 22px;
+        height: 22px;
+        color: var(--muted);
+      }
+
+      /* KPI strip */
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        background: var(--inset);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+      }
+      .kpi {
+        padding: 14px 16px;
+      }
+      .kpi:nth-child(odd) {
+        border-right: 1px solid var(--line);
+      }
+      .kpi:nth-child(n + 3) {
+        border-top: 1px solid var(--line);
+      }
+      .kpi .v {
+        font-size: 20px;
+        line-height: 26px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .form {
+        display: flex;
+        gap: 4px;
+        margin-top: 2px;
+      }
+      .form span {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
+      }
+      .v-w {
+        background: var(--success-soft);
+        color: var(--success);
+      }
+      .v-d {
+        background: var(--warning-soft);
+        color: var(--warning);
+      }
+      .v-n {
+        background: var(--surface-2);
+        color: var(--subtle);
+      }
+
+      /* Bottom nav (mobile) */
+      .nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 68px;
+        background: rgb(19 21 23 / 0.96);
+        border-top: 1px solid var(--line);
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        backdrop-filter: blur(12px);
+      }
+      .nav a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+      }
+      .nav a svg {
+        width: 24px;
+        height: 24px;
+      }
+      .nav a.on {
+        color: var(--brand);
+        font-weight: 650;
+      }
+      .nav a.on svg {
+        background: var(--brand-soft);
+        border-radius: 10px;
+        padding: 2px 10px;
+        width: 44px;
+        height: 28px;
+      }
+
+      .grid {
+        display: block;
+      }
+
+      /* Desktop */
+      @media (min-width: 1024px) {
+        .app {
+          grid-template-columns: 240px 1fr;
+        }
+        .side {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          background: var(--surface);
+          border-right: 1px solid var(--line);
+          padding: 16px 12px;
+          position: sticky;
+          top: 0;
+          height: 100vh;
+        }
+        .side .brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 4px 8px 16px;
+          font-weight: 700;
+          font-size: 15px;
+        }
+        .side .switch {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px;
+          border: 1px solid var(--line);
+          border-radius: var(--r);
+          margin-bottom: 12px;
+        }
+        .side .switch .t {
+          flex: 1;
+        }
+        .side .switch .t b {
+          display: block;
+          font-size: 14px;
+          font-weight: 650;
+        }
+        .side a {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          height: 40px;
+          padding: 0 10px;
+          border-radius: 10px;
+          color: var(--muted);
+          text-decoration: none;
+          font-weight: 500;
+        }
+        .side a.on {
+          background: var(--surface-3);
+          color: var(--text);
+          box-shadow: inset 2px 0 0 var(--brand);
+        }
+        .side a.on svg {
+          color: var(--brand);
+        }
+        .side .grp {
+          font-size: 12px;
+          color: var(--subtle);
+          font-weight: 600;
+          padding: 14px 10px 4px;
+        }
+        .side .sub {
+          padding-left: 42px;
+          height: 34px;
+          font-size: 13px;
+        }
+        .nav,
+        .top .logo,
+        .top .team {
+          display: none;
+        }
+        .main {
+          padding: 0 32px 48px;
+        }
+        .top {
+          height: 72px;
+        }
+        .grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+          gap: 24px;
+          align-items: start;
+        }
+        .actions {
+          grid-template-columns: auto auto;
+          justify-content: start;
+        }
+        .actions .btn {
+          padding: 0 20px;
+          height: 44px;
+        }
+        .wide {
+          grid-column: 1 / -1;
+        }
+        .shortcuts .sc {
+          min-height: 84px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- Desktop sidebar: the same 5 groups as the phone -->
+      <aside class="side">
+        <div class="brand">
+          <div class="logo">B</div>
+          BolaComVisão
+        </div>
+        <div class="switch">
+          <div class="crest">D</div>
+          <div class="t"><b>Dragões</b><span class="caption">Sub-11 · 2026/27</span></div>
+          <svg viewBox="0 0 24 24"><path d="m7 15 5 5 5-5M7 9l5-5 5 5" /></svg>
+        </div>
+        <a class="on" href="#"
+          ><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /></svg
+          >Início</a
+        >
+        <a href="#"
+          ><svg viewBox="0 0 24 24">
+            <circle cx="9" cy="8" r="3.5" />
+            <path
+              d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.7.8 2.7 2.6 3 5.2"
+            /></svg
+          >Equipa</a
+        >
+        <a class="sub" href="#">Plantel</a><a class="sub" href="#">Convocatória</a>
+        <a href="#"
+          ><svg viewBox="0 0 24 24">
+            <rect x="3" y="4.5" width="18" height="16.5" rx="2" />
+            <path d="M3 9.5h18M8 2.5v4M16 2.5v4" /></svg
+          >Planeamento</a
+        >
+        <a class="sub" href="#">Agenda</a><a class="sub" href="#">Treinos</a><a class="sub" href="#">Época</a>
+        <a href="#"
+          ><svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path d="m12 7.5 4 3-1.5 4.5h-5L8 10.5z" /></svg
+          >Jogo</a
+        >
+        <a class="sub" href="#">Pré-jogo</a><a class="sub" href="#">Resultados</a><a class="sub" href="#">Análise</a>
+        <div style="flex: 1"></div>
+        <a href="#"
+          ><svg viewBox="0 0 24 24">
+            <circle cx="5" cy="12" r="1" />
+            <circle cx="12" cy="12" r="1" />
+            <circle cx="19" cy="12" r="1" /></svg
+          >Clube</a
+        >
+      </aside>
+
+      <main class="main">
+        <header class="top">
+          <div class="logo">B</div>
+          <button class="team">
+            <div class="crest">D</div>
+            <b>Dragões Sub-11</b><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          <div class="spacer"></div>
+          <button class="icon-btn" aria-label="Notificações">
+            <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10.3 20a2 2 0 0 0 3.4 0" /></svg
+            ><span class="dot"></span>
+          </button>
+          <div class="avatar">TA</div>
+        </header>
+
+        <div class="greet">
+          <h1>Bom dia, Mister</h1>
+          <p class="caption" style="font-size: 14px">Quarta, 25 de novembro · Época 2026/27</p>
+        </div>
+
+        <div class="grid">
+          <div>
+            <!-- 1. O que tenho hoje? -->
+            <section>
+              <div class="card today">
+                <div class="kicker">Hoje · Jogo</div>
+                <div class="match">
+                  <div class="time num">10:30</div>
+                  <div>
+                    <div class="vs">vs Abrantes</div>
+                    <div class="caption" style="font-size: 13px">Campeonato · Jornada 5</div>
+                  </div>
+                </div>
+                <div class="meta">
+                  <span class="badge"
+                    ><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20H3z" /></svg>Em casa</span
+                  >
+                  <span class="badge">10 convocados</span>
+                  <span class="badge b-warning"
+                    ><svg viewBox="0 0 24 24">
+                      <path
+                        d="M12 9v4M12 17h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0"
+                      /></svg
+                    >Convocatória por fechar</span
+                  >
+                </div>
+                <div class="actions">
+                  <a class="btn btn-primary" href="#"
+                    ><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" /></svg>Iniciar Modo Jogo</a
+                  >
+                  <a class="btn btn-secondary" href="#"
+                    ><svg viewBox="0 0 24 24">
+                      <rect x="5" y="3.5" width="14" height="17.5" rx="2" />
+                      <path d="M9 3.5V2.5h6v1M9 11l2 2 4-4" /></svg
+                    >Convocatória</a
+                  >
+                </div>
+              </div>
+            </section>
+
+            <!-- 2. O que tenho de fazer? -->
+            <section>
+              <div class="sec-head">
+                <h2>Tarefas <span class="count num">3</span></h2>
+              </div>
+              <ul class="card list">
+                <li class="item">
+                  <div class="ico w">
+                    <svg viewBox="0 0 24 24">
+                      <rect x="5" y="3.5" width="14" height="17.5" rx="2" />
+                      <path d="M9 3.5V2.5h6v1M9 11h6M9 15h4" />
+                    </svg>
+                  </div>
+                  <div class="txt">
+                    <b>Fechar a convocatória</b
+                    ><span class="caption">Jogo de hoje às 10:30 · 3 atletas com poucos minutos</span>
+                  </div>
+                  <svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" /></svg>
+                </li>
+                <li class="item">
+                  <div class="ico">
+                    <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 9h16M8 13h5" /></svg>
+                  </div>
+                  <div class="txt">
+                    <b>Enviar o resumo da semana</b><span class="caption">16 a 22 nov · pronto a rever</span>
+                  </div>
+                  <svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" /></svg>
+                </li>
+                <li class="item">
+                  <div class="ico">
+                    <svg viewBox="0 0 24 24">
+                      <rect x="3" y="4.5" width="18" height="16.5" rx="2" />
+                      <path d="M3 9.5h18M8 2.5v4M16 2.5v4M12 13v5M9.5 15.5h5" />
+                    </svg>
+                  </div>
+                  <div class="txt">
+                    <b>Marcar o próximo treino</b><span class="caption">Não há treinos agendados esta semana</span>
+                  </div>
+                  <svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" /></svg>
+                </li>
+              </ul>
+            </section>
+          </div>
+
+          <div>
+            <!-- 3. Qual é o próximo compromisso? -->
+            <section>
+              <div class="sec-head">
+                <h2>A seguir</h2>
+                <a class="link" href="#">Agenda</a>
+              </div>
+              <ul class="card list">
+                <li class="item">
+                  <div class="date">
+                    <div class="d num">28</div>
+                    <div class="w">Sáb</div>
+                  </div>
+                  <div class="txt"><b>Treino</b><span class="caption">Por marcar · último foi a 15/10</span></div>
+                  <span class="badge">Sem hora</span>
+                </li>
+                <li class="item">
+                  <div class="date">
+                    <div class="d num">5</div>
+                    <div class="w">Dez</div>
+                  </div>
+                  <div class="txt"><b>vs Esparteiros</b><span class="caption">Campeonato · Jornada 6 · Fora</span></div>
+                  <svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" /></svg>
+                </li>
+              </ul>
+            </section>
+
+            <!-- Indicadores (só os que levam a uma decisão) -->
+            <section>
+              <div class="sec-head">
+                <h2>A equipa</h2>
+                <a class="link" href="#">Análise</a>
+              </div>
+              <div class="kpis">
+                <div class="kpi">
+                  <div class="caption">Últimos jogos</div>
+                  <div class="form">
+                    <span class="v-w">V</span><span class="v-d">E</span><span class="v-n">–</span
+                    ><span class="v-n">–</span><span class="v-n">–</span>
+                  </div>
+                </div>
+                <div class="kpi">
+                  <div class="caption">Disponíveis</div>
+                  <div class="v num">10<span class="caption" style="font-size: 14px">/10</span></div>
+                </div>
+                <div class="kpi">
+                  <div class="caption">Presença nos treinos</div>
+                  <div class="v num">95%</div>
+                </div>
+                <div class="kpi">
+                  <div class="caption">Com poucos minutos</div>
+                  <div class="v num" style="color: var(--warning)">
+                    <svg viewBox="0 0 24 24" style="width: 18px; height: 18px">
+                      <path
+                        d="M12 9v4M12 17h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0"
+                      /></svg
+                    >3
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Atalhos -->
+            <section>
+              <div class="sec-head"><h2>Atalhos</h2></div>
+              <div class="shortcuts">
+                <a class="sc" href="#"
+                  ><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>Novo treino</a
+                >
+                <a class="sc" href="#"
+                  ><svg viewBox="0 0 24 24">
+                    <circle cx="9" cy="8" r="3.5" />
+                    <path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M19 8v6M16 11h6" /></svg
+                  >Novo atleta</a
+                >
+                <a class="sc" href="#"
+                  ><svg viewBox="0 0 24 24">
+                    <path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9" /></svg
+                  >Presenças</a
+                >
+                <a class="sc" href="#"
+                  ><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 6-6" /></svg>Análise</a
+                >
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <nav class="nav" aria-label="Navegação principal">
+        <a class="on" href="#"
+          ><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /></svg
+          >Início</a
+        >
+        <a href="#"
+          ><svg viewBox="0 0 24 24">
+            <circle cx="9" cy="8" r="3.5" />
+            <path
+              d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.7.8 2.7 2.6 3 5.2"
+            /></svg
+          >Equipa</a
+        >
+        <a href="#"
+          ><svg viewBox="0 0 24 24">
+            <rect x="3" y="4.5" width="18" height="16.5" rx="2" />
+            <path d="M3 9.5h18M8 2.5v4M16 2.5v4" /></svg
+          >Planeamento</a
+        >
+        <a href="#"
+          ><svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" />
+            <path d="m12 7.5 4 3-1.5 4.5h-5L8 10.5z" /></svg
+          >Jogo</a
+        >
+        <a href="#"
+          ><svg viewBox="0 0 24 24">
+            <circle cx="5" cy="12" r="1" />
+            <circle cx="12" cy="12" r="1" />
+            <circle cx="19" cy="12" r="1" /></svg
+          >Clube</a
+        >
+      </nav>
+    </div>
+  </body>
+</html>
