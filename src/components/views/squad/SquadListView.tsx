@@ -6,6 +6,7 @@ import { squadIndicators, pctLabel } from '../../../lib/squadIndicators';
 import { Avatar } from '../../ui/Avatar';
 import { AvailabilityPill } from '../../ui/AvailabilityPill';
 import { Icon } from '../../ui/Icon';
+import { GroupHead } from './GroupHead';
 
 interface SquadListViewProps {
   state: AppState;
@@ -21,8 +22,7 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
   sortedRoster,
   sortBy,
   sortDirection,
-  onSelectPlayer,
-  onEditPlayer
+  onSelectPlayer
 }) => {
   const indicators = squadIndicators(state);
   const attendanceThreshold = state.notificationSettings?.attendanceThreshold || 50;
@@ -44,10 +44,12 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
       .join(' · ');
 
     return (
-      <div
+      <button
         key={player.id}
+        type="button"
         onClick={() => onSelectPlayer(player.id)}
-        className="ui-card group flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors hover:border-ui-line-strong"
+        aria-label={`${player.name}: abrir a ficha`}
+        className="group flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-ui-surface-2"
       >
         <Avatar name={player.name} photoUrl={player.photoUrl} number={player.number} />
         <div className="min-w-0 flex-1">
@@ -71,19 +73,8 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
             </span>
           )
         )}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditPlayer(player);
-          }}
-          className="shrink-0 rounded-ui-sm p-1.5 text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
-          title="Editar Jogador"
-          aria-label={`Editar ${player.name}`}
-        >
-          <Icon name="settings" className="h-4 w-4" />
-        </button>
-      </div>
+        <Icon name="chevronRight" className="h-[18px] w-[18px] shrink-0 text-ui-subtle" />
+      </button>
     );
   };
 
@@ -103,15 +94,8 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
 
           return (
             <div key={group.id} className="space-y-2">
-              {/* Tactical Group Header */}
-              <div className="flex items-center justify-between px-1 text-ui-caption font-bold uppercase tracking-[0.08em] text-ui-muted">
-                <div className="flex items-center gap-2">
-                  <span>{group.label.replace(/^\S+\s/, '')}</span>
-                  <span className="text-ui-caption font-bold text-ui-muted/70">{groupPlayers.length}</span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">{groupPlayers.map(renderPlayerRow)}</div>
+              <GroupHead label={group.label} count={groupPlayers.length} />
+              <div className="ui-card divide-y divide-ui-line overflow-hidden">{groupPlayers.map(renderPlayerRow)}</div>
             </div>
           );
         })}
@@ -122,23 +106,8 @@ export const SquadListView: React.FC<SquadListViewProps> = ({
   // Non-position sort (plain linear list)
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between px-1 text-ui-caption font-bold uppercase tracking-[0.08em] text-ui-muted">
-        <div className="flex items-center gap-2">
-          <span>{sortBy === 'numero' ? '🔢 Ordenado por Número da Camisola' : '🔤 Ordenado por Nome do Atleta'}</span>
-          <span className="text-ui-caption font-bold text-ui-muted/70">{sortedRoster.length} Atletas</span>
-        </div>
-        <span className="text-[10px] font-mono text-ui-muted">
-          {sortBy === 'numero'
-            ? sortDirection === 'asc'
-              ? 'Ordem: #1 ao Maior'
-              : 'Ordem: Maior ao #1'
-            : sortDirection === 'asc'
-              ? 'Ordem: A a Z'
-              : 'Ordem: Z a A'}
-        </span>
-      </div>
-
-      <div className="space-y-1.5">{sortedRoster.map(renderPlayerRow)}</div>
+      <GroupHead label={sortBy === 'numero' ? 'Por número da camisola' : 'Por nome'} count={sortedRoster.length} />
+      <div className="ui-card divide-y divide-ui-line overflow-hidden">{sortedRoster.map(renderPlayerRow)}</div>
     </div>
   );
 };
