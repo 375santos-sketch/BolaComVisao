@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { AppState } from '../../../types';
+import { Icon } from '../../ui/Icon';
 import { setPieceAssignments, setPieceTitle, setPieceType } from '../../../lib/setPieces';
 
 // The book (with its drawings) only loads when opened, so the Convocatória stays light
@@ -20,15 +21,19 @@ export const SetPiecesCard: React.FC<SetPiecesCardProps> = ({ state, callup, onU
   const missing = assignments.reduce((n, a) => n + a.lines.filter((l) => l.missing).length, 0);
 
   return (
-    <section aria-label="Bolas paradas" className="card p-3.5 space-y-2">
+    <section aria-label="Bolas paradas" className="ui-card mt-3 space-y-2 p-4">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-xs font-black text-ui-brand uppercase tracking-wider">🎯 Bolas paradas</h3>
-        <button type="button" onClick={() => setOpen(true)} className="text-[11px] text-ui-brand font-bold underline">
+        <h3 className="text-ui-lead font-bold text-ui-text">Bolas paradas</h3>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="ui-btn ui-btn-secondary min-h-9 px-3 text-ui-caption"
+        >
           {setPieces.length ? 'Abrir caderno' : 'Criar caderno'}
         </button>
       </div>
       {assignments.length === 0 ? (
-        <p className="text-[11px] text-ui-muted">
+        <p className="text-ui-body text-ui-muted">
           {setPieces.length
             ? 'Ainda não há atletas atribuídos às bolas paradas.'
             : 'Guarde os cantos, livres e lançamentos da equipa e quem os marca.'}
@@ -36,7 +41,7 @@ export const SetPiecesCard: React.FC<SetPiecesCardProps> = ({ state, callup, onU
       ) : (
         <ul className="space-y-1.5">
           {assignments.map((a) => (
-            <li key={a.setPiece.id} className="text-[11px] text-ui-text">
+            <li key={a.setPiece.id} className="text-ui-body text-ui-text">
               <b>
                 {setPieceType(a.setPiece.type).icon} {setPieceTitle(a.setPiece)}:
               </b>{' '}
@@ -44,7 +49,7 @@ export const SetPiecesCard: React.FC<SetPiecesCardProps> = ({ state, callup, onU
                 <span key={i} className={l.missing ? 'text-ui-warning' : ''}>
                   {i > 0 ? ' · ' : ''}
                   {l.role.label} {l.player!.name}
-                  {l.missing ? ' ⚠️ não convocado' : ''}
+                  {l.missing ? ' (não convocado)' : ''}
                 </span>
               ))}
             </li>
@@ -52,8 +57,9 @@ export const SetPiecesCard: React.FC<SetPiecesCardProps> = ({ state, callup, onU
         </ul>
       )}
       {missing > 0 && (
-        <p className="text-[11px] text-ui-warning">
-          ⚠️ {missing} função(ões) com atletas fora da convocatória: troque no caderno ou convoque-os.
+        <p className="flex items-start gap-1.5 text-ui-caption text-ui-warning">
+          <Icon name="alert" className="mt-px h-4 w-4 shrink-0" />
+          {missing} função(ões) com atletas fora da convocatória: troque no caderno ou convoque-os.
         </p>
       )}
       {open && (

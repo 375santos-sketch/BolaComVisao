@@ -16,6 +16,7 @@ import { teamSettings } from '../../lib/teamSettings';
 import { cardAlerts, cardStatuses } from '../../lib/cardSuspensions';
 import { CompactSelect } from '../ui/CompactSelect';
 import { LastTimeAgainstCard } from './results/LastTimeAgainstCard';
+import { Icon } from '../ui/Icon';
 
 const LineupImageModal = lazy(() => import('./LineupImageModal').then((m) => ({ default: m.LineupImageModal })));
 const CallupImageModal = lazy(() => import('./CallupImageModal').then((m) => ({ default: m.CallupImageModal })));
@@ -211,14 +212,14 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             logoUrl: state.clubLogoUrl
           }}
         />
-        <div className="card text-center py-8">
-          <div className="text-4xl mb-3">📋</div>
-          <div className="text-base font-bold text-chalk mb-2">Sem Jogos no Calendário</div>
-          <p className="text-xs text-muted mb-4">
-            Agenda um jogo no calendário para poderes criar a convocatória e gerar o PDF.
+        <div className="ui-card mx-auto flex max-w-[640px] flex-col items-center gap-3 p-6 text-center">
+          <Icon name="clipboard" className="h-7 w-7 text-ui-muted" />
+          <p className="text-ui-lead font-bold text-ui-text">Sem jogos na Agenda</p>
+          <p className="text-ui-body text-ui-muted">
+            Marca um jogo na Agenda para poderes fazer a convocatória e gerar o PDF.
           </p>
-          <button className="btn btn-gold" onClick={() => onNavigate('calendario')}>
-            + Ir para Calendário
+          <button className="ui-btn ui-btn-secondary min-h-11 px-4" onClick={() => onNavigate('calendario')}>
+            Ir para a Agenda
           </button>
         </div>
       </div>
@@ -233,7 +234,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
   const detailsSummary = [match.meetingTime, match.venue].filter(Boolean).join(' · ');
 
   return (
-    <div className="pb-[calc(10rem+env(safe-area-inset-bottom))]">
+    <div className="pb-[calc(10rem+env(safe-area-inset-bottom))] lg:pb-0">
       <Header
         title="Convocatória"
         lang={state.lang}
@@ -253,11 +254,11 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
       />
 
       {/* The game: who, when, where, and how far the call-up is */}
-      <section aria-label="Jogo da convocatória" className="ui-card p-3.5 mb-2.5">
+      <section aria-label="Jogo da convocatória" className="ui-card mb-3 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-lg font-bold text-white leading-tight truncate">vs {match.opponent}</div>
-            <div className="text-xs text-slate-400 mt-0.5">
+            <div className="truncate text-ui-title font-bold leading-tight text-ui-text">vs {match.opponent}</div>
+            <div className="mt-1 text-ui-body text-ui-muted">
               {gameDay} · {match.time} ·{' '}
               {match.location === 'casa' ? t(state.lang, 'match_home') : t(state.lang, 'match_away')}
               {competition ? ` · ${competition}` : ''}
@@ -268,7 +269,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
               label="Escolher o jogo"
               value={selectedMatchId}
               onChange={handleSelectMatch}
-              className="shrink-0 text-xs !text-slate-300"
+              className="shrink-0 text-ui-caption !text-ui-text"
               options={state.schedule.map((s) => [
                 s.id,
                 `${s.id === selectedMatchId ? 'Trocar' : s.opponent} ${s.id === selectedMatchId ? '' : `(${s.date.split('-').reverse().join('/')} - ${s.time}h)${s.callupFinalized ? ' ✓' : ''}`}`.trim()
@@ -287,18 +288,19 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             }
           />
         </div>
-        <div className="mt-2.5 h-1.5 rounded-full bg-slate-800 overflow-hidden" aria-hidden="true">
-          <div className="h-full rounded-full bg-emerald-500" style={{ width: `${progress}%` }} />
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ui-surface-2" aria-hidden="true">
+          <div className="h-full rounded-full bg-ui-brand" style={{ width: `${progress}%` }} />
         </div>
-        <div className="mt-1.5 flex items-center justify-between gap-2 text-xs text-slate-400">
+        <div className="mt-2 flex items-center justify-between gap-2 text-ui-body text-ui-muted">
           {isFinalized && !isEditing ? (
-            <span className="text-emerald-300 font-semibold">
-              ✓ Convocatória fechada · {calledCount} convocados
+            <span className="flex items-center gap-1.5 font-semibold text-ui-brand">
+              <Icon name="tick" className="h-4 w-4 shrink-0" />
+              Convocatória fechada · {calledCount} convocados
               {match.callupFinalizedAt ? ` · ${new Date(match.callupFinalizedAt).toLocaleDateString('pt-PT')}` : ''}
             </span>
           ) : (
             <span>
-              <b className="text-slate-100">{calledCount}</b> de {eligiblePlayers.length} convocados
+              <b className="tabular-nums text-ui-text">{calledCount}</b> de {eligiblePlayers.length} convocados
               {isFinalized && isEditing ? ' · a editar' : ''}
             </span>
           )}
@@ -306,37 +308,42 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
       </section>
 
       {/* What to do with it */}
-      <div className="grid grid-cols-2 gap-2 mb-2.5">
+      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <button
           type="button"
           onClick={() => setShowLineup(true)}
-          className="ui-btn ui-btn-secondary px-2 py-2.5 text-xs leading-tight"
+          className="ui-btn ui-btn-secondary min-h-11 px-2 text-ui-body leading-tight"
           aria-label={`Imagem da equipa inicial${match.startingLineup ? ' (guardada)' : ''}`}
         >
-          🖼️ Equipa inicial{match.startingLineup ? ' ✓' : ''}
+          <Icon name="users" className="h-[18px] w-[18px] shrink-0" />
+          Equipa inicial
+          {match.startingLineup && <Icon name="tick" className="h-4 w-4 shrink-0 text-ui-brand" />}
         </button>
         <a
           href={directionsUrl(match)}
           target="_blank"
           rel="noopener noreferrer"
-          className="ui-btn ui-btn-secondary px-2 py-2.5 text-xs leading-tight flex items-center justify-center"
+          className="ui-btn ui-btn-secondary min-h-11 px-2 text-ui-body leading-tight"
         >
-          🗺️ Como chegar
+          <Icon name="pin" className="h-[18px] w-[18px] shrink-0" />
+          Como chegar
         </a>
         <button
           type="button"
           onClick={() => setShowShare(true)}
-          className="ui-btn ui-btn-secondary px-2 py-2.5 text-xs leading-tight"
+          className="ui-btn ui-btn-secondary min-h-11 px-2 text-ui-body leading-tight"
           aria-label="Enviar por WhatsApp"
         >
-          💬 WhatsApp
+          <Icon name="message" className="h-[18px] w-[18px] shrink-0" />
+          WhatsApp
         </button>
         <button
           type="button"
           onClick={() => setShowCallupImage(true)}
-          className="ui-btn ui-btn-secondary px-2 py-2.5 text-xs leading-tight"
+          className="ui-btn ui-btn-secondary min-h-11 px-2 text-ui-body leading-tight"
         >
-          🖼️ Imagem para os pais
+          <Icon name="image" className="h-[18px] w-[18px] shrink-0" />
+          Imagem para os pais
         </button>
       </div>
       {showCallupImage && (
@@ -372,11 +379,14 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
 
       {/* Meeting time, pitch and notes: open only when needed */}
       <details className="ui-card mb-3 group">
-        <summary className="flex items-center justify-between gap-2 px-3.5 py-3 cursor-pointer list-none text-sm font-semibold text-slate-100">
+        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-ui-body font-semibold text-ui-text">
           <span>Concentração, campo e avisos</span>
-          <span className="text-xs font-normal text-slate-400 truncate">{detailsSummary || 'por preencher'} ▾</span>
+          <span className="flex min-w-0 items-center gap-1 text-ui-caption font-normal text-ui-muted">
+            <span className="truncate">{detailsSummary || 'por preencher'}</span>
+            <Icon name="chevronDown" className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
+          </span>
         </summary>
-        <div className="px-3.5 pb-3.5">
+        <div className="px-4 pb-4">
           <div className="grid grid-cols-2 gap-2 mb-2">
             <div className="field mb-0">
               <label className="text-[11px]">Hora de concentração</label>
@@ -410,7 +420,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             <label className="text-[11px]">Avisos para os jogadores</label>
             <textarea
               rows={2}
-              className="w-full bg-surface border border-line rounded-lg p-2 text-xs text-chalk resize-none"
+              className="ui-input w-full resize-none text-ui-body"
               placeholder="Ex: Trazer BI/CC e equipamento alternativo..."
               value={match.callupNotes || ''}
               onChange={(e) => handleUpdateMatchField('callupNotes', e.target.value)}
@@ -421,11 +431,14 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
 
       {/* Players */}
       <section className="mb-3" id="convocatoria-players-selection" aria-label="Atletas">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <h2 className="text-xs font-bold uppercase tracking-wide text-slate-400">
-            Atletas ({calledCount}/{eligiblePlayers.length})
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-ui-lead font-bold text-ui-text">
+            Atletas{' '}
+            <span className="tabular-nums text-ui-muted">
+              {calledCount}/{eligiblePlayers.length}
+            </span>
           </h2>
-          <div className="flex items-center gap-3 text-xs font-semibold text-cyan-400">
+          <div className="flex items-center gap-1 text-ui-caption font-semibold text-ui-brand [&>button]:min-h-9 [&>button]:rounded-ui-sm [&>button]:px-2 [&>button:hover]:bg-ui-surface-2">
             <button type="button" onClick={handleSelectByAttendance} title="Convocar os atletas com assiduidade ≥70%">
               Por assiduidade
             </button>
@@ -439,9 +452,9 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
         </div>
 
         {eligiblePlayers.length === 0 ? (
-          <div className="ui-card text-xs text-slate-400 text-center py-4">
+          <div className="ui-card py-4 text-center text-ui-body text-ui-muted">
             Ainda não adicionaste jogadores ao plantel.
-            <button className="text-cyan-400 font-bold ml-1 underline" onClick={() => onNavigate('plantel')}>
+            <button className="ml-1 font-bold text-ui-brand underline" onClick={() => onNavigate('plantel')}>
               Adicionar Jogadores
             </button>
           </div>
@@ -451,17 +464,23 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
               <div
                 role="note"
                 aria-label="Cartões"
-                className="mb-2 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-[11px] text-rose-100 space-y-1"
+                className="mb-2 space-y-1.5 rounded-ui-lg border border-ui-danger/30 bg-ui-danger-soft p-3 text-ui-caption text-ui-text"
               >
                 {cards.suspended.map((c) => (
-                  <div key={c.playerId}>
-                    🟥 <b>{c.name}</b> tem {c.pendingGames} jogo{c.pendingGames > 1 ? 's' : ''} de castigo por cumprir (
-                    {c.reasons.join(', ')}){match.callup.includes(c.playerId) ? ' · está convocado!' : ''}
+                  <div key={c.playerId} className="flex items-start gap-2">
+                    <span aria-hidden className="mt-0.5 h-3.5 w-2.5 shrink-0 rounded-[2px] bg-ui-danger" />
+                    <span>
+                      <b>{c.name}</b> tem {c.pendingGames} jogo{c.pendingGames > 1 ? 's' : ''} de castigo por cumprir (
+                      {c.reasons.join(', ')}){match.callup.includes(c.playerId) ? ' · está convocado!' : ''}
+                    </span>
                   </div>
                 ))}
                 {cards.atRisk.map((c) => (
-                  <div key={c.playerId} className="text-amber-200">
-                    🟨 <b>{c.name}</b> tem {c.yellows} amarelos: mais um e fica de castigo
+                  <div key={c.playerId} className="flex items-start gap-2">
+                    <span aria-hidden className="mt-0.5 h-3.5 w-2.5 shrink-0 rounded-[2px] bg-ui-warning" />
+                    <span>
+                      <b>{c.name}</b> tem {c.yellows} amarelos: mais um e fica de castigo
+                    </span>
                   </div>
                 ))}
               </div>
@@ -469,22 +488,25 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
             {calledUnavailable.length > 0 && (
               <div
                 role="alert"
-                className="mb-2 p-2.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-[11px] text-rose-100"
+                className="mb-2 flex items-start gap-2 rounded-ui-lg border border-ui-danger/30 bg-ui-danger-soft p-3 text-ui-caption text-ui-text"
               >
-                ⚠️ Convocados indisponíveis neste jogo:{' '}
-                {calledUnavailable.map((p) => `${p.name} (${availabilityById.get(p.id)?.label})`).join(', ')}
+                <Icon name="alert" className="mt-px h-4 w-4 shrink-0 text-ui-danger" />
+                <span>
+                  Convocados indisponíveis neste jogo:{' '}
+                  {calledUnavailable.map((p) => `${p.name} (${availabilityById.get(p.id)?.label})`).join(', ')}
+                </span>
               </div>
             )}
             {needMinutes.length > 0 && (
               <div
                 role="note"
                 aria-label="Com menos minutos"
-                className="mb-2 p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-[11px] text-amber-100 space-y-1"
+                className="mb-2 space-y-1.5 rounded-ui-lg border border-ui-warning/30 bg-ui-warning-soft p-3 text-ui-caption text-ui-text"
               >
-                <div className="font-bold text-amber-300">Com menos minutos (só um alerta)</div>
+                <div className="font-bold text-ui-warning">Com menos minutos (só um alerta)</div>
                 <div className="flex flex-wrap gap-1">
                   {needMinutes.map((r) => (
-                    <span key={r.playerId} className="px-2 py-0.5 rounded-full bg-amber-900/40">
+                    <span key={r.playerId} className="rounded-full bg-ui-surface-2 px-2 py-0.5">
                       {r.name}{' '}
                       <b>
                         {Math.round(r.callupShare * 100)}%
@@ -493,7 +515,7 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                     </span>
                   ))}
                 </div>
-                <div className="text-amber-200/70">
+                <div className="text-ui-muted">
                   % = minutos jogados dos jogos em que foi convocado · fora = não convocado nos últimos jogos
                 </div>
               </div>
@@ -502,9 +524,10 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSortByMinutes((v) => !v)}
-                className="text-[11px] font-semibold text-slate-400 hover:text-slate-200"
+                className="flex min-h-9 items-center gap-1.5 rounded-ui-sm px-2 text-ui-caption font-semibold text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
               >
-                {sortByMinutes ? '↕ Ordenar por número' : '↕ Quem jogou menos primeiro'}
+                <Icon name="sort" className="h-4 w-4" />
+                {sortByMinutes ? 'Ordenar por número' : 'Quem jogou menos primeiro'}
               </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
@@ -530,17 +553,17 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                     onClick={() => handleTogglePlayer(p.id)}
                     role="checkbox"
                     aria-checked={isCalled}
-                    className={`ui-card px-3 py-2 min-h-[52px] cursor-pointer active:scale-[0.99] touch-manipulation flex items-center gap-3 select-none ${
+                    className={`ui-card flex min-h-14 cursor-pointer touch-manipulation select-none items-center gap-3 px-3 py-2 transition-colors hover:bg-ui-surface-2 active:scale-[0.99] ${
                       availability && !availability.available && !isCalled ? 'opacity-60 ' : ''
-                    }${isCalled ? 'border-emerald-500/50' : ''}`}
+                    }${isCalled ? '!border-ui-brand/50' : ''}`}
                   >
                     <span
-                      className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-black ${
-                        isCalled ? 'bg-emerald-500 text-slate-950' : 'border-2 border-slate-600 text-transparent'
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+                        isCalled ? 'bg-ui-brand text-ui-bg' : 'border-2 border-ui-line-strong text-transparent'
                       }`}
                       aria-hidden="true"
                     >
-                      ✓
+                      <Icon name="tick" className="h-3.5 w-3.5" strokeWidth={3} />
                     </span>
                     {p.photoUrl ? (
                       <img
@@ -550,30 +573,30 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <span className="ui-inset w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-sm font-bold text-white">
+                      <span className="ui-inset flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-ui-body font-bold tabular-nums text-ui-text">
                         {hasNumber ? p.number : '–'}
                       </span>
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className={`text-sm font-bold truncate ${isCalled ? 'text-white' : 'text-slate-300'}`}>
-                        {p.photoUrl && hasNumber && <span className="text-slate-400 mr-1">#{p.number}</span>}
+                      <div className={`truncate text-ui-body font-bold ${isCalled ? 'text-ui-text' : 'text-ui-muted'}`}>
+                        {p.photoUrl && hasNumber && <span className="mr-1 text-ui-muted">#{p.number}</span>}
                         <span>{p.name}</span>
                       </div>
                       {availability?.label ? (
                         <div
-                          className={`text-[11px] font-semibold truncate ${
-                            availability.available ? 'text-emerald-400' : 'text-rose-400'
+                          className={`flex items-center gap-1 truncate text-ui-caption font-semibold ${
+                            availability.available ? 'text-ui-success' : 'text-ui-danger'
                           }`}
                         >
-                          {availability.available ? '✓ ' : availability.status === 'lesionado' ? '🏥 ' : '🟥 '}
-                          {availability.label}
+                          <Icon name={availability.available ? 'tick' : 'alert'} className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{availability.label}</span>
                         </div>
                       ) : (
                         <div
-                          className={`text-[11px] truncate ${mins?.fewestMinutes ? 'text-amber-300' : 'text-slate-400'}`}
+                          className={`truncate text-ui-caption ${mins?.fewestMinutes ? 'text-ui-warning' : 'text-ui-muted'}`}
                         >
                           {facts.join(' · ')}
-                          {att.consecutiveAbsences >= 2 ? ` · ⚠️ ${att.consecutiveAbsences} faltas` : ''}
+                          {att.consecutiveAbsences >= 2 ? ` · ${att.consecutiveAbsences} faltas seguidas` : ''}
                         </div>
                       )}
                     </div>
@@ -587,32 +610,36 @@ export const ConvocatoriaView: React.FC<ConvocatoriaViewProps> = ({
 
       <SetPiecesCard state={state} callup={match.callup} onUpdateState={onUpdateState} onShowToast={onShowToast} />
 
-      <div className="grid grid-cols-2 gap-2 mt-3">
-        <button className="ui-btn ui-btn-secondary py-2.5 text-xs" onClick={handleGeneratePDF}>
-          📄 PDF
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <button className="ui-btn ui-btn-secondary min-h-11 px-4 text-ui-body" onClick={handleGeneratePDF}>
+          <Icon name="file" className="h-[18px] w-[18px]" />
+          PDF
         </button>
-        <button className="ui-btn ui-btn-secondary py-2.5 text-xs" onClick={handleGenerateExcel}>
-          📊 Excel
+        <button className="ui-btn ui-btn-secondary min-h-11 px-4 text-ui-body" onClick={handleGenerateExcel}>
+          <Icon name="chart" className="h-[18px] w-[18px]" />
+          Excel
         </button>
       </div>
 
       {/* Main action, always at hand above the bottom bar */}
-      <div className="fixed left-0 right-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 px-3 max-w-5xl mx-auto pointer-events-none lg:bottom-6 lg:left-60 lg:max-w-3xl">
+      <div className="pointer-events-none fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 mx-auto max-w-5xl px-3 lg:pointer-events-auto lg:sticky lg:bottom-0 lg:mt-4 lg:flex lg:max-w-none lg:justify-end lg:border-t lg:border-ui-line lg:bg-ui-bg/90 lg:px-0 lg:py-3 lg:backdrop-blur">
         {isFinalized && !isEditing ? (
           <button
             type="button"
             onClick={handleStartEditing}
-            className="pointer-events-auto ui-btn ui-btn-secondary w-full py-3.5 text-sm shadow-2xl flex items-center justify-center gap-2"
+            className="ui-btn ui-btn-secondary pointer-events-auto min-h-12 w-full px-6 text-ui-lead shadow-2xl lg:w-auto"
           >
-            ✏️ Editar Convocatória
+            <Icon name="pencil" className="h-5 w-5" />
+            Editar Convocatória
           </button>
         ) : (
           <button
             type="button"
             onClick={handleFinalizeCallup}
-            className="pointer-events-auto ui-btn ui-btn-primary w-full py-3.5 text-sm shadow-2xl flex items-center justify-center gap-2"
+            className="ui-btn ui-btn-primary pointer-events-auto min-h-12 w-full px-6 text-ui-lead shadow-2xl lg:w-auto"
           >
-            ✓ Finalizar Convocatória ({calledCount})
+            <Icon name="tick" className="h-5 w-5" />
+            Finalizar Convocatória ({calledCount})
           </button>
         )}
       </div>
