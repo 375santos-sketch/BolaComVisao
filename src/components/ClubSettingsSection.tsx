@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppState } from '../types';
-import { teamSettings, withTeamSettings } from '../lib/teamSettings';
+import { DEFAULT_CLUB_COLOR, teamSettings, withTeamSettings } from '../lib/teamSettings';
 import { CLUB_COLOR_PRESETS, isHexColor } from '../lib/clubColors';
 import { DateTimePT } from './ui/DateTimePT';
 
@@ -68,7 +68,7 @@ export const ClubSettingsSection: React.FC<ClubSettingsSectionProps> = ({
             <input
               type="color"
               aria-label="Outra cor"
-              value={isHexColor(settings.clubColor) ? settings.clubColor : '#22c3ee'}
+              value={isHexColor(settings.clubColor) ? settings.clubColor : DEFAULT_CLUB_COLOR}
               onChange={(e) => save({ clubColor: e.target.value })}
               className="h-8 w-9 cursor-pointer rounded-ui-sm border border-ui-line bg-transparent"
             />

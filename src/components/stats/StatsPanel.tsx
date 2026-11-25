@@ -15,9 +15,9 @@ import { sortPlayerObjs, homeFirstScore } from '../../lib/utils';
 import { BarChart } from './BarChart';
 import { GoalsLineChart } from '../trends/GoalsLineChart';
 
-// The app's colours: cyan for us, grey-blue for the opponent (the same as the line chart).
-const OURS = '#22c3ee';
-const THEIRS = '#8b9bb4';
+// The app's colours: the brand (or club) colour for us, grey for the opponent (the same as the line chart).
+const OURS = 'var(--color-ui-brand)';
+const THEIRS = 'var(--color-ui-muted)';
 
 const SCOPES: { id: PanelScope; label: string }[] = [
   { id: 'epoca', label: 'Época' },

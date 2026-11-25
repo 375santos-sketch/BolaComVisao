@@ -6,7 +6,10 @@ import { DEFAULT_TRAINING_FIELDS } from './fieldSetup';
  * its town (for the weather of home games and trainings) and how many yellow cards make a suspension.
  */
 
-export const DEFAULT_CLUB_COLOR = '#22c3ee';
+/** The BolaComVisão green (docs/design/DESIGN_SYSTEM.md). */
+export const DEFAULT_CLUB_COLOR = '#2edb74';
+/** The app's colour before the green: a team that saved it (the old first preset) gets the green, like the others. */
+export const LEGACY_DEFAULT_CLUB_COLOR = '#22c3ee';
 export const DEFAULT_YELLOWS_FOR_BAN = 5;
 const DEFAULT_TRAINING_MINUTES = 75;
 /** Mondays at 19:15 and Thursdays at 18:15 until the coach sets the team's own days. */
@@ -19,7 +22,10 @@ const activeTeam = (state: TeamState) => (state.teams || []).find((t) => t.id ==
 export function teamSettings(state: TeamState) {
   const team = activeTeam(state);
   return {
-    clubColor: team?.clubColor || DEFAULT_CLUB_COLOR,
+    clubColor:
+      team?.clubColor && team.clubColor.toLowerCase() !== LEGACY_DEFAULT_CLUB_COLOR
+        ? team.clubColor
+        : DEFAULT_CLUB_COLOR,
     clubTown: team?.clubTown?.trim() || '',
     yellowsForBan:
       team?.yellowsForBan && team.yellowsForBan > 0 ? Math.round(team.yellowsForBan) : DEFAULT_YELLOWS_FOR_BAN,
