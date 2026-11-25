@@ -2,6 +2,7 @@ import { auth } from './firebase';
 import { ChronicleAudience, ChronicleFacts, pseudonymizeChronicle } from '../lib/matchChronicle';
 import { newsletterFacts, pseudonymizeNewsletterFacts } from '../lib/weeklyNewsletter';
 import { Player } from '../types';
+import { assertAiEnabled } from '../lib/aiSwitch';
 
 /**
  * The AI texts of the app (crónica and resumo da semana). P1-05: the names of the athletes never leave the device —
@@ -26,6 +27,7 @@ export async function writeChronicle(
   audience: ChronicleAudience,
   roster: Player[]
 ): Promise<string> {
+  assertAiEnabled();
   const masked = pseudonymizeChronicle(facts, roster);
   const text = await askServer({ facts: masked.facts, audience }, 'Não foi possível escrever a crónica.');
   return masked.restore(text);
@@ -36,6 +38,7 @@ export async function writeNewsletterIntro(
   facts: ReturnType<typeof newsletterFacts>,
   roster: Player[]
 ): Promise<string> {
+  assertAiEnabled();
   const masked = pseudonymizeNewsletterFacts(facts, roster);
   const text = await askServer({ facts: masked.facts, kind: 'resumo' }, 'Não foi possível escrever a mensagem.');
   return masked.restore(text);

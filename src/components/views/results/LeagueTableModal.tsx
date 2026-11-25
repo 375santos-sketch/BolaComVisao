@@ -19,6 +19,7 @@ import { uid } from '../../../lib/utils';
 import { cleanPrintGames, printToLeagueGames } from '../../../lib/printJornada';
 import { compressImageFile } from '../../../lib/imageCompress';
 import { auth } from '../../../services/firebase';
+import { assertAiEnabled } from '../../../lib/aiSwitch';
 
 interface LeagueTableModalProps {
   state: AppState;
@@ -208,6 +209,7 @@ export const LeagueTableModal: React.FC<LeagueTableModalProps> = ({ state, onUpd
     setReading(true);
     setPrintGames(null);
     try {
+      assertAiEnabled();
       const image = await compressImageFile(file, 1600, 600_000);
       const token = await auth.currentUser?.getIdToken();
       if (!token) throw new Error('Entre na app com a sua conta para ler prints.');

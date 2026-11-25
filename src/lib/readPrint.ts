@@ -1,5 +1,6 @@
 import { compressImageFile } from './imageCompress';
 import { auth } from '../services/firebase';
+import { assertAiEnabled } from './aiSwitch';
 
 /**
  * Sends a picture (results of a round, or a calendar of games) to the server, which reads it with Gemini. Returns
@@ -14,6 +15,7 @@ export async function readPrintData(
   image: string,
   mode: 'resultados' | 'calendario' | 'exercicio' | 'exercicios'
 ): Promise<unknown> {
+  assertAiEnabled();
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error('Entre na app com a sua conta para ler prints.');
   const resp = await fetch('/api/ler-jornada', {

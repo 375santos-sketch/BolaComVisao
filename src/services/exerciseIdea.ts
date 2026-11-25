@@ -1,9 +1,11 @@
 import { auth } from './firebase';
 import { ExerciseIdeaRequest } from '../lib/exerciseIdea';
 import { cleanPrintExercise } from '../lib/printExercise';
+import { assertAiEnabled } from '../lib/aiSwitch';
 
 /** Asks the server for an exercise proposed by Gemini; errors come back as messages for the coach. */
 export async function createExerciseIdea(request: ExerciseIdeaRequest) {
+  assertAiEnabled();
   const token = await auth.currentUser?.getIdToken();
   if (!token) throw new Error('Entre na app com a sua conta.');
   const resp = await fetch('/api/exercicio-ia', {
