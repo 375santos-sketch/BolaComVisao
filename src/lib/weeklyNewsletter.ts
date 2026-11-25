@@ -10,8 +10,9 @@ import { makePseudonyms } from './aiPseudonyms';
  * ended, and the games and trainings of the week that starts); the coach writes a short note, the highlights and
  * the notices, checks it and publishes it. One secret link per team
  * (public_newsletters/{token}, shown by the server at /semana/{token}) always shows the latest one.
- * Only what every parent of the team may see: the scorers' first names (as in the game link), never surnames,
- * contacts, birth dates, absences of a given athlete, ratings or the coach's notes.
+ * Only what every parent of the team may see: the scorers' first names (as in the game link) and, only when the coach
+ * turns it on, a small photo of each scorer of the week; never surnames, contacts, birth dates, absences of a given
+ * athlete, ratings or the coach's notes.
  */
 
 export interface NewsletterResult {
@@ -439,6 +440,8 @@ interface NewsletterPage {
   archive?: NewsletterIssue[];
   /** The picture of the link's card (JPEG made by the app when publishing), served at /semana/{token}/cartao.jpg. */
   card?: string;
+  /** Only when the coach turns it on: a small photo of each scorer of the week, by first name ("Tomás" → JPEG). */
+  photos?: Record<string, string>;
 }
 
 /** How the page is shown: on the server (origin and token, for the link's card) or as the coach's preview. */
@@ -451,6 +454,36 @@ export interface NewsletterRender {
 /** The card picture as the rules accept it: a JPEG data URL well below Firestore's 1 MB. */
 export const CARD_MAX = 400_000;
 export const CARD_IMAGE = /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/;
+
+/** Scorers' photos: at most PHOTOS_MAX, each a small JPEG data URL (96×96) of PHOTO_MAX characters at most. */
+export const PHOTO_MAX = 20_000;
+export const PHOTOS_MAX = 20;
+
+/**
+ * The photos that may go with the summary: one per scorer of the week (by the first name shown on the page), only
+ * photos already kept in the app (data URLs) and never when two athletes of the roster go by the same first name
+ * (the page could not tell which one scored). They are made small (newsletterPhotos.ts) before publishing.
+ */
+export function scorerPhotoSources(issue: Pick<NewsletterIssue, 'results'>, roster: Player[]): Record<string, string> {
+  const scorers = new Set(issue.results.flatMap((r) => (r.scorers ? scorerChips(r.scorers).map(chipName) : [])));
+  const byName = new Map<string, Player[]>();
+  for (const p of roster || []) {
+    if (!p || !p.id) continue;
+    const name = firstName(roster, p.id);
+    if (name) byName.set(name, [...(byName.get(name) || []), p]);
+  }
+  const out: Record<string, string> = {};
+  for (const name of scorers) {
+    if (Object.keys(out).length >= PHOTOS_MAX) break;
+    const same = byName.get(name) || [];
+    const photo = same.length === 1 ? same[0].photoUrl : undefined;
+    if (photo && photo.startsWith('data:image/')) out[name] = photo;
+  }
+  return out;
+}
+
+/** "Tomás ×2" → "Tomás" */
+const chipName = (chip: string) => chip.replace(/\s×\d+$/, '');
 
 export type Outcome = 'vitoria' | 'empate' | 'derrota';
 export const outcomeOf = (r: Pick<NewsletterResult, 'ours' | 'theirs'>): Outcome =>
@@ -532,7 +565,20 @@ export function newsletterFromRestDocument(
     .slice(0, ARCHIVE_WEEKS);
   const card =
     typeof data.card === 'string' && data.card.length <= CARD_MAX && CARD_IMAGE.test(data.card) ? data.card : undefined;
-  return { teamName: clip(data.teamName, 200), issue: issueFromData(data.issue), archive, card };
+  const photos: Record<string, string> = {};
+  if (data.photos && typeof data.photos === 'object' && !Array.isArray(data.photos)) {
+    for (const [name, photo] of Object.entries(data.photos as Record<string, unknown>).slice(0, PHOTOS_MAX)) {
+      if (name && name.length <= 40 && typeof photo === 'string' && photo.length <= PHOTO_MAX && CARD_IMAGE.test(photo))
+        photos[name] = photo;
+    }
+  }
+  return {
+    teamName: clip(data.teamName, 200),
+    issue: issueFromData(data.issue),
+    archive,
+    card,
+    ...(Object.keys(photos).length ? { photos } : {})
+  };
 }
 
 /** One summary read back from the published document (null when it is not one). */
@@ -588,7 +634,7 @@ const esc = (s: unknown) =>
 
 /** The whole page, in the app's colours (dark, or light when the phone is in light mode). */
 export function renderNewsletterPage(
-  { teamName, issue, archive = [], card }: NewsletterPage,
+  { teamName, issue, archive = [], card, photos = {} }: NewsletterPage,
   { origin, token, preview }: NewsletterRender = {}
 ): string {
   // 1 · The link's card in the parents' chat (Open Graph): title, the week's facts and the picture made by the app
@@ -622,7 +668,8 @@ h2{font-family:"Chakra Petch","Plus Jakarta Sans",sans-serif;font-size:18px;text
 .tm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tm.them{color:var(--muted);font-weight:500}
 .g{font-family:"Chakra Petch",sans-serif;font-size:22px;line-height:1.1;text-align:right;font-variant-numeric:tabular-nums}.g.us{color:var(--k)}
 .goals{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;border-top:1px dashed var(--line);padding-top:8px}
-.goals span{background:var(--inset);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+.goals span{background:var(--inset);border:1px solid var(--line);border-radius:999px;padding:2px 9px;display:inline-flex;align-items:center;gap:6px}
+.goals img{width:24px;height:24px;border-radius:50%;object-fit:cover;margin-left:-6px;flex:none}
 .vitoria{--k:var(--win);--ks:var(--win-soft)}.empate{--k:var(--draw);--ks:var(--draw-soft)}.derrota{--k:var(--loss);--ks:var(--loss-soft)}
 .pv{background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:13px;text-align:center;padding:10px 16px;border-radius:8px;max-width:640px;margin:0 auto 12px}
 ul{list-style:none;display:grid;gap:8px}li{display:flex;gap:10px;align-items:baseline}li:before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--brand);transform:translateY(-1px)}
@@ -643,7 +690,12 @@ summary span{color:var(--muted);font-weight:500;font-size:13px;margin-left:auto}
   if (!issue) {
     return `${head}<div class="w"><div class="hd">${logo}<div><div class="wk">${esc(teamName)}</div><h1>Resumo da semana</h1></div></div><div class="bd"><p class="empty">O treinador ainda não publicou o resumo desta semana.</p></div></div></body></html>`;
   }
-  const resultsOf = (list: NewsletterResult[]) =>
+  // The scorers' photos (when the coach turned them on) go only with this week's results, not the earlier weeks
+  const chip = (g: string, withPhotos: boolean) => {
+    const photo = withPhotos ? photos[chipName(g)] : undefined;
+    return `<span>${photo ? `<img src="${esc(photo)}" alt="" width="24" height="24">` : ''}${esc(g)}</span>`;
+  };
+  const resultsOf = (list: NewsletterResult[], withPhotos = false) =>
     list
       .map((r) => {
         // 2 + 3 · Win, draw or loss in colour; our team always highlighted; the scorers on a line of their own
@@ -654,7 +706,7 @@ summary span{color:var(--muted);font-weight:500;font-size:13px;margin-left:auto}
           .filter(Boolean)
           .join(' · ');
         const goals = r.scorers ? scorerChips(r.scorers) : [];
-        return `<article class="res ${k}"><span class="bar"></span><div class="in"><div class="top"><span>${esc(meta)}</span><span class="pill">${OUTCOME_LABEL[k]}</span></div><div class="ln">${r.home === false ? them + us : us + them}</div>${goals.length ? `<div class="goals">${goals.map((g) => `<span>⚽ ${esc(g)}</span>`).join('')}</div>` : ''}</div></article>`;
+        return `<article class="res ${k}"><span class="bar"></span><div class="in"><div class="top"><span>${esc(meta)}</span><span class="pill">${OUTCOME_LABEL[k]}</span></div><div class="ln">${r.home === false ? them + us : us + them}</div>${goals.length ? `<div class="goals">${goals.map((g) => chip(g, withPhotos)).join('')}</div>` : ''}</div></article>`;
       })
       .join('') || '<p class="empty">Não houve jogos nesta semana.</p>';
   const factsOf = (i: NewsletterIssue) =>
@@ -664,7 +716,7 @@ summary span{color:var(--muted);font-weight:500;font-size:13px;margin-left:auto}
         : '',
       ...i.highlights.map((h) => `<li><span>${esc(h)}</span></li>`)
     ].join('');
-  const results = resultsOf(issue.results);
+  const results = resultsOf(issue.results, true);
   const facts = factsOf(issue);
   const older = archive.filter((a) => a.from !== issue.from);
   const archiveHtml = older.length
@@ -686,7 +738,7 @@ summary span{color:var(--muted);font-weight:500;font-size:13px;margin-left:auto}
           const when = [e.time ? `${e.kind === 'jogo' ? 'Jogo' : 'Início'} às ${e.time}` : '', e.meeting]
             .filter(Boolean)
             .join(' · ');
-          return `<div class="ev ${e.kind}"><div class="d"><b>${esc(d)}</b><span>${esc(wd)} ${esc(MONTHS[Number(m) - 1] || '')}</span></div><div><b>${esc(e.title)}</b>${when ? `<small>${esc(when)}</small>` : ''}${e.place ? `<small>📍 ${esc(e.place)}</small>` : ''}</div></div>`;
+          return `<div class="ev ${e.kind}"><div class="d"><b>${esc(d)}</b><span>${esc(wd)} ${esc(MONTHS[Number(m) - 1] || '')}</span></div><div><b>${esc(e.title)}</b>${when ? `<small>${esc(when)}</small>` : ''}${e.place ? `<small>Local: ${esc(e.place)}</small>` : ''}</div></div>`;
         })
         .join('')
     : '<p class="empty">Não há jogos nem treinos marcados para esta semana.</p>';

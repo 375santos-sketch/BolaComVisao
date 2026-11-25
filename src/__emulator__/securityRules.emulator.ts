@@ -424,6 +424,8 @@ describe('Resumo da semana para os pais (link secreto)', () => {
     await fs.setDoc(newsDoc(), news('clubA', { issue: null }));
     await fs.setDoc(newsDoc(), news('clubA', { archive: [{ from: '2026-11-09', to: '2026-11-15', results: [] }] }));
     await fs.setDoc(newsDoc(), news('clubA', { card: 'data:image/jpeg;base64,/9j/AAAA' }));
+    // The scorers' small photos, only when the coach turns them on
+    await fs.setDoc(newsDoc(), news('clubA', { photos: { Tomás: 'data:image/jpeg;base64,/9j/AAAA' } }));
     await fs.setDoc(newsDoc(), news('clubA'));
     const res = await fetch(`${url}/${TOKEN}`);
     expect(res.status).toBe(200);
@@ -442,6 +444,19 @@ describe('Resumo da semana para os pais (link secreto)', () => {
     ).rejects.toMatchObject(denied);
     await expect(
       fs.setDoc(newsDoc(), news('clubA', { card: 'data:text/html;base64,PHNjcmlwdD4=' }))
+    ).rejects.toMatchObject(denied);
+    await expect(
+      fs.setDoc(newsDoc(), news('clubA', { photos: ['data:image/jpeg;base64,/9j/AAAA'] }))
+    ).rejects.toMatchObject(denied);
+    await expect(
+      fs.setDoc(
+        newsDoc(),
+        news('clubA', {
+          photos: Object.fromEntries(
+            Array.from({ length: 21 }, (_, i) => [`Atleta${i}`, 'data:image/jpeg;base64,/9j/A'])
+          )
+        })
+      )
     ).rejects.toMatchObject(denied);
     await expect(fs.setDoc(newsDoc('curto'), news('clubA'))).rejects.toMatchObject(denied);
     await fa.signOut(fb.auth);

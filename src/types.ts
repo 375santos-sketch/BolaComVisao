@@ -767,6 +767,8 @@ export interface SquadProfile {
   liveShowCards?: boolean;
   /** Secret part of the parents' weekly summary link (/semana/{token}); none = not shared. */
   newsletterToken?: string;
+  /** The weekly summary's link also shows a small photo of each scorer (off unless the coach turns it on). */
+  newsletterPhotos?: boolean;
   /** Monday (YYYY-MM-DD) of the last week whose summary was published: the Monday reminder stops until the next. */
   newsletterWeek?: string;
   /** Championship series (one per season): other games of the series, for the league table. */
