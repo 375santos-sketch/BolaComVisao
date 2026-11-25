@@ -126,7 +126,7 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
   const writeWithAI = async () => {
     setWriting(true);
     try {
-      const text = await writeNewsletterIntro(newsletterFacts(teamName, auto, draft.highlights));
+      const text = await writeNewsletterIntro(newsletterFacts(teamName, auto, draft.highlights), state.roster || []);
       setDraft((d) => ({ ...d, intro: text }));
       setPublished(false);
       onShowToast('Mensagem escrita ✓ Reveja antes de publicar.');
@@ -278,6 +278,10 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
               3,
               'Fair-play: ajudámos um adversário lesionado\nTreino em foco: passe e desmarcação'
             )}
+            <p id="newsletter-highlights-ai-note" className="text-[11px] leading-snug text-ui-muted">
+              🔒 Ao tocar em «Escrever com IA», os destaques seguem para a IA com os nomes do plantel trocados por
+              códigos. Não escreva dados de saúde nem outros dados pessoais dos atletas.
+            </p>
             {field('intro', 'Mensagem do treinador', LIMITS.intro, 4, 'Olá a todos! …')}
             <button
               type="button"

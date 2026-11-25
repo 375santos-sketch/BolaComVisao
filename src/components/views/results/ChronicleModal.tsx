@@ -24,7 +24,7 @@ const ChronicleModal: React.FC<ChronicleModalProps> = ({ match, state, onClose, 
   const produce = async (a: ChronicleAudience, scorers: boolean) => {
     const facts = chronicleFacts(match, state, scorers);
     try {
-      return { text: await writeChronicle(facts, a), note: '' };
+      return { text: await writeChronicle(facts, a, state.roster || []), note: '' };
     } catch (err) {
       return {
         text: chronicleFallback(facts, a),

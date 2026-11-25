@@ -9,6 +9,8 @@
  * Pure functions: the server reads the documents and keeps the counters; the tests check the decisions here.
  */
 
+import { createHash } from 'node:crypto';
+
 /** Calls to the AI routes per account per day (UTC). Free Gemini plan for now (decisão 12). */
 export const AI_DAILY_LIMIT = 40;
 
@@ -58,4 +60,25 @@ export function createDailyLimiter(limit = AI_DAILY_LIMIT, now: () => number = D
       return { ok: true, remaining: limit - used - 1 };
     }
   };
+}
+
+export type AiRoute = 'cronica' | 'resumo' | 'ler-jornada' | 'exercicio-ia';
+export type AiOutcome = 'ok' | 'recusado' | 'limite' | 'invalido' | 'erro';
+
+/**
+ * P1-05 — The minimal record of each use of the AI, for the server's log: which route, when, how it ended and the
+ * account as a short hash (never the uid itself, the e-mail or anything of the request or of the answer).
+ */
+/** How an AI request ended, from the HTTP status the route answered with. */
+export function aiOutcomeOf(status: number): AiOutcome {
+  if (status >= 200 && status < 300) return 'ok';
+  if (status === 401 || status === 403) return 'recusado';
+  if (status === 429) return 'limite';
+  if (status === 400) return 'invalido';
+  return 'erro';
+}
+
+export function aiUsageLine(route: AiRoute, uid: string | null | undefined, outcome: AiOutcome, now = new Date()) {
+  const who = uid ? createHash('sha256').update(uid).digest('hex').slice(0, 10) : '-';
+  return JSON.stringify({ ia: route, conta: who, resultado: outcome, em: now.toISOString() });
 }

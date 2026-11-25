@@ -3,7 +3,7 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
-import { aiAccessFor, createDailyLimiter } from './src/lib/aiAccess';
+import { AiRoute, aiAccessFor, aiOutcomeOf, aiUsageLine, createDailyLimiter } from './src/lib/aiAccess';
 import { buildICS, feedFromRestDocument, reminderPlanFromQuery } from './src/lib/calendarFeed';
 import {
   cleanPrintExercise,
@@ -86,6 +86,16 @@ async function isRealAdmin(uid: string, idToken: string): Promise<boolean> {
 
 /** P0-08: one counter for the three AI routes (crónica, leitura de prints, exercício com IA). */
 const aiLimiter = createDailyLimiter();
+
+/** P1-05: one line per use of the AI in the server's log, with no content (see aiUsageLine). */
+const logAiUse =
+  (route: (req: express.Request) => AiRoute) =>
+  (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (req.method === 'POST') {
+      res.on('finish', () => console.info(aiUsageLine(route(req), res.locals.aiUid, aiOutcomeOf(res.statusCode))));
+    }
+    next();
+  };
 
 /**
  * P0-08: the caller of an AI route must be signed in AND be an approved account of the coaching staff (or the
@@ -300,10 +310,15 @@ async function startServer() {
 
   // Classificação → "📷 Importar print da jornada": reads the games of a screenshot with Gemini. Only for signed-in
   // users; the picture is not stored.
+  app.use(
+    '/api/ler-jornada',
+    logAiUse(() => 'ler-jornada')
+  );
   app.post('/api/ler-jornada', async (req, res) => {
     try {
       const caller = await aiCaller(req);
       if (caller.ok === false) return res.status(caller.status).json({ success: false, error: caller.error });
+      res.locals.aiUid = caller.uid;
       const geminiKey = process.env.GEMINI_API_KEY;
       if (!geminiKey) {
         return res
@@ -387,10 +402,15 @@ async function startServer() {
   // Resultados → "📰 Crónica do jogo": Gemini writes a short text from the game's facts (sent by the app: score,
   // goals in order, first names of scorers only when the coach chose so). Only for signed-in users.
   // kind "resumo": the coach's note of the weekly summary for the parents (Comunicação → 📰 Resumo da semana).
+  app.use(
+    '/api/cronica',
+    logAiUse((req) => (req.body?.kind === 'resumo' ? 'resumo' : 'cronica'))
+  );
   app.post('/api/cronica', async (req, res) => {
     try {
       const caller = await aiCaller(req);
       if (caller.ok === false) return res.status(caller.status).json({ success: false, error: caller.error });
+      res.locals.aiUid = caller.uid;
       const geminiKey = process.env.GEMINI_API_KEY;
       if (!geminiKey)
         return res.status(503).json({ success: false, error: 'A escrita automática não está disponível.' });
@@ -439,10 +459,15 @@ async function startServer() {
 
   // Treinos → Exercícios → "✨ Criar com IA": Gemini proposes an exercise for a goal, in the same format as an
   // exercise read from a photo. Only for signed-in users.
+  app.use(
+    '/api/exercicio-ia',
+    logAiUse(() => 'exercicio-ia')
+  );
   app.post('/api/exercicio-ia', async (req, res) => {
     try {
       const caller = await aiCaller(req);
       if (caller.ok === false) return res.status(caller.status).json({ success: false, error: caller.error });
+      res.locals.aiUid = caller.uid;
       const geminiKey = process.env.GEMINI_API_KEY;
       if (!geminiKey) return res.status(503).json({ success: false, error: 'A criação com IA não está disponível.' });
       const request = cleanIdeaRequest(req.body);
