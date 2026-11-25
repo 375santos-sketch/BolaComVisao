@@ -86,16 +86,16 @@ test('entrar: escolha da equipa e painel inicial', async ({ page }) => {
   await enterPanel(page);
   await expect(page.getByText('Treinador A', { exact: true })).toBeVisible();
 
-  // Simple home: the season in four figures, shortcuts, what needs attention, the next 7 days.
-  const notices = page.getByRole('region', { name: 'Avisos' });
+  // Início (design · etapa 1): Hoje, Tarefas (everything waiting, most urgent first), A seguir, A equipa, Atalhos.
+  const notices = page.getByRole('region', { name: 'Tarefas' });
   await expect(notices).toContainText('Convocatória por fechar: vs Abrantes');
   // Short of minutes only over the games each athlete was called up for: never called up does not count
   await expect(notices).toContainText('Com menos minutos: Martim Costa (0%), Duarte Matos (20%)');
   await expect(notices).not.toContainText('Gabriel Sousa');
-  const season = page.getByRole('region', { name: 'Resumo da época' });
-  await expect(season.getByRole('button', { name: /Marcados/ })).toContainText('2em 2 jogos');
-  await expect(season.getByRole('button', { name: /Sofridos/ })).toContainText('1em 2 jogos');
-  await expect(season.getByRole('button', { name: /V-E-D/ })).toContainText('1-1-0');
+  // A equipa: the last results (one win, one draw) and the athletes short of minutes (the same as in Tarefas)
+  const team = page.getByRole('region', { name: 'A equipa' });
+  await expect(team.getByLabel(/Últimos resultados/)).toHaveAttribute('aria-label', /^Últimos resultados: (V E|E V)$/);
+  await expect(team.getByRole('button', { name: /Com poucos minutos/ })).toContainText('3');
   await expect(page.getByText('VISÃO DO TREINADOR')).toHaveCount(0);
 
   // "Treino de hoje" opens today's attendance straight away (closed without saving).
@@ -171,10 +171,7 @@ test('todos os ecrãs principais abrem', async ({ page }) => {
 
   await navTo(page, /início/i);
   await expect(performanceTabs).toBeHidden();
-  await page
-    .getByRole('region', { name: 'Resumo da época' })
-    .getByRole('button', { name: /Ver estatísticas/ })
-    .click();
+  await page.getByRole('region', { name: 'A equipa' }).getByRole('button', { name: 'Estatísticas' }).click();
   await expect(page.getByText('Minutos de jogo', { exact: false })).toBeVisible();
 
   // Análise is in the main menu (no longer repeated in "Mais")
@@ -750,7 +747,9 @@ test('votação dos pais: link anónimo, um voto por telemóvel e os dois mais v
 
 test('assistente: perguntas sobre a equipa respondidas com os dados da app', async ({ page }) => {
   await signedIn(page);
-  const card = page.getByRole('region', { name: 'Pergunte à app' });
+  // The questions live in Mais → Assistente (they left the Início in design · etapa 1)
+  await openMore(page, /Assistente/);
+  const card = page.getByRole('dialog', { name: 'Assistente' }).getByRole('region', { name: 'Pergunte à app' });
   await card.getByLabel('Pergunta').fill('Quem é o melhor marcador?');
   await card.getByRole('button', { name: 'Perguntar' }).click();
   const answer = card.getByRole('status', { name: 'Resposta' });

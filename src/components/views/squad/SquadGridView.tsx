@@ -4,6 +4,7 @@ import { SquadSortBy, SquadSortDirection, POSITION_GROUPS, STATUS_CONFIG } from 
 import { getPositionRank } from '../../../lib/utils';
 import { returnSuffix } from '../../../lib/availability';
 import { squadIndicators, pctLabel } from '../../../lib/squadIndicators';
+import { GroupHead } from './GroupHead';
 
 interface SquadGridViewProps {
   state: AppState;
@@ -131,12 +132,7 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
 
           return (
             <div key={group.id} className="space-y-2.5">
-              <div className="flex items-center justify-between px-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-ui-muted">
-                <div className="flex items-center gap-2">
-                  <span>{group.label}</span>
-                  <span className="ui-badge">{groupPlayers.length}</span>
-                </div>
-              </div>
+              <GroupHead label={group.label} count={groupPlayers.length} />
 
               <div className="grid grid-cols-2 gap-2.5 @lg:grid-cols-3 @4xl:grid-cols-4 sm:gap-3">
                 {groupPlayers.map(renderPlayerCard)}
@@ -151,12 +147,7 @@ export const SquadGridView: React.FC<SquadGridViewProps> = ({
   // Non-position sort
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between px-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-ui-muted">
-        <div className="flex items-center gap-2">
-          <span>{sortBy === 'numero' ? '🔢 Ordenado por Número da Camisola' : '🔤 Ordenado por Nome do Atleta'}</span>
-          <span className="ui-badge">{sortedRoster.length} Atletas</span>
-        </div>
-      </div>
+      <GroupHead label={sortBy === 'numero' ? 'Por número da camisola' : 'Por nome'} count={sortedRoster.length} />
 
       <div className="grid grid-cols-2 gap-2.5 @lg:grid-cols-3 @4xl:grid-cols-4 sm:gap-3">
         {sortedRoster.map(renderPlayerCard)}

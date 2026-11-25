@@ -19,6 +19,7 @@ import { SquadListView } from './squad/SquadListView';
 import { SquadGridView } from './squad/SquadGridView';
 import { SquadPlayerFormModal } from './squad/SquadPlayerFormModal';
 import { AthleteSheet } from './squad/AthleteSheet';
+import { Icon } from '../ui/Icon';
 
 const FitnessTestsSection = lazy(() => import('./squad/FitnessTestsSection'));
 
@@ -167,32 +168,29 @@ export const SquadView: React.FC<SquadViewProps> = ({
 
               {/* Players Content Area */}
               {squad.sortedRoster.length === 0 ? (
-                <div className="ui-card p-8 text-center my-4">
-                  <div className="text-3xl mb-2">⚽</div>
-                  <p className="text-sm font-['Chakra_Petch'] text-ui-brand uppercase font-bold">
+                <div className="ui-card my-4 flex flex-col items-center gap-1 p-8 text-center">
+                  <Icon name="users" className="mb-1 h-7 w-7 text-ui-muted" />
+                  <p className="text-ui-lead font-bold text-ui-text">
                     {squad.activeRoster.length === 0
-                      ? 'Nenhum jogador registado no plantel.'
-                      : 'Nenhum jogador encontrado com os filtros selecionados.'}
+                      ? 'Ainda não há atletas no plantel'
+                      : 'Nenhum atleta com estes filtros'}
                   </p>
-                  <p className="text-xs font-mono text-ui-muted mt-1 mb-4">
+                  <p className="text-ui-body text-ui-muted">
                     {squad.activeRoster.length === 0
-                      ? 'Comece por adicionar o primeiro atleta da equipa.'
-                      : 'Tente pesquisar com outro termo ou limpar os filtros.'}
+                      ? 'Começa por adicionar o primeiro atleta da equipa.'
+                      : 'Experimenta outro nome ou limpa os filtros.'}
                   </p>
                   {squad.activeRoster.length === 0 && (
-                    <div className="flex items-center justify-center gap-3 flex-wrap">
-                      <button
-                        onClick={squad.handleOpenCreateModal}
-                        className="ui-btn ui-btn-primary px-4 py-2.5 text-xs"
-                      >
-                        ➕ Criar Jogador Manualmente
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                      <button onClick={squad.handleOpenCreateModal} className="ui-btn ui-btn-primary min-h-11 px-4">
+                        <Icon name="plus" className="h-[18px] w-[18px]" />
+                        Criar atleta
                       </button>
                       <button
                         onClick={() => squad.setIsImportExcelOpen(true)}
-                        className="ui-btn ui-btn-soft-success px-4 py-2.5 text-xs flex items-center gap-1.5"
+                        className="ui-btn ui-btn-secondary min-h-11 px-4"
                       >
-                        <span>📥</span>
-                        <span>Importar Plantel de Excel</span>
+                        Importar de Excel
                       </button>
                     </div>
                   )}

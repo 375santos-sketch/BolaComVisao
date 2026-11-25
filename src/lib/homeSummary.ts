@@ -14,7 +14,7 @@ const LOW_ATTENDANCE = 70;
 const MIN_TRAININGS_FOR_ATTENDANCE = 3;
 const MAX_HOME_NOTICES = 3;
 
-interface HomeNotice {
+export interface HomeNotice {
   id: 'presencas' | 'castigos' | 'convocatoria' | 'minutos' | 'assiduidade' | 'aniversarios';
   icon: string;
   text: string;

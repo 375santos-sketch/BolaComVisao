@@ -4,7 +4,6 @@ import { ERASE_WORD } from '../../../lib/destructiveActions';
 import { AppState } from '../../../types';
 import { SquadSortBy, SquadSortDirection, SquadViewMode } from './types';
 import { Icon, IconName } from '../../ui/Icon';
-import { StatTile } from '../../ui/StatTile';
 import { CompactSelect } from '../../ui/CompactSelect';
 
 interface SquadToolbarProps {
@@ -44,9 +43,9 @@ const MENU_ICONS: Record<string, IconName> = {
 
 // Available, injured and suspended are the tiles at the top; here the ones who cannot play today (injured or
 // suspended, return dates counted) together, and the inactive athletes (rare)
-const STATUSES: [string, string, string, string][] = [
-  ['indisponivel', '⛔', 'indisponíveis hoje', 'indisponível hoje'],
-  ['inativo', '⏸️', 'inativos', 'inativo']
+const STATUSES: [string, IconName, string, string][] = [
+  ['indisponivel', 'alert', 'indisponíveis hoje', 'indisponível hoje'],
+  ['inativo', 'x', 'inativos', 'inativo']
 ];
 
 /**
@@ -142,43 +141,48 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
       : [])
   ];
 
-  const tile = (key: string, label: string, tone: 'brand' | 'success' | 'danger' | 'warning', icon: IconName) => {
-    const on = key === 'todos' ? statusFilter === 'todos' : statusFilter === key;
+  /** One figure of the strip: tap to show only those athletes (tap again for all). */
+  const figure = (key: string, label: string, tone: 'brand' | 'success' | 'danger' | 'warning') => {
+    const on = key !== 'todos' && statusFilter === key;
     const value = key === 'todos' ? activeRosterCount : statusCounts[key] || 0;
+    const color =
+      value === 0 && key !== 'todos'
+        ? 'text-ui-muted'
+        : { brand: 'text-ui-text', success: 'text-ui-success', danger: 'text-ui-danger', warning: 'text-ui-warning' }[
+            tone
+          ];
     return (
-      <StatTile
+      <button
         key={key}
-        label={label}
-        value={value}
-        icon={icon}
-        tone={value === 0 && key !== 'todos' ? 'neutral' : tone}
+        type="button"
+        aria-pressed={key === 'todos' ? statusFilter === 'todos' : on}
+        aria-label={`${label}: ${value}`}
         onClick={() => setStatusFilter(on || key === 'todos' ? 'todos' : key)}
-        className={on && key !== 'todos' ? '!border-ui-brand' : ''}
-      />
+        className={`flex min-h-[64px] flex-col justify-center gap-0.5 px-3.5 py-2.5 text-left transition-colors hover:bg-ui-surface-2 ${
+          on ? 'bg-ui-surface-2 shadow-[inset_0_-2px_0_var(--color-ui-brand)]' : ''
+        }`}
+      >
+        <span className={`text-ui-title font-bold tabular-nums ${color}`}>{value}</span>
+        <span className="text-ui-caption text-ui-muted">{label}</span>
+      </button>
     );
   };
 
   return (
     <div className="@container mb-3 space-y-2.5">
-      {/* The squad over the stadium, in four figures that also filter the list */}
-      <div className="squad-hero">
-        <div className="min-w-0">
-          <h2 className="bcv-title text-[30px] sm:text-[36px]">Plantel</h2>
-          <p className="truncate text-ui-caption text-ui-muted">
-            {[state.myClubName, state.category, state.season ? `Época ${state.season}` : '']
-              .filter(Boolean)
-              .join(' · ')}
-          </p>
-        </div>
-        <div role="group" aria-label="Resumo do plantel" className="grid grid-cols-2 gap-2 @xl:grid-cols-4 @xl:flex-1">
-          {tile('todos', 'Atletas', 'brand', 'users')}
-          {tile('disponivel', 'Disponíveis', 'success', 'ball')}
-          {tile('lesionado', 'Lesionados', 'danger', 'plus')}
-          {tile('suspenso', 'Suspensos', 'warning', 'clipboard')}
-        </div>
+      {/* The squad in four figures, in one strip; each figure also filters the list */}
+      <div
+        role="group"
+        aria-label="Resumo do plantel"
+        className="ui-card grid grid-cols-4 divide-x divide-ui-line overflow-hidden"
+      >
+        {figure('todos', 'Atletas', 'brand')}
+        {figure('disponivel', 'Disponíveis', 'success')}
+        {figure('lesionado', 'Lesionados', 'danger')}
+        {figure('suspenso', 'Suspensos', 'warning')}
       </div>
-      <div className="flex items-center gap-2">
-        <label className="relative flex-1 min-w-0">
+      <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+        <label className="relative min-w-0 basis-full sm:flex-1 sm:basis-auto">
           <span className="sr-only">Procurar atleta</span>
           <Icon
             name="search"
@@ -189,14 +193,14 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
             placeholder="Procurar atleta"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="ui-input w-full !pl-9 text-sm min-h-[42px]"
+            className="ui-input w-full !pl-9 text-sm min-h-11"
           />
         </label>
         {/* Cards (pictures, a little bigger) or the compact list (to go through 20 athletes quickly) */}
         <div
           role="group"
           aria-label="Ver o plantel em"
-          className="flex h-[42px] shrink-0 rounded-ui-sm border border-ui-line bg-ui-surface-2 p-1"
+          className="flex h-11 shrink-0 rounded-ui-sm border border-ui-line bg-ui-surface-2 p-1"
         >
           {(
             [
@@ -226,7 +230,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
             onClick={() => setMenuOpen(!menuOpen)}
             aria-expanded={menuOpen}
             aria-label="Mais ações do plantel"
-            className="ui-btn ui-btn-secondary w-[42px] h-[42px] flex items-center justify-center"
+            className="ui-btn ui-btn-secondary w-11 h-11 flex items-center justify-center"
           >
             <Icon name="more" />
           </button>
@@ -257,7 +261,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
         <button
           type="button"
           onClick={onOpenCreateModal}
-          className="ui-btn ui-btn-primary h-[42px] px-3.5 text-sm flex items-center gap-1"
+          className="ui-btn ui-btn-primary ml-auto h-11 px-4 text-ui-body flex items-center gap-1 sm:ml-0"
         >
           <Icon name="plus" className="w-4 h-4" strokeWidth={2.5} />
           Novo
@@ -282,7 +286,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
               type="button"
               aria-pressed={sectorFilter === key}
               onClick={() => setSectorFilter(key)}
-              className={`shrink-0 rounded-full border px-3 py-1 text-ui-caption font-bold transition-colors ${
+              className={`min-h-10 shrink-0 rounded-full border px-3.5 text-ui-caption font-bold transition-colors ${
                 sectorFilter === key
                   ? 'border-ui-brand bg-ui-brand-soft text-ui-brand'
                   : 'border-ui-line text-ui-muted hover:text-ui-text'
@@ -295,7 +299,7 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
       )}
       <div className="flex items-center gap-1.5 text-xs">
         <div role="group" aria-label="Filtrar por estado" className="flex items-center gap-1 overflow-x-auto">
-          {STATUSES.map(([key, mark, label, one]) => {
+          {STATUSES.map(([key, icon, label, one]) => {
             const count = statusCounts[key] || 0;
             const on = statusFilter === key;
             if (key !== 'disponivel' && count === 0 && !on) return null;
@@ -306,11 +310,15 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
                 aria-pressed={on}
                 title={on ? 'Mostrar todos' : `Mostrar só os ${label}`}
                 onClick={() => setStatusFilter(on ? 'todos' : key)}
-                className={`shrink-0 rounded-full border px-2.5 py-1 font-semibold ${
+                className={`flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border px-2.5 font-semibold ${
                   on ? 'border-ui-line-strong bg-ui-surface-2 text-ui-text' : 'border-transparent text-ui-text'
                 }`}
               >
-                {mark} <strong className="text-ui-text">{count}</strong> {count === 1 ? one : label}
+                <Icon
+                  name={icon}
+                  className={`h-3.5 w-3.5 ${key === 'indisponivel' ? 'text-ui-warning' : 'text-ui-muted'}`}
+                />
+                <strong className="text-ui-text">{count}</strong> {count === 1 ? one : label}
               </button>
             );
           })}
@@ -346,9 +354,9 @@ export const SquadToolbar: React.FC<SquadToolbarProps> = ({
             setSectorFilter?.('todos');
             setSearchQuery('');
           }}
-          className="text-xs font-semibold text-ui-brand"
+          className="min-h-9 text-ui-caption font-bold text-ui-brand"
         >
-          ✕ Limpar filtros
+          Limpar filtros
         </button>
       )}
     </div>

@@ -2,29 +2,17 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { teamSettings } from '../../lib/teamSettings';
 import { AppState, ScheduledMatch, Training, UserAccount, ClubEvent } from '../../types';
 import { TabType } from '../Navbar';
-import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { UnifiedEvent } from '../dashboard/DashboardNextEvent';
 import { TodayFocusCard } from '../dashboard/TodayFocusCard';
-import {
-  DashboardHighlights,
-  MonthObjectivesCard,
-  QuoteCard,
-  RecentActivityCard
-} from '../dashboard/DashboardHighlights';
 import { LiveFollowModal, LiveMatchCard } from '../live/LiveFollow';
 import { Icon, IconName } from '../ui/Icon';
-import {
-  attendanceReminder,
-  homeNotices,
-  seasonMatches,
-  seasonSummary,
-  recentForm,
-  minutesBehind
-} from '../../lib/homeSummary';
-import { FormCard, MinutesCard, SeasonTiles, WeeklyFocusCard } from '../dashboard/HomeOverview';
-import { SectionHeader } from '../ui/SectionHeader';
-import { EmptyState } from '../ui/EmptyState';
-import { AssistantCard } from '../assistant/AssistantCard';
+import { attendanceReminder, homeNotices, seasonMatches } from '../../lib/homeSummary';
+import { BlockHead, HomeGreeting, NextUpBlock, Shortcuts, TasksBlock, TeamStrip } from '../dashboard/HomeBlocks';
+import { buildHomeTasks, needsNextTraining, TaskAction, teamPulse } from '../../lib/homeTasks';
+import { weeklyFocus } from '../../lib/teamTrends';
+import { newsletterDue, weekLabel } from '../../lib/weeklyNewsletter';
+import { addDaysISO } from '../../lib/trainingQuick';
+import { isAppAdmin } from '../../services/cloudAuthService';
 import { BirthdayImageModal } from '../birthday/BirthdayImageModal';
 import { BirthdayPerson, getAllBirthdays } from '../../lib/birthdayUtils';
 
@@ -41,6 +29,8 @@ interface HomeViewProps {
   latestPendingUser?: UserAccount | null;
   onExportBackup: () => void;
   onShowToast?: (msg: string) => void;
+  /** Opens the summary of the week (to check and send to the parents). */
+  onOpenNewsletter?: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -48,14 +38,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onUpdateState: _onUpdateState,
   onNavigate,
   onOpenSettings,
-  onOpenDatabase,
+  onOpenDatabase: _onOpenDatabase,
   onOpenNotifications,
   onOpenSync,
   onOpenAdminUsers,
   pendingUsersCount = 0,
   latestPendingUser,
-  onExportBackup,
-  onShowToast
+  onExportBackup: _onExportBackup,
+  onShowToast,
+  onOpenNewsletter
 }) => {
   const [birthdayImage, setBirthdayImage] = useState<BirthdayPerson | null>(null);
   // 🔔 A notice tapped on the phone opens the app here with ?aoVivo=1: straight to "📡 Ao vivo"
@@ -196,256 +187,109 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   unifiedEvents.sort((a, b) => a.rawDate.getTime() - b.rawDate.getTime());
 
-  // What needs attention and the season at a glance (details live in Estatísticas).
-  const reminder = attendanceReminder(state.trainings, teamSettings(state));
-  // The attendance reminder comes on top of the usual notices (never pushing one of them out)
-  const notices = [
-    ...(reminder ? [reminder] : []),
-    ...homeNotices(state, undefined, teamSettings(state).yellowsForBan)
-  ];
-  const summary = seasonSummary(state);
-  const nextDays = unifiedEvents.filter((e) => e.daysUntil <= 7);
+  // What needs attention, all in "Tarefas" (the attendance reminder comes on top of the usual notices)
+  const settings = teamSettings(state);
+  const reminder = attendanceReminder(state.trainings, settings);
+  const notices = [...(reminder ? [reminder] : []), ...homeNotices(state, undefined, settings.yellowsForBan)];
+  const team = (state.teams || []).find((t) => t.id === state.activeTeamId);
+  const newsletterFrom = state.currentUser?.id && team ? newsletterDue(new Date(), team.newsletterWeek) : null;
+  const focus = weeklyFocus(seasonMatches(state));
+  const tasks = buildHomeTasks({
+    notices,
+    newsletterWeek:
+      newsletterFrom && onOpenNewsletter ? weekLabel(newsletterFrom, addDaysISO(newsletterFrom, 6)) : null,
+    pendingUsers:
+      isAppAdmin(state.currentUser) && onOpenAdminUsers
+        ? {
+            count: pendingUsersCount,
+            latest: latestPendingUser ? `${latestPendingUser.name} (${latestPendingUser.role})` : undefined
+          }
+        : undefined,
+    noTrainingSoon: needsNextTraining(state.trainings),
+    focus
+  });
+  const runTask = (action: TaskAction) => {
+    if (action.kind === 'newsletter') onOpenNewsletter?.();
+    else if (action.kind === 'adminUsers') onOpenAdminUsers?.();
+    else onNavigate(action.tab, action.targetId);
+  };
+  const nextUp = unifiedEvents.filter((e) => !e.isToday).slice(0, 2);
+  const pulse = teamPulse(state);
 
   const shortcuts: { icon: IconName; label: string; tab: TabType; targetId?: string }[] = [
-    { icon: 'zap', label: 'Treino de hoje', tab: 'treinos', targetId: 'hoje' },
+    { icon: 'check', label: 'Treino de hoje', tab: 'treinos', targetId: 'hoje' },
     { icon: 'clipboard', label: 'Convocatória', tab: 'convocatoria' },
-    { icon: 'ball', label: 'Modo Jogo', tab: 'jogo' },
-    { icon: 'users', label: 'Plantel', tab: 'plantel' }
+    { icon: 'users', label: 'Plantel', tab: 'plantel' },
+    { icon: 'chart', label: 'Análise', tab: 'analise_jogos' }
   ];
-  const form = recentForm(state);
-  const kindLabel = (evt: UnifiedEvent) =>
-    evt.kind === 'jogo'
-      ? 'Jogo'
-      : evt.kind === 'treino'
-        ? 'Treino'
-        : evt.clubEventType === 'formacao'
-          ? 'Formação'
-          : evt.clubEventType === 'reuniao'
-            ? 'Reunião'
-            : evt.clubEventType === 'estagio'
-              ? 'Estágio'
-              : 'Evento';
 
   /*
-   * Dashboard: one column on the phone, in order of what the coach needs first (today, the season, what to do, the
-   * last games, minutes, shortcuts, the week); on a computer a 12-column grid: today | the week, the season |
-   * minutes, what to do | shortcuts, then the last games. `order` sets the phone order and `lg:order` the computer one.
+   * Início (design · etapa 1, docs/design/PROPOSTA_DASHBOARD.md). Phone: Hoje → Tarefas → A seguir → A equipa →
+   * Atalhos, one column. Computer: two columns, Hoje and Tarefas on the left; A seguir, A equipa and Atalhos on the
+   * right. Everything that left the old Início is still in its own module (Época, Agenda, Estatísticas, Mais).
    */
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-4 pb-6 sm:gap-5">
-      <DashboardHeader
+    <div className="mx-auto flex max-w-[1120px] flex-col gap-5 pb-6 lg:gap-6">
+      <HomeGreeting
         state={state}
         onOpenSettings={onOpenSettings}
-        onOpenDatabase={onOpenDatabase}
         onOpenNotifications={onOpenNotifications}
         onOpenSync={onOpenSync}
         onOpenAdminUsers={onOpenAdminUsers}
         pendingUsersCount={pendingUsersCount}
-        latestPendingUser={latestPendingUser}
-        onExportBackup={onExportBackup}
       />
 
-      {/* 📡 A game being recorded now (by the director or another coach): follow it live */}
+      {/* A game being recorded now (by the director or another coach): follow it live */}
       <LiveMatchCard state={state} onOpen={() => setFollowLive(true)} />
       {followLive && <LiveFollowModal state={state} onClose={() => setFollowLive(false)} />}
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-flow-dense lg:grid-cols-12">
-        {/* Today (only when there is something today or a game being recorded): what to do now */}
-        {(activeMatch || unifiedEvents.some((e) => e.isToday)) && (
-          <div className="order-1 lg:order-1 lg:col-span-12">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-6">
+        <div className="flex flex-col gap-5 lg:gap-6">
+          <section aria-label="Hoje">
             <TodayFocusCard
               unifiedEvents={unifiedEvents}
               scheduledMatches={scheduledMatches}
               activeMatch={activeMatch}
+              callupOpenFor={notices.find((n) => n.id === 'convocatoria')?.targetId}
               onNavigate={onNavigate}
             />
-          </div>
-        )}
+          </section>
+          <TasksBlock tasks={tasks} onRun={runTask} />
 
-        {/* Next training, next game and this week's minutes */}
-        <div className="order-1 lg:order-2 lg:col-span-12">
-          <DashboardHighlights
-            state={state}
-            onNavigate={onNavigate}
-            callupOpenFor={notices.find((n) => n.id === 'convocatoria')?.targetId}
-          />
-        </div>
-
-        {/* The month's objectives, what happened lately and a line for the day */}
-        <div className="order-2 lg:order-3 lg:col-span-4">
-          <MonthObjectivesCard state={state} onNavigate={onNavigate} />
-        </div>
-        <div className="order-3 lg:order-3 lg:col-span-4">
-          <RecentActivityCard state={state} onNavigate={onNavigate} />
-        </div>
-        <div className="hidden lg:order-3 lg:col-span-4 lg:block">
-          <QuoteCard />
-        </div>
-
-        {/* The next 7 days: beside today on a computer, at the end on the phone */}
-        <section aria-label="Próximos 7 dias" className="order-10 space-y-2 lg:order-4 lg:col-span-4">
-          <SectionHeader
-            title="Próximos 7 dias"
-            action={{ label: 'Ver a agenda', onClick: () => onNavigate('calendario') }}
-          />
-          {nextDays.length > 0 ? (
-            <ul className="ui-card divide-y divide-ui-line overflow-hidden">
-              {nextDays.map((evt) => (
-                <li key={evt.id}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onNavigate(
-                        evt.kind === 'jogo' ? 'convocatoria' : evt.kind === 'treino' ? 'treinos' : 'calendario',
-                        evt.kind === 'jogo' ? evt.id : undefined
-                      )
-                    }
-                    className="flex w-full items-center gap-3 px-3.5 py-3 text-left transition-colors hover:bg-ui-surface-2"
-                  >
-                    <span className="ui-inset flex h-11 w-11 shrink-0 flex-col items-center justify-center">
-                      <span className="text-[10px] font-bold uppercase text-ui-brand">
-                        {new Date(evt.date).toLocaleDateString('pt-PT', { month: 'short' }).replace('.', '')}
-                      </span>
-                      <span className="ui-figure text-ui-body">{new Date(evt.date).getDate()}</span>
+          {/* Birthdays today, with the picture to share */}
+          {birthdaysToday.length > 0 && (
+            <section aria-label="Aniversários de hoje">
+              <BlockHead title="Hoje faz anos" />
+              <ul className="ui-card divide-y divide-ui-line overflow-hidden">
+                {birthdaysToday.map((b) => (
+                  <li key={b.id} className="flex items-center gap-3 px-4 py-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-ui-sm bg-ui-brand-soft text-ui-brand">
+                      <Icon name="cake" className="h-[18px] w-[18px]" />
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-1.5">
-                        <span
-                          className={`ui-badge ${evt.kind === 'jogo' ? 'ui-badge-brand' : evt.kind === 'treino' ? 'ui-badge-success' : ''}`}
-                        >
-                          {kindLabel(evt)}
-                        </span>
-                        <span className="truncate text-ui-body font-bold text-ui-text">{evt.title}</span>
-                      </span>
-                      <span className="mt-0.5 block truncate text-ui-caption text-ui-muted">
-                        {evt.time}h{evt.venue ? ` · ${evt.venue}` : ''}
-                      </span>
+                    <span className="min-w-0 flex-1 truncate text-ui-body font-bold text-ui-text">
+                      {b.name} <span className="font-normal text-ui-muted">· {b.nextAge} anos</span>
                     </span>
-                    <span className="shrink-0 text-ui-muted" aria-hidden>
-                      ›
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState compact icon="calendar" title="Nada marcado para os próximos 7 dias." />
-          )}
-        </section>
-
-        {/* The season in four figures */}
-        <div className="order-5 lg:order-5 lg:col-span-8">
-          <SeasonTiles season={state.season} summary={summary} onOpenStats={() => onNavigate('stats')} />
-        </div>
-
-        {/* What needs attention (only when there is something) */}
-        {notices.length > 0 && (
-          <section aria-label="Avisos" className="order-4 space-y-2 lg:order-4 lg:col-span-8">
-            <SectionHeader title="Para fazer" />
-            <ul className="ui-card divide-y divide-ui-line overflow-hidden">
-              {notices.map((n) => {
-                // "Convocatória por fechar: vs Abrantes (sábado 01/11)" → short title, the detail below
-                const cut = n.text.indexOf(': ');
-                const title = cut > 0 ? n.text.slice(0, cut) : n.text;
-                const detail = cut > 0 ? n.text.slice(cut + 2) : '';
-                return (
-                  <li key={n.id}>
                     <button
                       type="button"
-                      onClick={() => onNavigate(n.tab, n.targetId)}
-                      className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-ui-surface-2"
+                      onClick={() => setBirthdayImage(b)}
+                      className="ui-btn ui-btn-secondary min-h-10 shrink-0 px-3 text-ui-caption"
                     >
-                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-ui-warning" aria-hidden="true" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-ui-body font-bold text-ui-text">{title}</span>
-                        {detail && (
-                          <span className="block text-ui-caption text-ui-muted">
-                            <span className="sr-only">: </span>
-                            {detail}
-                          </span>
-                        )}
-                      </span>
-                      <span className="shrink-0 text-ui-muted" aria-hidden>
-                        ›
-                      </span>
+                      Imagem de parabéns
                     </button>
                   </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
-
-        {/* The last games and the minutes, side by side on a computer */}
-        {form.length >= 2 && (
-          <div className="order-6 lg:order-6 lg:col-span-8">
-            <FormCard form={form} onOpenStats={() => onNavigate('stats')} />
-          </div>
-        )}
-        {form.length >= 2 && (
-          <div className="order-7 lg:order-5 lg:col-span-4">
-            <MinutesCard minutes={minutesBehind(state)} onOpenStats={() => onNavigate('stats')} />
-          </div>
-        )}
-
-        <div className="order-8 empty:hidden lg:order-7 lg:col-span-12">
-          <WeeklyFocusCard matches={seasonMatches(state)} onOpenAnalysis={() => onNavigate('analise_jogos')} />
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
 
-        {/* Shortcuts */}
-        <nav aria-label="Atalhos" className="order-9 space-y-2 lg:order-6 lg:col-span-4">
-          <SectionHeader title="Atalhos" className="hidden lg:flex" />
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
-            {shortcuts.map((sc) => (
-              <button
-                key={sc.label}
-                type="button"
-                onClick={() => onNavigate(sc.tab, sc.targetId)}
-                className="ui-card flex items-center gap-3 px-3.5 py-3 text-left text-ui-body font-bold text-ui-text transition-colors hover:border-ui-line-strong"
-              >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-ui-sm bg-ui-brand-soft text-ui-brand">
-                  <Icon name={sc.icon} className="h-4 w-4" />
-                </span>
-                <span>{sc.label}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
-
-        {/* 🎂 Birthdays today, with the picture to share */}
-        {birthdaysToday.length > 0 && (
-          <section
-            aria-label="Aniversários de hoje"
-            className="ui-card order-11 space-y-2 p-4 lg:order-8 lg:col-span-12"
-          >
-            <div className="ui-kicker">🎂 Hoje faz anos</div>
-            {birthdaysToday.map((b) => (
-              <div key={b.id} className="flex items-center gap-2">
-                <div className="min-w-0 flex-1 truncate text-ui-body font-bold text-ui-text">
-                  {b.name} <span className="font-normal text-ui-muted">· {b.nextAge} anos</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setBirthdayImage(b)}
-                  className="ui-btn ui-btn-secondary shrink-0 px-3 py-1.5 text-xs"
-                >
-                  🖼️ Imagem de parabéns
-                </button>
-              </div>
-            ))}
-          </section>
-        )}
-
-        {/* Questions about the team, answered from the app's data */}
-        <div className="order-12 lg:order-9 lg:col-span-12">
-          <AssistantCard state={state} />
+        <div className="flex flex-col gap-5 lg:gap-6">
+          <NextUpBlock events={nextUp} onNavigate={onNavigate} />
+          <TeamStrip pulse={pulse} onNavigate={onNavigate} />
+          <Shortcuts items={shortcuts} onNavigate={onNavigate} />
         </div>
       </div>
-      <div className="dash-foot" aria-hidden>
-        <span />
-        PLANEAR • TRABALHAR • EVOLUIR
-        <span />
-      </div>
+
       {birthdayImage && (
         <BirthdayImageModal
           person={birthdayImage}

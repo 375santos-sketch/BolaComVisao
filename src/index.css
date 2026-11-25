@@ -2383,14 +2383,11 @@ html.sol .squad-hero {
   border: 1px solid var(--color-ui-line);
   padding: 14px 12px 12px;
   text-align: center;
-  background: linear-gradient(180deg, var(--color-ui-surface), var(--color-ui-surface-2));
-  transition:
-    transform 0.15s ease,
-    border-color 0.15s ease;
+  background: var(--color-ui-surface);
+  transition: background-color 0.15s ease;
 }
 .squad-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-ui-line-strong);
+  background: var(--color-ui-surface-2);
 }
 @media (prefers-reduced-motion: reduce) {
   .squad-card {
