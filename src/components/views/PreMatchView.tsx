@@ -1,3 +1,4 @@
+import { Icon } from '../ui/Icon';
 import React, { useState } from 'react';
 import { SectionNav } from '../ui/SectionNav';
 import { datePT, dayLabel, timePT } from '../../lib/planningSummary';
@@ -71,14 +72,20 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
       />
 
       {!game ? (
-        <div className="card p-6 text-center space-y-3">
-          <p className="text-sm text-ui-text">Não há jogos marcados na Agenda.</p>
-          <button type="button" className="btn btn-outline" onClick={() => onNavigate('calendario')}>
-            📅 Ir para a Agenda
+        <div className="ui-card mx-auto flex max-w-[640px] flex-col items-center gap-3 p-6 text-center">
+          <Icon name="calendar" className="h-7 w-7 text-ui-muted" />
+          <p className="text-ui-body text-ui-text">Não há jogos marcados na Agenda.</p>
+          <button
+            type="button"
+            className="ui-btn ui-btn-secondary min-h-11 px-4"
+            onClick={() => onNavigate('calendario')}
+          >
+            Ir para a Agenda
           </button>
         </div>
       ) : (
-        <>
+        // A form is never wider than 640 px (easier to read and to fill in on a computer)
+        <div className="mx-auto w-full max-w-[640px] space-y-4">
           {games.length > 1 && (
             <label className={`${label} text-ui-brand`}>
               Jogo a preparar
@@ -93,13 +100,10 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
             </label>
           )}
 
-          <section
-            aria-label="Jogo"
-            className="ui-card relative overflow-hidden p-4 before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-ui-brand"
-          >
+          <section aria-label="Jogo" className="ui-card p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="ui-kicker">{competitionLabel(game)}</p>
+                <p className="text-ui-caption font-bold text-ui-brand">{competitionLabel(game)}</p>
                 <h2 className="mt-0.5 text-ui-title font-extrabold text-ui-text">
                   {game.location === 'fora' ? '@' : 'vs'} {game.opponent}
                 </h2>
@@ -123,8 +127,9 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('convocatoria', game.id)}
-              className="ui-btn ui-btn-soft mt-3 px-3 py-1.5 text-ui-caption"
+              className="ui-btn ui-btn-secondary mt-3 min-h-10 px-3.5 text-ui-body"
             >
+              <Icon name="clipboard" className="h-[18px] w-[18px]" />
               Convocatória ({(game.callup || []).length} atletas)
             </button>
           </section>
@@ -151,7 +156,7 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
           </div>
 
           <section id="prejogo-adversario" aria-label="Adversário" className="scroll-mt-16 space-y-3">
-            <h2 className="ui-kicker px-1">Adversário</h2>
+            <h2 className="px-1 text-ui-lead font-bold text-ui-text">Adversário</h2>
             {!(state.matches || []).some(
               (m) => m.finished && m.opponent.trim().toLowerCase() === game.opponent.trim().toLowerCase()
             ) &&
@@ -171,7 +176,7 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
           </section>
 
           <section id="prejogo-bolas" aria-label="Bolas paradas da equipa" className="scroll-mt-16 space-y-3">
-            <h2 className="ui-kicker px-1">Bolas paradas</h2>
+            <h2 className="px-1 text-ui-lead font-bold text-ui-text">Bolas paradas</h2>
             <SetPiecesCard
               state={state}
               callup={game.callup || []}
@@ -179,7 +184,7 @@ export const PreMatchView: React.FC<PreMatchViewProps> = ({
               onShowToast={onShowToast}
             />
           </section>
-        </>
+        </div>
       )}
     </div>
   );

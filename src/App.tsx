@@ -47,6 +47,7 @@ import {
 import { Navbar, TabType } from './components/Navbar';
 import { getActiveCategory } from './components/navCategory';
 import { PerformanceSubNav } from './components/PerformanceSubNav';
+import { HeaderBelowContext } from './components/headerBelow';
 import { BackupReminder } from './components/BackupReminder';
 import { getSyncView } from './lib/syncView';
 import { SessionExpiredBanner } from './components/SessionExpiredBanner';
@@ -1062,194 +1063,200 @@ export default function App() {
           {cloudSessionLost && state.currentUser && (
             <SessionExpiredBanner user={state.currentUser} onRestored={() => setCloudSaveError(undefined)} />
           )}
-          {getActiveCategory(currentTab) === 'performance' && (
-            <PerformanceSubNav currentTab={currentTab} onNavigate={handleNavigate} />
-          )}
-          <Suspense fallback={<ViewLoadingFallback />}>
-            {currentTab === 'teams' && (
-              <TeamsHubView
-                state={state}
-                onUpdateState={updateState}
-                onSelectTeam={(teamId) => {
-                  // P0-02: the new team shows exactly its own data (see lib/teamSwitch.ts)
-                  const change = switchTeam(latestStateRef.current, teamId);
-                  if (change) updateState(change);
-                  setCurrentTab('home');
-                }}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenSync={() => showSyncStatus()}
-                onOpenAdminUsers={() => setShowAdminUsers(true)}
-                pendingUsersCount={pendingUsersCount}
-                onLogout={handleLogout}
-                onShowConfirm={showConfirm}
-                onShowToast={showToast}
-              />
-            )}
+          {/* Jogo: its tabs go right under the title bar of each screen (as in Plantel and Planeamento) */}
+          <HeaderBelowContext.Provider
+            value={
+              getActiveCategory(currentTab) === 'performance' ? (
+                <PerformanceSubNav currentTab={currentTab} onNavigate={handleNavigate} />
+              ) : null
+            }
+          >
+            <Suspense fallback={<ViewLoadingFallback />}>
+              {currentTab === 'teams' && (
+                <TeamsHubView
+                  state={state}
+                  onUpdateState={updateState}
+                  onSelectTeam={(teamId) => {
+                    // P0-02: the new team shows exactly its own data (see lib/teamSwitch.ts)
+                    const change = switchTeam(latestStateRef.current, teamId);
+                    if (change) updateState(change);
+                    setCurrentTab('home');
+                  }}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onOpenAdminUsers={() => setShowAdminUsers(true)}
+                  pendingUsersCount={pendingUsersCount}
+                  onLogout={handleLogout}
+                  onShowConfirm={showConfirm}
+                  onShowToast={showToast}
+                />
+              )}
 
-            {currentTab === 'home' && isAppAdmin(state.currentUser) && (
-              <BackupReminder onOpenEncryptedBackup={() => setShowEncryptedBackup(true)} />
-            )}
-            {currentTab === 'home' && (
-              <HomeView
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenDatabase={() => setShowDatabase(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onOpenAdminUsers={() => setShowAdminUsers(true)}
-                pendingUsersCount={pendingUsersCount}
-                latestPendingUser={latestPendingUser}
-                onExportBackup={() => {
-                  exportJSONBackup(state);
-                  showToast('Backup exportado ✓');
-                }}
-                onShowToast={showToast}
-                onOpenNewsletter={() => setShowNewsletter(true)}
-              />
-            )}
+              {currentTab === 'home' && isAppAdmin(state.currentUser) && (
+                <BackupReminder onOpenEncryptedBackup={() => setShowEncryptedBackup(true)} />
+              )}
+              {currentTab === 'home' && (
+                <HomeView
+                  state={state}
+                  onUpdateState={updateState}
+                  onNavigate={handleNavigate}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenDatabase={() => setShowDatabase(true)}
+                  onOpenNotifications={() => setShowNotifications(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onOpenAdminUsers={() => setShowAdminUsers(true)}
+                  pendingUsersCount={pendingUsersCount}
+                  latestPendingUser={latestPendingUser}
+                  onExportBackup={() => {
+                    exportJSONBackup(state);
+                    showToast('Backup exportado ✓');
+                  }}
+                  onShowToast={showToast}
+                  onOpenNewsletter={() => setShowNewsletter(true)}
+                />
+              )}
 
-            {currentTab === 'jogo' && (
-              <LiveMatchView
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onShowConfirm={showConfirm}
-                onShowToast={showToast}
-              />
-            )}
+              {currentTab === 'jogo' && (
+                <LiveMatchView
+                  state={state}
+                  onUpdateState={updateState}
+                  onNavigate={handleNavigate}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenNotifications={() => setShowNotifications(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onShowConfirm={showConfirm}
+                  onShowToast={showToast}
+                />
+              )}
 
-            {currentTab === 'calendario' && (
-              <ScheduleView
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onShowConfirm={showConfirm}
-                onShowToast={showToast}
-              />
-            )}
+              {currentTab === 'calendario' && (
+                <ScheduleView
+                  state={state}
+                  onUpdateState={updateState}
+                  onNavigate={handleNavigate}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenNotifications={() => setShowNotifications(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onShowConfirm={showConfirm}
+                  onShowToast={showToast}
+                />
+              )}
 
-            {currentTab === 'convocatoria' && (
-              <ConvocatoriaView
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onShowToast={showToast}
-                initialMatchId={targetOpponentId}
-              />
-            )}
+              {currentTab === 'convocatoria' && (
+                <ConvocatoriaView
+                  state={state}
+                  onUpdateState={updateState}
+                  onNavigate={handleNavigate}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenNotifications={() => setShowNotifications(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onShowToast={showToast}
+                  initialMatchId={targetOpponentId}
+                />
+              )}
 
-            {currentTab === 'prejogo' && (
-              <PreMatchView
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onShowToast={showToast}
-                targetOpponentId={targetOpponentId}
-              />
-            )}
+              {currentTab === 'prejogo' && (
+                <PreMatchView
+                  state={state}
+                  onUpdateState={updateState}
+                  onNavigate={handleNavigate}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenNotifications={() => setShowNotifications(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onShowToast={showToast}
+                  targetOpponentId={targetOpponentId}
+                />
+              )}
 
-            {(currentTab === 'treinos' || currentTab === 'epoca') && (
-              <TrainingsView
-                key={currentTab}
-                section={currentTab === 'epoca' ? 'epoca' : 'treinos'}
-                focusTrainingId={targetTrainingId}
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onShowConfirm={showConfirm}
-                onShowToast={showToast}
-                initialTab="list"
-                openToday={openTodayTraining}
-              />
-            )}
+              {(currentTab === 'treinos' || currentTab === 'epoca') && (
+                <TrainingsView
+                  key={currentTab}
+                  section={currentTab === 'epoca' ? 'epoca' : 'treinos'}
+                  focusTrainingId={targetTrainingId}
+                  state={state}
+                  onUpdateState={updateState}
+                  onNavigate={handleNavigate}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenNotifications={() => setShowNotifications(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onShowConfirm={showConfirm}
+                  onShowToast={showToast}
+                  initialTab="list"
+                  openToday={openTodayTraining}
+                />
+              )}
 
-            {currentTab === 'jogos' && (
-              <ResultsView
-                key={targetMatchId || 'lista'}
-                initialMatchId={targetMatchId}
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onShowConfirm={showConfirm}
-                onShowToast={showToast}
-              />
-            )}
+              {currentTab === 'jogos' && (
+                <ResultsView
+                  key={targetMatchId || 'lista'}
+                  initialMatchId={targetMatchId}
+                  state={state}
+                  onUpdateState={updateState}
+                  onNavigate={handleNavigate}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenNotifications={() => setShowNotifications(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onShowConfirm={showConfirm}
+                  onShowToast={showToast}
+                />
+              )}
 
-            {(currentTab === 'stats' || currentTab === 'analise_jogos') && (
-              <GameAnalysisDashboard
-                key={currentTab}
-                initialSection={currentTab === 'stats' ? 'atletas' : 'equipa'}
-                state={state}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onShowToast={showToast}
-                onUpdateState={updateState}
-                onOpenMonthlyReport={() => setShowMonthlyReport(true)}
-              />
-            )}
+              {(currentTab === 'stats' || currentTab === 'analise_jogos') && (
+                <GameAnalysisDashboard
+                  key={currentTab}
+                  initialSection={currentTab === 'stats' ? 'atletas' : 'equipa'}
+                  state={state}
+                  onNavigate={handleNavigate}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenNotifications={() => setShowNotifications(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onShowToast={showToast}
+                  onUpdateState={updateState}
+                  onOpenMonthlyReport={() => setShowMonthlyReport(true)}
+                />
+              )}
 
-            {currentTab === 'clube' && (
-              <ClubView
-                state={state}
-                onNavigate={handleNavigate}
-                onOpenMore={() => setShowMoreDrawer(true)}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenDatabase={() => setShowDatabase(true)}
-                onOpenSync={() => showSyncStatus()}
-                onOpenSeasons={() => setShowSeasonSelector(true)}
-                onOpenSeasonGrowth={() => setShowSeasonGrowth(true)}
-                onOpenInviteStaff={() => setShowInviteStaff(true)}
-                onOpenAdminUsers={() => setShowAdminUsers(true)}
-                onOpenTour={() => {
-                  handleNavigate('home');
-                  setTourOpen(true);
-                }}
-                onOpenClubReports={() => setShowClubReports(true)}
-                onOpenInventory={() => setShowInventory(true)}
-                onOpenEncryptedBackup={() => setShowEncryptedBackup(true)}
-                onOpenMainMigration={() => setShowMainMigration(true)}
-                onOpenVisaoDeJogo={() => setShowVisaoDeJogo(true)}
-                onOpenOrgMembers={() => setShowOrgMembers(true)}
-                pendingUsersCount={pendingUsersCount}
-              />
-            )}
+              {currentTab === 'clube' && (
+                <ClubView
+                  state={state}
+                  onNavigate={handleNavigate}
+                  onOpenMore={() => setShowMoreDrawer(true)}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenDatabase={() => setShowDatabase(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onOpenSeasons={() => setShowSeasonSelector(true)}
+                  onOpenSeasonGrowth={() => setShowSeasonGrowth(true)}
+                  onOpenInviteStaff={() => setShowInviteStaff(true)}
+                  onOpenAdminUsers={() => setShowAdminUsers(true)}
+                  onOpenTour={() => {
+                    handleNavigate('home');
+                    setTourOpen(true);
+                  }}
+                  onOpenClubReports={() => setShowClubReports(true)}
+                  onOpenInventory={() => setShowInventory(true)}
+                  onOpenEncryptedBackup={() => setShowEncryptedBackup(true)}
+                  onOpenMainMigration={() => setShowMainMigration(true)}
+                  onOpenVisaoDeJogo={() => setShowVisaoDeJogo(true)}
+                  onOpenOrgMembers={() => setShowOrgMembers(true)}
+                  pendingUsersCount={pendingUsersCount}
+                />
+              )}
 
-            {currentTab === 'plantel' && (
-              <SquadView
-                key={currentTab}
-                state={state}
-                onUpdateState={updateState}
-                onNavigate={handleNavigate}
-                onOpenSettings={() => setShowSettings(true)}
-                onOpenNotifications={() => setShowNotifications(true)}
-                onOpenSync={() => showSyncStatus()}
-                onShowConfirm={showConfirm}
-                onShowToast={showToast}
-              />
-            )}
-          </Suspense>
+              {currentTab === 'plantel' && (
+                <SquadView
+                  key={currentTab}
+                  state={state}
+                  onUpdateState={updateState}
+                  onNavigate={handleNavigate}
+                  onOpenSettings={() => setShowSettings(true)}
+                  onOpenNotifications={() => setShowNotifications(true)}
+                  onOpenSync={() => showSyncStatus()}
+                  onShowConfirm={showConfirm}
+                  onShowToast={showToast}
+                />
+              )}
+            </Suspense>
+          </HeaderBelowContext.Provider>
         </div>
 
         {/* Global Bottom Navigation */}

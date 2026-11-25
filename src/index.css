@@ -2400,16 +2400,15 @@ html.sol .squad-hero {
   border-radius: 16px;
   border: 1px solid var(--color-ui-line);
   padding: 10px 12px;
-  background:
-    radial-gradient(60% 120% at 50% 0%, rgb(32 197 232 / 0.2), transparent 70%),
-    linear-gradient(180deg, var(--color-ui-surface-2), var(--color-ui-surface));
+  background: var(--color-ui-surface);
 }
 html.sol .live-head {
-  background: linear-gradient(180deg, #e3f0f9, var(--color-ui-surface));
+  background: var(--color-ui-surface);
 }
 .live-score {
+  font-family: var(--font-display);
   font-size: 40px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
