@@ -12,6 +12,7 @@ import {
   newsletterMessage,
   newsletterOf,
   renderNewsletterPage,
+  scorerPhotoSources,
   shortDay,
   suggestedHighlights,
   suggestedIntro,
@@ -20,6 +21,8 @@ import {
 import { newsletterLink, publishNewsletter, unpublishNewsletter } from '../services/publicNewsletter';
 import { writeNewsletterIntro } from '../services/chronicle';
 import { drawNewsletterCard } from '../lib/newsletterCard';
+import { smallScorerPhotos } from '../lib/newsletterPhotos';
+import { Icon } from './ui/Icon';
 
 interface NewsletterModalProps {
   state: AppState;
@@ -29,10 +32,11 @@ interface NewsletterModalProps {
 }
 
 /**
- * Mais → 📣 Comunicação → 📰 Resumo da semana: the app fills in the results, the attendance and the week ahead, and
+ * Mais → Comunicação → Resumo da semana: the app fills in the results, the attendance and the week ahead, and
  * suggests highlights; the coach picks them, writes the note (or asks the AI to), adds the notices, checks it and
  * publishes it to the team's link (/semana/{token}, the same link every week, with the earlier weeks below), then
- * sends the link by WhatsApp.
+ * sends the link (WhatsApp, the phone's share menu or copied). Anyone with the link opens it without an account; the
+ * coach can switch it off. Only when the coach turns it on, a small photo of each scorer goes with the link.
  */
 const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState, onShowToast, onClose }) => {
   const team = (state.teams || []).find((t) => t.id === state.activeTeamId);
@@ -52,8 +56,18 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
   const [published, setPublished] = useState(false);
   const [tab, setTab] = useState<'editar' | 'ver'>('editar');
   const link = token ? newsletterLink(token) : '';
+  const withPhotos = Boolean(team?.newsletterPhotos);
+  const photoSources = useMemo(
+    () => (withPhotos ? scorerPhotoSources(auto, state.roster || []) : {}),
+    [withPhotos, auto, state.roster]
+  );
+  const scorerCount = useMemo(
+    () => new Set(auto.results.flatMap((r) => (r.scorers ? r.scorers.split(', ') : []))).size,
+    [auto]
+  );
+  const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
-  const setTeam = (changes: { newsletterToken?: string; newsletterWeek?: string }) =>
+  const setTeam = (changes: { newsletterToken?: string; newsletterWeek?: string; newsletterPhotos?: boolean }) =>
     onUpdateState({
       teams: (state.teams || []).map((t) => (t.id === state.activeTeamId ? { ...t, ...changes } : t))
     });
@@ -70,7 +84,9 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
       const issue = issueOf(auto, draft);
       // The picture of the link's card in the parents' chat (without it, the card shows only the texts)
       const card = await drawNewsletterCard(teamName, issue);
-      await publishNewsletter(target, { clubId, teamId: state.activeTeamId, teamName, issue, card });
+      // The scorers' photos only when the coach turned them on, cut small on this phone (never the full photo)
+      const photos = withPhotos ? await smallScorerPhotos(scorerPhotoSources(issue, state.roster || [])) : null;
+      await publishNewsletter(target, { clubId, teamId: state.activeTeamId, teamName, issue, card, photos });
       // The week is marked as sent: the Monday reminder on Início goes away for every coach of the team
       setTeam({ newsletterToken: target, newsletterWeek: auto.from });
       setPublished(true);
@@ -98,17 +114,28 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
   };
 
   const message = link ? newsletterMessage(teamName, issueOf(auto, draft), link) : '';
-  // 👀 Exactly the page the parents will open, with this draft (the earlier weeks are left out of the preview)
+  // Exactly the page the parents will open, with this draft (the earlier weeks are left out of the preview)
   const preview = useMemo(
-    () => (tab === 'ver' ? renderNewsletterPage({ teamName, issue: issueOf(auto, draft) }, { preview: true }) : ''),
-    [tab, teamName, auto, draft]
+    () =>
+      tab === 'ver'
+        ? renderNewsletterPage({ teamName, issue: issueOf(auto, draft), photos: photoSources }, { preview: true })
+        : '',
+    [tab, teamName, auto, draft, photoSources]
   );
-  const copy = async () => {
+  const copy = async (text: string, done: string) => {
     try {
-      await navigator.clipboard.writeText(message);
-      onShowToast('Mensagem copiada ✓');
+      await navigator.clipboard.writeText(text);
+      onShowToast(done);
     } catch {
       onShowToast('Não foi possível copiar: selecione o texto.');
+    }
+  };
+  /** The phone's share menu (WhatsApp, Messenger, e-mail…), with the message and the link. */
+  const share = async () => {
+    try {
+      await navigator.share({ title: `Resumo da semana · ${teamName}`, text: message });
+    } catch (err) {
+      if ((err as Error)?.name !== 'AbortError') onShowToast('Não foi possível partilhar. Use «Copiar link».');
     }
   };
 
@@ -163,30 +190,25 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
         className="ui-card w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-4 space-y-3 max-h-[94dvh] overflow-y-auto"
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-ui-text">📰 Resumo da semana</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fechar resumo da semana"
-            className="text-ui-muted text-lg"
-          >
-            ✕
+          <h3 className="text-base font-bold text-ui-text">Resumo da semana</h3>
+          <button type="button" onClick={onClose} aria-label="Fechar resumo da semana" className="text-ui-muted">
+            <Icon name="x" className="h-5 w-5" />
           </button>
         </div>
         <p className="text-xs text-ui-text leading-relaxed">
           A semana vai de segunda a domingo e o resumo segue à segunda de manhã. A app junta os resultados e as
           presenças da semana que acabou e os jogos e treinos da semana que começa. Escreva a mensagem, reveja e
           publique: os pais abrem um link sem conta, que mostra sempre o resumo mais recente. Só aparecem os primeiros
-          nomes de quem marcou; nunca faltas de um atleta, contactos ou notas.
+          nomes de quem marcou (e a fotografia, se a ligar); nunca faltas de um atleta, contactos ou notas.
         </p>
 
         <div role="tablist" aria-label="Modo" className="grid grid-cols-2 gap-1 rounded-xl bg-ui-inset p-1">
           {(
             [
-              ['editar', '✏️ Editar'],
-              ['ver', '👀 Pré-visualizar']
+              ['editar', 'Editar', 'pencil'],
+              ['ver', 'Pré-visualizar', 'eye']
             ] as const
-          ).map(([id, label]) => (
+          ).map(([id, label, icon]) => (
             <button
               key={id}
               id={`newsletter-tab-${id}`}
@@ -195,8 +217,9 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
               aria-selected={tab === id}
               aria-controls={`newsletter-panel-${id}`}
               onClick={() => setTab(id)}
-              className={`ui-btn py-2 text-xs ${tab === id ? 'ui-btn-primary' : 'ui-btn-ghost'}`}
+              className={`ui-btn py-2 text-xs flex items-center justify-center gap-1.5 ${tab === id ? 'ui-btn-primary' : 'ui-btn-ghost'}`}
             >
+              <Icon name={icon} className="h-4 w-4" />
               {label}
             </button>
           ))}
@@ -227,29 +250,59 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
               <div className="ui-kicker">Semana de {weekLabel(auto.from, auto.to)}</div>
               {auto.results.length ? (
                 auto.results.map((r) => (
-                  <p key={`${r.date}-${r.opponent}`}>
-                    ⚽ {shortDay(r.date)} ·{' '}
-                    {r.home === false
-                      ? `${r.opponent} ${r.theirs}–${r.ours} ${teamName}`
-                      : `${teamName} ${r.ours}–${r.theirs} ${r.opponent}`}
-                    {r.scorers ? <span className="text-ui-muted"> · {r.scorers}</span> : null}
+                  <p key={`${r.date}-${r.opponent}`} className="flex items-start gap-1.5">
+                    <Icon name="ball" className="mt-0.5 h-3.5 w-3.5 flex-none text-ui-muted" />
+                    <span>
+                      {shortDay(r.date)} ·{' '}
+                      {r.home === false
+                        ? `${r.opponent} ${r.theirs}–${r.ours} ${teamName}`
+                        : `${teamName} ${r.ours}–${r.theirs} ${r.opponent}`}
+                      {r.scorers ? <span className="text-ui-muted"> · {r.scorers}</span> : null}
+                    </span>
                   </p>
                 ))
               ) : (
                 <p className="text-ui-muted">Sem jogos nesta semana.</p>
               )}
-              <p>
-                🏃{' '}
+              <p className="flex items-start gap-1.5">
+                <Icon name="users" className="mt-0.5 h-3.5 w-3.5 flex-none text-ui-muted" />
                 {auto.attendance
                   ? `${auto.attendance.trainings} ${auto.attendance.trainings === 1 ? 'treino' : 'treinos'} · ${auto.attendance.percent}% de presenças`
                   : 'Sem treinos fechados nesta semana.'}
               </p>
-              <p>
-                📅{' '}
+              <p className="flex items-start gap-1.5">
+                <Icon name="calendar" className="mt-0.5 h-3.5 w-3.5 flex-none text-ui-muted" />
                 {auto.upcoming.length
                   ? `${auto.upcoming.filter((e) => e.kind === 'jogo').length} jogo(s) e ${auto.upcoming.filter((e) => e.kind === 'treino').length} treino(s) na semana de ${weekLabel(auto.nextFrom, auto.nextTo)}`
                   : `Nada marcado na semana de ${weekLabel(auto.nextFrom, auto.nextTo)}.`}
               </p>
+            </section>
+
+            <section
+              aria-label="Fotografias de quem marcou"
+              className="ui-card-raised space-y-1.5 p-3 text-xs text-ui-text"
+            >
+              <label className="flex items-center gap-2 font-semibold">
+                <input
+                  type="checkbox"
+                  checked={withPhotos}
+                  onChange={(e) => {
+                    setTeam({ newsletterPhotos: e.target.checked });
+                    setPublished(false);
+                  }}
+                />
+                Mostrar a fotografia de quem marcou
+              </label>
+              <p className="text-[11px] leading-snug text-ui-muted">
+                Qualquer pessoa com o link vê as fotografias. Ligue só com a autorização das famílias. A app envia uma
+                fotografia pequena, só dos marcadores desta semana, e nunca quando dois atletas têm o mesmo nome.
+              </p>
+              {withPhotos && (
+                <p className="text-[11px] text-ui-muted">
+                  {Object.keys(photoSources).length} de {scorerCount} {scorerCount === 1 ? 'marcador' : 'marcadores'}{' '}
+                  com fotografia na ficha.
+                </p>
+              )}
             </section>
 
             {suggestions.length > 0 && (
@@ -279,17 +332,18 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
               'Fair-play: ajudámos um adversário lesionado\nTreino em foco: passe e desmarcação'
             )}
             <p id="newsletter-highlights-ai-note" className="text-[11px] leading-snug text-ui-muted">
-              🔒 Ao tocar em «Escrever com IA», os destaques seguem para a IA com os nomes do plantel trocados por
-              códigos. Não escreva dados de saúde nem outros dados pessoais dos atletas.
+              Ao tocar em «Escrever com IA», os destaques seguem para a IA com os nomes do plantel trocados por códigos.
+              Não escreva dados de saúde nem outros dados pessoais dos atletas.
             </p>
             {field('intro', 'Mensagem do treinador', LIMITS.intro, 4, 'Olá a todos! …')}
             <button
               type="button"
               disabled={writing}
               onClick={writeWithAI}
-              className="ui-btn ui-btn-soft w-full py-2 text-xs"
+              className="ui-btn ui-btn-soft w-full py-2 text-xs flex items-center justify-center gap-1.5"
             >
-              {writing ? 'A escrever…' : '✨ Escrever com IA (a partir dos resultados e destaques)'}
+              <Icon name="zap" className="h-4 w-4" />
+              {writing ? 'A escrever…' : 'Escrever com IA (a partir dos resultados e destaques)'}
             </button>
             {field('notices', 'Avisos', LIMITS.notices, 2, 'Quota de dezembro até dia 8.')}
           </div>
@@ -299,9 +353,10 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
           <button
             type="button"
             onClick={() => setTab(tab === 'ver' ? 'editar' : 'ver')}
-            className="ui-btn ui-btn-secondary py-3 text-sm"
+            className="ui-btn ui-btn-secondary py-3 text-sm flex items-center justify-center gap-1.5"
           >
-            {tab === 'ver' ? '✏️ Voltar a editar' : '👀 Pré-visualizar'}
+            <Icon name={tab === 'ver' ? 'pencil' : 'eye'} className="h-4 w-4" />
+            {tab === 'ver' ? 'Voltar a editar' : 'Pré-visualizar'}
           </button>
           <button type="button" disabled={busy} onClick={publish} className="ui-btn ui-btn-primary py-3 text-sm">
             {busy ? 'A publicar…' : token ? 'Publicar' : 'Criar link e publicar'}
@@ -333,12 +388,37 @@ const NewsletterModal: React.FC<NewsletterModalProps> = ({ state, onUpdateState,
                 href={`https://wa.me/?text=${encodeURIComponent(message)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ui-btn ui-btn-success py-2.5 text-xs flex items-center justify-center"
+                className="ui-btn ui-btn-success py-2.5 text-xs flex items-center justify-center gap-1.5"
               >
-                💬 Enviar pelo WhatsApp
+                <Icon name="message" className="h-4 w-4" />
+                Enviar pelo WhatsApp
               </a>
-              <button type="button" onClick={copy} className="ui-btn ui-btn-secondary py-2.5 text-xs">
-                Copiar mensagem
+              {canShare ? (
+                <button
+                  type="button"
+                  onClick={share}
+                  className="ui-btn ui-btn-secondary py-2.5 text-xs flex items-center justify-center gap-1.5"
+                >
+                  <Icon name="share" className="h-4 w-4" />
+                  Partilhar
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => copy(message, 'Mensagem copiada ✓')}
+                  className="ui-btn ui-btn-secondary py-2.5 text-xs flex items-center justify-center gap-1.5"
+                >
+                  <Icon name="clipboard" className="h-4 w-4" />
+                  Copiar mensagem
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => copy(link, 'Link copiado ✓')}
+                className="ui-btn ui-btn-secondary col-span-2 py-2.5 text-xs flex items-center justify-center gap-1.5"
+              >
+                <Icon name="link" className="h-4 w-4" />
+                Copiar link
               </button>
             </div>
             <a href={link} target="_blank" rel="noopener noreferrer" className="block text-xs text-ui-brand underline">

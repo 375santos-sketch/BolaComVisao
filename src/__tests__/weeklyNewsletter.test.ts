@@ -15,6 +15,7 @@ import {
   newsletterOf,
   newsletterWeeks,
   renderNewsletterPage,
+  scorerPhotoSources,
   suggestedHighlights,
   suggestedIntro,
   weekLabel
@@ -226,7 +227,7 @@ describe('the page', () => {
     expect(html).toContain('16 a 22 nov');
     expect(html).toContain('Esta semana · 23 a 29 nov');
     expect(html).toContain('<span class="pill">Vitória</span>');
-    expect(html).toContain('<span>⚽ Tomás ×2</span>');
+    expect(html).toContain('<span>Tomás ×2</span>');
     expect(html).toContain('&lt;script&gt;');
     expect(html).not.toContain('<script>alert');
   });
@@ -419,5 +420,54 @@ describe('design: outcome, scorers and the link card', () => {
       'os pais ainda não veem esta versão'
     );
     expect(renderNewsletterPage({ teamName: 'Sub-11 A', issue })).not.toContain('Pré-visualização');
+  });
+});
+
+describe('scorers photos (only when the coach turns them on)', () => {
+  const PHOTO = 'data:image/jpeg;base64,/9j/FOTO';
+  const withPhotos = [
+    player('p1', 'Tomás Gomes Silva', { photoUrl: 'data:image/png;base64,iVBORw0' }),
+    player('p2', 'Leonor Martins', { photoUrl: 'https://exemplo.pt/leonor.jpg' }),
+    player('p3', 'Rafael Costa', { nickname: 'Rafa', photoUrl: 'data:image/jpeg;base64,/9j/RAFA' }),
+    player('p5', 'Rafa Lopes', { photoUrl: 'data:image/jpeg;base64,/9j/OUTRO' }),
+    player('p6', 'Duarte Sem Golos', { photoUrl: 'data:image/jpeg;base64,/9j/DUARTE' })
+  ];
+  const auto = newsletterOf({ ...state, roster: withPhotos }, 'Sub-11 A', TODAY);
+  const issue = issueOf(auto, { intro: '', highlights: '', notices: '' }, 1);
+
+  it('picks only the scorers of the week, only photos kept in the app, never a shared first name', () => {
+    expect(issue.results[0].scorers).toBe('Tomás (2), Leonor, Rafa');
+    // Leonor: an outside link; Rafa: two athletes go by "Rafa"; Duarte: did not score
+    expect(Object.keys(scorerPhotoSources(issue, withPhotos))).toEqual(['Tomás']);
+  });
+
+  it('reads back only small JPEG photos by first name', () => {
+    const rest = {
+      fields: {
+        teamName: { stringValue: 'Sub-11 A' },
+        photos: {
+          mapValue: {
+            fields: {
+              Tomás: { stringValue: PHOTO },
+              Leonor: { stringValue: 'data:text/html;base64,PHNjcmlwdD4=' },
+              Rafa: { stringValue: `data:image/jpeg;base64,${'A'.repeat(30_000)}` }
+            }
+          }
+        }
+      }
+    };
+    expect(newsletterFromRestDocument(rest)?.photos).toEqual({ Tomás: PHOTO });
+    expect(newsletterFromRestDocument({ fields: { teamName: { stringValue: 'X' } } })?.photos).toBeUndefined();
+  });
+
+  it('shows the photo next to the scorer, only in this week results and never as an emoji', () => {
+    const older = { ...issue, from: '2026-11-09', to: '2026-11-15' };
+    const html = renderNewsletterPage({ teamName: 'Sub-11 A', issue, archive: [older], photos: { Tomás: PHOTO } });
+    expect(html.split(`<img src="${PHOTO}"`).length - 1).toBe(1);
+    expect(html).toContain(`<span><img src="${PHOTO}" alt="" width="24" height="24">Tomás ×2</span>`);
+    expect(html).toContain('<span>Leonor</span>');
+    expect(html).not.toContain('⚽');
+    expect(html).not.toContain('📍');
+    expect(renderNewsletterPage({ teamName: 'Sub-11 A', issue })).not.toContain('<img src="data:');
   });
 });
