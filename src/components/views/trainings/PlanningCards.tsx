@@ -44,11 +44,11 @@ export const RecentSessionsCard: React.FC<{
     .sort((a, b) => `${b.date.slice(0, 10)}${b.time || ''}`.localeCompare(`${a.date.slice(0, 10)}${a.time || ''}`))
     .slice(0, 5);
   return (
-    <section aria-label="Últimas sessões" className="ui-card h-full p-3 sm:p-4">
+    <section aria-label="Últimas sessões" className="ui-card h-full p-4">
       <div className="mb-1 flex items-center justify-between gap-2">
-        <h2 className="ui-kicker">Últimas sessões</h2>
-        <button type="button" onClick={onSeeAll} className="text-ui-caption font-bold text-ui-brand">
-          Ver todas →
+        <h2 className="text-ui-lead font-bold text-ui-text">Últimas sessões</h2>
+        <button type="button" onClick={onSeeAll} className="text-ui-body font-bold text-ui-brand">
+          Ver todas
         </button>
       </div>
       {recent.length ? (
@@ -108,7 +108,7 @@ export const NextTrainingCard: React.FC<{
 }> = ({ training, onOpenPlan, onAttendance, onShare, onPdf, onCreate, library = [] }) => {
   if (!training) {
     return (
-      <section aria-label="Próximo treino" className="ui-card p-3">
+      <section aria-label="Próximo treino">
         <EmptyState
           icon="whistle"
           title="Sem treino agendado"
@@ -129,7 +129,7 @@ export const NextTrainingCard: React.FC<{
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="ui-kicker text-ui-success">Próximo treino</p>
+          <p className="text-ui-caption font-bold text-ui-success">Próximo treino</p>
           <h2 className="mt-1 text-ui-title font-extrabold text-ui-text">
             {dayLabel(training.date)}
             {training.time ? ` · ${training.time}` : ''}
@@ -222,26 +222,37 @@ export const ThemeBar: React.FC<{ summary: PeriodSummary; empty: string }> = ({ 
 export const WeekSummaryCard: React.FC<{ week: PeriodSummary & { start: string; end: string } }> = ({ week }) => (
   <section aria-label="Esta semana" className="ui-card space-y-3 p-4">
     <div className="flex items-baseline justify-between gap-2">
-      <h2 className="ui-kicker">Esta semana</h2>
+      <h2 className="text-ui-lead font-bold text-ui-text">Esta semana</h2>
       <span className="text-ui-caption text-ui-muted">
         {ddmm(week.start)} a {ddmm(week.end)}
       </span>
     </div>
-    <div className="grid grid-cols-3 gap-2 text-center">
-      <div className="ui-inset p-2">
-        <p className="ui-figure text-ui-title text-ui-success">{week.realized.minutes}&apos;</p>
+    {/* Three figures in one strip; a zero stays grey, only what matters gets colour */}
+    <div className="ui-inset grid grid-cols-3 divide-x divide-ui-line">
+      <div className="px-3 py-2.5">
+        <p
+          className={`text-ui-title font-bold tabular-nums ${week.realized.minutes ? 'text-ui-success' : 'text-ui-muted'}`}
+        >
+          {week.realized.minutes}&apos;
+        </p>
         <p className="text-ui-caption text-ui-muted">
           realizados · {week.realized.count} {week.realized.count === 1 ? 'treino' : 'treinos'}
         </p>
       </div>
-      <div className="ui-inset p-2">
-        <p className="ui-figure text-ui-title text-ui-text">{week.scheduled.minutes}&apos;</p>
+      <div className="px-3 py-2.5">
+        <p
+          className={`text-ui-title font-bold tabular-nums ${week.scheduled.minutes ? 'text-ui-text' : 'text-ui-muted'}`}
+        >
+          {week.scheduled.minutes}&apos;
+        </p>
         <p className="text-ui-caption text-ui-muted">
           agendados · {week.scheduled.count} {week.scheduled.count === 1 ? 'treino' : 'treinos'}
         </p>
       </div>
-      <div className="ui-inset p-2">
-        <p className={`ui-figure text-ui-title ${week.unclosed.count ? 'text-ui-warning' : 'text-ui-muted'}`}>
+      <div className="px-3 py-2.5">
+        <p
+          className={`text-ui-title font-bold tabular-nums ${week.unclosed.count ? 'text-ui-warning' : 'text-ui-muted'}`}
+        >
           {week.unclosed.count}
         </p>
         <p className="text-ui-caption text-ui-muted">por fechar</p>
@@ -262,7 +273,7 @@ export const WeeklyLoadChart: React.FC<{ weeks: WeekLoad[] }> = ({ weeks }) => {
   return (
     <section aria-label="Minutos por semana" className="ui-card space-y-3 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="ui-kicker">Minutos por semana</h2>
+        <h2 className="text-ui-lead font-bold text-ui-text">Minutos por semana</h2>
         <span className="flex items-center gap-3 text-ui-caption text-ui-muted">
           <span className="flex items-center gap-1">
             <span className="h-2.5 w-2.5 rounded-sm bg-ui-success" aria-hidden /> realizado
