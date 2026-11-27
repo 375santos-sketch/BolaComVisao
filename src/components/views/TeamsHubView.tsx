@@ -300,17 +300,17 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
         <img
           src={logoImg}
           alt=""
-          className="h-10 w-10 rounded-ui-sm object-cover shadow-[0_0_20px_rgba(34,211,238,0.35)] sm:h-12 sm:w-12"
+          className="h-10 w-10 rounded-ui-sm object-cover sm:h-12 sm:w-12"
           referrerPolicy="no-referrer"
         />
-        <div className="text-[19px] font-black tracking-tight text-ui-text sm:text-[22px]">
+        <div className="text-[19px] font-extrabold tracking-tight text-ui-text sm:text-[22px]">
           BolaCom<span className="text-ui-brand">Visão</span>
         </div>
         <div className="flex-1" />
         {onOpenSync && <SyncStatusBadge onClick={onOpenSync} fallbackSyncInfo={syncInfo} />}
         {state.currentUser && (
           <span className="bcv-chip hidden items-center gap-1.5 sm:inline-flex">
-            <span aria-hidden>👤</span>
+            <Icon name="user" className="h-4 w-4 shrink-0" />
             <b>{state.currentUser.name}</b>
           </span>
         )}
@@ -319,12 +319,12 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             type="button"
             onClick={onOpenAdminUsers}
             className="bcv-round relative"
-            title="Gestão de Acessos de Treinadores (👥)"
+            title="Gestão de acessos de treinadores"
             aria-label="Utilizadores e acessos"
           >
-            <span aria-hidden>👥</span>
+            <Icon name="users" className="h-[18px] w-[18px] shrink-0" />
             {pendingUsersCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ui-warning px-1 text-[9px] font-black text-ui-bg">
+              <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ui-warning px-1 text-[9px] font-bold text-ui-bg">
                 {pendingUsersCount}
               </span>
             )}
@@ -353,7 +353,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             aria-label="Terminar sessão"
             id="header-logout-btn"
           >
-            <span aria-hidden>🚪</span>
+            <Icon name="logout" className="h-[18px] w-[18px] shrink-0" />
           </button>
         )}
       </header>
@@ -373,9 +373,9 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
       {/* Form: Create New Team */}
       {isCreating && (
-        <form onSubmit={handleCreateTeam} className="ui-inset p-5 mb-6 text-left space-y-4">
-          <div className="font-['Chakra_Petch'] font-bold text-sm text-cyan-300 uppercase pb-2 border-b border-cyan-500/20 flex justify-between items-center">
-            <span>➕ Criar Nova Equipa</span>
+        <form onSubmit={handleCreateTeam} className="ui-card mb-6 space-y-4 p-5 text-left">
+          <div className="flex items-center justify-between border-b border-ui-line pb-2 text-ui-lead font-bold text-ui-text">
+            <span>Criar nova equipa</span>
             <button
               type="button"
               onClick={() => setIsCreating(false)}
@@ -386,7 +386,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">Clube / Instituição *</label>
+            <label className="mb-1 block text-ui-caption font-semibold text-ui-text">Clube / Instituição *</label>
             <input
               type="text"
               required
@@ -399,7 +399,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">Escalão / Categoria *</label>
+              <label className="mb-1 block text-ui-caption font-semibold text-ui-text">Escalão / Categoria *</label>
               <select
                 value={newCategory}
                 onChange={(e) => {
@@ -428,7 +428,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">Época Desportiva *</label>
+              <label className="mb-1 block text-ui-caption font-semibold text-ui-text">Época Desportiva *</label>
               <input
                 type="text"
                 placeholder="Ex: 2026/27 ou 2025/26"
@@ -441,7 +441,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">Treinador Principal</label>
+              <label className="mb-1 block text-ui-caption font-semibold text-ui-text">Treinador Principal</label>
               <input
                 type="text"
                 placeholder="Ex: João Silva"
@@ -452,9 +452,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">
-                Formato de Jogo (Tático)
-              </label>
+              <label className="mb-1 block text-ui-caption font-semibold text-ui-text">Formato de Jogo (Tático)</label>
               <select
                 value={newTacticFormat}
                 onChange={(e) => setNewTacticFormat(Number(e.target.value) as any)}
@@ -470,7 +468,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">
+            <label className="mb-1 block text-ui-caption font-semibold text-ui-text">
               URL do Emblema / Logo (Opcional)
             </label>
             <input
@@ -484,16 +482,16 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
 
           {teams.length > 0 && (
             <div>
-              <label className="block text-xs font-semibold text-slate-200 mb-1 font-mono">Início de Plantel</label>
+              <label className="mb-1 block text-ui-caption font-semibold text-ui-text">Início de Plantel</label>
               <select
                 value={copyFromTeamId}
                 onChange={(e) => setCopyFromTeamId(e.target.value)}
                 className="ui-input w-full text-xs"
               >
-                <option value="none">✨ Iniciar com plantel em branco (Sem jogadores)</option>
+                <option value="none">Iniciar com plantel em branco (Sem jogadores)</option>
                 {teams.map((t) => (
                   <option key={t.id} value={t.id}>
-                    📋 Copiar plantel de {t.clubName} ({t.category} {t.season}) - {t.roster.length} jogadores
+                    Copiar plantel de {t.clubName} ({t.category} {t.season}) - {t.roster.length} jogadores
                   </option>
                 ))}
               </select>
@@ -501,15 +499,12 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           )}
 
           <div className="flex gap-2 pt-2">
-            <button
-              type="submit"
-              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all"
-            >
-              Criar e Entrar na Equipa 🚀
+            <button type="submit" className="ui-btn ui-btn-primary min-h-11 flex-1 text-ui-body">
+              Criar e entrar na equipa
             </button>
             <button
               type="button"
-              className="ui-btn ui-btn-secondary px-4 py-3 text-xs"
+              className="ui-btn ui-btn-secondary min-h-11 px-4 text-ui-body"
               onClick={() => setIsCreating(false)}
             >
               Cancelar
@@ -522,28 +517,25 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
       {teams.length === 0 && !isCreating ? (
         isUserAdmin ? (
           <div className="ui-inset p-8 my-6 text-center animate-fade-in">
-            <div className="w-20 h-20 rounded-2xl bg-cyan-500/10 border border-cyan-500/40 text-cyan-300 text-4xl flex items-center justify-center mx-auto mb-5">
-              ⚽
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-ui-lg bg-ui-brand-soft text-ui-brand">
+              <Icon name="ball" className="h-8 w-8 shrink-0" />
             </div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono tracking-widest uppercase mb-3 font-bold">
+            <div className="mb-3 inline-flex items-center rounded-full bg-ui-brand-soft px-3 py-1 text-ui-caption font-bold text-ui-brand">
               Bem-vindo à aplicação
             </div>
-            <h3 className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] uppercase text-white tracking-wider mb-2">
-              Ainda não tem nenhuma equipa registada
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mb-7 leading-relaxed font-sans">
+            <h3 className="mb-2 text-xl font-bold text-ui-text sm:text-2xl">Ainda não tem nenhuma equipa registada</h3>
+            <p className="mx-auto mb-7 max-w-lg text-ui-body text-ui-muted">
               Comece por registar a sua equipa, clube e escalão para ter acesso imediato à gestão tática, plantel,
               calendário, treinos e análise de jogo.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
                 onClick={() => setIsCreating(true)}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 text-slate-950 font-['Chakra_Petch'] font-black text-sm uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+                className="ui-btn ui-btn-primary min-h-12 w-full px-8 text-ui-body sm:w-auto"
                 id="empty-state-create-team-btn"
               >
-                <span className="text-base font-bold">+</span>
-                <span>CRIAR EQUIPA</span>
-                <span className="text-base">🚀</span>
+                <Icon name="plus" className="h-4 w-4 shrink-0" />
+                <span>Criar equipa</span>
               </button>
 
               {onLogout && (
@@ -554,11 +546,11 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                       onLogout();
                     });
                   }}
-                  className="ui-btn ui-btn-secondary w-full sm:w-auto px-6 py-3.5 text-xs inline-flex items-center justify-center gap-2"
+                  className="ui-btn ui-btn-secondary min-h-12 w-full px-6 text-ui-body sm:w-auto"
                   id="empty-state-logout-btn"
                   title="Terminar Sessão e Sair"
                 >
-                  <span>🚪</span>
+                  <Icon name="logout" className="h-4 w-4 shrink-0" />
                   <span>Terminar Sessão</span>
                 </button>
               )}
@@ -566,18 +558,16 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           </div>
         ) : (
           <div className="ui-inset p-8 my-6 text-center animate-fade-in">
-            <div className="w-20 h-20 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-4xl flex items-center justify-center mx-auto mb-5">
-              🔒
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-ui-lg bg-ui-warning-soft text-ui-warning">
+              <Icon name="lock" className="h-8 w-8 shrink-0" />
             </div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-950/80 border border-amber-400/40 text-amber-300 text-[11px] font-mono tracking-widest uppercase mb-3 font-bold">
-              Acesso Condicionado
+            <div className="mb-3 inline-flex items-center rounded-full bg-ui-warning-soft px-3 py-1 text-ui-caption font-bold text-ui-warning">
+              Acesso condicionado
             </div>
-            <h3 className="text-xl sm:text-2xl font-black font-['Chakra_Petch'] uppercase text-white tracking-wider mb-2">
-              Sem equipa atribuída
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mb-7 leading-relaxed font-sans">
+            <h3 className="mb-2 text-xl font-bold text-ui-text sm:text-2xl">Sem equipa atribuída</h3>
+            <p className="mx-auto mb-7 max-w-lg text-ui-body text-ui-muted">
               A sua conta está aprovada como{' '}
-              <span className="text-amber-300 font-bold">{state.currentUser?.role || 'Treinador'}</span>, mas ainda não
+              <span className="font-bold text-ui-warning">{state.currentUser?.role || 'Treinador'}</span>, mas ainda não
               tem nenhuma equipa ou escalão associado pelo Administrador. Por favor, solicite ao Administrador do clube
               a atribuição da sua equipa.
             </p>
@@ -590,11 +580,11 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                       onLogout();
                     });
                   }}
-                  className="ui-btn ui-btn-secondary w-full sm:w-auto px-6 py-3.5 text-xs inline-flex items-center justify-center gap-2"
+                  className="ui-btn ui-btn-secondary min-h-12 w-full px-6 text-ui-body sm:w-auto"
                   id="empty-state-logout-btn"
                   title="Terminar Sessão e Sair"
                 >
-                  <span>🚪</span>
+                  <Icon name="logout" className="h-4 w-4 shrink-0" />
                   <span>Terminar Sessão</span>
                 </button>
               )}
@@ -627,9 +617,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
             if (isEditing) {
               return (
                 <div key={team.id} className="ui-inset p-4 text-left space-y-2">
-                  <div className="text-xs font-bold font-['Chakra_Petch'] text-cyan-300 uppercase">
-                    Editar Dados da Equipa
-                  </div>
+                  <div className="text-ui-body font-bold text-ui-text">Editar dados da equipa</div>
                   <input
                     type="text"
                     placeholder="Nome do Clube"
@@ -700,7 +688,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
               >
                 {chosen && (
                   <span aria-hidden className="bcv-tick">
-                    ✓
+                    <Icon name="tick" className="h-4 w-4 shrink-0" />
                   </span>
                 )}
                 <div className="bcv-emblem">
@@ -753,7 +741,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                         aria-label="Editar"
                         onClick={() => handleStartEdit(team)}
                       >
-                        ✏️
+                        <Icon name="pencil" className="h-4 w-4 shrink-0" />
                       </button>
                       <button
                         type="button"
@@ -762,7 +750,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                         aria-label="Duplicar para nova época"
                         onClick={() => handleDuplicateToNewSeason(team)}
                       >
-                        📋
+                        <Icon name="copy" className="h-4 w-4 shrink-0" />
                       </button>
                       <button
                         type="button"
@@ -771,7 +759,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
                         aria-label="Apagar equipa"
                         onClick={() => handleDeleteTeam(team.id)}
                       >
-                        🗑️
+                        <Icon name="trash" className="h-4 w-4 shrink-0" />
                       </button>
                     </>
                   )}
@@ -781,9 +769,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
           })}
           {isUserAdmin && !isCreating && (
             <button type="button" onClick={() => setIsCreating(true)} className="bcv-team-card bcv-new-team">
-              <span aria-hidden className="text-4xl text-ui-brand">
-                ＋
-              </span>
+              <Icon name="plus" className="h-9 w-9 text-ui-brand" />
               <span className="text-[16px] font-extrabold text-ui-text">Nova Equipa / Época</span>
               <span className="text-ui-caption text-ui-muted">Só o administrador</span>
             </button>
@@ -820,7 +806,7 @@ export const TeamsHubView: React.FC<TeamsHubViewProps> = ({
       )}
       <div className="bcv-foot relative mt-10 hidden lg:flex" aria-hidden>
         <span />
-        BOLACOMVISÃO • FUTEBOL DE FORMAÇÃO
+        BolaComVisão · Futebol de formação
         <span />
       </div>
     </div>

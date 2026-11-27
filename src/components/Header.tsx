@@ -91,20 +91,20 @@ export const Header: React.FC<HeaderProps> = ({
               ) : (
                 <span
                   aria-label="Emblema do clube"
-                  className="grid w-8 h-8 sm:w-9 sm:h-9 place-items-center rounded-xl border-2 border-ui-line-strong bg-ui-inset text-[11px] font-black text-ui-text"
+                  className="grid w-8 h-8 sm:w-9 sm:h-9 place-items-center rounded-xl border-2 border-ui-line-strong bg-ui-inset text-[11px] font-bold text-ui-text"
                 >
                   {clubInitials(clubInfo?.clubName)}
                 </span>
               )}
               {hasActiveMatch && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping border border-slate-950" />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-ui-brand rounded-full animate-ping border border-ui-bg" />
               )}
             </button>
 
             <div className="min-w-0 text-left">
-              <h1 className="text-base sm:text-lg font-bold text-white truncate leading-tight">{title}</h1>
+              <h1 className="text-base sm:text-lg font-bold text-ui-text truncate leading-tight">{title}</h1>
               {clubInfo && clubInfo.clubName && (
-                <div className="text-[11px] text-slate-400 truncate mt-0.5">
+                <div className="text-ui-caption text-ui-muted truncate mt-0.5">
                   {clubInfo.clubName} {clubInfo.category ? `· ${clubInfo.category}` : ''}
                 </div>
               )}
@@ -158,7 +158,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <span>Jogo</span>
                 {hasActiveMatch && (
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 ml-1 animate-ping" />
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-ui-brand ml-1 animate-ping" />
                 )}
               </button>
             </nav>
@@ -176,15 +176,15 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={onOpenAdminUsers}
                 className={`relative p-1.5 w-9 h-9 sm:w-8 sm:h-8 rounded-xl border flex items-center justify-center transition-all active:scale-95 cursor-pointer touch-manipulation ${
                   pendingUsersCount > 0
-                    ? 'bg-amber-950/90 border-amber-500 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.3)] animate-pulse'
-                    : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                    ? 'bg-ui-warning-soft border-ui-warning text-ui-warning'
+                    : 'bg-ui-surface border-ui-line text-ui-text hover:border-ui-line-strong'
                 }`}
                 title="Gestão de Acessos & Treinadores"
                 aria-label="Gestão de Acessos"
               >
                 <Icon name="users" className="w-4 h-4" />
                 {pendingUsersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 bg-amber-500 text-slate-950 font-mono text-[8px] font-black rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 bg-ui-warning text-ui-bg text-[9px] font-bold rounded-full flex items-center justify-center">
                     {pendingUsersCount}
                   </span>
                 )}
@@ -204,7 +204,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Icon name="bell" className="w-[18px] h-[18px]" />
                 {unreadNotificationsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 bg-rose-500 text-white font-mono text-[8px] font-black rounded-full flex items-center justify-center shadow-sm">
+                  <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 bg-ui-danger text-ui-bg text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
                     {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
                   </span>
                 )}
