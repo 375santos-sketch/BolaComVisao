@@ -1749,9 +1749,9 @@ test('agenda: jogos importados de um print do calendário e modo compacto', asyn
   expect(mode).toBe('calendario');
   const found = dialog.getByRole('list', { name: 'Jogos encontrados' });
   await expect(found.getByRole('listitem')).toHaveCount(2);
-  await expect(found.getByRole('listitem').first()).toContainText('🏠 vs Gd Calendário');
+  await expect(found.getByRole('listitem').first()).toContainText('vs Gd Calendário · Casa');
   await expect(found.getByRole('listitem').first()).toContainText('10:30 · Jornada 1');
-  await expect(found.getByRole('listitem').last()).toContainText('✈️ vs Ad Terceira');
+  await expect(found.getByRole('listitem').last()).toContainText('vs Ad Terceira · Fora');
   await dialog.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/calendario-print.png` : undefined });
   await dialog.getByRole('button', { name: 'Adicionar 2 jogo(s) à Agenda' }).click();
   await expect(dialog).toBeHidden();
