@@ -1936,11 +1936,11 @@ test('terminar sessão apaga os dados do clube neste aparelho', async ({ page })
   await expect.poll(storedOnDevice).toContain('Rui Silva');
 
   await openMore(page, /Terminar sessão/);
-  await expect(page.getByText('ENTRAR NA PLATAFORMA')).toBeVisible();
+  await expect(page.getByPlaceholder('ex: treinador ou treinador@email.com')).toBeVisible();
   await expect.poll(storedOnDevice).not.toContain('Rui Silva');
 
   await page.reload();
-  await expect(page.getByText('ENTRAR NA PLATAFORMA')).toBeVisible();
+  await expect(page.getByPlaceholder('ex: treinador ou treinador@email.com')).toBeVisible();
   // Only the club's name, colour and symbol stay, for the entrance screen
   await expect(page.getByLabel('Clube')).toContainText('Dragões');
   await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/entrada.png` : undefined });
