@@ -1,5 +1,7 @@
 import React from 'react';
 import { CalendarEvent } from './types';
+import { Icon } from '../../ui/Icon';
+import { AddEventButtons } from './AddEventButtons';
 import { MONTH_NAMES_PT, WEEKDAY_SHORT_PT } from './constants';
 
 interface ScheduleYearViewProps {
@@ -39,75 +41,44 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
           <button
             type="button"
             onClick={() => setActiveYear((prev) => prev - 1)}
-            className="ui-btn ui-btn-secondary p-2 px-3 text-xs"
+            className="ui-btn ui-btn-secondary min-h-10 px-3 text-ui-caption"
           >
-            ◀ {activeYear - 1}
+            <Icon name="chevronLeft" className="h-4 w-4 shrink-0" />
+            {activeYear - 1}
           </button>
 
           <button
             type="button"
             onClick={() => setActiveYear(new Date().getFullYear())}
-            className="ui-btn ui-btn-secondary px-3 py-1.5 text-xs"
+            className="ui-btn ui-btn-secondary min-h-10 px-4 text-ui-caption"
           >
-            Ano Atual
+            Ano atual
           </button>
 
           <button
             type="button"
             onClick={() => setActiveYear((prev) => prev + 1)}
-            className="ui-btn ui-btn-secondary p-2 px-3 text-xs"
+            className="ui-btn ui-btn-secondary min-h-10 px-3 text-ui-caption"
           >
-            {activeYear + 1} ▶
+            {activeYear + 1}
+            <Icon name="chevronRight" className="h-4 w-4 shrink-0" />
           </button>
         </div>
 
         <div className="text-center">
-          <div className="text-xl sm:text-2xl font-['Chakra_Petch'] font-black text-ui-text">
-            Época / Ano Desportivo {activeYear}
-          </div>
-          <div className="text-xs font-mono text-ui-brand">
-            Visão Geral Anual de Jogos, Treinos, Reuniões e Indisponibilidades
-          </div>
+          <div className="text-ui-lead font-bold text-ui-text">Ano {activeYear}</div>
+          <div className="text-ui-caption text-ui-muted">Jogos, treinos, reuniões e indisponibilidades</div>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap justify-end">
-          <button
-            type="button"
-            onClick={onOpenScheduleMatch}
-            className="ui-btn ui-btn-soft p-1.5 px-2.5 text-xs flex items-center gap-1"
-            title="Agendar Jogo"
-          >
-            <span>⚽</span>
-            <span>＋ Jogo</span>
-          </button>
-          <button
-            type="button"
-            onClick={onOpenScheduleTraining}
-            className="ui-btn ui-btn-soft-warning p-1.5 px-2.5 text-xs flex items-center gap-1"
-            title="Agendar Treino"
-          >
-            <span>⚡</span>
-            <span>＋ Treino</span>
-          </button>
-          <button
-            type="button"
-            onClick={onOpenClubEventModal}
-            className="ui-btn ui-btn-soft p-1.5 px-2.5 text-xs flex items-center gap-1"
-            title="Reunião / Formação"
-          >
-            <span>👥</span>
-            <span>＋ Reunião</span>
-          </button>
-          <button
-            type="button"
-            onClick={onOpenScheduleStaff}
-            className="ui-btn ui-btn-soft-warning p-1.5 px-2.5 text-xs flex items-center gap-1"
-            title="Indisponível (Equipa)"
-          >
-            <span>🚫</span>
-            <span>＋ Indisp.</span>
-          </button>
-        </div>
+        <AddEventButtons
+          date={todayStr}
+          onOpenScheduleMatch={() => onOpenScheduleMatch()}
+          onOpenScheduleTraining={() => onOpenScheduleTraining()}
+          onOpenClubEventModal={() => onOpenClubEventModal()}
+          onOpenScheduleStaff={() => onOpenScheduleStaff()}
+          compact
+          className="justify-end"
+        />
       </div>
 
       {/* 12 Mini Months Grid */}
@@ -141,21 +112,21 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
               <div>
                 {/* Month Card Header */}
                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-ui-line">
-                  <span className="font-['Chakra_Petch'] font-bold text-ui-text uppercase text-sm">{mName}</span>
-                  <span className="text-[10px] font-mono text-ui-brand bg-ui-brand-soft px-2 py-0.5 rounded border border-ui-brand/40">
-                    {monthEvents.length} ev.
+                  <span className="font-bold text-ui-text text-sm">{mName}</span>
+                  <span className="ui-badge ui-badge-brand tabular-nums">
+                    {monthEvents.length} {monthEvents.length === 1 ? 'evento' : 'eventos'}
                   </span>
                 </div>
 
                 {/* Mini Weekday Headers */}
-                <div className="grid grid-cols-7 gap-0.5 text-center text-[9px] font-mono text-ui-muted mb-1">
+                <div className="grid grid-cols-7 gap-0.5 text-center text-[10px] font-semibold text-ui-muted mb-1">
                   {WEEKDAY_SHORT_PT.map((wd, i) => (
                     <span key={i}>{wd[0]}</span>
                   ))}
                 </div>
 
                 {/* Mini Calendar Days */}
-                <div className="grid grid-cols-7 gap-0.5 text-center text-[10px] font-mono">
+                <div className="grid grid-cols-7 gap-0.5 text-center text-[10px] tabular-nums">
                   {/* Leading offset */}
                   {Array.from({ length: startOffset }).map((_, i) => (
                     <span key={`off-${i}`} className="p-1 opacity-20">
@@ -188,18 +159,16 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
                         }}
                         className={`p-1 rounded transition-all ${
                           isToday
-                            ? 'bg-ui-brand text-ui-brand-ink font-black'
-                            : hasMatch && hasTr
-                              ? 'bg-gradient-to-br from-ui-brand to-ui-warning text-ui-brand-ink font-bold'
-                              : hasMatch
-                                ? 'bg-ui-brand-soft text-ui-brand border border-ui-brand/60 font-bold'
-                                : hasTr
-                                  ? 'bg-ui-warning-soft text-ui-warning border border-ui-warning/60 font-bold'
-                                  : hasClub
-                                    ? 'bg-ui-brand-soft text-ui-brand border border-ui-brand/60 font-bold'
-                                    : hasSt
-                                      ? 'bg-ui-warning-soft text-ui-warning border border-ui-warning/60 font-bold'
-                                      : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
+                            ? 'bg-ui-brand text-ui-brand-ink font-bold'
+                            : hasMatch
+                              ? 'bg-ui-brand-soft text-ui-brand border border-ui-brand/60 font-bold'
+                              : hasTr
+                                ? 'bg-ui-warning-soft text-ui-warning border border-ui-warning/60 font-bold'
+                                : hasClub
+                                  ? 'bg-ui-brand-soft text-ui-brand border border-ui-brand/60 font-bold'
+                                  : hasSt
+                                    ? 'bg-ui-warning-soft text-ui-warning border border-ui-warning/60 font-bold'
+                                    : 'text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text'
                         }`}
                         title={dateStr}
                       >
@@ -211,11 +180,17 @@ export const ScheduleYearView: React.FC<ScheduleYearViewProps> = ({
               </div>
 
               {/* Month Card Footer Stats */}
-              <div className="mt-3 pt-2 border-t border-ui-line/80 flex items-center justify-between text-[10px] font-mono text-ui-muted flex-wrap gap-1">
-                <span>⚽ {mMatches.length}</span>
-                <span>⚡ {mTrainings.length}</span>
-                <span>👥 {mClubs.length}</span>
-                <span>🚫 {mStaff.length}</span>
+              <div className="mt-3 pt-2 border-t border-ui-line/80 flex items-center justify-between text-[11px] text-ui-muted flex-wrap gap-1 tabular-nums">
+                <span>
+                  {mMatches.length} {mMatches.length === 1 ? 'jogo' : 'jogos'}
+                </span>
+                <span>
+                  {mTrainings.length} {mTrainings.length === 1 ? 'treino' : 'treinos'}
+                </span>
+                <span>
+                  {mClubs.length} {mClubs.length === 1 ? 'reunião' : 'reuniões'}
+                </span>
+                <span>{mStaff.length} indisp.</span>
               </div>
             </div>
           );

@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { Icon } from '../../ui/Icon';
 import { AppState, MatchType, ScheduledMatch } from '../../../types';
 import { cleanPrintFixtures, PrintFixture } from '../../../lib/printJornada';
 import { fixtureDrafts, fixtureTeams, guessOurName } from '../../../lib/fixtureImport';
@@ -95,9 +96,14 @@ export const FixturePrintModal: React.FC<FixturePrintModalProps> = ({ state, onU
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-ui-text font-['Chakra_Petch'] uppercase">📷 Importar jogos</h3>
-          <button type="button" onClick={onClose} aria-label="Fechar importar jogos" className="text-ui-muted text-lg">
-            ✕
+          <h3 className="text-ui-body font-bold text-ui-text">Importar jogos</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar importar jogos"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+          >
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
         <p className="text-[11px] text-ui-muted">
@@ -118,7 +124,7 @@ export const FixturePrintModal: React.FC<FixturePrintModalProps> = ({ state, onU
           onClick={() => fileRef.current?.click()}
           className="ui-btn ui-btn-primary w-full py-2.5 text-xs"
         >
-          {reading ? 'A ler o print…' : fixtures ? '📷 Escolher outro print' : '📷 Escolher o print do calendário'}
+          {reading ? 'A ler o print…' : fixtures ? 'Escolher outro print' : 'Escolher o print do calendário'}
         </button>
 
         {fixtures && (
@@ -182,7 +188,7 @@ export const FixturePrintModal: React.FC<FixturePrintModalProps> = ({ state, onU
                       />
                       <span className="flex-1 min-w-0">
                         <span className="block text-ui-text font-bold truncate">
-                          {d.location === 'casa' ? '🏠' : '✈️'} vs {d.opponent}
+                          vs {d.opponent} · {d.location === 'casa' ? 'Casa' : 'Fora'}
                         </span>
                         <span className="block text-ui-muted">
                           {dayLabel(d.date)}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Icon } from '../../ui/Icon';
 import { AppState } from '../../../types';
 import { allTeamsAgenda } from '../../../lib/allTeamsAgenda';
 import { localDateISO } from '../../../lib/trainingQuick';
@@ -33,7 +34,10 @@ export const AllTeamsAgenda: React.FC<{ state: AppState }> = ({ state }) => {
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between px-3.5 py-3 text-sm font-semibold text-ui-text"
       >
-        <span>🗂️ Todas as minhas equipas ({teams.length})</span>
+        <span className="inline-flex items-center gap-2">
+          <Icon name="users" className="h-4 w-4 shrink-0 text-ui-muted" />
+          Todas as minhas equipas ({teams.length})
+        </span>
         <span className="text-xs text-ui-muted">{open ? '▴' : 'próximas 2 semanas ▾'}</span>
       </button>
       {open && (
@@ -54,7 +58,7 @@ export const AllTeamsAgenda: React.FC<{ state: AppState }> = ({ state }) => {
                 <span className="text-[11px] text-ui-muted">
                   {dayLabel(it.date)}
                   {it.time ? ` · ${it.time}` : ''}
-                  {it.clash ? <span className="text-ui-danger"> · ⚠️ choca com {it.clash}</span> : null}
+                  {it.clash ? <span className="text-ui-danger"> · choca com {it.clash}</span> : null}
                 </span>
               </span>
             </div>

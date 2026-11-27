@@ -255,7 +255,7 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
     'campeonato'
   );
   await page.getByPlaceholder('Ex: Jornada 4 ou Quartos de Final').fill('Jornada 6');
-  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await page.getByRole('button', { name: 'Guardar no calendário' }).click();
 
   await expect(page.getByRole('button', { name: /vs Constância.*Jornada 6/ })).toBeVisible();
   // The call-up of the game that was tapped (not the first game of the list).
@@ -371,7 +371,7 @@ test('calendário para os pais: link secreto com jogos e treinos que se atualiza
   await page.getByPlaceholder('Nome da equipa adversária').fill('Mação');
   await page.locator('input[type=date]').first().fill('2026-12-12');
   await page.locator('input[type=time]').first().fill('15:00');
-  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await page.getByRole('button', { name: 'Guardar no calendário' }).click();
   await expect.poll(published, { timeout: 30_000 }).toContain('Mação');
 
   // Switched off: the link stops working
@@ -1399,7 +1399,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await openAgendaList(page);
   await openAgendaRow(page, /vs Abrantes/);
   await page
-    .getByRole('button', { name: /Iniciar Jogo/ })
+    .getByRole('button', { name: /Iniciar jogo/ })
     .first()
     .click();
   await expect(page.getByText('JOGO EM CURSO')).toBeVisible();
@@ -1689,7 +1689,7 @@ test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo',
   await page.locator('input[type=date]').first().fill(tomorrow);
   await page.locator('input[type=time]').first().fill('15:00');
   await page.getByRole('button', { name: 'Fora', exact: true }).click();
-  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await page.getByRole('button', { name: 'Guardar no calendário' }).click();
   await openAgendaRow(page, /vs AD Tempo Teste/);
   const card = page.getByRole('listitem').filter({ hasText: 'AD Tempo Teste' });
   await expect(card.getByLabel('Previsão do tempo')).toHaveText('🌧️ 15° · 💧60% · 💨20 km/h');
@@ -2631,10 +2631,10 @@ test('acompanhar ao vivo: o outro treinador vê o jogo a acontecer no telemóvel
   await page.getByPlaceholder('Nome da equipa adversária').fill('Equipa Ao Vivo');
   await page.locator('input[type=date]').first().fill(new Date().toISOString().slice(0, 10));
   await page.locator('input[type=time]').first().fill('10:00');
-  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await page.getByRole('button', { name: 'Guardar no calendário' }).click();
   await openAgendaRow(page, /vs Equipa Ao Vivo/);
   await page
-    .getByRole('button', { name: /Iniciar Jogo/ })
+    .getByRole('button', { name: /Iniciar jogo/ })
     .first()
     .click();
   await page.getByRole('button', { name: /Selecionar 7 Titulares/i }).click();

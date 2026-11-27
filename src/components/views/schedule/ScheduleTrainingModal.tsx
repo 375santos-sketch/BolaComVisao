@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Icon } from '../../ui/Icon';
 import { DateTimePT } from '../../ui/DateTimePT';
 import { TrainingFormData } from './types';
 import { Training } from '../../../types';
@@ -37,20 +38,19 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
 
   return (
     <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn text-left">
-      <div className="bg-ui-surface border-t sm:border border-ui-warning/40 rounded-t-3xl sm:rounded-3xl max-w-xl w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="ui-card rounded-b-none sm:rounded-ui-lg max-w-xl w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden">
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 pb-3 border-b border-ui-line flex items-center justify-between shrink-0 bg-ui-surface/95">
+        <div className="p-4 sm:p-5 pb-3 border-b border-ui-line flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">{modalMode === 'batch' ? '📅' : '⚡'}</span>
             <div>
-              <h3 className="text-base sm:text-lg font-['Chakra_Petch'] font-black uppercase text-ui-text">
+              <h3 className="text-ui-body font-bold text-ui-text">
                 {editingTrainingId
-                  ? 'Editar Treino'
+                  ? 'Editar treino'
                   : modalMode === 'batch'
-                    ? 'Adicionar Vários Treinos (Período)'
-                    : 'Agendar Novo Treino'}
+                    ? 'Vários treinos num período'
+                    : 'Agendar treino'}
               </h3>
-              <p className="text-[11px] font-mono text-ui-muted">
+              <p className="text-ui-caption text-ui-muted">
                 {editingTrainingId
                   ? 'Alterar dados da sessão'
                   : modalMode === 'batch'
@@ -62,9 +62,10 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
           <button
             type="button"
             onClick={() => setShowTrainingModal(false)}
-            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+            aria-label="Fechar"
           >
-            ✕
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
 
@@ -75,25 +76,23 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
               <button
                 type="button"
                 onClick={() => setModalMode('single')}
-                className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
-                  modalMode === 'single'
-                    ? 'bg-ui-warning text-ui-brand-ink shadow-md'
-                    : 'text-ui-muted hover:text-ui-text'
+                className={`py-2 px-3 rounded-ui-sm text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                  modalMode === 'single' ? 'bg-ui-surface-3 text-ui-text' : 'text-ui-muted hover:text-ui-text'
                 }`}
               >
-                <span>⚡</span>
-                <span>Treino Único</span>
+                <Icon name="whistle" className="h-4 w-4 shrink-0" />
+                <span>Um treino</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setModalMode('batch')}
-                className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
-                  modalMode === 'batch' ? 'bg-ui-brand text-ui-brand-ink shadow-md' : 'text-ui-muted hover:text-ui-text'
+                className={`py-2 px-3 rounded-ui-sm text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                  modalMode === 'batch' ? 'bg-ui-surface-3 text-ui-text' : 'text-ui-muted hover:text-ui-text'
                 }`}
               >
-                <span>📅</span>
-                <span>Vários Treinos (Período)</span>
+                <Icon name="calendar" className="h-4 w-4 shrink-0" />
+                <span>Vários treinos</span>
               </button>
             </div>
           </div>
@@ -119,7 +118,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
             <div className="p-4 sm:p-5 overflow-y-auto flex-1 overscroll-contain space-y-3 pb-6">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-mono text-ui-text block mb-1">Data *</label>
+                  <label className="text-ui-caption font-semibold text-ui-muted block mb-1">Data *</label>
                   <DateTimePT
                     type="date"
                     label="Data do treino"
@@ -129,7 +128,7 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-mono text-ui-text block mb-1">Hora *</label>
+                  <label className="text-ui-caption font-semibold text-ui-muted block mb-1">Hora *</label>
                   <DateTimePT
                     type="time"
                     label="Hora do treino"
@@ -142,21 +141,21 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-mono text-ui-text block mb-1">Tipo / Foco</label>
+                  <label className="text-ui-caption font-semibold text-ui-muted block mb-1">Tipo / Foco</label>
                   <select
                     value={trainingForm.type}
                     onChange={(e) => setTrainingForm({ ...trainingForm, type: e.target.value })}
                     className="ui-input w-full text-xs"
                   >
-                    <option value="⚡ Tático">⚡ Tático</option>
-                    <option value="🏃 Físico">🏃 Físico</option>
-                    <option value="🎯 Técnico">🎯 Técnico</option>
-                    <option value="🧠 Recuperação">🧠 Recuperação</option>
-                    <option value="⚽ Jogo Treino">⚽ Jogo Treino</option>
+                    <option value="⚡ Tático">Tático</option>
+                    <option value="🏃 Físico">Físico</option>
+                    <option value="🎯 Técnico">Técnico</option>
+                    <option value="🧠 Recuperação">Recuperação</option>
+                    <option value="⚽ Jogo Treino">Jogo-treino</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-mono text-ui-text block mb-1">Local</label>
+                  <label className="text-ui-caption font-semibold text-ui-muted block mb-1">Local</label>
                   <input
                     type="text"
                     placeholder="Ex: Campo Principal"
@@ -168,7 +167,9 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
               </div>
 
               <div>
-                <label className="text-xs font-mono text-ui-text block mb-1">Objetivos, Exercícios e Notas</label>
+                <label className="text-ui-caption font-semibold text-ui-muted block mb-1">
+                  Objetivos, Exercícios e Notas
+                </label>
                 <textarea
                   rows={3}
                   placeholder="Ex: Circulação de bola, transições defensivas e bolas paradas laterais..."
@@ -180,29 +181,35 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
 
               {/* Status Selector */}
               <div className="ui-inset p-3">
-                <span className="text-xs font-mono text-ui-muted block mb-2">Estado da Sessão:</span>
+                <span className="text-ui-caption text-ui-muted block mb-2">Estado da sessão</span>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setTrainingForm({ ...trainingForm, completed: false })}
-                    className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
+                    className={`py-2 px-3 rounded-ui-sm text-xs font-semibold transition-all ${
                       !trainingForm.completed
-                        ? 'bg-ui-warning text-ui-brand-ink shadow-md'
+                        ? 'bg-ui-surface-3 text-ui-text border border-ui-line-strong'
                         : 'bg-ui-surface text-ui-muted border border-ui-line'
                     }`}
                   >
-                    🟡 Agendado / Planeado
+                    <span className="inline-flex items-center gap-1.5">
+                      <span aria-hidden className="h-2 w-2 rounded-full bg-ui-warning" />
+                      Agendado
+                    </span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setTrainingForm({ ...trainingForm, completed: true })}
-                    className={`py-2 px-3 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all ${
+                    className={`py-2 px-3 rounded-ui-sm text-xs font-semibold transition-all ${
                       trainingForm.completed
-                        ? 'bg-ui-success text-ui-brand-ink shadow-md'
+                        ? 'bg-ui-surface-3 text-ui-text border border-ui-line-strong'
                         : 'bg-ui-surface text-ui-muted border border-ui-line'
                     }`}
                   >
-                    🟢 Concluído (Estatísticas)
+                    <span className="inline-flex items-center gap-1.5">
+                      <span aria-hidden className="h-2 w-2 rounded-full bg-ui-success" />
+                      Concluído
+                    </span>
                   </button>
                 </div>
               </div>
@@ -222,8 +229,8 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                   className="ui-btn ui-btn-soft-danger px-4 py-2.5 min-h-[44px] text-xs flex items-center justify-center gap-1.5"
                   title="Eliminar este treino cancelado da agenda"
                 >
-                  <span>🗑️</span>
-                  <span>Eliminar Treino (Cancelado)</span>
+                  <Icon name="trash" className="h-4 w-4 shrink-0" />
+                  <span>Eliminar treino</span>
                 </button>
               ) : (
                 <div />
@@ -240,16 +247,17 @@ export const ScheduleTrainingModal: React.FC<ScheduleTrainingModalProps> = ({
                 <button
                   type="button"
                   onClick={() => handleSaveTrainingModal(false)}
-                  className="ui-btn ui-btn-soft-warning px-4 py-2.5 min-h-[44px] text-xs flex items-center justify-center"
+                  className="ui-btn ui-btn-secondary px-4 py-2.5 min-h-[44px] text-xs flex items-center justify-center"
                 >
-                  📅 Guardar como Agendado
+                  Guardar como agendado
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSaveTrainingModal(true)}
-                  className="ui-btn ui-btn-success px-4 py-2.5 min-h-[44px] text-xs flex items-center justify-center"
+                  className="ui-btn ui-btn-primary px-4 py-2.5 min-h-[44px] text-xs flex items-center justify-center gap-1.5"
                 >
-                  ✅ Guardar & Concluir
+                  <Icon name="tick" className="h-4 w-4 shrink-0" />
+                  Guardar e concluir
                 </button>
               </div>
             </div>

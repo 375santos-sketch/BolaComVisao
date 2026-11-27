@@ -1,5 +1,9 @@
 import { AppState, Player } from '../../../../types';
 import { CalendarEvent, EventFilterType } from '../types';
+
+/** Display text without the emoji some saved values carry (e.g. the training type "⚡ Tático"); the saved value stays. */
+const plainText = (text: string) => text.replace(/\p{Extended_Pictographic}\uFE0F?/gu, '').trim();
+
 export const WEEKDAY_SHORT_PT = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 /**
@@ -77,9 +81,9 @@ export function computeUnifiedEvents(state: AppState, todayStr: string, eligible
     const presences = Math.max(0, totalEligible - absences.length);
 
     const title = tr.trainingNumber
-      ? `Treino ${tr.trainingNumber}${tr.type ? ` (${tr.type})` : ''}`
+      ? `Treino ${tr.trainingNumber}${tr.type ? ` (${plainText(tr.type)})` : ''}`
       : tr.type
-        ? `${tr.type} (${tr.location || 'Campo'})`
+        ? `${plainText(tr.type)} (${tr.location || 'Campo'})`
         : 'Treino';
 
     list.push({
@@ -90,7 +94,7 @@ export function computeUnifiedEvents(state: AppState, todayStr: string, eligible
       category: 'training',
       isCompleted: tr.completed === true,
       location: tr.location || 'Campo de Treinos',
-      trainingType: tr.type || '⚡ Geral',
+      trainingType: plainText(tr.type || 'Geral'),
       notes: tr.notes || '',
       rawTraining: tr,
       presencesCount: presences,
@@ -106,7 +110,7 @@ export function computeUnifiedEvents(state: AppState, todayStr: string, eligible
         id: `unavail-${u.id}-${d}`,
         date: d,
         time: '00:00',
-        title: `🚫 ${u.name} (Indisponível)`,
+        title: `${u.name} (indisponível)`,
         category: 'staff_unavailability',
         isCompleted: false,
         notes: u.reason || '',
@@ -118,14 +122,13 @@ export function computeUnifiedEvents(state: AppState, todayStr: string, eligible
   // 5. Club Events
   (state.clubEvents || []).forEach((ev) => {
     const dates = getDatesInRange(ev.date, ev.endDate);
-    const icon = ev.type === 'formacao' ? '🎓' : ev.type === 'estagio' ? '🏕️' : ev.type === 'outro' ? '📌' : '👥';
     dates.forEach((d) => {
       list.push({
         id: `clubevent-${ev.id}-${d}`,
         date: d,
         time: ev.time || '19:30',
         endTime: ev.endTime,
-        title: `${icon} ${ev.title}`,
+        title: ev.title,
         category: 'club_event',
         isCompleted: ev.isCompleted === true,
         location: ev.location || 'Clube',
