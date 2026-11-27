@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Portal } from './ui/Portal';
+import { Icon } from './ui/Icon';
 import { AppState, TeamPhoto } from '../types';
 import { drawGrowthPicture, growthNumbers, seasonMonths, seasonPhotos } from '../lib/seasonGrowth';
 import { compressImageFile } from '../lib/imageCompress';
@@ -15,7 +16,7 @@ interface SeasonGrowthModalProps {
 }
 
 /**
- * Mais → 📸 Antes e depois da época: the team's photo at the start and at the end of the season, and the numbers of
+ * Mais → Antes e depois da época: the team's photo at the start and at the end of the season, and the numbers of
  * the season, in one picture for the parents and the end-of-season party.
  */
 const SeasonGrowthModal: React.FC<SeasonGrowthModalProps> = ({ state, onUpdateState, onShowToast, onClose }) => {
@@ -94,16 +95,17 @@ const SeasonGrowthModal: React.FC<SeasonGrowthModalProps> = ({ state, onUpdateSt
 
   const slot = (moment: TeamPhoto['moment'], photo: TeamPhoto | undefined, month: string) => (
     <label
-      className={`relative grid aspect-[4/3] cursor-pointer place-items-center overflow-hidden rounded-xl text-center text-xs ${
-        photo ? 'bg-slate-800' : 'border-2 border-dashed border-slate-600 text-slate-400'
+      className={`relative grid aspect-[4/3] cursor-pointer place-items-center overflow-hidden rounded-ui-sm text-center text-xs ${
+        photo ? 'bg-ui-surface-2' : 'border-2 border-dashed border-ui-line-strong text-ui-muted'
       }`}
     >
       {photo ? (
         <img src={photo.image} alt={`Foto da equipa: ${month}`} className="h-full w-full object-cover" />
       ) : (
-        <span className="px-2">
-          📷 {busy === moment ? 'A preparar…' : moment === 'inicio' ? 'Foto do início' : 'Foto do fim'}
-          <span className="block text-[10px] text-slate-500">{month}</span>
+        <span className="flex flex-col items-center gap-1 px-2">
+          <Icon name="image" className="h-5 w-5" />
+          {busy === moment ? 'A preparar…' : moment === 'inicio' ? 'Foto do início' : 'Foto do fim'}
+          <span className="block text-ui-caption text-ui-muted">{month}</span>
         </span>
       )}
       {photo && (
@@ -138,8 +140,8 @@ const SeasonGrowthModal: React.FC<SeasonGrowthModalProps> = ({ state, onUpdateSt
         >
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-base font-bold text-white">📸 Antes e depois</h3>
-              <p className="text-[11px] text-slate-400">
+              <h3 className="text-base font-bold text-ui-text">Antes e depois</h3>
+              <p className="text-ui-caption text-ui-muted">
                 Época {season}
                 {state.category ? ` · ${state.category}` : ''}
               </p>
@@ -148,19 +150,19 @@ const SeasonGrowthModal: React.FC<SeasonGrowthModalProps> = ({ state, onUpdateSt
               type="button"
               onClick={onClose}
               aria-label="Fechar antes e depois"
-              className="text-slate-400 text-lg"
+              className="-mr-2 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
             >
-              ✕
+              <Icon name="x" className="h-5 w-5 shrink-0" />
             </button>
           </div>
 
           <section aria-label="Fotos da equipa" className="space-y-2">
-            <div className="text-[11px] font-bold text-cyan-300">AS DUAS FOTOS DA EQUIPA</div>
+            <div className="text-ui-caption font-semibold text-ui-muted">As duas fotos da equipa</div>
             <div className="grid grid-cols-2 gap-2">
               {slot('inicio', photos.start, months[0])}
               {slot('fim', photos.end, months[1])}
             </div>
-            <label className="flex items-start gap-2 text-xs text-slate-200">
+            <label className="flex items-start gap-2 text-xs text-ui-text">
               <input
                 type="checkbox"
                 className="mt-0.5"
@@ -169,25 +171,27 @@ const SeasonGrowthModal: React.FC<SeasonGrowthModalProps> = ({ state, onUpdateSt
               />
               <span>
                 Os pais autorizaram a foto da equipa nas imagens partilhadas.
-                <span className="block text-[10px] text-slate-500">
+                <span className="block text-ui-caption text-ui-muted">
                   Sem este visto, a imagem sai só com os números.
                 </span>
               </span>
             </label>
-            <p className="text-[10px] text-slate-500">
+            <p className="text-ui-caption text-ui-muted">
               A foto do início fica guardada na nuvem desde já, para não se perder até ao fim da época.
             </p>
           </section>
 
           <section aria-label="Números da época" className="space-y-1">
-            <div className="text-[11px] font-bold text-cyan-300">OS NÚMEROS DA ÉPOCA (escolhe quais entram)</div>
+            <div className="text-ui-caption font-semibold text-ui-muted">
+              Os números da época (escolhe quais entram)
+            </div>
             {numbers.length === 0 ? (
-              <p className="text-xs text-slate-400">Ainda não há treinos, jogos ou testes registados nesta época.</p>
+              <p className="text-xs text-ui-muted">Ainda não há treinos, jogos ou testes registados nesta época.</p>
             ) : (
               numbers.map((n) => (
                 <label
                   key={n.id}
-                  className="flex items-center gap-2 border-t border-slate-800 py-1.5 text-xs first:border-0"
+                  className="flex items-center gap-2 border-t border-ui-line py-1.5 text-xs first:border-0 min-h-10"
                 >
                   <input
                     type="checkbox"
@@ -196,22 +200,23 @@ const SeasonGrowthModal: React.FC<SeasonGrowthModalProps> = ({ state, onUpdateSt
                       setNumbers(numbers.map((x) => (x.id === n.id ? { ...x, on: e.target.checked } : x)))
                     }
                   />
-                  <span className="flex-1 text-slate-300">{n.label.charAt(0) + n.label.slice(1).toLowerCase()}</span>
-                  <b className="text-white">{n.value}</b>
+                  <span className="flex-1 text-ui-text">{n.label.charAt(0) + n.label.slice(1).toLowerCase()}</span>
+                  <b className="tabular-nums text-ui-text">{n.value}</b>
                 </label>
               ))
             )}
-            <p className="text-[10px] text-slate-500">Só números da equipa: nenhum atleta é comparado com outro.</p>
+            <p className="text-ui-caption text-ui-muted">Só números da equipa: nenhum atleta é comparado com outro.</p>
           </section>
 
           <canvas
             ref={canvasRef}
             role="img"
             aria-label="Imagem antes e depois da época"
-            className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-2xl border border-slate-800"
+            className="mx-auto block h-auto max-h-[50dvh] w-auto max-w-full rounded-ui-lg border border-ui-line"
           />
-          <button type="button" onClick={share} className="ui-btn ui-btn-primary w-full py-3 text-sm">
-            📲 Partilhar imagem
+          <button type="button" onClick={share} className="ui-btn ui-btn-primary min-h-12 w-full text-sm">
+            <Icon name="download" className="h-4 w-4 shrink-0" />
+            Partilhar imagem
           </button>
         </div>
       </div>

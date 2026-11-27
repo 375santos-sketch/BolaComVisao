@@ -2585,7 +2585,7 @@ test('antes e depois da época: foto da equipa na nuvem, autorização dos pais 
     .toBeGreaterThan(0);
   await dialog.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/antes-depois-app.png` : undefined });
   const download = page.waitForEvent('download');
-  await dialog.getByRole('button', { name: '📲 Partilhar imagem' }).click();
+  await dialog.getByRole('button', { name: 'Partilhar imagem' }).click();
   expect((await download).suggestedFilename()).toMatch(/^Antes_e_depois_.*\.png$/);
 });
 
