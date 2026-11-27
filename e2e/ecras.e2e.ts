@@ -2220,18 +2220,18 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   const soon = new Date(Date.now() + 90 * 86_400_000).toISOString().slice(0, 10);
   await career.locator('input[type=date]').first().fill(soon);
   await career.getByLabel('Créditos precisos para renovar').fill('15');
-  await career.getByRole('button', { name: '＋ Formação' }).click();
+  await career.getByRole('button', { name: 'Formação', exact: true }).click();
   await career.getByLabel('Nome da formação').fill('Ação de formação Futebol de 7');
   await career.getByLabel('Créditos da formação').fill('4');
   await career.getByRole('button', { name: 'Guardar formação' }).click();
   await expect(career).toContainText('4 de 15 créditos');
   // Clubs by year
-  await career.getByRole('button', { name: '＋ Clube' }).click();
+  await career.getByRole('button', { name: 'Clube', exact: true }).click();
   await career.getByLabel('Clube', { exact: true }).fill('CD Falcões');
   await career.getByLabel('Ano ou época').fill('2019–2021');
   await career.getByLabel('Função').fill('Adjunto');
   await career.getByRole('button', { name: 'Guardar clube' }).click();
-  await career.getByRole('button', { name: '＋ Clube' }).click();
+  await career.getByRole('button', { name: 'Clube', exact: true }).click();
   await career.getByLabel('Clube', { exact: true }).fill('GD Ribeira');
   await career.getByLabel('Ano ou época').fill('2023/2024');
   await career.getByLabel('Escalão').fill('Sub-11');
@@ -2246,7 +2246,7 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   await career.getByLabel('Foto do treinador').setInputFiles('e2e/fixtures/exercicio.jpg');
   await expect(career.getByRole('img', { name: 'A minha foto' })).toBeVisible();
   const download = page.waitForEvent('download');
-  await career.getByRole('button', { name: '📄 Currículo em PDF' }).click();
+  await career.getByRole('button', { name: 'Currículo em PDF' }).click();
   const pdf = await download;
   expect(pdf.suggestedFilename()).toMatch(/^Curriculo_.*\.pdf$/);
   expect(readFileSync(await pdf.path()).toString('latin1')).toMatch(/\/Subtype\s*\/Image/);

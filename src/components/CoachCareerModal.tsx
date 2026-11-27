@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { DateTimePT } from './ui/DateTimePT';
+import { Icon } from './ui/Icon';
 import { AppState, CoachCareer, CoachClub, CoachCourse } from '../types';
 import { careerOf, careerStatus, clubDetail, dateLabel, sortClubs, sortCourses, withCareer } from '../lib/coachCareer';
 import { uid } from '../lib/utils';
@@ -16,7 +17,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 const blankCourse = (): CoachCourse => ({ id: uid(), name: '', date: today(), credits: 1 });
 const blankClub = (): CoachClub => ({ id: uid(), club: '', period: String(new Date().getFullYear()) });
 
-/** 🏟️ Clubes por onde passei: club, year or season, age group and role. */
+/** Clubes por onde passei: club, year or season, age group and role. */
 const ClubsSection: React.FC<{ career: CoachCareer; onSave: (career: CoachCareer) => void }> = ({ career, onSave }) => {
   const [club, setClub] = useState<CoachClub | null>(null);
   const clubs = career.clubs || [];
@@ -35,9 +36,9 @@ const ClubsSection: React.FC<{ career: CoachCareer; onSave: (career: CoachCareer
   };
   return (
     <section aria-label="Clubes por onde passei" className="space-y-2">
-      <div className="text-[11px] font-bold text-slate-400">CLUBES POR ONDE PASSEI</div>
+      <div className="text-ui-caption font-semibold text-ui-muted">Clubes por onde passei</div>
       {clubs.length > 0 && (
-        <ul aria-label="Clubes" className="divide-y divide-slate-800">
+        <ul aria-label="Clubes" className="divide-y divide-ui-line">
           {sortClubs(clubs).map((c) => (
             <li key={c.id}>
               <button
@@ -46,10 +47,10 @@ const ClubsSection: React.FC<{ career: CoachCareer; onSave: (career: CoachCareer
                 className="flex w-full items-center gap-2 py-2 text-left"
               >
                 <span className="min-w-0 flex-1">
-                  <b className="block truncate text-sm text-white">{c.club}</b>
-                  {clubDetail(c) && <span className="text-[11px] text-slate-400">{clubDetail(c)}</span>}
+                  <b className="block truncate text-sm text-ui-text">{c.club}</b>
+                  {clubDetail(c) && <span className="text-ui-caption text-ui-muted">{clubDetail(c)}</span>}
                 </span>
-                <span className="shrink-0 text-sm font-bold text-cyan-300 font-['Chakra_Petch']">{c.period}</span>
+                <span className="shrink-0 text-sm font-bold tabular-nums text-ui-text">{c.period}</span>
               </button>
             </li>
           ))}
@@ -119,14 +120,15 @@ const ClubsSection: React.FC<{ career: CoachCareer; onSave: (career: CoachCareer
           onClick={() => setClub(blankClub())}
           className="ui-btn ui-btn-secondary w-full py-2 text-xs"
         >
-          ＋ Clube
+          <Icon name="plus" className="h-4 w-4 shrink-0" />
+          Clube
         </button>
       )}
     </section>
   );
 };
 
-/** Mais → 🎓 A minha carreira: the coach's title, its expiry and the courses for its renewal. */
+/** Mais → A minha carreira: the coach's title, its expiry and the courses for its renewal. */
 const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateState, onShowToast, onClose }) => {
   const career = careerOf(state);
   const [course, setCourse] = useState<CoachCourse | null>(null);
@@ -164,15 +166,25 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-white">🎓 A minha carreira</h3>
-          <button type="button" onClick={onClose} aria-label="Fechar carreira" className="text-slate-400 text-lg px-1">
-            ✕
+          <h3 className="text-base font-bold text-ui-text">A minha carreira</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar carreira"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+          >
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
 
         {status.warnings.map((w) => (
-          <p key={w} role="alert" className="rounded-xl bg-amber-500/15 px-3 py-2 text-xs font-semibold text-amber-200">
-            🔔 {w}
+          <p
+            key={w}
+            role="alert"
+            className="flex items-start gap-2 rounded-ui-sm bg-ui-warning-soft px-3 py-2 text-xs font-semibold text-ui-warning"
+          >
+            <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0" />
+            {w}
           </p>
         ))}
 
@@ -181,18 +193,19 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
             <img
               src={career.photo}
               alt="A minha foto"
-              className="h-20 w-16 shrink-0 rounded-xl object-cover bg-slate-800"
+              className="h-20 w-16 shrink-0 rounded-ui-sm object-cover bg-ui-surface-2"
             />
           ) : (
-            <div className="grid h-20 w-16 shrink-0 place-items-center rounded-xl border-2 border-dashed border-slate-600 text-2xl">
-              👤
+            <div className="grid h-20 w-16 shrink-0 place-items-center rounded-ui-sm border-2 border-dashed border-ui-line-strong text-ui-muted">
+              <Icon name="user" className="h-7 w-7" />
             </div>
           )}
           <div className="flex-1 space-y-1.5">
-            <p className="text-[11px] text-slate-400">A tua foto aparece no topo do currículo em PDF.</p>
+            <p className="text-ui-caption text-ui-muted">A tua foto aparece no topo do currículo em PDF.</p>
             <div className="flex flex-wrap gap-2">
-              <label className="ui-btn ui-btn-secondary cursor-pointer px-3 py-1.5 text-[11px]">
-                📷 {career.photo ? 'Trocar foto' : 'Pôr a minha foto'}
+              <label className="ui-btn ui-btn-secondary min-h-10 cursor-pointer px-3 text-xs">
+                <Icon name="image" className="h-4 w-4 shrink-0" />
+                {career.photo ? 'Trocar foto' : 'Pôr a minha foto'}
                 <input
                   type="file"
                   accept="image/*"
@@ -219,7 +232,7 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
                     delete rest.photo;
                     save(rest);
                   }}
-                  className="ui-btn ui-btn-soft-danger px-3 py-1.5 text-[11px]"
+                  className="ui-btn ui-btn-soft-danger min-h-10 px-3 text-xs"
                 >
                   Tirar foto
                 </button>
@@ -228,11 +241,8 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
           </div>
         </section>
 
-        <section
-          aria-label="Título de treinador"
-          className="rounded-2xl bg-gradient-to-br from-cyan-700 to-slate-900 p-3 space-y-2"
-        >
-          <div className="text-[11px] font-bold text-cyan-100">TÍTULO DE TREINADOR</div>
+        <section aria-label="Título de treinador" className="ui-inset p-3 space-y-2">
+          <div className="text-ui-caption font-semibold text-ui-muted">Título de treinador</div>
           <input
             className="ui-input w-full text-base font-bold"
             aria-label="Título"
@@ -241,7 +251,7 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
             onBlur={(e) => e.target.value.trim() !== (career.title || '') && field('title', e.target.value.trim())}
           />
           <div className="grid grid-cols-2 gap-2">
-            <label className="text-[11px] text-cyan-100">
+            <label className="text-ui-caption text-ui-muted">
               Válido até
               <DateTimePT
                 type="date"
@@ -252,7 +262,7 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
                 onChange={(v) => field('validUntil', v)}
               />
             </label>
-            <label className="text-[11px] text-cyan-100">
+            <label className="text-ui-caption text-ui-muted">
               N.º (opcional)
               <input
                 className="ui-input mt-0.5 w-full text-sm"
@@ -264,7 +274,7 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
             </label>
           </div>
           {career.validUntil && !status.expired && status.monthsLeft !== null && (
-            <p className="text-xs text-emerald-300 font-semibold">
+            <p className="text-xs text-ui-success font-semibold">
               Faltam {status.monthsLeft} {status.monthsLeft === 1 ? 'mês' : 'meses'}
             </p>
           )}
@@ -274,8 +284,8 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
 
         <section aria-label="Formação contínua" className="space-y-2">
           <div className="flex items-end justify-between gap-2">
-            <div className="text-[11px] font-bold text-slate-400">FORMAÇÃO CONTÍNUA PARA RENOVAR</div>
-            <label className="flex items-center gap-1 text-[11px] text-slate-400">
+            <div className="text-ui-caption font-semibold text-ui-muted">Formação contínua para renovar</div>
+            <label className="flex items-center gap-1 text-ui-caption text-ui-muted">
               Créditos precisos
               <input
                 type="number"
@@ -291,19 +301,19 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
             </label>
           </div>
           <div className="flex justify-between text-sm">
-            <b className="text-white">
+            <b className="text-ui-text">
               {status.credits}
               {career.creditsNeeded ? ` de ${career.creditsNeeded}` : ''}{' '}
               {status.credits === 1 ? 'crédito' : 'créditos'}
             </b>
-            {status.missing > 0 && <span className="text-slate-400">faltam {status.missing}</span>}
+            {status.missing > 0 && <span className="text-ui-muted">faltam {status.missing}</span>}
           </div>
           {career.creditsNeeded ? (
-            <div className="h-2 overflow-hidden rounded bg-slate-800">
-              <div className="h-full bg-emerald-400" style={{ width: `${progress}%` }} />
+            <div className="h-2 overflow-hidden rounded bg-ui-surface-2">
+              <div className="h-full bg-ui-brand" style={{ width: `${progress}%` }} />
             </div>
           ) : null}
-          <ul aria-label="Formações" className="divide-y divide-slate-800">
+          <ul aria-label="Formações" className="divide-y divide-ui-line">
             {sortCourses(career.courses).map((c) => (
               <li key={c.id}>
                 <button
@@ -312,8 +322,8 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
                   className="flex w-full items-center gap-2 py-2 text-left"
                 >
                   <span className="min-w-0 flex-1">
-                    <b className="block truncate text-sm text-white">{c.name}</b>
-                    <span className="text-[11px] text-slate-400">
+                    <b className="block truncate text-sm text-ui-text">{c.name}</b>
+                    <span className="text-ui-caption text-ui-muted">
                       {[
                         c.entity,
                         dateLabel(c.date),
@@ -324,7 +334,7 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
                         .join(' · ')}
                     </span>
                   </span>
-                  <span className="shrink-0 font-bold text-cyan-300 font-['Chakra_Petch']">+{c.credits}</span>
+                  <span className="shrink-0 font-bold tabular-nums text-ui-brand">+{c.credits}</span>
                 </button>
               </li>
             ))}
@@ -355,7 +365,7 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
                 value={course.date}
                 onChange={(v) => setCourse({ ...course, date: v })}
               />
-              <label className="text-[11px] text-slate-400">
+              <label className="text-ui-caption text-ui-muted">
                 Créditos
                 <input
                   type="number"
@@ -367,7 +377,7 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
                   onChange={(e) => setCourse({ ...course, credits: Math.max(0, Number(e.target.value) || 0) })}
                 />
               </label>
-              <label className="text-[11px] text-slate-400">
+              <label className="text-ui-caption text-ui-muted">
                 Horas (opcional)
                 <input
                   type="number"
@@ -383,7 +393,7 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
                 />
               </label>
             </div>
-            <label className="flex items-center gap-2 text-xs text-slate-300">
+            <label className="flex min-h-10 items-center gap-2 text-xs text-ui-text">
               <input
                 type="checkbox"
                 checked={Boolean(course.certificate)}
@@ -423,7 +433,8 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
               onClick={() => setCourse(blankCourse())}
               className="ui-btn ui-btn-secondary py-2.5 text-xs"
             >
-              ＋ Formação
+              <Icon name="plus" className="h-4 w-4 shrink-0" />
+              Formação
             </button>
             <button
               type="button"
@@ -434,11 +445,12 @@ const CoachCareerModal: React.FC<CoachCareerModalProps> = ({ state, onUpdateStat
               }}
               className="ui-btn ui-btn-secondary py-2.5 text-xs"
             >
-              📄 Currículo em PDF
+              <Icon name="file" className="h-4 w-4 shrink-0" />
+              Currículo em PDF
             </button>
           </div>
         )}
-        <p className="text-[10px] text-slate-500">
+        <p className="text-ui-caption text-ui-muted">
           Os créditos precisos para renovar escreve-os o treinador, porque as regras podem mudar. A app avisa 6 meses
           antes de o título caducar.
         </p>
