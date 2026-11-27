@@ -17,11 +17,12 @@ import {
 } from '../../lib/notificationEngine';
 import { MASTER_ADMIN_EMAIL } from '../../lib/constants';
 import { loadBrand } from '../../lib/clubBrand';
+import { Icon } from '../ui/Icon';
 
 /* Google asks for its sign-in button on white, and the logo sits on a white disc: brand colours, not the app palette. */
 /* eslint-disable no-restricted-syntax */
 const LOGO_ON_WHITE =
-  'w-20 h-20 sm:w-24 sm:h-24 rounded-full object-contain bg-white/95 p-1.5 border-4 border-cyan-400 shadow-lg';
+  'w-20 h-20 sm:w-24 sm:h-24 rounded-full object-contain bg-white/95 p-1.5 border-4 border-ui-brand';
 const GOOGLE_BUTTON =
   'w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold font-sans text-xs transition-all flex items-center justify-center gap-2.5 border border-slate-200 active:scale-[0.98] disabled:opacity-50 cursor-pointer';
 /* eslint-enable no-restricted-syntax */
@@ -53,19 +54,20 @@ const AuthErrorBanner: React.FC<{
 
   if (isUnauthorizedDomain) {
     return (
-      <div className="p-3.5 rounded-2xl bg-ui-warning/90 border-2 border-ui-warning/60 text-xs tabular-nums space-y-2.5 my-2 animate-in fade-in">
+      <div className="p-3.5 rounded-ui-lg bg-ui-warning-soft border border-ui-warning/50 text-xs space-y-2.5 my-2 animate-in fade-in">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 text-ui-warning font-bold uppercase tracking-wider text-xs">
-            <span className="text-base">⚠️</span>
-            <span>Domínio Não Autorizado no Google Auth</span>
+          <div className="flex items-center gap-2 text-ui-warning font-bold text-xs">
+            <Icon name="alert" className="h-4 w-4 shrink-0" />
+            <span>Domínio não autorizado no Google</span>
           </div>
           <button
             type="button"
             onClick={onClear}
-            className="text-ui-muted hover:text-ui-text text-sm px-1 cursor-pointer"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text cursor-pointer"
             title="Fechar"
+            aria-label="Fechar"
           >
-            ✕
+            <Icon name="x" className="h-4 w-4 shrink-0" />
           </button>
         </div>
 
@@ -84,9 +86,9 @@ const AuthErrorBanner: React.FC<{
               onClick={copyDomain}
               className="ui-btn ui-btn-soft py-1.5 px-3 text-[11px] flex items-center gap-1.5"
             >
-              <span>📋</span>
+              <Icon name="copy" className="h-4 w-4 shrink-0" />
               <span>
-                Copiar Domínio (
+                Copiar domínio (
                 {currentHostname.length > 22 ? currentHostname.substring(0, 20) + '...' : currentHostname})
               </span>
             </button>
@@ -94,7 +96,7 @@ const AuthErrorBanner: React.FC<{
         </div>
 
         <div className="ui-inset p-2 text-[10px] text-ui-muted leading-normal">
-          💡 <span className="text-ui-text">Como resolver no Firebase:</span> Aceda a{' '}
+          <span className="text-ui-text">Como resolver no Firebase:</span> Aceda a{' '}
           <strong className="text-ui-text">
             Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains
           </strong>{' '}
@@ -105,18 +107,19 @@ const AuthErrorBanner: React.FC<{
   }
 
   return (
-    <div className="p-3 rounded-xl bg-ui-danger-soft border border-ui-danger/50 text-ui-danger text-xs tabular-nums flex items-start justify-between gap-2 shadow-inner my-1.5 animate-in fade-in">
+    <div className="p-3 rounded-ui-sm bg-ui-danger-soft border border-ui-danger/50 text-ui-danger text-xs flex items-start justify-between gap-2 my-1.5 animate-in fade-in">
       <div className="flex items-start gap-2">
-        <span className="text-base shrink-0">⚠️</span>
+        <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0" />
         <span className="leading-snug">{error}</span>
       </div>
       <button
         type="button"
         onClick={onClear}
-        className="text-ui-danger hover:text-ui-text text-xs px-1 cursor-pointer shrink-0"
+        className="-m-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-danger hover:text-ui-text cursor-pointer"
         title="Fechar"
+        aria-label="Fechar"
       >
-        ✕
+        <Icon name="x" className="h-4 w-4 shrink-0" />
       </button>
     </div>
   );
@@ -300,7 +303,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
       const rawMsg = err?.message || '';
       if (rawMsg.includes('operation-not-allowed') || err?.code === 'auth/operation-not-allowed') {
         setLoginError(
-          'O método de E-mail/Palavra-passe não está ativado na consola Firebase (Authentication > Sign-in method > Email/Password). Pode entrar com o botão "Entrar com a Conta Google".'
+          'O método de E-mail/Palavra-passe não está ativado na consola Firebase (Authentication > Sign-in method > Email/Password). Pode entrar com o botão "Entrar com a conta Google".'
         );
       } else {
         setLoginError(rawMsg || 'Erro ao comunicar com o servidor de autenticação.');
@@ -421,7 +424,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
       const rawMsg = err?.message || '';
       if (rawMsg.includes('operation-not-allowed') || err?.code === 'auth/operation-not-allowed') {
         setRegError(
-          'O método de E-mail/Palavra-passe não está ativado na consola Firebase. Aceda a Firebase Console > Authentication > Sign-in method > Email/Password e ative a opção (Enable). Em alternativa, utilize o botão "Registar com a Conta Google".'
+          'O método de E-mail/Palavra-passe não está ativado na consola Firebase. Aceda a Firebase Console > Authentication > Sign-in method > Email/Password e ative a opção (Enable). Em alternativa, utilize o botão "Criar conta com o Google".'
         );
       } else {
         setRegError(rawMsg || 'Erro ao processar o registo. Verifique os dados e tente novamente.');
@@ -472,16 +475,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
   return (
     <div className="w-full min-h-full flex flex-col items-center justify-start p-3 sm:p-6 pb-36 font-sans relative">
-      {/* Background visual accents */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-ui-brand/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-ui-brand/10 rounded-full blur-3xl pointer-events-none" />
-
       {/* Main Auth Container */}
       <div className="ui-card w-full max-w-md p-4 sm:p-7 relative z-10 text-left my-2">
-        {/* Glow corner decorations */}
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-ui-brand/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-ui-brand/20 rounded-full blur-3xl pointer-events-none" />
-
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-4 relative text-center">
           {(brand.logo || brand.name) && (
@@ -497,7 +492,6 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             </div>
           )}
           <div className={`relative group mb-2.5 ${brand.logo || brand.name ? 'scale-75 -mt-1 -mb-1' : ''}`}>
-            <div className="absolute -inset-1 bg-ui-brand rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
             <img
               src={logoImg}
               alt="BolaComVisão Logo"
@@ -506,65 +500,57 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             />
           </div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-ui-text">BolaComVisão</h1>
-          <p className="text-[11px] tabular-nums text-ui-brand/80 mt-0.5 uppercase tracking-widest">
-            Gestão Tática & Desportiva
-          </p>
+          <p className="text-ui-caption text-ui-muted mt-0.5">Gestão tática e desportiva</p>
 
-          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ui-brand/10 border border-ui-brand/30 text-[10px] tabular-nums text-ui-brand">
-            <span>🛡️ Base de Dados Partilhada com Aprovação</span>
+          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ui-brand-soft text-ui-caption text-ui-brand">
+            <Icon name="lock" className="h-3.5 w-3.5 shrink-0" />
+            <span>Base de dados partilhada com aprovação</span>
           </div>
         </div>
 
         {/* PENDING APPROVAL SCREEN */}
         {mode === 'pending' && (
           <div className="text-center space-y-4 py-2 animate-in fade-in duration-300">
-            <div className="w-16 h-16 rounded-3xl bg-ui-warning/20 border-2 border-ui-warning/50 flex items-center justify-center text-3xl mx-auto">
-              ⏳
+            <div className="w-14 h-14 rounded-ui-lg bg-ui-warning-soft text-ui-warning flex items-center justify-center mx-auto">
+              <Icon name="clock" className="h-7 w-7" />
             </div>
 
             <div>
-              <h2 className="text-lg font-bold text-ui-warning">Registo a Aguardar Aprovação</h2>
-              <p className="text-xs text-ui-text tabular-nums mt-1.5 leading-relaxed">
-                A conta foi registada na Nuvem. Para aceder à base de dados do clube, o{' '}
-                <strong className="text-ui-brand">Administrador</strong> tem de autorizar o perfil.
+              <h2 className="text-ui-lead font-bold text-ui-text">Registo a aguardar aprovação</h2>
+              <p className="text-xs text-ui-muted mt-1.5 leading-relaxed">
+                A conta foi registada na nuvem. Para aceder à base de dados do clube, o{' '}
+                <strong className="text-ui-text">administrador</strong> tem de autorizar o perfil.
               </p>
             </div>
 
             {pendingAccount && (
-              <div className="ui-inset p-3.5 text-left text-xs tabular-nums space-y-1.5">
+              <div className="ui-inset p-3.5 text-left text-xs space-y-1.5">
                 <div className="text-ui-muted">
                   Nome: <span className="text-ui-text font-bold">{pendingAccount.name}</span>
                 </div>
                 <div className="text-ui-muted">
-                  Utilizador: <span className="text-ui-brand">@{pendingAccount.username}</span>
+                  Utilizador: <span className="text-ui-text">@{pendingAccount.username}</span>
                 </div>
                 <div className="text-ui-muted">
-                  Função Solicitada: <span className="text-ui-warning font-bold">{pendingAccount.role}</span>
+                  Função pedida: <span className="text-ui-text font-bold">{pendingAccount.role}</span>
                 </div>
                 <div className="text-ui-muted">
-                  Estado: <span className="text-ui-warning font-bold">⏳ Aguarda Aprovação</span>
+                  Estado: <span className="ui-badge ui-badge-warning">Aguarda aprovação</span>
                 </div>
               </div>
             )}
 
             {/* SEÇÃO 1: NOTIFICAR ADMINISTRADOR (WHATSAPP / EMAIL) */}
             {pendingAccount && (
-              <div className="bg-ui-inset/90 border-2 border-ui-success/40 rounded-2xl p-4 text-left space-y-2.5">
-                <div className="flex items-center justify-between border-b border-ui-success/20 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">📲</span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-ui-text">
-                      Notificar o Administrador
-                    </span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full bg-ui-success/20 text-ui-success text-[10px] tabular-nums">
-                    WhatsApp & E-mail
-                  </span>
+              <div className="ui-inset p-4 text-left space-y-2.5">
+                <div className="flex items-center gap-2 border-b border-ui-line pb-2">
+                  <Icon name="message" className="h-4 w-4 shrink-0 text-ui-muted" />
+                  <span className="text-ui-body font-bold text-ui-text">Avisar o administrador</span>
                 </div>
 
-                <p className="text-[11px] tabular-nums text-ui-text leading-relaxed">
-                  Envie o pedido com 1 toque diretamente para o WhatsApp ou E-mail do Administrador (
-                  <strong className="text-ui-brand">
+                <p className="text-xs text-ui-muted leading-relaxed">
+                  Envie o pedido com um toque para o WhatsApp ou o e-mail do administrador (
+                  <strong className="text-ui-text">
                     {state.notificationSettings?.adminContactEmail || MASTER_ADMIN_EMAIL}
                   </strong>
                   ) para autorização rápida:
@@ -581,9 +567,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       );
                       onShowToast('A abrir WhatsApp com o pedido de aprovação... 💬');
                     }}
-                    className="py-3 px-3 rounded-xl bg-ui-success hover:from-ui-success hover:to-ui-success text-ui-text font-black text-xs transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
+                    className="ui-btn ui-btn-secondary min-h-11 px-3 text-xs"
                   >
-                    <span>💬</span>
+                    <Icon name="message" className="h-4 w-4 shrink-0" />
                     <span>Enviar por WhatsApp</span>
                   </button>
 
@@ -597,10 +583,10 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       );
                       onShowToast('A abrir cliente de e-mail... 📧');
                     }}
-                    className="py-3 px-3 rounded-xl bg-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-text font-black text-xs transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
+                    className="ui-btn ui-btn-secondary min-h-11 px-3 text-xs"
                   >
-                    <span>📧</span>
-                    <span>Enviar por E-mail</span>
+                    <Icon name="mail" className="h-4 w-4 shrink-0" />
+                    <span>Enviar por e-mail</span>
                   </button>
                 </div>
 
@@ -611,22 +597,22 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                     navigator.clipboard.writeText(msg);
                     onShowToast('Mensagem de pedido copiada para a área de transferência! 📋✓');
                   }}
-                  className="ui-btn ui-btn-secondary w-full py-2 px-3 text-[11px] flex items-center justify-center gap-1.5"
+                  className="ui-btn ui-btn-secondary w-full min-h-10 px-3 text-xs"
                 >
-                  <span>📋</span>
-                  <span>Copiar Mensagem do Pedido para Colar</span>
+                  <Icon name="copy" className="h-4 w-4 shrink-0" />
+                  <span>Copiar a mensagem do pedido</span>
                 </button>
               </div>
             )}
 
             {/* AVISO INFORMATIVO DE SEGURANÇA E ACESSO */}
             <div className="ui-inset p-4 text-left space-y-2">
-              <div className="flex items-center gap-2 text-ui-brand font-bold text-xs uppercase tracking-wider">
-                <span>🛡️</span>
-                <span>Processo de Autorização</span>
+              <div className="flex items-center gap-2 text-ui-text font-bold text-ui-body">
+                <Icon name="lock" className="h-4 w-4 shrink-0 text-ui-muted" />
+                <span>Como funciona a autorização</span>
               </div>
-              <p className="text-[11px] tabular-nums text-ui-text leading-relaxed">
-                Após notificar o Administrador, o seu perfil será revisto e a função atribuída no painel de controlo.
+              <p className="text-xs text-ui-muted leading-relaxed">
+                Depois de avisar o administrador, o seu perfil será revisto e a função atribuída no painel de controlo.
                 Assim que for aprovado, poderá entrar imediatamente na aplicação e aceder à base de dados da equipa.
               </p>
             </div>
@@ -636,15 +622,21 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                 type="button"
                 onClick={handleCheckPendingStatus}
                 disabled={isLoading}
-                className="w-full py-3 rounded-xl bg-ui-warning hover:from-ui-warning hover:to-ui-warning text-ui-brand-ink font-black text-xs active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="ui-btn ui-btn-primary w-full min-h-12 text-ui-body disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
-                    <span className="animate-spin text-sm">🔄</span>
+                    <span
+                      aria-hidden
+                      className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                    />
                     <span>A verificar autorização...</span>
                   </>
                 ) : (
-                  <span>🔄 Verificar Estado de Aprovação</span>
+                  <>
+                    <Icon name="refresh" className="h-4 w-4 shrink-0" />
+                    <span>Verificar a aprovação</span>
+                  </>
                 )}
               </button>
 
@@ -654,9 +646,10 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   setMode('login');
                   setPendingAccount(null);
                 }}
-                className="text-xs tabular-nums text-ui-brand hover:text-ui-brand underline cursor-pointer py-1.5"
+                className="inline-flex min-h-10 items-center justify-center gap-1 text-xs font-semibold text-ui-brand cursor-pointer"
               >
-                ← Voltar ao Início de Sessão
+                <Icon name="chevronLeft" className="h-4 w-4 shrink-0" />
+                Voltar à entrada
               </button>
             </div>
           </div>
@@ -669,27 +662,27 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
             <div className="ui-inset flex p-1 mb-4">
               <button
                 type="button"
-                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  mode === 'login' ? 'bg-ui-brand text-ui-brand-ink' : 'text-ui-muted hover:text-ui-brand'
+                className={`flex-1 py-2.5 rounded-ui-sm text-sm font-semibold transition-all cursor-pointer ${
+                  mode === 'login' ? 'bg-ui-surface-3 text-ui-text' : 'text-ui-muted hover:text-ui-text'
                 }`}
                 onClick={() => {
                   setMode('login');
                   setLoginError(null);
                 }}
               >
-                🔑 Entrar
+                Entrar
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  mode === 'register' ? 'bg-ui-brand text-ui-brand-ink' : 'text-ui-muted hover:text-ui-brand'
+                className={`flex-1 py-2.5 rounded-ui-sm text-sm font-semibold transition-all cursor-pointer ${
+                  mode === 'register' ? 'bg-ui-surface-3 text-ui-text' : 'text-ui-muted hover:text-ui-text'
                 }`}
                 onClick={() => {
                   setMode('register');
                   setRegError(null);
                 }}
               >
-                ✍️ Criar Conta
+                Criar conta
               </button>
             </div>
 
@@ -716,14 +709,14 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                     />
                   </svg>
-                  <span>Entrar com a Conta Google</span>
+                  <span>Entrar com a conta Google</span>
                 </button>
 
                 <div className="relative my-2">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-ui-line"></div>
                   </div>
-                  <div className="relative flex justify-center text-[10px] uppercase tracking-widest tabular-nums">
+                  <div className="relative flex justify-center text-ui-caption">
                     <span className="bg-ui-surface px-3 text-ui-muted">ou com credenciais do clube</span>
                   </div>
                 </div>
@@ -735,31 +728,39 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   )}
 
                   <div>
-                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Utilizador ou Email</label>
+                    <label className="block text-ui-caption font-semibold text-ui-muted mb-1">
+                      Utilizador ou e-mail
+                    </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-sm">👤</span>
+                      <Icon
+                        name="user"
+                        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ui-muted"
+                      />
                       <input
                         type="text"
                         required
                         placeholder="ex: treinador ou treinador@email.com"
                         value={loginUsername}
                         onChange={(e) => setLoginUsername(e.target.value)}
-                        className="ui-input w-full text-xs"
+                        className="ui-input w-full pl-9 text-sm"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Palavra-passe</label>
+                    <label className="block text-ui-caption font-semibold text-ui-muted mb-1">Palavra-passe</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-sm">🔒</span>
+                      <Icon
+                        name="lock"
+                        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ui-muted"
+                      />
                       <input
                         type="password"
                         required
                         placeholder="••••••••"
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
-                        className="ui-input w-full text-xs"
+                        className="ui-input w-full pl-9 text-sm"
                       />
                     </div>
                   </div>
@@ -767,15 +768,21 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-3.5 rounded-xl bg-ui-brand text-ui-brand-ink font-extrabold text-xs hover:brightness-110 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                    className="ui-btn ui-btn-primary w-full min-h-12 text-ui-body disabled:opacity-50"
                   >
                     {isLoading ? (
                       <>
-                        <span className="animate-spin text-sm">🔄</span>
-                        <span>A autenticar na Nuvem...</span>
+                        <span
+                          aria-hidden
+                          className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                        />
+                        <span>A entrar…</span>
                       </>
                     ) : (
-                      <span>Entrar na Plataforma ➔</span>
+                      <>
+                        <span>Entrar</span>
+                        <Icon name="chevronRight" className="h-4 w-4 shrink-0" />
+                      </>
                     )}
                   </button>
 
@@ -784,7 +791,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       type="button"
                       onClick={handleForgotPassword}
                       disabled={isSendingReset}
-                      className="text-xs text-ui-brand underline hover:brightness-110 disabled:opacity-50 cursor-pointer"
+                      className="min-h-10 text-xs font-semibold text-ui-brand hover:underline disabled:opacity-50 cursor-pointer"
                     >
                       {isSendingReset ? 'A enviar...' : 'Esqueci-me da palavra-passe'}
                     </button>
@@ -792,14 +799,14 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </div>
 
                   <div className="text-center pt-1">
-                    <span className="text-xs text-ui-muted tabular-nums">
+                    <span className="text-xs text-ui-muted">
                       Não tem conta?{' '}
                       <button
                         type="button"
                         onClick={() => setMode('register')}
                         className="text-ui-brand font-bold hover:underline cursor-pointer"
                       >
-                        Registe-se aqui
+                        Criar conta
                       </button>
                     </span>
                   </div>
@@ -830,20 +837,20 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                     />
                   </svg>
-                  <span>Registar com a Conta Google</span>
+                  <span>Criar conta com o Google</span>
                 </button>
 
                 <div className="relative my-2">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-ui-line"></div>
                   </div>
-                  <div className="relative flex justify-center text-[10px] uppercase tracking-widest tabular-nums">
+                  <div className="relative flex justify-center text-ui-caption">
                     <span className="bg-ui-surface px-3 text-ui-muted">ou preencha os dados do perfil</span>
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-ui-brand/10 border border-ui-brand/20 text-[11px] tabular-nums text-ui-brand">
-                  ℹ️ Os novos membros são integrados na base de dados centralizada após aprovação do Administrador.
+                <div className="ui-inset p-2.5 text-xs text-ui-muted">
+                  As contas novas entram na base de dados do clube depois de o administrador aprovar.
                 </div>
 
                 {regError && (
@@ -852,7 +859,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
                 <form onSubmit={handleRegister} className="space-y-2.5">
                   <div className="ui-card p-2.5 space-y-1.5">
-                    <label className="block text-xs text-ui-brand tabular-nums">🎟️ Código de Convite (opcional)</label>
+                    <label className="block text-ui-caption font-semibold text-ui-muted">
+                      Código de convite (opcional)
+                    </label>
                     <div className="flex gap-1.5">
                       <input
                         type="text"
@@ -869,20 +878,21 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                         type="button"
                         onClick={handleCheckInviteCode}
                         disabled={isCheckingInvite || !regInviteCode.trim()}
-                        className="ui-btn ui-btn-soft px-3 py-2 text-xs"
+                        className="ui-btn ui-btn-secondary min-h-10 px-3 text-xs"
                       >
                         {isCheckingInvite ? '...' : 'Verificar'}
                       </button>
                     </div>
                     {resolvedInvite && (
-                      <p className="text-[11px] text-ui-success">
-                        ✓ Convite válido! Vais juntar-te a <strong>{resolvedInvite.teamName}</strong> como{' '}
+                      <p className="flex items-start gap-1 text-xs text-ui-success">
+                        <Icon name="tick" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        Convite válido! Vais juntar-te a <strong>{resolvedInvite.teamName}</strong> como{' '}
                         <strong>{resolvedInvite.role}</strong>, já aprovado.
                       </p>
                     )}
-                    {inviteCheckError && <p className="text-[11px] text-ui-danger">❌ {inviteCheckError}</p>}
+                    {inviteCheckError && <p className="text-xs text-ui-danger">{inviteCheckError}</p>}
                     {!resolvedInvite && !inviteCheckError && (
-                      <p className="text-[11px] text-ui-muted">
+                      <p className="text-xs text-ui-muted">
                         Sem código, crias o teu próprio espaço (ficas dono dele quando o Administrador aprovar).
                       </p>
                     )}
@@ -890,12 +900,12 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
                   {!resolvedInvite && (
                     <fieldset className="space-y-1.5" aria-label="O meu espaço">
-                      <legend className="block text-xs text-ui-brand tabular-nums mb-1">O meu espaço *</legend>
+                      <legend className="block text-ui-caption font-semibold text-ui-muted mb-1">O meu espaço *</legend>
                       <div className="grid grid-cols-2 gap-2">
                         {(
                           [
-                            ['individual', '🧢 Sou treinador', 'As minhas equipas'],
-                            ['club', '🏟️ Sou um clube', 'Várias equipas e pessoas']
+                            ['individual', 'Sou treinador', 'As minhas equipas'],
+                            ['club', 'Sou um clube', 'Várias equipas e pessoas']
                           ] as const
                         ).map(([value, title, sub]) => (
                           <button
@@ -903,14 +913,14 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                             type="button"
                             aria-pressed={regSpaceType === value}
                             onClick={() => setRegSpaceType(value)}
-                            className={`rounded-ui border p-2 text-left text-xs ${
+                            className={`min-h-12 rounded-ui-sm border p-2.5 text-left text-xs ${
                               regSpaceType === value
-                                ? 'border-ui-brand bg-ui-brand/10 text-ui-text'
+                                ? 'border-ui-brand bg-ui-brand-soft text-ui-text'
                                 : 'border-ui-line text-ui-muted'
                             }`}
                           >
                             <span className="block font-bold">{title}</span>
-                            <span className="block text-[10px]">{sub}</span>
+                            <span className="block text-ui-caption text-ui-muted">{sub}</span>
                           </button>
                         ))}
                       </div>
@@ -930,7 +940,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   )}
 
                   <div>
-                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Nome Completo *</label>
+                    <label className="block text-ui-caption font-semibold text-ui-muted mb-1">Nome completo *</label>
                     <input
                       type="text"
                       required
@@ -942,7 +952,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </div>
 
                   <div>
-                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Nome de Utilizador *</label>
+                    <label className="block text-ui-caption font-semibold text-ui-muted mb-1">
+                      Nome de utilizador *
+                    </label>
                     <input
                       type="text"
                       required
@@ -957,9 +969,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </div>
 
                   <div>
-                    <label className="block text-xs text-ui-brand tabular-nums mb-1">
-                      E-mail Pessoal / Notificação (Opcional)
-                    </label>
+                    <label className="block text-ui-caption font-semibold text-ui-muted mb-1">E-mail (opcional)</label>
                     <input
                       type="email"
                       placeholder="Ex: treinador@gmail.com"
@@ -973,7 +983,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                   </div>
 
                   <div>
-                    <label className="block text-xs text-ui-brand tabular-nums mb-1">Função na Equipa Técnica *</label>
+                    <label className="block text-ui-caption font-semibold text-ui-muted mb-1">
+                      Função na equipa técnica *
+                    </label>
                     <select
                       value={regRole}
                       onChange={(e) => setRegRole(e.target.value)}
@@ -991,7 +1003,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs text-ui-brand tabular-nums mb-1">Palavra-passe (min 6) *</label>
+                      <label className="block text-ui-caption font-semibold text-ui-muted mb-1">
+                        Palavra-passe (mín. 6) *
+                      </label>
                       <input
                         type="password"
                         required
@@ -1002,7 +1016,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-ui-brand tabular-nums mb-1">Confirmar *</label>
+                      <label className="block text-ui-caption font-semibold text-ui-muted mb-1">Confirmar *</label>
                       <input
                         type="password"
                         required
@@ -1019,31 +1033,34 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3.5 px-4 rounded-xl bg-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-brand-ink font-extrabold text-xs sm:text-sm active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer border border-ui-brand/40"
+                      className="ui-btn ui-btn-primary w-full min-h-12 text-ui-body disabled:opacity-50"
                     >
                       {isLoading ? (
                         <>
-                          <span className="animate-spin text-sm">🔄</span>
-                          <span>A submeter registo...</span>
+                          <span
+                            aria-hidden
+                            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                          />
+                          <span>A criar a conta…</span>
                         </>
                       ) : (
                         <>
-                          <span>🚀 Concluir Registo / Criar Conta</span>
-                          <span className="font-bold">➔</span>
+                          <span>Criar conta</span>
+                          <Icon name="chevronRight" className="h-4 w-4 shrink-0" />
                         </>
                       )}
                     </button>
                   </div>
 
                   <div className="text-center pt-1">
-                    <span className="text-xs text-ui-muted tabular-nums">
+                    <span className="text-xs text-ui-muted">
                       Já tem conta?{' '}
                       <button
                         type="button"
                         onClick={() => setMode('login')}
                         className="text-ui-brand font-bold hover:underline cursor-pointer"
                       >
-                        Iniciar Sessão aqui
+                        Entrar
                       </button>
                     </span>
                   </div>
@@ -1055,9 +1072,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ state, onUpdateState, onLogi
         )}
 
         {/* Hint footer */}
-        <div className="mt-4 text-[10px] tabular-nums text-ui-muted text-center">
-          BolaComVisão © 2026 · Base de Dados Partilhada do Clube
-        </div>
+        <div className="mt-4 text-ui-caption text-ui-muted text-center">BolaComVisão © 2026 · Futebol de formação</div>
       </div>
     </div>
   );
