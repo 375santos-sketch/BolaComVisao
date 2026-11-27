@@ -10,7 +10,7 @@ export const SectionHeader: React.FC<{
 }> = ({ title, subtitle, action, className = '' }) => (
   <div className={`flex items-end justify-between gap-3 px-1 ${className}`}>
     <div className="min-w-0">
-      <h2 className="ui-kicker">{title}</h2>
+      <h2 className="text-ui-body font-bold text-ui-text">{title}</h2>
       {subtitle && <p className="mt-0.5 text-ui-caption text-ui-muted">{subtitle}</p>}
     </div>
     {action && (

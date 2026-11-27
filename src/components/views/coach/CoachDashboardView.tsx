@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Icon } from '../../ui/Icon';
 import { datePT } from '../../../lib/planningSummary';
 import { AppState } from '../../../types';
 import { CoachViewFilter, computeCoachViewData } from '../../../lib/gameAnalysis';
@@ -109,12 +110,12 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
       {/* 1. FILTER BAR (TOP CONTROLS) */}
       <div className="ui-card p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-ui-brand/10 border border-ui-brand/30 flex items-center justify-center text-xl shrink-0">
-            🧠
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm bg-ui-brand-soft text-ui-brand">
+            <Icon name="whistle" className="h-5 w-5 shrink-0" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-bold text-ui-text tracking-wide">Visão do Treinador</h2>
+              <h2 className="text-sm sm:text-base font-bold text-ui-text">Visão do Treinador</h2>
               <span className="text-[10px] bg-ui-brand/20 text-ui-brand border border-ui-brand/40 px-2 py-0.5 rounded-full tabular-nums font-bold">
                 10s Pulse
               </span>
@@ -233,17 +234,17 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
       </div>
 
       {/* 1️⃣ RESULTADO GERAL DA EQUIPA */}
-      <div className="bg-ui-surface border border-ui-line rounded-3xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="ui-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-ui-brand">{coachData.filterLabel}</span>
+            <span className="text-xs font-bold text-ui-brand">{coachData.filterLabel}</span>
             <span className="text-ui-muted">•</span>
             <span className="text-xs text-ui-muted tabular-nums">
               {coachData.finishedMatchesCount}{' '}
               {coachData.finishedMatchesCount === 1 ? 'jogo realizado' : 'jogos realizados'}
             </span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-ui-text tracking-tight mt-1 flex items-center gap-3">
+          <div className="text-2xl sm:text-3xl font-bold text-ui-text tracking-tight mt-1 flex items-center gap-3">
             <span>{coachData.recordText}</span>
             <span
               className={`text-xs px-2.5 py-1 rounded-xl tabular-nums font-bold ${
@@ -261,17 +262,17 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
 
         <div className="ui-inset flex items-center gap-4 text-xs tabular-nums text-ui-text p-2.5 sm:self-center">
           <div>
-            <span className="text-ui-muted block text-[10px] uppercase">Marcados</span>
+            <span className="text-ui-muted block text-[10px]">Marcados</span>
             <span className="text-ui-success font-bold text-sm">{coachData.goalsScoredTotal}</span>
           </div>
           <div className="w-px h-7 bg-ui-surface-2" />
           <div>
-            <span className="text-ui-muted block text-[10px] uppercase">Sofridos</span>
+            <span className="text-ui-muted block text-[10px]">Sofridos</span>
             <span className="text-ui-danger font-bold text-sm">{coachData.goalsConcededTotal}</span>
           </div>
           <div className="w-px h-7 bg-ui-surface-2" />
           <div>
-            <span className="text-ui-muted block text-[10px] uppercase">Aprov.</span>
+            <span className="text-ui-muted block text-[10px]">Aprov.</span>
             <span className="text-ui-brand font-bold text-sm">{coachData.indicators.winRate.value}</span>
           </div>
         </div>
@@ -294,12 +295,14 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             <div>
               <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
-                  <span>⚽</span>
-                  <span className="uppercase text-[11px] tracking-wide">Golos por Jogo</span>
+                  <span className="text-ui-caption">Golos por Jogo</span>
                 </span>
-                <span className="text-ui-success text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <Icon
+                  name="chevronRight"
+                  className="h-4 w-4 text-ui-success group-hover:translate-x-1 transition-transform shrink-0"
+                />
               </div>
-              <div className="text-3xl font-black text-ui-text mt-2">{coachData.indicators.goalsScored.value}</div>
+              <div className="text-3xl font-bold text-ui-text mt-2">{coachData.indicators.goalsScored.value}</div>
             </div>
             <div className="mt-3 pt-2.5 border-t border-ui-line/80">
               <div
@@ -328,12 +331,14 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             <div>
               <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
-                  <span>🛡️</span>
-                  <span className="uppercase text-[11px] tracking-wide">Golos Sofridos</span>
+                  <span className="text-ui-caption">Golos Sofridos</span>
                 </span>
-                <span className="text-ui-danger text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <Icon
+                  name="chevronRight"
+                  className="h-4 w-4 text-ui-danger group-hover:translate-x-1 transition-transform shrink-0"
+                />
               </div>
-              <div className="text-3xl font-black text-ui-text mt-2">{coachData.indicators.goalsConceded.value}</div>
+              <div className="text-3xl font-bold text-ui-text mt-2">{coachData.indicators.goalsConceded.value}</div>
             </div>
             <div className="mt-3 pt-2.5 border-t border-ui-line/80">
               <div
@@ -362,12 +367,14 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             <div>
               <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
-                  <span>🏆</span>
-                  <span className="uppercase text-[11px] tracking-wide">Taxa de Vitória</span>
+                  <span className="text-ui-caption">Taxa de Vitória</span>
                 </span>
-                <span className="text-ui-brand text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <Icon
+                  name="chevronRight"
+                  className="h-4 w-4 text-ui-brand group-hover:translate-x-1 transition-transform shrink-0"
+                />
               </div>
-              <div className="text-3xl font-black text-ui-text mt-2">{coachData.indicators.winRate.value}</div>
+              <div className="text-3xl font-bold text-ui-text mt-2">{coachData.indicators.winRate.value}</div>
             </div>
             <div className="mt-3 pt-2.5 border-t border-ui-line/80">
               <div
@@ -394,12 +401,14 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             <div>
               <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
-                  <span>🚩</span>
-                  <span className="uppercase text-[11px] tracking-wide">Cantos / Jogo</span>
+                  <span className="text-ui-caption">Cantos / Jogo</span>
                 </span>
-                <span className="text-ui-warning text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <Icon
+                  name="chevronRight"
+                  className="h-4 w-4 text-ui-warning group-hover:translate-x-1 transition-transform shrink-0"
+                />
               </div>
-              <div className="text-3xl font-black text-ui-text mt-2">{coachData.indicators.corners.value}</div>
+              <div className="text-3xl font-bold text-ui-text mt-2">{coachData.indicators.corners.value}</div>
             </div>
             <div className="mt-3 pt-2.5 border-t border-ui-line/80">
               <div
@@ -426,12 +435,14 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             <div>
               <div className="flex items-center justify-between text-xs text-ui-muted font-bold">
                 <span className="flex items-center gap-1.5">
-                  <span>⏱️</span>
-                  <span className="uppercase text-[11px] tracking-wide">Min. 1.º Golo</span>
+                  <span className="text-ui-caption">Min. 1.º Golo</span>
                 </span>
-                <span className="text-ui-brand text-xs group-hover:translate-x-1 transition-transform">➔</span>
+                <Icon
+                  name="chevronRight"
+                  className="h-4 w-4 text-ui-brand group-hover:translate-x-1 transition-transform shrink-0"
+                />
               </div>
-              <div className="text-3xl font-black text-ui-text mt-2">{coachData.indicators.firstGoalMinute.value}</div>
+              <div className="text-3xl font-bold text-ui-text mt-2">{coachData.indicators.firstGoalMinute.value}</div>
             </div>
             <div className="mt-3 pt-2.5 border-t border-ui-line/80">
               <div className="text-xs font-bold text-ui-text">{coachData.indicators.firstGoalMinute.deltaText}</div>
@@ -457,7 +468,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               title="Clique para abrir a lista completa de marcadores e assistências"
             >
               <div className="flex items-center gap-2">
-                <span className="text-xl group-hover/hdr:scale-110 transition-transform">⚽</span>
+                <Icon name="ball" className="h-5 w-5 text-ui-success shrink-0" />
                 <div>
                   <h3 className="text-xs sm:text-sm font-bold text-ui-success group-hover/hdr:text-ui-success transition-colors">
                     Melhores Marcadores
@@ -469,14 +480,17 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                 <span className="text-[10px] tabular-nums px-2.5 py-0.5 rounded-full bg-ui-success/10 text-ui-success border border-ui-success/30 font-bold">
                   {coachData.goalsScoredTotal} {coachData.goalsScoredTotal === 1 ? 'golo total' : 'golos totais'}
                 </span>
-                <span className="text-ui-muted group-hover/hdr:text-ui-success text-xs transition-colors">➔</span>
+                <Icon
+                  name="chevronRight"
+                  className="h-4 w-4 text-ui-muted group-hover/hdr:text-ui-success transition-colors shrink-0"
+                />
               </div>
             </div>
 
             <div className="space-y-2">
               {[0, 1, 2].map((idx) => {
                 const scorer = coachData.topScorers[idx];
-                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+                const medal = `${idx + 1}.º`;
                 const rankBg =
                   idx === 0
                     ? 'border-ui-warning/40 bg-ui-warning-soft'
@@ -533,16 +547,17 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
 
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="text-right">
-                        <span className="text-base sm:text-lg font-black tabular-nums text-ui-success">
+                        <span className="text-base sm:text-lg font-bold tabular-nums text-ui-success">
                           {scorer.count}
                         </span>
                         <span className="text-[10px] text-ui-muted tabular-nums ml-1">
                           {scorer.count === 1 ? 'golo' : 'golos'}
                         </span>
                       </div>
-                      <span className="text-ui-muted group-hover:text-ui-success text-xs font-bold transition-colors">
-                        ➔
-                      </span>
+                      <Icon
+                        name="chevronRight"
+                        className="h-4 w-4 text-ui-muted group-hover:text-ui-success transition-colors shrink-0"
+                      />
                     </div>
                   </div>
                 );
@@ -560,7 +575,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             className="ui-btn ui-btn-soft-success w-full mt-3 py-2 px-3 text-xs flex items-center justify-center gap-1.5"
           >
             <span>Ver lista completa de golos e assistências</span>
-            <span>➔</span>
+            <Icon name="chevronRight" className="h-4 w-4 shrink-0" />
           </button>
         </div>
 
@@ -576,7 +591,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
               title="Clique para abrir a lista completa de assistências e golos"
             >
               <div className="flex items-center gap-2">
-                <span className="text-xl group-hover/hdr:scale-110 transition-transform">🎯</span>
+                <Icon name="zap" className="h-5 w-5 text-ui-brand shrink-0" />
                 <div>
                   <h3 className="text-xs sm:text-sm font-bold text-ui-brand group-hover/hdr:text-ui-brand transition-colors">
                     Melhores Assistentes
@@ -593,14 +608,17 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                     ? 'assistência total'
                     : 'assistências totais'}
                 </span>
-                <span className="text-ui-muted group-hover/hdr:text-ui-brand text-xs transition-colors">➔</span>
+                <Icon
+                  name="chevronRight"
+                  className="h-4 w-4 text-ui-muted group-hover/hdr:text-ui-brand transition-colors shrink-0"
+                />
               </div>
             </div>
 
             <div className="space-y-2">
               {[0, 1, 2].map((idx) => {
                 const assister = coachData.topAssisters[idx];
-                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+                const medal = `${idx + 1}.º`;
                 const rankBg =
                   idx === 0
                     ? 'border-ui-warning/40 bg-ui-warning-soft'
@@ -657,16 +675,17 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
 
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="text-right">
-                        <span className="text-base sm:text-lg font-black tabular-nums text-ui-brand">
+                        <span className="text-base sm:text-lg font-bold tabular-nums text-ui-brand">
                           {assister.count}
                         </span>
                         <span className="text-[10px] text-ui-muted tabular-nums ml-1">
                           {assister.count === 1 ? 'assistência' : 'assistências'}
                         </span>
                       </div>
-                      <span className="text-ui-muted group-hover:text-ui-brand text-xs font-bold transition-colors">
-                        ➔
-                      </span>
+                      <Icon
+                        name="chevronRight"
+                        className="h-4 w-4 text-ui-muted group-hover:text-ui-brand transition-colors shrink-0"
+                      />
                     </div>
                   </div>
                 );
@@ -684,7 +703,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             className="ui-btn ui-btn-soft w-full mt-3 py-2 px-3 text-xs flex items-center justify-center gap-1.5"
           >
             <span>Ver lista completa de assistências e golos</span>
-            <span>➔</span>
+            <Icon name="chevronRight" className="h-4 w-4 shrink-0" />
           </button>
         </div>
       </div>
@@ -696,7 +715,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-base">📅</span>
+                <Icon name="calendar" className="h-4 w-4 text-ui-muted shrink-0" />
                 <h3 className="text-xs sm:text-sm font-bold text-ui-text">Últimos 5 Jogos</h3>
               </div>
               <button
@@ -735,7 +754,10 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                         <div className="text-[10px] text-ui-muted tabular-nums">{m.formattedDate}</div>
                       </div>
                     </div>
-                    <span className="text-ui-muted group-hover:text-ui-brand font-bold text-xs shrink-0">➔</span>
+                    <Icon
+                      name="chevronRight"
+                      className="h-4 w-4 text-ui-muted group-hover:text-ui-brand shrink-0 shrink-0"
+                    />
                   </div>
                 ))}
               </div>
@@ -752,7 +774,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-base">📈</span>
+                <Icon name="chart" className="h-4 w-4 text-ui-muted shrink-0" />
                 <h3 className="text-xs sm:text-sm font-bold text-ui-text">Tendência da Equipa</h3>
               </div>
               <span
@@ -774,7 +796,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
             {coachData.trend.matches.length > 0 ? (
               <div className="ui-inset p-3">
                 <div className="flex items-center justify-between text-[10px] text-ui-muted tabular-nums mb-2">
-                  <span>Golos Marcados (🟢) vs Sofridos (🔴)</span>
+                  <span>Golos marcados (verde) vs sofridos (vermelho)</span>
                   <span>Últimos Jogos</span>
                 </div>
 
@@ -824,7 +846,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         {/* PONTOS FORTES */}
         <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-base">🟢</span>
+            <Icon name="tick" className="h-4 w-4 text-ui-success shrink-0" />
             <h3 className="text-xs sm:text-sm font-bold text-ui-success">Pontos Fortes da Equipa</h3>
           </div>
 
@@ -842,7 +864,10 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                   </div>
                   <div className="text-xs text-ui-text mt-0.5">{str.text}</div>
                 </div>
-                <span className="text-ui-muted group-hover:text-ui-success text-xs font-bold shrink-0 mt-1">➔</span>
+                <Icon
+                  name="chevronRight"
+                  className="h-4 w-4 text-ui-muted group-hover:text-ui-success shrink-0 mt-1 shrink-0"
+                />
               </div>
             ))}
           </div>
@@ -851,7 +876,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         {/* PONTOS DE ATENÇÃO */}
         <div className="ui-card p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-base">⚠️</span>
+            <Icon name="alert" className="h-4 w-4 text-ui-warning shrink-0" />
             <h3 className="text-xs sm:text-sm font-bold text-ui-warning">Pontos de Atenção & Treino</h3>
           </div>
 
@@ -869,7 +894,10 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
                   </div>
                   <div className="text-xs text-ui-text mt-0.5">{att.text}</div>
                 </div>
-                <span className="text-ui-muted group-hover:text-ui-warning text-xs font-bold shrink-0 mt-1">➔</span>
+                <Icon
+                  name="chevronRight"
+                  className="h-4 w-4 text-ui-muted group-hover:text-ui-warning shrink-0 mt-1 shrink-0"
+                />
               </div>
             ))}
           </div>
@@ -887,12 +915,14 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between text-xs text-ui-muted font-bold mb-2">
               <span className="flex items-center gap-1.5">
-                <span>🎯</span>
-                <span className="uppercase text-[11px] tracking-wide">Marcámos Primeiro</span>
+                <span className="text-ui-caption">Marcámos Primeiro</span>
               </span>
-              <span className="text-ui-brand group-hover:translate-x-1 transition-transform">➔</span>
+              <Icon
+                name="chevronRight"
+                className="h-4 w-4 text-ui-brand group-hover:translate-x-1 transition-transform shrink-0"
+              />
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-ui-text">
+            <div className="text-2xl sm:text-3xl font-bold text-ui-text">
               {coachData.firstGoalStats.scoredFirstRate}%
             </div>
             <div className="text-xs text-ui-muted mt-1">
@@ -902,15 +932,15 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
 
           <div className="mt-3 pt-2.5 border-t border-ui-line grid grid-cols-3 gap-1 text-center tabular-nums">
             <div className="bg-ui-inset/60 p-1.5 rounded-xl">
-              <span className="text-[9px] text-ui-muted uppercase block">Vitórias</span>
+              <span className="text-[9px] text-ui-muted block">Vitórias</span>
               <span className="text-xs font-bold text-ui-success">{coachData.firstGoalStats.scoredFirstWins}</span>
             </div>
             <div className="bg-ui-inset/60 p-1.5 rounded-xl">
-              <span className="text-[9px] text-ui-muted uppercase block">Empates</span>
+              <span className="text-[9px] text-ui-muted block">Empates</span>
               <span className="text-xs font-bold text-ui-warning">{coachData.firstGoalStats.scoredFirstDraws}</span>
             </div>
             <div className="bg-ui-inset/60 p-1.5 rounded-xl">
-              <span className="text-[9px] text-ui-muted uppercase block">Derrotas</span>
+              <span className="text-[9px] text-ui-muted block">Derrotas</span>
               <span className="text-xs font-bold text-ui-danger">{coachData.firstGoalStats.scoredFirstLosses}</span>
             </div>
           </div>
@@ -925,22 +955,24 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between text-xs text-ui-muted font-bold mb-2">
               <span className="flex items-center gap-1.5">
-                <span>🚩</span>
-                <span className="uppercase text-[11px] tracking-wide">Bola Parada</span>
+                <span className="text-ui-caption">Bola Parada</span>
               </span>
-              <span className="text-ui-warning group-hover:translate-x-1 transition-transform">➔</span>
+              <Icon
+                name="chevronRight"
+                className="h-4 w-4 text-ui-warning group-hover:translate-x-1 transition-transform shrink-0"
+              />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs text-ui-muted block">Marcados</span>
-                <span className="text-2xl font-black text-ui-success">
+                <span className="text-2xl font-bold text-ui-success">
                   {coachData.setPieces.scoredCount}{' '}
                   <span className="text-xs font-normal text-ui-muted">({coachData.setPieces.scoredRate}%)</span>
                 </span>
               </div>
               <div className="text-right">
                 <span className="text-xs text-ui-muted block">Sofridos</span>
-                <span className="text-2xl font-black text-ui-danger">
+                <span className="text-2xl font-bold text-ui-danger">
                   {coachData.setPieces.concededCount}{' '}
                   <span className="text-xs font-normal text-ui-muted">({coachData.setPieces.concededRate}%)</span>
                 </span>
@@ -972,16 +1004,18 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
           <div>
             <div className="flex items-center justify-between text-xs text-ui-muted font-bold mb-2">
               <span className="flex items-center gap-1.5">
-                <span>⏱️</span>
-                <span className="uppercase text-[11px] tracking-wide">Momento do Jogo</span>
+                <span className="text-ui-caption">Momento do Jogo</span>
               </span>
-              <span className="text-ui-brand group-hover:translate-x-1 transition-transform">➔</span>
+              <Icon
+                name="chevronRight"
+                className="h-4 w-4 text-ui-brand group-hover:translate-x-1 transition-transform shrink-0"
+              />
             </div>
 
             <div className="space-y-2">
               <div className="ui-inset p-2 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-ui-success font-bold uppercase block">Mais Produtivo</span>
+                  <span className="text-[10px] text-ui-success font-bold block">Mais Produtivo</span>
                   <span className="text-xs font-bold text-ui-text">
                     {coachData.timing.mostScoredPeriod?.label || '—'}
                   </span>
@@ -993,7 +1027,7 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
 
               <div className="ui-inset p-2 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] text-ui-danger font-bold uppercase block">Mais Vulnerável</span>
+                  <span className="text-[10px] text-ui-danger font-bold block">Mais Vulnerável</span>
                   <span className="text-xs font-bold text-ui-text">
                     {coachData.timing.mostConcededPeriod?.label || '—'}
                   </span>
@@ -1016,12 +1050,12 @@ export const CoachDashboardView: React.FC<CoachDashboardViewProps> = ({
         <button
           type="button"
           onClick={() => handleOpenDetailed()}
-          className="w-full py-4 px-6 rounded-3xl bg-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-brand-ink font-black text-sm sm:text-base shadow-xl transition-all flex items-center justify-center gap-3 cursor-pointer group active:scale-[0.99]"
+          className="ui-btn ui-btn-primary group min-h-12 w-full gap-3 px-6 text-ui-lead"
           id="btn-ver-analise-completa"
         >
-          <span>📊</span>
+          <Icon name="chart" className="h-5 w-5 shrink-0" />
           <span>Ver Análise Estatística Completa</span>
-          <span className="group-hover:translate-x-1.5 transition-transform">➔</span>
+          <Icon name="chevronRight" className="h-4 w-4 group-hover:translate-x-1.5 transition-transform shrink-0" />
         </button>
       </div>
 
