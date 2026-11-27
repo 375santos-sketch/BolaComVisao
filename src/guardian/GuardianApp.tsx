@@ -10,6 +10,7 @@ import {
   User
 } from 'firebase/auth';
 import { auth } from '../services/firebase';
+import { Icon } from '../components/ui/Icon';
 import {
   GuardianAccount,
   acceptInvite,
@@ -95,9 +96,10 @@ const GuardianApp: React.FC = () => {
         ) : (
           <MyChildren account={account} />
         )}
-        <p className="text-[11px] text-ui-muted">
-          🔒 Vê só o seu educando. Nunca notas do treinador, avaliações, contactos nem outros atletas. Pode pedir ao
-          clube para ver ou apagar os dados do seu educando.
+        <p className="flex items-start gap-1.5 text-xs text-ui-muted">
+          <Icon name="lock" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          Vê só o seu educando. Nunca notas do treinador, avaliações, contactos nem outros atletas. Pode pedir ao clube
+          para ver ou apagar os dados do seu educando.
         </p>
       </div>
     </div>
@@ -192,7 +194,7 @@ const Welcome: React.FC<{ code: string }> = ({ code }) => {
                 )
               : setError('Escreva o seu email primeiro.')
           }
-          className="w-full text-center text-xs text-ui-brand underline"
+          className="min-h-10 w-full text-center text-xs font-semibold text-ui-brand"
         >
           Esqueci-me da palavra-passe
         </button>
@@ -295,7 +297,7 @@ const AcceptInvite: React.FC<{ code: string; onDone: () => void }> = ({ code, on
             <input type="checkbox" checked={video} onChange={(e) => setVideo(e.target.checked)} className="mt-0.5" />
             <span>Autorizo vídeos de treinos e jogos com o meu educando na Visão de Jogo. (opcional)</span>
           </label>
-          <p className="text-[11px] text-ui-muted">
+          <p className="text-xs text-ui-muted">
             Pode retirar a autorização dos vídeos a qualquer momento. Fica registado quando a deu ou retirou.
           </p>
         </>
@@ -431,8 +433,11 @@ const ChildCard: React.FC<{ code: string; sent: string[] }> = ({ code, sent }) =
       )}
       {(view.vjSessions || []).length > 0 && (
         <div className="ui-card space-y-1.5 p-4" aria-label="Para ver em casa">
-          <p className="text-sm font-bold">🎬 Para ver em casa</p>
-          <p className="text-[11px] text-ui-muted">
+          <p className="flex items-center gap-2 text-sm font-bold">
+            <Icon name="play" className="h-4 w-4 shrink-0 text-ui-muted" />
+            Para ver em casa
+          </p>
+          <p className="text-xs text-ui-muted">
             Sessões da Visão de Jogo da equipa: o vídeo para e faz perguntas. As respostas ficam só neste telemóvel.
           </p>
           {(view.vjSessions || []).map((s) => {
@@ -442,10 +447,11 @@ const ChildCard: React.FC<{ code: string; sent: string[] }> = ({ code, sent }) =
                 key={s.id}
                 type="button"
                 onClick={() => setWatching(s)}
-                className="ui-btn ui-btn-soft w-full text-left text-xs"
+                className="ui-btn ui-btn-secondary min-h-11 w-full justify-start text-left text-xs"
                 aria-label={`Ver em casa: ${s.title}`}
               >
-                ▶ {s.title} · {n} {n === 1 ? 'pergunta' : 'perguntas'}
+                <Icon name="play" className="h-4 w-4 shrink-0" />
+                {s.title} · {n} {n === 1 ? 'pergunta' : 'perguntas'}
               </button>
             );
           })}
@@ -491,12 +497,12 @@ const ChildCard: React.FC<{ code: string; sent: string[] }> = ({ code, sent }) =
               setMsg('Não foi possível (sem ligação?).');
             }
           }}
-          className="text-[11px] text-ui-danger underline"
+          className="min-h-10 text-xs font-semibold text-ui-danger"
         >
           Deixar de acompanhar este educando
         </button>
       </div>
-      <p className="text-[11px] text-ui-muted">
+      <p className="text-xs text-ui-muted">
         Atualizado a {new Date(view.updatedAt).toLocaleDateString('pt-PT')} a partir da app do treinador.
       </p>
     </section>
@@ -535,16 +541,19 @@ const CareerCard: React.FC<{
 
   return (
     <div className="ui-card space-y-2 p-4" aria-label="O Meu Percurso do educando">
-      <p className="text-sm font-bold">🎯 O Meu Percurso</p>
+      <p className="flex items-center gap-2 text-sm font-bold">
+        <Icon name="chart" className="h-4 w-4 shrink-0 text-ui-muted" />O Meu Percurso
+      </p>
       <p className="text-xs text-ui-muted">
         {career.assignments.length
           ? `${career.assignments.length} ${career.assignments.length === 1 ? 'missão ou desafio' : 'missões e desafios'} do treinador`
           : 'Ainda sem missões do treinador.'}
       </p>
-      <button type="button" onClick={onAthleteMode} className="ui-btn ui-btn-primary w-full text-sm">
-        ▶ Passar ao Modo atleta
+      <button type="button" onClick={onAthleteMode} className="ui-btn ui-btn-primary min-h-12 w-full text-sm">
+        <Icon name="play" className="h-4 w-4 shrink-0" />
+        Passar ao Modo atleta
       </button>
-      <p className="text-[11px] text-ui-muted">
+      <p className="text-xs text-ui-muted">
         O seu educando usa o seu telemóvel; para sair é preciso a sua palavra-passe. Nada do que faz fica guardado.
       </p>
       {career.canHaveOwnAccount && (
@@ -555,7 +564,7 @@ const CareerCard: React.FC<{
               <span>{i.status === 'accepted' ? '✓ O atleta já tem conta' : 'Convite enviado · à espera'}</span>
               <span className="flex gap-2">
                 {i.status === 'pending' && (
-                  <button type="button" onClick={() => share(i)} className="text-ui-brand underline">
+                  <button type="button" onClick={() => share(i)} className="font-semibold text-ui-brand">
                     Reenviar
                   </button>
                 )}
@@ -596,7 +605,7 @@ const CareerCard: React.FC<{
               Convidar o meu educando (conta própria)
             </button>
           )}
-          <p className="text-[11px] text-ui-muted">
+          <p className="text-xs text-ui-muted">
             Ao convidar, autoriza a conta do seu educando. Pode retirá-la a qualquer momento.
           </p>
         </div>
