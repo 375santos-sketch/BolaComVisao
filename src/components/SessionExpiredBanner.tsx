@@ -60,10 +60,10 @@ export const SessionExpiredBanner: React.FC<SessionExpiredBannerProps> = ({ user
   return (
     <div
       role="alert"
-      className="mb-3 rounded-2xl border border-rose-500/50 bg-rose-950/50 p-3 text-xs text-rose-100 space-y-2"
+      className="mb-3 rounded-ui-lg border border-ui-danger/50 bg-ui-danger-soft p-3 text-xs text-ui-text space-y-2"
     >
       <div>
-        <div className="font-bold text-rose-300 uppercase text-[11px] tracking-wide">🔑 A sessão na nuvem terminou</div>
+        <div className="font-bold text-ui-danger text-ui-body">A sessão na nuvem terminou</div>
         As alterações estão guardadas neste aparelho, mas só vão para a nuvem depois de entrar de novo. Não use
         &quot;Terminar sessão&quot;: isso apagava-as deste aparelho.
       </div>
@@ -73,7 +73,7 @@ export const SessionExpiredBanner: React.FC<SessionExpiredBannerProps> = ({ user
         </button>
       ) : (
         <form onSubmit={withPassword} className="space-y-2">
-          <div className="text-slate-300">
+          <div className="text-ui-muted">
             Conta: <strong>{login}</strong>
           </div>
           <input
@@ -85,7 +85,7 @@ export const SessionExpiredBanner: React.FC<SessionExpiredBannerProps> = ({ user
             autoComplete="current-password"
             className="ui-input w-full text-sm"
           />
-          {error && <div className="text-rose-300">{error}</div>}
+          {error && <div className="text-ui-danger">{error}</div>}
           <div className="flex flex-wrap gap-2">
             <button type="submit" disabled={busy || !password} className="ui-btn ui-btn-danger px-3 py-2">
               {busy ? 'A entrar…' : 'Entrar'}

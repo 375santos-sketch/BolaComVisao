@@ -23,8 +23,7 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
     <div className="ui-card p-5">
       <div className="flex items-center justify-between pb-4 mb-4 border-b border-ui-line">
         <div>
-          <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-            <span>🚩</span>
+          <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
             <span>Análise de Cantos</span>
           </h3>
           <p className="text-xs text-ui-muted mt-0.5">Estatísticas acumuladas de cantos a favor e contra</p>
@@ -34,8 +33,8 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Cantos a Favor */}
         <div className="ui-inset p-4 text-center">
-          <span className="text-xs font-bold text-ui-brand block mb-1">🚩 Cantos a Favor</span>
-          <span className="text-3xl font-['Chakra_Petch'] font-black text-ui-text">{cornersForTotal}</span>
+          <span className="text-xs font-bold text-ui-brand block mb-1">Cantos a Favor</span>
+          <span className="text-3xl font-['Chakra_Petch'] font-bold text-ui-text">{cornersForTotal}</span>
           <span className="text-xs text-ui-muted block mt-1">
             Média: <strong className="text-ui-brand">{cornersForAvg || '—'}</strong> / jogo ({cornersForMatchesCount}{' '}
             jogos registados)
@@ -44,8 +43,8 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
 
         {/* Cantos Sofridos */}
         <div className="ui-inset p-4 text-center">
-          <span className="text-xs font-bold text-ui-danger block mb-1">🚩 Cantos Sofridos (Contra)</span>
-          <span className="text-3xl font-['Chakra_Petch'] font-black text-ui-text">{cornersAgainstTotal}</span>
+          <span className="text-xs font-bold text-ui-danger block mb-1">Cantos Sofridos (Contra)</span>
+          <span className="text-3xl font-['Chakra_Petch'] font-bold text-ui-text">{cornersAgainstTotal}</span>
           <span className="text-xs text-ui-muted block mt-1">
             Média: <strong className="text-ui-danger">{cornersAgainstAvg || '—'}</strong> / jogo (
             {cornersAgainstMatchesCount} jogos registados)
@@ -54,8 +53,8 @@ export const CornersAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysi
 
         {/* Eficácia de Golo de Canto */}
         <div className="ui-inset p-4 text-center">
-          <span className="text-xs font-bold text-ui-warning block mb-1">🎯 Eficácia de Canto</span>
-          <span className="text-3xl font-['Chakra_Petch'] font-black text-ui-warning">{cornerGoalsScored}</span>
+          <span className="text-xs font-bold text-ui-warning block mb-1">Eficácia de Canto</span>
+          <span className="text-3xl font-['Chakra_Petch'] font-bold text-ui-warning">{cornerGoalsScored}</span>
           <span className="text-xs text-ui-muted block mt-1">
             Golos de canto (<strong className="text-ui-warning">{cornerConversionRate}%</strong> conversão)
           </span>
@@ -81,8 +80,7 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
     <div className="ui-card p-5">
       <div className="flex items-center justify-between pb-4 mb-4 border-b border-ui-line">
         <div>
-          <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-            <span>⚠️</span>
+          <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
             <span>Análise de Faltas</span>
           </h3>
           <p className="text-xs text-ui-muted mt-0.5">Equilíbrio de faltas cometidas e faltas sofridas</p>
@@ -92,8 +90,8 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Faltas Cometidas */}
         <div className="ui-inset p-4 text-center">
-          <span className="text-xs font-bold text-ui-warning block mb-1">⚠️ Faltas Cometidas</span>
-          <span className="text-3xl font-['Chakra_Petch'] font-black text-ui-text">{foulsCommittedTotal}</span>
+          <span className="text-xs font-bold text-ui-warning block mb-1">Faltas Cometidas</span>
+          <span className="text-3xl font-['Chakra_Petch'] font-bold text-ui-text">{foulsCommittedTotal}</span>
           <span className="text-xs text-ui-muted block mt-1">
             Média: <strong className="text-ui-warning">{foulsCommittedAvg || '—'}</strong> / jogo (
             {foulsCommittedMatchesCount} jogos)
@@ -102,8 +100,8 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
 
         {/* Faltas Sofridas */}
         <div className="ui-inset p-4 text-center">
-          <span className="text-xs font-bold text-ui-success block mb-1">🩹 Faltas Sofridas</span>
-          <span className="text-3xl font-['Chakra_Petch'] font-black text-ui-text">{foulsSufferedTotal}</span>
+          <span className="text-xs font-bold text-ui-success block mb-1">Faltas Sofridas</span>
+          <span className="text-3xl font-['Chakra_Petch'] font-bold text-ui-text">{foulsSufferedTotal}</span>
           <span className="text-xs text-ui-muted block mt-1">
             Média: <strong className="text-ui-success">{foulsSufferedAvg || '—'}</strong> / jogo (
             {foulsSufferedMatchesCount} jogos)
@@ -112,9 +110,9 @@ export const FoulsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
 
         {/* Rácio Disciplinar */}
         <div className="ui-inset p-4 text-center">
-          <span className="text-xs font-bold text-ui-brand block mb-1">⚖️ Saldo Disciplinar</span>
+          <span className="text-xs font-bold text-ui-brand block mb-1">Saldo Disciplinar</span>
           <span
-            className={`text-3xl font-['Chakra_Petch'] font-black ${
+            className={`text-3xl font-['Chakra_Petch'] font-bold ${
               balance >= 0 ? 'text-ui-success' : 'text-ui-danger'
             }`}
           >
@@ -136,8 +134,7 @@ export const CardsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
     <div className="ui-card p-5">
       <div className="flex items-center justify-between pb-4 mb-4 border-b border-ui-line">
         <div>
-          <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-            <span>🟨🟥</span>
+          <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
             <span>Amostragem de Cartões & Disciplina</span>
           </h3>
           <p className="text-xs text-ui-muted mt-0.5">Total de cartões acumulados e média por partida</p>
@@ -145,10 +142,20 @@ export const CardsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
 
         <div className="flex items-center gap-2 text-xs font-bold font-mono">
           <span className="bg-ui-warning/20 text-ui-warning px-2.5 py-1 rounded-lg border border-ui-warning/30">
-            🟨 {yellowCardsTotal}
+            <span
+              role="img"
+              aria-label="Amarelos"
+              className="mr-1 inline-block h-3 w-2 rounded-[2px] bg-ui-warning align-[-1px]"
+            />
+            {yellowCardsTotal}
           </span>
           <span className="bg-ui-danger/20 text-ui-danger px-2.5 py-1 rounded-lg border border-ui-danger/30">
-            🟥 {redCardsTotal}
+            <span
+              role="img"
+              aria-label="Vermelhos"
+              className="mr-1 inline-block h-3 w-2 rounded-[2px] bg-ui-danger align-[-1px]"
+            />
+            {redCardsTotal}
           </span>
         </div>
       </div>
@@ -157,24 +164,24 @@ export const CardsAnalysis: React.FC<SetPiecesAndDisciplineProps> = ({ analysis 
         <div className="ui-inset p-4 flex items-center justify-between">
           <div>
             <span className="text-xs text-ui-muted block">Total de Cartões</span>
-            <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-text">
+            <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-text">
               {yellowCardsTotal + redCardsTotal}
             </span>
           </div>
           <div className="text-right">
             <span className="text-xs text-ui-muted block">Média por Jogo</span>
-            <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-brand">{cardsPerMatchAvg}</span>
+            <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-brand">{cardsPerMatchAvg}</span>
           </div>
         </div>
 
         <div className="ui-inset p-4 flex items-center justify-between">
           <div>
             <span className="text-xs text-ui-muted block">Jogadores Advertidos</span>
-            <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-warning">{cardedPlayers.length}</span>
+            <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-warning">{cardedPlayers.length}</span>
           </div>
           <div className="text-right">
             <span className="text-xs text-ui-muted block">Total Jogos Analisados</span>
-            <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-text">{totalMatches}</span>
+            <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-text">{totalMatches}</span>
           </div>
         </div>
       </div>

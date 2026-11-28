@@ -16,7 +16,6 @@ export const CallupShareModal: React.FC<CallupShareModalProps> = ({ match, state
   return (
     <ShareMessageModal
       title="Enviar convocatória"
-      icon="📋"
       text={text}
       onTextChange={setText}
       onClose={onClose}

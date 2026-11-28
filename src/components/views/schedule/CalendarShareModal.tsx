@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Icon } from '../../ui/Icon';
 import { AppState } from '../../../types';
 import { calendarEventsOf, calendarTeamName, createTeamCalendar } from '../../../hooks/useCalendarPublisher';
 import { calendarLinks, unpublishCalendar } from '../../../services/publicCalendar';
@@ -93,11 +94,14 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-ui-text font-['Chakra_Petch'] uppercase">
-            📅 Calendário para os pais
-          </h3>
-          <button type="button" onClick={onClose} aria-label="Fechar" className="text-ui-muted text-lg">
-            ✕
+          <h3 className="text-ui-body font-bold text-ui-text">Calendário para os pais</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+          >
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
         <p className="text-[11px] text-ui-text">
@@ -131,11 +135,13 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
               rel="noreferrer"
               className={`${button} bg-ui-success border-ui-success text-ui-text`}
             >
-              🟢 Enviar aos pais por WhatsApp
+              <Icon name="message" className="h-4 w-4 shrink-0" />
+              Enviar aos pais por WhatsApp
             </a>
             <div className="grid grid-cols-2 gap-2">
               <a href={links.webcal} className={`${button} border-ui-line-strong text-ui-text`}>
-                🍎 Abrir no iPhone
+                <Icon name="calendar" className="h-4 w-4 shrink-0" />
+                Abrir no iPhone
               </a>
               <a
                 href={links.google}
@@ -143,7 +149,8 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
                 rel="noreferrer"
                 className={`${button} border-ui-line-strong text-ui-text`}
               >
-                📆 Google Calendar
+                <Icon name="calendar" className="h-4 w-4 shrink-0" />
+                Google Calendar
               </a>
             </div>
             <button
@@ -151,7 +158,8 @@ export const CalendarShareModal: React.FC<CalendarShareModalProps> = ({
               onClick={() => copy(links.https, 'Link copiado ✓')}
               className={`${button} border-ui-brand/60 text-ui-brand`}
             >
-              📋 Copiar link
+              <Icon name="copy" className="h-4 w-4 shrink-0" />
+              Copiar link
             </button>
             <p className="text-[10px] text-ui-muted">
               O Google e o iPhone vão buscar as novidades sozinhos, de algumas em algumas horas. Quem tiver o link vê o

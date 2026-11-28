@@ -24,6 +24,7 @@ import {
 } from './services/clubCloud';
 import { CloudSyncContext, deriveCloudSyncStatus, readCloudSavedAt, writeCloudSavedAt } from './lib/cloudSyncStatus';
 import { applyThemeCSS } from './lib/utils';
+import { Icon } from './components/ui/Icon';
 import { applyClubColor } from './lib/clubColors';
 import { useSunMode } from './lib/sunMode';
 import { GuidedTour } from './components/GuidedTour';
@@ -1019,7 +1020,7 @@ export default function App() {
   // If user is not logged in, render AuthView
   if (!state.currentUser) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 font-sans">
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-ui-brand selection:text-ui-brand-ink font-sans">
         <Suspense fallback={<ViewLoadingFallback />}>
           <AuthView
             state={state}
@@ -1036,8 +1037,8 @@ export default function App() {
 
         {/* Toast Feedback */}
         {toastMessage && (
-          <div className="ui-card fixed bottom-6 left-1/2 -translate-x-1/2 z-[999999] text-white px-5 py-3 font-mono text-xs animate-in fade-in slide-in-from-bottom-5 flex items-center gap-2.5 max-w-[90vw] text-center">
-            <span className="text-cyan-400 text-sm">⚽</span>
+          <div className="ui-card fixed bottom-6 left-1/2 -translate-x-1/2 z-[999999] text-ui-text px-5 py-3 text-sm animate-in fade-in slide-in-from-bottom-5 flex items-center gap-2.5 max-w-[90vw] text-center">
+            <Icon name="ball" className="h-4 w-4 shrink-0 text-ui-brand" />
             <span>{toastMessage}</span>
           </div>
         )}
@@ -1051,7 +1052,7 @@ export default function App() {
   return (
     <CloudSyncContext.Provider value={cloudSync}>
       <div
-        className={`min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950 font-sans pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-8 pt-[env(safe-area-inset-top,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] overflow-x-hidden ${
+        className={`min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-ui-brand selection:text-ui-brand-ink font-sans pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-8 pt-[env(safe-area-inset-top,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] overflow-x-hidden ${
           currentTab === 'teams' ? '' : 'lg:pl-60'
         }`}
       >
@@ -1589,8 +1590,8 @@ export default function App() {
 
         {/* Floating Toast Notification */}
         {toastMessage && (
-          <div className="ui-card fixed bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 z-[999999] text-white px-5 py-3 font-mono text-xs animate-in fade-in slide-in-from-bottom-5 flex items-center gap-2.5 max-w-[90vw] text-center">
-            <span className="text-cyan-400 text-sm">⚽</span>
+          <div className="ui-card fixed bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 z-[999999] text-ui-text px-5 py-3 text-sm animate-in fade-in slide-in-from-bottom-5 flex items-center gap-2.5 max-w-[90vw] text-center">
+            <Icon name="ball" className="h-4 w-4 shrink-0 text-ui-brand" />
             <span>{toastMessage}</span>
           </div>
         )}

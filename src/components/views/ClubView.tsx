@@ -343,9 +343,7 @@ export const ClubView: React.FC<ClubViewProps> = ({
         <div className="space-y-4">
           {groups.map((g) => (
             <section key={g.title} aria-label={g.title}>
-              <h2 className="mb-1.5 px-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-ui-muted">
-                {g.title}
-              </h2>
+              <h2 className="mb-2 px-1 text-ui-body font-bold text-ui-text">{g.title}</h2>
               <ul className="ui-card divide-y divide-ui-line overflow-hidden">
                 {g.rows.map((r) => (
                   <li key={r.title}>
@@ -378,9 +376,7 @@ export const ClubView: React.FC<ClubViewProps> = ({
 
         {/* The club's teams at a glance (on a computer beside the menu, on the phone below) */}
         <section aria-label="Equipas do clube" className="space-y-1.5">
-          <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-ui-muted">
-            Equipas do clube
-          </h2>
+          <h2 className="px-1 text-ui-body font-bold text-ui-text">Equipas do clube</h2>
           <ul className="ui-card divide-y divide-ui-line overflow-hidden">
             {teams.map((t) => {
               const active = t.id === state.activeTeamId;
@@ -389,7 +385,7 @@ export const ClubView: React.FC<ClubViewProps> = ({
               ).length;
               return (
                 <li key={t.id} className="flex items-center gap-3 px-3.5 py-3">
-                  <span className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-ui-sm bg-ui-surface-2 px-1.5 text-[11px] font-black text-ui-text">
+                  <span className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-ui-sm bg-ui-surface-2 px-1.5 text-ui-caption font-bold text-ui-text">
                     {(t.category || '?').replace(/[^0-9A-Za-z]/g, '').slice(0, 5)}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -411,11 +407,11 @@ export const ClubView: React.FC<ClubViewProps> = ({
               onClick={onOpenAdminUsers}
               className="flex w-full items-center gap-3 rounded-ui border border-ui-warning bg-ui-warning-soft px-3.5 py-3 text-left"
             >
-              <span aria-hidden>⏳</span>
+              <Icon name="users" className="h-5 w-5 shrink-0 text-ui-warning" />
               <span className="min-w-0 flex-1 text-ui-body font-bold text-ui-text">
                 {pendingUsersCount} {pendingUsersCount === 1 ? 'pedido de acesso' : 'pedidos de acesso'} por aprovar
               </span>
-              <span className="text-ui-caption font-bold text-ui-brand">Ver →</span>
+              <Icon name="chevronRight" className="h-4 w-4 shrink-0 text-ui-muted" />
             </button>
           )}
         </section>

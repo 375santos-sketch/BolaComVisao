@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Icon } from '../ui/Icon';
 import { DateTimePT } from '../ui/DateTimePT';
 import { AppState } from '../../types';
 import {
@@ -33,7 +34,7 @@ const short = (name: string) => (name.length > 9 ? `${name.slice(0, 8)}…` : na
 const Tile: React.FC<{ value: React.ReactNode; label: string }> = ({ value, label }) => (
   <div className="ui-inset p-2.5 text-center">
     <div className="text-lg font-extrabold text-ui-text font-mono">{value}</div>
-    <div className="text-[10px] text-ui-muted uppercase">{label}</div>
+    <div className="text-[10px] text-ui-muted">{label}</div>
   </div>
 );
 
@@ -96,20 +97,18 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
         className={
           inline
             ? 'ui-card w-full p-4 space-y-4 text-left'
-            : 'w-full max-w-3xl max-h-[96dvh] overflow-y-auto bg-ui-surface border border-ui-brand/40 rounded-t-3xl sm:rounded-3xl p-4 space-y-4 text-left'
+            : 'w-full max-w-3xl max-h-[96dvh] overflow-y-auto bg-ui-surface border border-ui-line rounded-t-ui-lg sm:rounded-ui-lg p-4 space-y-4 text-left'
         }
       >
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-bold text-ui-text font-['Chakra_Petch'] uppercase tracking-wide">
-            📊 Painel {playerName ? `· ${playerName}` : '· Equipa'}
-          </h2>
+          <h2 className="text-base font-bold text-ui-text">Painel {playerName ? `· ${playerName}` : '· Equipa'}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="text-ui-muted hover:text-ui-text px-2 text-lg"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
           >
-            ✕
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
 
@@ -279,7 +278,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
             {team.games.length >= 2 && (
               <div aria-label="Evolução jogo a jogo">
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-ui-text">Evolução jogo a jogo</span>
+                  <span className="text-xs font-bold text-ui-text">Evolução jogo a jogo</span>
                   <span className="flex gap-3 text-[11px] text-ui-muted">
                     <span className="flex items-center gap-1">
                       <span className="h-2 w-2 rounded-full bg-ui-brand" /> Marcados
@@ -325,7 +324,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
             />
             {team.scorers.length > 0 && (
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-ui-text mb-1">Golos e assistências</div>
+                <div className="text-xs font-bold text-ui-text mb-1">Golos e assistências</div>
                 <ul className="flex flex-wrap gap-1.5 text-[11px]">
                   {team.scorers.map((s) => (
                     <li
@@ -347,10 +346,12 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({ state, onClose, onShowTo
             datas de nascimento).
           </p>
           <button type="button" onClick={exportPdf} className="ui-btn ui-btn-soft px-3 py-2 text-xs">
-            📄 PDF destes jogos
+            <Icon name="file" className="h-4 w-4 shrink-0" />
+            PDF destes jogos
           </button>
           <button type="button" onClick={exportExcel} className="ui-btn ui-btn-warning px-3 py-2 text-xs">
-            📊 Excel com gráficos (+ Power BI)
+            <Icon name="chart" className="h-4 w-4 shrink-0" />
+            Excel com gráficos (+ Power BI)
           </button>
         </div>
       </div>

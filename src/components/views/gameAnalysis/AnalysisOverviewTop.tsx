@@ -25,7 +25,7 @@ const Kpi: React.FC<{ label: string; value: string; hint: string; tone?: string;
 }) => (
   <div className="ui-card p-3">
     <div className="ui-kicker">{label}</div>
-    <div className={`ui-figure mt-1 text-[28px] font-black leading-none ${tone}`}>{value}</div>
+    <div className={`ui-figure mt-1 text-[28px] font-bold leading-none ${tone}`}>{value}</div>
     <div className="mt-1 text-ui-caption text-ui-muted">{hint}</div>
     {children}
   </div>

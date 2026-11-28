@@ -143,7 +143,7 @@ test('o meu percurso: Modo atleta do encarregado e conta própria do atleta (13+
     .toBe(1);
 
   // «Modo atleta»: the mission, a question answered on the phone (nothing saved), leaving needs the password
-  await careerCard.getByRole('button', { name: '▶ Passar ao Modo atleta' }).click();
+  await careerCard.getByRole('button', { name: 'Passar ao Modo atleta' }).click();
   const percurso = g.getByRole('region', { name: 'O Meu Percurso' });
   await expect(percurso).toContainText('MC2: receção orientada');
   await expect(percurso).toContainText('1/2');

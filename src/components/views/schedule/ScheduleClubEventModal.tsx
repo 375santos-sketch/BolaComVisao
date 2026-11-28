@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from '../../ui/Icon';
 import { DateTimePT } from '../../ui/DateTimePT';
 import { ClubEventFormData } from './types';
 import { ClubEventType } from '../../../types';
@@ -28,26 +29,26 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
 
   return (
     <div className="ui-overlay fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
-      <div className="bg-ui-surface border-t sm:border border-ui-brand/50 rounded-t-3xl sm:rounded-3xl max-w-lg w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="ui-card rounded-b-none sm:rounded-ui-lg max-w-lg w-full max-h-[92dvh] sm:max-h-[88dvh] flex flex-col overflow-hidden">
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 pb-3 border-b border-ui-line flex items-center justify-between shrink-0 bg-ui-surface/95">
+        <div className="p-4 sm:p-5 pb-3 border-b border-ui-line flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">👥</span>
             <div>
-              <h3 className="text-base sm:text-lg font-['Chakra_Petch'] font-black uppercase text-ui-brand">
-                {editingClubEventId ? 'Editar Evento do Clube' : 'Marcar Reunião / Formação'}
+              <h3 className="text-ui-body font-bold text-ui-text">
+                {editingClubEventId ? 'Editar evento do clube' : 'Reunião ou formação'}
               </h3>
-              <span className="text-xs font-mono text-ui-muted">
-                Agenda institucional e eventos desportivos do clube
+              <span className="text-ui-caption text-ui-muted">
+                Reuniões, formações, estágios e outros eventos do clube
               </span>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setShowClubEventModal(false)}
-            className="ui-btn ui-btn-secondary w-8 h-8 flex items-center justify-center text-sm"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+            aria-label="Fechar"
           >
-            ✕
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
 
@@ -55,15 +56,15 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
         <div className="p-4 sm:p-5 overflow-y-auto flex-1 overscroll-contain space-y-4">
           {/* Type Selector Pills */}
           <div>
-            <label className="text-xs font-mono text-ui-text block mb-1.5">
-              Tipo de Evento <span className="text-ui-brand">*</span>
+            <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">
+              Tipo de evento <span className="text-ui-brand">*</span>
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               {[
-                { type: 'reuniao' as ClubEventType, label: '👥 Reunião', color: 'purple' },
-                { type: 'formacao' as ClubEventType, label: '🎓 Formação', color: 'indigo' },
-                { type: 'estagio' as ClubEventType, label: '🏕️ Estágio', color: 'emerald' },
-                { type: 'outro' as ClubEventType, label: '📌 Outro', color: 'cyan' }
+                { type: 'reuniao' as ClubEventType, label: 'Reunião', color: 'purple' },
+                { type: 'formacao' as ClubEventType, label: 'Formação', color: 'indigo' },
+                { type: 'estagio' as ClubEventType, label: 'Estágio', color: 'emerald' },
+                { type: 'outro' as ClubEventType, label: 'Outro', color: 'cyan' }
               ].map((t) => {
                 const isSelected = clubEventForm.type === t.type;
                 return (
@@ -71,9 +72,9 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                     key={t.type}
                     type="button"
                     onClick={() => setClubEventForm({ ...clubEventForm, type: t.type })}
-                    className={`p-2 rounded-xl text-xs font-['Chakra_Petch'] font-bold transition-all border text-center ${
+                    className={`p-2 rounded-xl text-xs font-semibold transition-all border text-center ${
                       isSelected
-                        ? 'bg-ui-brand text-ui-text border-ui-brand shadow-md shadow-ui-brand/40'
+                        ? 'bg-ui-surface-3 text-ui-text border-ui-line-strong'
                         : 'bg-ui-inset/80 border-ui-line text-ui-muted hover:text-ui-text hover:border-ui-line-strong'
                     }`}
                   >
@@ -86,8 +87,8 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
 
           {/* Title Field */}
           <div>
-            <label className="text-xs font-mono text-ui-text block mb-1.5">
-              Título / Assunto <span className="text-ui-brand">*</span>
+            <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">
+              Título <span className="text-ui-brand">*</span>
             </label>
             <input
               type="text"
@@ -100,7 +101,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
 
             {/* Quick Title Suggestions */}
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-              <span className="text-[10px] font-mono text-ui-muted">Sugestões:</span>
+              <span className="text-ui-caption text-ui-muted">Sugestões:</span>
               {[
                 'Reunião Equipa Técnica',
                 'Reunião com Pais / EE',
@@ -123,8 +124,8 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
           {/* Dates Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-mono text-ui-text block mb-1.5">
-                Data (ou Início) <span className="text-ui-brand">*</span>
+              <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">
+                Data (ou início) <span className="text-ui-brand">*</span>
               </label>
               <DateTimePT
                 type="date"
@@ -136,7 +137,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
             </div>
 
             <div>
-              <label className="text-xs font-mono text-ui-text block mb-1.5">Data de Fim (Opcional)</label>
+              <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">Data de fim (opcional)</label>
               <DateTimePT
                 type="date"
                 label="Data de fim"
@@ -145,14 +146,14 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
                 onChange={(v) => setClubEventForm({ ...clubEventForm, endDate: v })}
                 inputClassName="ui-input w-full text-xs"
               />
-              <span className="text-[10px] font-mono text-ui-muted mt-1 block">Deixar vazio para evento de 1 dia</span>
+              <span className="text-ui-caption text-ui-muted mt-1 block">Deixar vazio para evento de 1 dia</span>
             </div>
           </div>
 
           {/* Times Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-mono text-ui-text block mb-1.5">Hora de Início</label>
+              <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">Hora de início</label>
               <DateTimePT
                 type="time"
                 label="Hora de início"
@@ -163,7 +164,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
             </div>
 
             <div>
-              <label className="text-xs font-mono text-ui-text block mb-1.5">Hora de Fim (Opcional)</label>
+              <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">Hora de fim (opcional)</label>
               <DateTimePT
                 type="time"
                 label="Hora de fim"
@@ -177,7 +178,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
           {/* Location & Attendees Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-mono text-ui-text block mb-1.5">Local / Sala</label>
+              <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">Local</label>
               <input
                 type="text"
                 placeholder="Ex: Sala de Reuniões, Auditório..."
@@ -188,7 +189,7 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
             </div>
 
             <div>
-              <label className="text-xs font-mono text-ui-text block mb-1.5">Participantes / Destinatários</label>
+              <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">Participantes</label>
               <input
                 type="text"
                 placeholder="Ex: Equipa Técnica, Pais, Plantel..."
@@ -201,39 +202,35 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
 
           {/* Status Switcher (Agendado vs Concluído) */}
           <div>
-            <label className="text-xs font-mono text-ui-text block mb-1.5">Estado do Compromisso</label>
+            <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">Estado</label>
             <div className="ui-inset inline-flex p-1 w-full sm:w-auto gap-1">
               <button
                 type="button"
                 onClick={() => setClubEventForm({ ...clubEventForm, isCompleted: false })}
-                className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
-                  !clubEventForm.isCompleted
-                    ? 'bg-ui-warning text-ui-brand-ink shadow-[0_0_10px_rgba(245,158,11,0.4)]'
-                    : 'text-ui-muted hover:text-ui-warning'
+                className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-ui-sm text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                  !clubEventForm.isCompleted ? 'bg-ui-surface-3 text-ui-text' : 'text-ui-muted hover:text-ui-text'
                 }`}
               >
-                <span>🟡</span>
+                <span aria-hidden className="h-2 w-2 rounded-full bg-ui-warning" />
                 <span>Agendado</span>
               </button>
               <button
                 type="button"
                 onClick={() => setClubEventForm({ ...clubEventForm, isCompleted: true })}
-                className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-['Chakra_Petch'] font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
-                  clubEventForm.isCompleted
-                    ? 'bg-ui-success text-ui-brand-ink shadow-[0_0_10px_rgba(16,185,129,0.4)]'
-                    : 'text-ui-muted hover:text-ui-success'
+                className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-ui-sm text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
+                  clubEventForm.isCompleted ? 'bg-ui-surface-3 text-ui-text' : 'text-ui-muted hover:text-ui-text'
                 }`}
               >
-                <span>🟢</span>
-                <span>Concluído / Realizado</span>
+                <span aria-hidden className="h-2 w-2 rounded-full bg-ui-success" />
+                <span>Concluído</span>
               </button>
             </div>
           </div>
 
           {/* Notes / Agenda */}
           <div>
-            <label className="text-xs font-mono text-ui-text block mb-1.5">
-              Ordem de Trabalhos / Observações (Opcional)
+            <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">
+              Ordem de trabalhos e notas (opcional)
             </label>
             <textarea
               rows={3}
@@ -265,15 +262,14 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
               className="ui-btn ui-btn-soft-danger px-4 py-2.5 min-h-[44px] text-xs flex items-center gap-1.5"
               title="Eliminar evento cancelado da agenda"
             >
-              <span>🗑️</span>
+              <Icon name="trash" className="h-4 w-4 shrink-0" />
               <span>
                 Eliminar{' '}
                 {clubEventForm.type === 'formacao'
                   ? 'Formação'
                   : clubEventForm.type === 'estagio'
                     ? 'Estágio'
-                    : 'Reunião'}{' '}
-                (Cancelada)
+                    : 'Reunião'}
               </span>
             </button>
           ) : (
@@ -291,10 +287,9 @@ export const ScheduleClubEventModal: React.FC<ScheduleClubEventModalProps> = ({
             <button
               type="button"
               onClick={handleSaveClubEventModal}
-              className="px-5 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-ui-brand to-ui-brand hover:from-ui-brand hover:to-ui-brand text-ui-text font-['Chakra_Petch'] font-black text-xs uppercase shadow-md transition-all flex items-center gap-1.5 active:scale-95"
+              className="ui-btn ui-btn-primary px-5 py-2.5 min-h-[44px] text-xs flex items-center gap-1.5"
             >
-              <span>👥</span>
-              <span>{editingClubEventId ? 'Guardar Alterações' : 'Agendar Reunião / Formação'}</span>
+              <span>{editingClubEventId ? 'Guardar alterações' : 'Agendar'}</span>
             </button>
           </div>
         </div>

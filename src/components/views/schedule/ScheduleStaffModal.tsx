@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from '../../ui/Icon';
 import { DateTimePT } from '../../ui/DateTimePT';
 import { StaffFormData } from './types';
 import { AppState } from '../../../types';
@@ -33,17 +34,17 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
       <div className="ui-card max-w-lg w-full p-5 space-y-4 animate-scaleUp max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-ui-line pb-3">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🚫</span>
-            <h3 className="text-base font-black text-ui-text font-['Chakra_Petch']">
-              {editingStaffId ? 'Editar Indisponibilidade' : 'Registar Indisponibilidade de Equipa Técnica'}
+            <h3 className="text-ui-body font-bold text-ui-text">
+              {editingStaffId ? 'Editar indisponibilidade' : 'Indisponibilidade da equipa técnica'}
             </h3>
           </div>
           <button
             type="button"
             onClick={() => setShowStaffModal(false)}
-            className="text-ui-muted hover:text-ui-text p-1"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-ui-sm text-ui-muted hover:bg-ui-surface-2 hover:text-ui-text"
+            aria-label="Fechar"
           >
-            ✕
+            <Icon name="x" className="h-5 w-5 shrink-0" />
           </button>
         </div>
 
@@ -56,8 +57,8 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
         >
           {/* Member Name */}
           <div>
-            <label className="text-xs font-mono text-ui-text block mb-1.5">
-              Membro da Equipa Técnica <span className="text-ui-warning">*</span>
+            <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">
+              Membro da equipa técnica <span className="text-ui-warning">*</span>
             </label>
             <input
               type="text"
@@ -71,15 +72,16 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
             {/* Quick Suggestions from Staff Members if available */}
             {state.staffMembers && state.staffMembers.length > 0 && (
               <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                <span className="text-[10px] font-mono text-ui-muted">Sugestões:</span>
+                <span className="text-ui-caption text-ui-muted">Sugestões</span>
                 {state.staffMembers.slice(0, 4).map((member) => (
                   <button
                     key={member.id}
                     type="button"
                     onClick={() => setStaffForm({ ...staffForm, name: member.name })}
-                    className="ui-btn ui-btn-secondary px-2 py-0.5 text-[10px]"
+                    className="ui-btn ui-btn-secondary min-h-8 px-2.5 text-ui-caption"
                   >
-                    👤 {member.name} ({member.role})
+                    <Icon name="user" className="h-3.5 w-3.5 shrink-0" />
+                    {member.name} ({member.role})
                   </button>
                 ))}
               </div>
@@ -89,8 +91,8 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
           {/* Dates Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-mono text-ui-text block mb-1.5">
-                Data de Início <span className="text-ui-warning">*</span>
+              <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">
+                Data de início <span className="text-ui-warning">*</span>
               </label>
               <DateTimePT
                 type="date"
@@ -102,7 +104,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
             </div>
 
             <div>
-              <label className="text-xs font-mono text-ui-text block mb-1.5">Data de Fim (Opcional)</label>
+              <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">Data de fim (opcional)</label>
               <DateTimePT
                 type="date"
                 label="Data de fim"
@@ -111,7 +113,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
                 onChange={(v) => setStaffForm({ ...staffForm, endDate: v })}
                 inputClassName="ui-input w-full text-xs"
               />
-              <span className="text-[10px] font-mono text-ui-muted mt-1 block">
+              <span className="text-ui-caption text-ui-muted mt-1 block">
                 Deixar vazio para indisponibilidade de apenas 1 dia
               </span>
             </div>
@@ -119,7 +121,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
 
           {/* Reason */}
           <div>
-            <label className="text-xs font-mono text-ui-text block mb-1.5">Motivo / Justificação (Opcional)</label>
+            <label className="text-ui-caption font-semibold text-ui-muted block mb-1.5">Motivo (opcional)</label>
             <input
               type="text"
               placeholder="Ex: Motivos profissionais, Formação UEFA, Pessoais..."
@@ -146,7 +148,7 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
                 className="ui-btn ui-btn-soft-danger px-4 py-2 min-h-[40px] text-xs flex items-center gap-1.5"
                 title="Eliminar indisponibilidade"
               >
-                <span>🗑️</span>
+                <Icon name="trash" className="h-4 w-4 shrink-0" />
                 <span>Eliminar Indisponibilidade</span>
               </button>
             ) : (
@@ -163,9 +165,9 @@ export const ScheduleStaffModal: React.FC<ScheduleStaffModalProps> = ({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-ui-warning to-ui-danger hover:from-ui-warning hover:to-ui-danger text-ui-text text-xs font-['Chakra_Petch'] font-black uppercase transition-all"
+                className="ui-btn ui-btn-primary px-5 py-2.5 min-h-[44px] text-xs flex items-center gap-1.5"
               >
-                {editingStaffId ? 'Guardar Alterações' : 'Registar Indisponibilidade'}
+                {editingStaffId ? 'Guardar alterações' : 'Registar indisponibilidade'}
               </button>
             </div>
           </div>

@@ -106,7 +106,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({ filteredEvents, toda
       )}
       {upcoming.map((section) => (
         <section key={section.key} aria-label={section.label}>
-          <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-ui-muted">{section.label}</h3>
+          <h3 className="mb-2 text-ui-caption font-semibold text-ui-muted">{section.label}</h3>
           <ul className="space-y-2">{section.events.map(row)}</ul>
         </section>
       ))}

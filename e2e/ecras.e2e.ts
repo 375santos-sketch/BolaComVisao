@@ -255,7 +255,7 @@ test('semana: jogo novo na Agenda, convocatória com minutos, envio por WhatsApp
     'campeonato'
   );
   await page.getByPlaceholder('Ex: Jornada 4 ou Quartos de Final').fill('Jornada 6');
-  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await page.getByRole('button', { name: 'Guardar no calendário' }).click();
 
   await expect(page.getByRole('button', { name: /vs Constância.*Jornada 6/ })).toBeVisible();
   // The call-up of the game that was tapped (not the first game of the list).
@@ -371,7 +371,7 @@ test('calendário para os pais: link secreto com jogos e treinos que se atualiza
   await page.getByPlaceholder('Nome da equipa adversária').fill('Mação');
   await page.locator('input[type=date]').first().fill('2026-12-12');
   await page.locator('input[type=time]').first().fill('15:00');
-  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await page.getByRole('button', { name: 'Guardar no calendário' }).click();
   await expect.poll(published, { timeout: 30_000 }).toContain('Mação');
 
   // Switched off: the link stops working
@@ -1399,7 +1399,7 @@ test('dia de jogo: convocatória, titulares, relógio, golos, substituição, ca
   await openAgendaList(page);
   await openAgendaRow(page, /vs Abrantes/);
   await page
-    .getByRole('button', { name: /Iniciar Jogo/ })
+    .getByRole('button', { name: /Iniciar jogo/ })
     .first()
     .click();
   await expect(page.getByText('JOGO EM CURSO')).toBeVisible();
@@ -1689,7 +1689,7 @@ test('clube: cor da app, localidade, previsão do tempo e como chegar ao campo',
   await page.locator('input[type=date]').first().fill(tomorrow);
   await page.locator('input[type=time]').first().fill('15:00');
   await page.getByRole('button', { name: 'Fora', exact: true }).click();
-  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await page.getByRole('button', { name: 'Guardar no calendário' }).click();
   await openAgendaRow(page, /vs AD Tempo Teste/);
   const card = page.getByRole('listitem').filter({ hasText: 'AD Tempo Teste' });
   await expect(card.getByLabel('Previsão do tempo')).toHaveText('🌧️ 15° · 💧60% · 💨20 km/h');
@@ -1749,9 +1749,9 @@ test('agenda: jogos importados de um print do calendário e modo compacto', asyn
   expect(mode).toBe('calendario');
   const found = dialog.getByRole('list', { name: 'Jogos encontrados' });
   await expect(found.getByRole('listitem')).toHaveCount(2);
-  await expect(found.getByRole('listitem').first()).toContainText('🏠 vs Gd Calendário');
+  await expect(found.getByRole('listitem').first()).toContainText('vs Gd Calendário · Casa');
   await expect(found.getByRole('listitem').first()).toContainText('10:30 · Jornada 1');
-  await expect(found.getByRole('listitem').last()).toContainText('✈️ vs Ad Terceira');
+  await expect(found.getByRole('listitem').last()).toContainText('vs Ad Terceira · Fora');
   await dialog.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/calendario-print.png` : undefined });
   await dialog.getByRole('button', { name: 'Adicionar 2 jogo(s) à Agenda' }).click();
   await expect(dialog).toBeHidden();
@@ -1936,11 +1936,11 @@ test('terminar sessão apaga os dados do clube neste aparelho', async ({ page })
   await expect.poll(storedOnDevice).toContain('Rui Silva');
 
   await openMore(page, /Terminar sessão/);
-  await expect(page.getByText('ENTRAR NA PLATAFORMA')).toBeVisible();
+  await expect(page.getByPlaceholder('ex: treinador ou treinador@email.com')).toBeVisible();
   await expect.poll(storedOnDevice).not.toContain('Rui Silva');
 
   await page.reload();
-  await expect(page.getByText('ENTRAR NA PLATAFORMA')).toBeVisible();
+  await expect(page.getByPlaceholder('ex: treinador ou treinador@email.com')).toBeVisible();
   // Only the club's name, colour and symbol stay, for the entrance screen
   await expect(page.getByLabel('Clube')).toContainText('Dragões');
   await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/entrada.png` : undefined });
@@ -2220,18 +2220,18 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   const soon = new Date(Date.now() + 90 * 86_400_000).toISOString().slice(0, 10);
   await career.locator('input[type=date]').first().fill(soon);
   await career.getByLabel('Créditos precisos para renovar').fill('15');
-  await career.getByRole('button', { name: '＋ Formação' }).click();
+  await career.getByRole('button', { name: 'Formação', exact: true }).click();
   await career.getByLabel('Nome da formação').fill('Ação de formação Futebol de 7');
   await career.getByLabel('Créditos da formação').fill('4');
   await career.getByRole('button', { name: 'Guardar formação' }).click();
   await expect(career).toContainText('4 de 15 créditos');
   // Clubs by year
-  await career.getByRole('button', { name: '＋ Clube' }).click();
+  await career.getByRole('button', { name: 'Clube', exact: true }).click();
   await career.getByLabel('Clube', { exact: true }).fill('CD Falcões');
   await career.getByLabel('Ano ou época').fill('2019–2021');
   await career.getByLabel('Função').fill('Adjunto');
   await career.getByRole('button', { name: 'Guardar clube' }).click();
-  await career.getByRole('button', { name: '＋ Clube' }).click();
+  await career.getByRole('button', { name: 'Clube', exact: true }).click();
   await career.getByLabel('Clube', { exact: true }).fill('GD Ribeira');
   await career.getByLabel('Ano ou época').fill('2023/2024');
   await career.getByLabel('Escalão').fill('Sub-11');
@@ -2246,7 +2246,7 @@ test('exercício criado pela IA, pausas de água com calor e a minha carreira', 
   await career.getByLabel('Foto do treinador').setInputFiles('e2e/fixtures/exercicio.jpg');
   await expect(career.getByRole('img', { name: 'A minha foto' })).toBeVisible();
   const download = page.waitForEvent('download');
-  await career.getByRole('button', { name: '📄 Currículo em PDF' }).click();
+  await career.getByRole('button', { name: 'Currículo em PDF' }).click();
   const pdf = await download;
   expect(pdf.suggestedFilename()).toMatch(/^Curriculo_.*\.pdf$/);
   expect(readFileSync(await pdf.path()).toString('latin1')).toMatch(/\/Subtype\s*\/Image/);
@@ -2585,7 +2585,7 @@ test('antes e depois da época: foto da equipa na nuvem, autorização dos pais 
     .toBeGreaterThan(0);
   await dialog.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/antes-depois-app.png` : undefined });
   const download = page.waitForEvent('download');
-  await dialog.getByRole('button', { name: '📲 Partilhar imagem' }).click();
+  await dialog.getByRole('button', { name: 'Partilhar imagem' }).click();
   expect((await download).suggestedFilename()).toMatch(/^Antes_e_depois_.*\.png$/);
 });
 
@@ -2631,10 +2631,10 @@ test('acompanhar ao vivo: o outro treinador vê o jogo a acontecer no telemóvel
   await page.getByPlaceholder('Nome da equipa adversária').fill('Equipa Ao Vivo');
   await page.locator('input[type=date]').first().fill(new Date().toISOString().slice(0, 10));
   await page.locator('input[type=time]').first().fill('10:00');
-  await page.getByRole('button', { name: /Guardar no Calendário/ }).click();
+  await page.getByRole('button', { name: 'Guardar no calendário' }).click();
   await openAgendaRow(page, /vs Equipa Ao Vivo/);
   await page
-    .getByRole('button', { name: /Iniciar Jogo/ })
+    .getByRole('button', { name: /Iniciar jogo/ })
     .first()
     .click();
   await page.getByRole('button', { name: /Selecionar 7 Titulares/i }).click();

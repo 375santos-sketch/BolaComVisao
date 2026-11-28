@@ -41,8 +41,7 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
       <div className="ui-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-ui-line">
           <div>
-            <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-              <span>📈</span>
+            <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
               <span>Guia de Forma Recente (Últimos Jogos)</span>
             </h3>
             <p className="text-xs text-ui-muted mt-0.5">Sequência de resultados e momento competitivo da equipa</p>
@@ -73,7 +72,7 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                     <span className="text-[10px] text-ui-muted font-mono">
                       {datePT(item.date || '') || `Jogo #${idx + 1}`}
                     </span>
-                    <span className={`text-xs font-black px-2 py-0.5 rounded-lg border font-mono ${bgBadge}`}>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-lg border font-mono ${bgBadge}`}>
                       {item.result}
                     </span>
                   </div>
@@ -82,11 +81,11 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                     <div className="text-xs font-bold text-ui-text truncate group-hover:text-ui-brand transition-colors">
                       {item.opponent}
                     </div>
-                    <div className="text-[10px] text-ui-muted">{item.location === 'casa' ? '🏠 Casa' : '✈️ Fora'}</div>
+                    <div className="text-[10px] text-ui-muted">{item.location === 'casa' ? 'Casa' : 'Fora'}</div>
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-ui-line/60 mt-2">
-                    <span className="text-sm font-['Chakra_Petch'] font-black text-ui-text">{item.score}</span>
+                    <span className="text-sm font-['Chakra_Petch'] font-bold text-ui-text">{item.score}</span>
                     <span className="text-[10px] text-ui-brand font-bold group-hover:underline">Ver ›</span>
                   </div>
                 </div>
@@ -100,8 +99,7 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
       <div className="ui-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-ui-line">
           <div>
-            <h3 className="text-base font-['Chakra_Petch'] font-black text-ui-text flex items-center gap-2">
-              <span>⚔️</span>
+            <h3 className="text-base font-bold text-ui-text flex items-center gap-2">
               <span>Comparação Direta por Adversário (Head-to-Head)</span>
             </h3>
             <p className="text-xs text-ui-muted mt-0.5">
@@ -118,7 +116,7 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
               >
                 {opponentStats.map((opp) => (
                   <option key={opp.opponent} value={opp.opponent}>
-                    ⚔️ {opp.opponent} ({opp.matchesCount} jogos)
+                    {opp.opponent} ({opp.matchesCount} jogos)
                   </option>
                 ))}
               </select>
@@ -133,8 +131,8 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
             {/* Summary Row for Selected Opponent */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="ui-inset p-3.5 text-center">
-                <span className="text-[10px] uppercase font-bold text-ui-muted block mb-1">Confrontos</span>
-                <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-text">
+                <span className="text-[10px] font-bold text-ui-muted block mb-1">Confrontos</span>
+                <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-text">
                   {currentOpponentStat.matchesCount}
                 </span>
                 <span className="text-[10px] text-ui-muted block mt-1">
@@ -143,18 +141,16 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
               </div>
 
               <div className="ui-inset p-3.5 text-center">
-                <span className="text-[10px] uppercase font-bold text-ui-muted block mb-1">Aproveitamento</span>
-                <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-brand">
+                <span className="text-[10px] font-bold text-ui-muted block mb-1">Aproveitamento</span>
+                <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-brand">
                   {currentOpponentStat.winRate}%
                 </span>
                 <span className="text-[10px] text-ui-brand/80 block mt-1">Taxa de Vitória</span>
               </div>
 
               <div className="ui-inset p-3.5 text-center">
-                <span className="text-[10px] uppercase font-bold text-ui-muted block mb-1">
-                  Golos Marcados / Sofridos
-                </span>
-                <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-success">
+                <span className="text-[10px] font-bold text-ui-muted block mb-1">Golos Marcados / Sofridos</span>
+                <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-success">
                   {currentOpponentStat.goalsScored}
                   <span className="text-ui-muted text-sm font-normal"> - </span>
                   <span className="text-ui-danger">{currentOpponentStat.goalsConceded}</span>
@@ -168,8 +164,8 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
               </div>
 
               <div className="ui-inset p-3.5 text-center">
-                <span className="text-[10px] uppercase font-bold text-ui-muted block mb-1">Jogos sem Sofrer</span>
-                <span className="text-2xl font-['Chakra_Petch'] font-black text-ui-warning">
+                <span className="text-[10px] font-bold text-ui-muted block mb-1">Jogos sem Sofrer</span>
+                <span className="text-2xl font-['Chakra_Petch'] font-bold text-ui-warning">
                   {(currentOpponentStat.last5Matches || []).filter((m) => m.conceded === 0).length}
                 </span>
                 <span className="text-[10px] text-ui-muted block mt-1">Clean Sheets</span>
@@ -205,14 +201,14 @@ export const MatchComparison: React.FC<MatchComparisonProps> = ({ analysis, onOp
                           {currentOpponentStat.opponent || 'Adversário'}
                         </div>
                         <div className="text-[10px] text-ui-muted">
-                          {datePT(m.date || '') || 'Data N/D'} • {m.location === 'casa' ? '🏠 Casa' : '✈️ Fora'} •{' '}
+                          {datePT(m.date || '') || 'Data N/D'} • {m.location === 'casa' ? 'Casa' : 'Fora'} •{' '}
                           {m.type || 'Jogo'}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="text-base font-['Chakra_Petch'] font-black text-ui-text font-mono">
+                      <span className="text-base font-['Chakra_Petch'] font-bold text-ui-text font-mono">
                         {homeFirstScore(m.scored, m.conceded, m.location !== 'fora', ' - ')}
                       </span>
                       <span className="text-ui-muted text-xs">›</span>
